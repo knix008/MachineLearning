@@ -1,5 +1,4 @@
 from sklearn.datasets import fetch_openml
-import matplotlib.pyplot as plt
 
 def plot_digit(image_data):
     image = image_data.reshape(28, 28)
