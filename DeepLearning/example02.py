@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 from tensorflow import keras
+
 # Network and training parameters.
 EPOCHS = 200
 BATCH_SIZE = 128
