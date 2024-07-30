@@ -42,7 +42,7 @@ print(class_names[y_train[0]])
 
 tf.random.set_seed(42)
 model = tf.keras.Sequential()
-model.add(tf.keras.layers.InputLayer(input_shape=[28, 28]))
+model.add(tf.keras.layers.InputLayer(shape=[28, 28]))
 model.add(tf.keras.layers.Flatten())
 model.add(tf.keras.layers.Dense(300, activation="relu"))
 model.add(tf.keras.layers.Dense(100, activation="relu"))
