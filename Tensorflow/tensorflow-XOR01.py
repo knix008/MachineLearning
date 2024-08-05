@@ -14,5 +14,5 @@ model = tf.keras.Sequential([
 model.compile(optimizer=tf.keras.optimizers.SGD(learning_rate=0.1), loss='mse')
 model.summary()
 
-history = model.fit(x, y, epochs=2000, batch_size=1)
-model.predict(x)
+history = model.fit(x, y, epochs=2000, batch_size=4)
+print(model.predict(x))
