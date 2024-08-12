@@ -91,7 +91,7 @@ model.compile(optimizer=tf.keras.optimizers.Adam(),
 model.summary()
 
 
-history = model.fit(train_X, train_Y, epochs=25, validation_split=0.25)
+history = model.fit(train_X, train_Y, epochs=50, validation_split=0.25)
 
 import matplotlib.pyplot as plt
 plt.figure(figsize=(12, 4))
