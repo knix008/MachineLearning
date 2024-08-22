@@ -97,7 +97,6 @@ test_dataset = test_dataset.batch(batch_size)
 # vocab_size + 1 to account for PAD character
 model = SentimentAnalysisModel(vocab_size+1, max_seqlen)
 model.build(input_shape=(batch_size, max_seqlen))
-model.summary()
 
 # compile
 model.compile(
@@ -105,9 +104,10 @@ model.compile(
     optimizer="adam", 
     metrics=["accuracy"]
 )
+model.summary()
 
 # train
-best_model_file = os.path.join(data_dir, "best_model.h5")
+best_model_file = os.path.join(data_dir, "best_model.weights.h5")
 checkpoint = tf.keras.callbacks.ModelCheckpoint(best_model_file,
     save_weights_only=True,
     save_best_only=True)
