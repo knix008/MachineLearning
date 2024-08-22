@@ -31,13 +31,6 @@ def download_and_read(dataset_dir, num_pairs=None):
                 break
     return sents, poss
 
-NUM_PAIRS = None
-EMBEDDING_DIM = 128
-RNN_OUTPUT_DIM = 256
-BATCH_SIZE = 128
-NUM_EPOCHS = 50
-
-# download and read source and target data into data structure
-sents, poss = download_and_read("./datasets", num_pairs=NUM_PAIRS)
+sents, poss = download_and_read("./datasets")
 assert(len(sents) == len(poss))
 print("# of records: {:d}".format(len(sents)))
