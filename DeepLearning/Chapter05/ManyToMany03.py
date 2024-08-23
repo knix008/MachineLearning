@@ -3,19 +3,19 @@ import os
 import shutil
 import tensorflow as tf
 
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = "2"
 
 def clean_logs(data_dir):
     logs_dir = os.path.join(data_dir, "logs")
     shutil.rmtree(logs_dir, ignore_errors=True)
     return logs_dir
 
-
 def download_and_read(dataset_dir, num_pairs=None):
     sent_filename = os.path.join(dataset_dir, "treebank-sents.txt")
     poss_filename = os.path.join(dataset_dir, "treebank-poss.txt")
     if not(os.path.exists(sent_filename) and os.path.exists(poss_filename)):
         import nltk    
-
         if not os.path.exists(dataset_dir):
             os.makedirs(dataset_dir)
         fsents = open(sent_filename, "w")
@@ -24,7 +24,6 @@ def download_and_read(dataset_dir, num_pairs=None):
         for sent in sentences:
             fsents.write(" ".join([w for w, p in sent]) + "\n")
             fposs.write(" ".join([p for w, p in sent]) + "\n")
-
         fsents.close()
         fposs.close()
     sents, poss = [], []
@@ -39,7 +38,6 @@ def download_and_read(dataset_dir, num_pairs=None):
             if num_pairs is not None and idx >= num_pairs:
                 break
     return sents, poss
-
 
 def tokenize_and_build_vocab(texts, vocab_size=None, lower=True):
     if vocab_size is None:
