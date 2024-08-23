@@ -19,6 +19,7 @@ def download_and_read(dataset_dir, num_pairs=None):
         for sent in sentences:
             fsents.write(" ".join([w for w, p in sent]) + "\n")
             fposs.write(" ".join([p for w, p in sent]) + "\n")
+            
         fsents.close()
         fposs.close()
     sents, poss = [], []
