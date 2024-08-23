@@ -3,6 +3,9 @@ import os
 import shutil
 import tensorflow as tf
 
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = "2"
+
 def download_and_read(dataset_dir, num_pairs=None):
     sent_filename = os.path.join(dataset_dir, "treebank-sents.txt")
     poss_filename = os.path.join(dataset_dir, "treebank-poss.txt")
