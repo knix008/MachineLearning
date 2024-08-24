@@ -60,6 +60,3 @@ source_vocab_size = len(word2idx_s)
 target_vocab_size = len(word2idx_t)
 
 print("vocab sizes (source): {:d}, (target): {:d}".format(source_vocab_size, target_vocab_size))
-
-sequence_lengths = np.array([len(s.split()) for s in sents])
-print([(p, np.percentile(sequence_lengths, p)) for p in [75, 80, 90, 95, 99, 100]])
