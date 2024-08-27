@@ -187,7 +187,7 @@ model.compile(
 # train
 num_epochs = NUM_EPOCHS
 
-best_model_file = os.path.join(data_dir, "best_model.h5")
+best_model_file = os.path.join(data_dir, "best_model.weights.h5")
 checkpoint = tf.keras.callbacks.ModelCheckpoint(
     best_model_file, 
     save_weights_only=True,
