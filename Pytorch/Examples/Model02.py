@@ -98,7 +98,7 @@ train_outputs = train_outputs.to(device=device, dtype=torch.int64)
 
 for i in range(epochs):
     i += 1
-    y_pred = model(categorical_train_data).to(device)
+    y_pred = model(torch.LongTensor(categorical_train_data)).to(device)
     single_loss = loss_function(y_pred, train_outputs)
     aggregated_losses.append(single_loss)
 
