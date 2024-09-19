@@ -8,6 +8,9 @@ import numpy as np
 from sklearn import preprocessing
 import matplotlib.pyplot as plt #importing graph plotting functionality
 
+print("Pytorch version : ", torch.__version__)
+print("Numpy version : ", np.__version__)
+
 df = pd.read_csv("car_evaluation.csv", names = ["buying","maint", "doors", "persons", "lug_boot","safety","class"])
 
 ## get_dummies() implementation
@@ -32,13 +35,15 @@ labels_train_v = Variable(torch.FloatTensor(labels_train), requires_grad = False
 feature_test_v = Variable(torch.FloatTensor(feature_test), requires_grad = False)
 labels_test_v = Variable(torch.FloatTensor(labels_test), requires_grad = False)
 
-print(feature_train_v.shape)
-print(labels_train_v.shape)
+print("Training X : ", feature_train_v.shape)
+print("Training Y : ", labels_train_v.shape)
+print("Test X : ", feature_test_v.shape)
+print("Test Y : ", labels_test_v.shape)
 
 class LinearClassifier(nn.Module):
     def __init__(self):
         super(LinearClassifier, self).__init__()
-        self.h_layer = nn.Linear(21, 4) #21 input layers and 4 output layers
+        self.h_layer = nn.Linear(21, 11) #21 input layers and 4 output layers
         self.s_layer = nn.Softmax()
     def forward(self,x):
         y = self.h_layer(x)
@@ -54,22 +59,20 @@ optim = torch.optim.SGD(model.parameters(), lr = 0.01)
 all_losses = []
 for num in range(5000): 
     pred = model(feature_train_v) #predict
-    print(pred.shape)
+    #print(pred.shape)
     loss = loss_fn(pred, labels_train_v) #calculate loss
     all_losses.append(loss.data)
     optim.zero_grad() #zero gradients to not accumulate
     loss.backward() #update weights based on loss
     optim.step() #update optimiser for next iteration
-    
 
-all_losses = np.array(all_losses, dtype = np.float)
+all_losses = np.array(all_losses, dtype = np.float64)
 all_losses
 plt.plot(all_losses)
 plt.show()
 print(pred[3])
 print(labels_train_v[3])
 print(all_losses[-1])
-
 
 from sklearn.metrics import accuracy_score
 
