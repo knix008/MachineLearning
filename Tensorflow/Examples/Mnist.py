@@ -8,6 +8,7 @@ from tensorflow import keras
 # Check tensorflow version and GPU availability
 print(tf.__version__)
 print(tf.config.list_physical_devices("GPU"))
+print(np.__version__)
 
 # for reproducibility
 np.random.seed(1671)
