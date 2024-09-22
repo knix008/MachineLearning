@@ -67,7 +67,7 @@ plt.plot(history.history['val_accuracy'])
 plt.title('Model accuracy')
 plt.ylabel('accuracy')
 plt.xlabel('epoch')
-plt.legend(['train', 'test'], loc='upper left')
+plt.legend(['Train', 'Validation'], loc='upper left')
 plt.show()
 
 # summarize history for loss
@@ -76,7 +76,7 @@ plt.plot(history.history['val_loss'])
 plt.title('Model loss')
 plt.ylabel('loss')
 plt.xlabel('epoch')
-plt.legend(['train', 'test'], loc='upper left')
+plt.legend(['Train', 'Validation'], loc='upper left')
 plt.show()
 
 score = model.evaluate(X_test, y_test, batch_size=BATCH_SIZE)
