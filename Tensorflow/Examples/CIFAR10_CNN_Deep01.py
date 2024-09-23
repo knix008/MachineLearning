@@ -76,11 +76,31 @@ model.compile(loss='categorical_crossentropy',
 
 #train
 batch_size = 64
-model.fit(x_train, y_train, batch_size=batch_size,
+history = model.fit(x_train, y_train, batch_size=batch_size,
     epochs=EPOCHS, validation_data=(x_test,y_test)) 
+
 score = model.evaluate(x_test, y_test,
                      batch_size=BATCH_SIZE)
 print("\nTest score:", score[0])
 print('Test accuracy:', score[1])
 
 
+import matplotlib.pyplot as plt
+
+# summarize history for accuracy
+plt.plot(history.history['accuracy'])
+plt.plot(history.history['val_accuracy'])
+plt.title('Model accuracy')
+plt.ylabel('accuracy')
+plt.xlabel('epoch')
+plt.legend(['Train', 'Validation'], loc='upper left')
+plt.show()
+
+# summarize history for loss
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('Model loss')
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(['Train', 'Validation'], loc='upper left')
+plt.show()
