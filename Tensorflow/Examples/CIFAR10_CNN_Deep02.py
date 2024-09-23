@@ -2,15 +2,9 @@ import tensorflow as tf
 from tensorflow.keras import datasets, layers, models, regularizers, optimizers
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import numpy as np
-
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+import matplotlib.pyplot as plt
 
-# Check tensorflow version and GPU availability
-print("TensorFlow version : ", tf.__version__)
-print("GPU device : ", tf.config.list_physical_devices("GPU"))
-print("Numpy version : ", np.__version__)
- 
 EPOCHS=50
 NUM_CLASSES = 10
 BATCH_SIZE = 128
@@ -31,12 +25,12 @@ def load_data():
 
     return x_train, y_train, x_test, y_test
 
-def build_model(): 
+def build_model(input_shape): 
     model = models.Sequential()
     
     #1st blocl
     model.add(layers.Conv2D(32, (3,3), padding='same', 
-        input_shape=x_train.shape[1:], activation='relu'))
+        input_shape=input_shape, activation='relu'))
     model.add(layers.BatchNormalization())
     model.add(layers.Conv2D(32, (3,3), padding='same', activation='relu'))
     model.add(layers.BatchNormalization())
@@ -64,39 +58,57 @@ def build_model():
     model.add(layers.Dense(NUM_CLASSES, activation='softmax'))
     return model
 
-(x_train, y_train, x_test, y_test) = load_data()
-model = build_model()
-model.compile(loss='categorical_crossentropy', 
-            optimizer='RMSprop', 
-            metrics=['accuracy'])
+def plot_result(history):
+    # summarize history for accuracy
+    plt.plot(history.history['accuracy'])
+    plt.plot(history.history['val_accuracy'])
+    plt.title('Model accuracy')
+    plt.ylabel('accuracy')
+    plt.xlabel('epoch')
+    plt.legend(['Train', 'Validation'], loc='upper left')
+    plt.show()
 
-#train
-batch_size = 64
-history = model.fit(x_train, y_train, batch_size=batch_size,
-    epochs=EPOCHS, validation_data=(x_test,y_test)) 
+    # summarize history for loss
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('Model loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['Train', 'Validation'], loc='upper left')
+    plt.show()
 
-score = model.evaluate(x_test, y_test,
-                     batch_size=BATCH_SIZE)
-print("\nTest score:", score[0])
-print('Test accuracy:', score[1])
+def main(): 
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
+    # Check tensorflow version and GPU availability
+    print("TensorFlow version : ", tf.__version__)
+    print("GPU device : ", tf.config.list_physical_devices("GPU"))
+    print("Numpy version : ", np.__version__)
 
-import matplotlib.pyplot as plt
+    (x_train, y_train, x_test, y_test) = load_data()
+    
+    print("Training input shape : ", x_train.shape)
+    print("Training target shape : ", y_train.shape)
+    print("Test input shape : ", x_test.shape)
+    print("Test target shape : ", y_test.shape)
+    
+    model = build_model(x_train.shape[1:]) # 32 x 32 x 3
+    model.compile(loss='categorical_crossentropy', 
+                optimizer='RMSprop', 
+                metrics=['accuracy'])
+    model.summary()
 
-# summarize history for accuracy
-plt.plot(history.history['accuracy'])
-plt.plot(history.history['val_accuracy'])
-plt.title('Model accuracy')
-plt.ylabel('accuracy')
-plt.xlabel('epoch')
-plt.legend(['Train', 'Validation'], loc='upper left')
-plt.show()
+    #train
+    batch_size = 64
+    history = model.fit(x_train, y_train, batch_size=batch_size,
+        epochs=EPOCHS, validation_data=(x_test,y_test)) 
 
-# summarize history for loss
-plt.plot(history.history['loss'])
-plt.plot(history.history['val_loss'])
-plt.title('Model loss')
-plt.ylabel('loss')
-plt.xlabel('epoch')
-plt.legend(['Train', 'Validation'], loc='upper left')
-plt.show()
+    score = model.evaluate(x_test, y_test,
+                        batch_size=BATCH_SIZE)
+    print("\nTest score:", score[0])
+    print('Test accuracy:', score[1])
+    
+    plot_result(history)
+
+if __name__ == "__main__":
+    main()
