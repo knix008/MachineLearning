@@ -69,6 +69,7 @@ def plot_result(history):
     plt.legend(['Train', 'Validation'], loc='upper left')
     #plt.show()
     plt.savefig("Training_accuracy.png")
+    plt.clf()
 
     # summarize history for loss
     plt.plot(history.history['loss'])
@@ -120,7 +121,7 @@ def main():
     model_json = model.to_json()
     with open('model.json', 'w') as json_file:
         json_file.write(model_json)
-    model.save_weights('model.h5') 
+    #model.save_weights('model.h5') 
 
     #test
     scores = model.evaluate(x_test, y_test, batch_size=128, verbose=1)
