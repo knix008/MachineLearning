@@ -2,6 +2,7 @@ import tensorflow as tf
 from tensorflow.keras import datasets, layers, models, regularizers, optimizers
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import numpy as np
+import scipy
 import os
 import matplotlib.pyplot as plt
 
@@ -97,16 +98,30 @@ def main():
                 optimizer='RMSprop', 
                 metrics=['accuracy'])
     model.summary()
+    
+    #image augmentation
+    datagen = ImageDataGenerator(
+        rotation_range=30,
+        width_shift_range=0.2,
+        height_shift_range=0.2,
+        horizontal_flip=True,
+    )
+    datagen.fit(x_train)
 
     #train
     batch_size = 64
-    history = model.fit(x_train, y_train, batch_size=batch_size,
-        epochs=EPOCHS, validation_data=(x_test,y_test)) 
+    history = model.fit(datagen.flow(x_train, y_train, batch_size=batch_size),
+                        epochs=EPOCHS,
+                        verbose=1,validation_data=(x_test,y_test))
+    #save to disk
+    model_json = model.to_json()
+    with open('model.json', 'w') as json_file:
+        json_file.write(model_json)
+    model.save_weights('model.h5') 
 
-    score = model.evaluate(x_test, y_test,
-                        batch_size=BATCH_SIZE)
-    print("\nTest score:", score[0])
-    print('Test accuracy:', score[1])
+    #test
+    scores = model.evaluate(x_test, y_test, batch_size=128, verbose=1)
+    print('\nTest result: %.3f loss: %.3f' % (scores[1]*100,scores[0])) 
     
     plot_result(history)
 
