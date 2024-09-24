@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 EPOCHS=50
 NUM_CLASSES = 10
 BATCH_SIZE = 128
+INPUT_SHAPE = (32, 32, 3)
 
 def load_data():
     (x_train, y_train), (x_test, y_test) = datasets.cifar10.load_data()
@@ -25,11 +26,11 @@ def load_data():
 
     return x_train, y_train, x_test, y_test
 
-def build_model(input_shape): 
+def build_model(): 
     model = models.Sequential()
     
     #1st blocl
-    model.add(layers.Conv2D(32, (3,3), padding='same', input_shape=input_shape, activation='relu'))
+    model.add(layers.Conv2D(32, (3,3), padding='same', input_shape=INPUT_SHAPE, activation='relu'))
     model.add(layers.BatchNormalization())
     model.add(layers.Conv2D(32, (3,3), padding='same', activation='relu'))
     model.add(layers.BatchNormalization())
@@ -91,7 +92,7 @@ def main():
     print("Test input shape : ", x_test.shape)
     print("Test target shape : ", y_test.shape)
     
-    model = build_model(x_train.shape[1:]) # 32 x 32 x 3
+    model = build_model() # 32 x 32 x 3
     model.compile(loss='categorical_crossentropy', 
                 optimizer='RMSprop', 
                 metrics=['accuracy'])
