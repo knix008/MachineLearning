@@ -67,7 +67,8 @@ def plot_result(history):
     plt.ylabel('accuracy')
     plt.xlabel('epoch')
     plt.legend(['Train', 'Validation'], loc='upper left')
-    plt.show()
+    #plt.show()
+    plt.savefig("Training_accuracy.png")
 
     # summarize history for loss
     plt.plot(history.history['loss'])
@@ -76,7 +77,8 @@ def plot_result(history):
     plt.ylabel('loss')
     plt.xlabel('epoch')
     plt.legend(['Train', 'Validation'], loc='upper left')
-    plt.show()
+    #plt.show()
+    plt.savefig("Training_loss.png")
 
 def main(): 
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
@@ -122,7 +124,7 @@ def main():
 
     #test
     scores = model.evaluate(x_test, y_test, batch_size=128, verbose=1)
-    print('\nTest result: %.3f loss: %.3f' % (scores[1]*100,scores[0])) 
+    print('\nTest accuracy : %.3f, loss: %.3f' % (scores[1]*100,scores[0])) 
     
     plot_result(history)
 
