@@ -1,4 +1,3 @@
-import numpy as np
 from PIL import Image
 
 image_file = 'sample.jpg'
