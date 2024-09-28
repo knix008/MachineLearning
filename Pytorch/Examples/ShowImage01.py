@@ -1,10 +1,9 @@
 import numpy as np
 from PIL import Image
-import matplotlib.pyplot as plt
 
-image_file_path = 'sample.jpg'
+image_file = 'sample.jpg'
 
-img = Image.open(image_file_path)
+img = Image.open(image_file)
 try:
     img.show()
 except:
