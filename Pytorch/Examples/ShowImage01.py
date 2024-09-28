@@ -1,14 +1,11 @@
-import cv2
+import numpy as np
+from PIL import Image
 import matplotlib.pyplot as plt
 
-img = cv2.imread('wallpaper.jpg')
-img = img[50:250,40:240,:]
-img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+image_file_path = 'sample.jpg'
 
+img = Image.open(image_file_path)
 try:
-    plt.show(img)
+    img.show()
 except:
-    print("Cannot show the image!!!")
-    
-print(img.shape)
-# (200,200,3)
+    print("Cannot diplay image!!!")
