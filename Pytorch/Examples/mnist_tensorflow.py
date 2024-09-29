@@ -1,5 +1,6 @@
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+os.environ['XLA_FLAGS'] = '--xla_gpu_cuda_data_dir="/mnt/c/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.5"'
 
 import tensorflow as tf
 import matplotlib.pyplot as plt
