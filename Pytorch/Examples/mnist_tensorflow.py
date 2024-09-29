@@ -1,3 +1,6 @@
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
@@ -46,14 +49,13 @@ test_dataloader = test_dataloader.batch(500)
 tf.random.set_seed(0)
 model = ConvNet()
 optimizer = tf.keras.optimizers.experimental.Adadelta(learning_rate=0.5)
-model.compile(optimizer=optimizer,
-loss='sparse_categorical_crossentropy',
-metrics=['accuracy'])
+model.compile(optimizer=optimizer, loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
 # Train the model using the tf.data.Dataset API
 model.fit(train_dataloader, epochs=3, validation_data=test_dataloader)
 
 test_samples = enumerate(test_dataloader)
 b_i, (sample_data, sample_targets) = next(test_samples)
+
 plt.imshow(sample_data[0], cmap='gray', interpolation='none')
 plt.show()
