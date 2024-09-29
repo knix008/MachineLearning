@@ -1,6 +1,6 @@
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-os.environ['XLA_FLAGS'] = '--xla_gpu_cuda_data_dir="/mnt/c/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.5"'
+#os.environ['XLA_FLAGS'] = '--xla_gpu_cuda_data_dir="C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA/v12.5"'
 
 import tensorflow as tf
 import matplotlib.pyplot as plt
@@ -49,7 +49,7 @@ test_dataloader = test_dataloader.batch(500)
 
 tf.random.set_seed(0)
 model = ConvNet()
-optimizer = tf.keras.optimizers.experimental.Adadelta(learning_rate=0.5)
+optimizer = tf.keras.optimizers.Adadelta(learning_rate=0.5)
 model.compile(optimizer=optimizer, loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
 # Train the model using the tf.data.Dataset API
