@@ -11,8 +11,8 @@ class ConvNet(nn.Module):
         super(ConvNet, self).__init__()
         self.cn1 = nn.Conv2d(1, 16, 3, 1)
         self.cn2 = nn.Conv2d(16, 32, 3, 1)
-        self.dp1 = nn.Dropout2d(0.10)
-        self.dp2 = nn.Dropout2d(0.25)
+        self.dp1 = nn.Dropout(0.10)
+        self.dp2 = nn.Dropout(0.25)
         self.fc1 = nn.Linear(4608, 64) # 4608 is basically 12 X 12 X 32
         self.fc2 = nn.Linear(64, 10)
  
@@ -45,7 +45,6 @@ def train(model, device, train_dataloader, optim, epoch):
                 epoch, b_i * len(X), len(train_dataloader.dataset),
                 100. * b_i / len(train_dataloader), loss.item()))
 
-    
 def test(model, device, test_dataloader):
     model.eval()
     loss = 0
@@ -81,9 +80,13 @@ test_dataloader = torch.utils.data.DataLoader(
     batch_size=500, shuffle=False)
 
 torch.manual_seed(0)
-device = torch.device("cpu")
+#device = torch.device("cpu")
+# Device configuration
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 model = ConvNet()
+model = model.to(device)
+
 optimizer = optim.Adadelta(model.parameters(), lr=0.5)
 
 for epoch in range(1, 3):
@@ -96,5 +99,5 @@ b_i, (sample_data, sample_targets) = next(test_samples)
 plt.imshow(sample_data[0][0], cmap='gray', interpolation='none')
 plt.show()
 
-print(f"Model prediction is : {model(sample_data).data.max(1)[1][0]}")
+print(f"Model prediction is : {model(sample_data.to(device)).data.max(1)[1][0]}")
 print(f"Ground truth is : {sample_targets[0]}")
