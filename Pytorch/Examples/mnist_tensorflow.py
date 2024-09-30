@@ -53,10 +53,37 @@ optimizer = tf.keras.optimizers.Adadelta(learning_rate=0.5)
 model.compile(optimizer=optimizer, loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
 # Train the model using the tf.data.Dataset API
-model.fit(train_dataloader, epochs=3, validation_data=test_dataloader)
+history = model.fit(train_dataloader, epochs=3, validation_data=test_dataloader)
 
 test_samples = enumerate(test_dataloader)
 b_i, (sample_data, sample_targets) = next(test_samples)
 
 plt.imshow(sample_data[0], cmap='gray', interpolation='none')
+plt.show()
+
+# Evaluate the model
+test_loss, test_acc = model.evaluate(x_test, y_test)
+print('Test accuracy:', test_acc)
+
+# making prediction
+predictions = model.predict(x_test)
+
+import matplotlib.pyplot as plt
+
+# summarize history for accuracy
+plt.plot(history.history['accuracy'])
+plt.plot(history.history['val_accuracy'])
+plt.title('Model accuracy')
+plt.ylabel('accuracy')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'], loc='upper left')
+plt.show()
+
+# summarize history for loss
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('Model loss')
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'], loc='upper left')
 plt.show()
