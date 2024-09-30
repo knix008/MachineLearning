@@ -47,70 +47,6 @@ class LeNet(nn.Module):
             num_feats *= s
         return num_feats
 
-
-lenet = LeNet()
-print(lenet)
-
-def train(net, trainloader, optim, epoch):
-    # initialize loss
-    loss_total = 0.0
-    
-    for i, data in enumerate(trainloader, 0):
-        # get the inputs; data is a list of [inputs, labels]
-        # ip refers to the input images, and ground_truth refers to the output classes the images belong to
-        ip, ground_truth = data
-
-        # zero the parameter gradients
-        optim.zero_grad()
-
-        # forward pass + backward pass + optimization step
-        op = net(ip)
-        loss = nn.CrossEntropyLoss()(op, ground_truth)
-        loss.backward()
-        optim.step()
-
-        # update loss
-        loss_total += loss.item()
-        
-        # print loss statistics
-        if (i+1) % 1000 == 0:    # print at the interval of 1000 mini-batches
-            print('[Epoch number : %d, Mini-batches: %5d] loss: %.3f' %
-                  (epoch + 1, i + 1, loss_total / 200))
-            loss_total = 0.0
-            
-def test(net, testloader):
-    success = 0
-    counter = 0
-    with torch.no_grad():
-        for data in testloader:
-            im, ground_truth = data
-            op = net(im)
-            _, pred = torch.max(op.data, 1)
-            counter += ground_truth.size(0)
-            success += (pred == ground_truth).sum().item()
-
-    print('LeNet accuracy on 10000 images from test dataset: %d %%' % (
-        100 * success / counter))
-    
-# The mean and std are kept as 0.5 for normalizing pixel values as the pixel values are originally in the range 0 to 1
-train_transform = transforms.Compose([transforms.RandomHorizontalFlip(),
-                                      transforms.RandomCrop(32, 4),
-                                      transforms.ToTensor(),
-                                      transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-
-trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=train_transform)
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=8, shuffle=True)
-
-
-test_transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-
-testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=test_transform)
-testloader = torch.utils.data.DataLoader(testset, batch_size=10000, shuffle=False)
-
-
-# ordering is important
-classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
-
 # define a function that displays an image
 def imageshow(image):
     # un-normalize the image
@@ -119,28 +55,16 @@ def imageshow(image):
     plt.imshow(np.transpose(npimage, (1, 2, 0)))
     plt.show()
 
+# ordering is important
+classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
-# sample images from training set
-dataiter = iter(trainloader)
-images, labels = next(dataiter)
+test_transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
-# display images in a grid
-num_images = 4
-imageshow(torchvision.utils.make_grid(images[:num_images]))
-# print labels
-print('    '+'  ||  '.join(classes[labels[j]] for j in range(num_images)))
+testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=test_transform)
+testloader = torch.utils.data.DataLoader(testset, batch_size=10000, shuffle=False)
 
-# define optimizer
-optim = torch.optim.Adam(lenet.parameters(), lr=0.001)
-
-# training loop over the dataset multiple times
-for epoch in range(50):  
-    train(lenet, trainloader, optim, epoch)
-    print()
-    test(lenet, testloader)
-    print()
-
-print('Finished Training')
+lenet = LeNet()
+print(lenet)
 
 model_path = './model/cifar_model.pth'
 torch.save(lenet.state_dict(), model_path)
@@ -164,6 +88,7 @@ op = lenet_cached(im)
 _, pred = torch.max(op, 1)
 
 print('Prediction: ', ' '.join('%5s' % classes[pred[j]] for j in range(4)))
+
 
 success = 0
 counter = 0
