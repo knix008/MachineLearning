@@ -131,7 +131,7 @@ images, labels = next(dataiter)
 
 # display images in a grid
 num_images = 4
-#imageshow(torchvision.utils.make_grid(images[:num_images]))
+imageshow(torchvision.utils.make_grid(images[:num_images]))
 # print labels
 print('    '+'  ||  '.join(classes[labels[j]] for j in range(num_images)))
 
@@ -196,7 +196,6 @@ with torch.no_grad():
             ground_truth_curr = ground_truth[i]
             class_sucess[ground_truth_curr] += c[i].item()
             class_counter[ground_truth_curr] += 1
-
 
 for i in range(10):
     print('Model accuracy for class %5s : %2d %%' % (
