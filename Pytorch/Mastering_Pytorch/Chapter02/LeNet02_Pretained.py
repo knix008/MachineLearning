@@ -67,7 +67,6 @@ lenet = LeNet()
 print(lenet)
 
 model_path = './model/cifar_model.pth'
-torch.save(lenet.state_dict(), model_path)
 
 # load test dataset images
 d_iter = iter(testloader)
@@ -88,7 +87,6 @@ op = lenet_cached(im)
 _, pred = torch.max(op, 1)
 
 print('Prediction: ', ' '.join('%5s' % classes[pred[j]] for j in range(4)))
-
 
 success = 0
 counter = 0
