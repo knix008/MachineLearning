@@ -6,7 +6,6 @@ import torchvision
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms as transforms
-from torch.utils.data import DataLoader
 
 # Device configuration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -43,80 +42,11 @@ class LeNet(nn.Module):
 
     def flattened_features(self, x):
         # all except the first (batch) dimension
-        size = x.size()[1:]
+        size = x.size()[1:]  
         num_feats = 1
         for s in size:
             num_feats *= s
         return num_feats
-
-lenet = LeNet()
-lenet = lenet.to(device)
-print(lenet)
-
-def train(net, trainloader, optim, epoch, device):
-    # initialize loss
-    loss_total = 0.0
-    
-    for i, data in enumerate(trainloader, 0):
-        # get the inputs; data is a list of [inputs, labels]
-        # ip refers to the input images, and ground_truth refers to the output classes the images belong to
-        ip, ground_truth = data
-        ip = ip.to(device)
-        ground_truth = ground_truth.to(device)
-
-        # zero the parameter gradients
-        optim.zero_grad()
-        
-        # forward pass + backward pass + optimization step
-        op = net(ip)
-        op = op.to(device)
-        loss = nn.CrossEntropyLoss()(op, ground_truth)
-        loss.backward()
-        optim.step()
-
-        # update loss
-        loss_total += loss.item()
-        
-        # print loss statistics
-        if (i+1) % 1000 == 0:    # print at the interval of 1000 mini-batches
-            print('[Epoch number : %d, Mini-batches: %5d] loss: %.3f' %
-                  (epoch + 1, i + 1, loss_total / 200))
-            loss_total = 0.0
-            
-def test(net, testloader, device):
-    success = 0
-    counter = 0
-    with torch.no_grad():
-        for data in testloader:
-            im, ground_truth = data
-            im = im.to(device)
-            ground_truth = ground_truth.to(device)
-            op = net(im)
-            _, pred = torch.max(op.data, 1)
-            counter += ground_truth.size(0)
-            success += (pred == ground_truth).sum().item()
-
-    print('LeNet accuracy on 10000 images from test dataset: %d %%' % (
-        100 * success / counter))
-    
-# The mean and std are kept as 0.5 for normalizing pixel values as the pixel values are originally in the range 0 to 1
-train_transform = transforms.Compose([transforms.RandomHorizontalFlip(),
-                                      transforms.RandomCrop(32, 4),
-                                      transforms.ToTensor(),
-                                      transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-
-trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=train_transform)
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=8, shuffle=True)
-
-
-test_transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-
-testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=test_transform)
-testloader = torch.utils.data.DataLoader(testset, batch_size=10000, shuffle=False)
-
-
-# ordering is important
-classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
 # define a function that displays an image
 def imageshow(image):
@@ -126,30 +56,18 @@ def imageshow(image):
     plt.imshow(np.transpose(npimage, (1, 2, 0)))
     plt.show()
 
-# sample images from training set
-dataiter = iter(trainloader)
-images, labels = next(dataiter)
+# ordering is important
+classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
-# display images in a grid
-num_images = 4
-imageshow(torchvision.utils.make_grid(images[:num_images]))
-# print labels
-print('    '+'  ||  '.join(classes[labels[j]] for j in range(num_images)))
+test_transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
-# define optimizer
-optim = torch.optim.Adam(lenet.parameters(), lr=0.001)
+testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=test_transform)
+testloader = torch.utils.data.DataLoader(testset, batch_size=10000, shuffle=False)
 
-# training loop over the dataset multiple times
-for epoch in range(50):  
-    train(lenet, trainloader, optim, epoch, device)
-    print()
-    test(lenet, testloader, device)
-    print()
-
-print('Finished Training')
+lenet = LeNet()
+print(lenet)
 
 model_path = './model/cifar_model.pth'
-torch.save(lenet.state_dict(), model_path)
 
 # load test dataset images
 d_iter = iter(testloader)
