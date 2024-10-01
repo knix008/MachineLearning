@@ -50,8 +50,11 @@ random.shuffle(correct_images_filepaths)
 #train_images_filepaths = correct_images_filepaths[:400]    
 #val_images_filepaths = correct_images_filepaths[400:-10]  
 
-train_images_filepaths = correct_images_filepaths[:6400]    
-val_images_filepaths = correct_images_filepaths[6400:-10]  
+#train_images_filepaths = correct_images_filepaths[:6400]    
+#val_images_filepaths = correct_images_filepaths[6400:-10]  
+
+train_images_filepaths = correct_images_filepaths[:20000]   
+val_images_filepaths = correct_images_filepaths[20000:-10]
 test_images_filepaths = correct_images_filepaths[-10:]    
 print(len(train_images_filepaths), len(val_images_filepaths), len(test_images_filepaths))
 
@@ -208,7 +211,7 @@ def train_model(model, dataloader_dict, criterion, optimizer, num_epoch):
     return model
 
 import time
-num_epoch = 20 # 10 -> 20 changed.
+num_epoch = 10 # 10 -> 20 changed.
 model = train_model(model, dataloader_dict, criterion, optimizer, num_epoch)
 
 import pandas as pd
