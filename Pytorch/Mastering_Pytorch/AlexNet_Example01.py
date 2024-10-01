@@ -8,12 +8,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 import os
 import cv2
-from PIL import Image
-from tqdm import tqdm
 import random
-from matplotlib import pyplot as plt
+import time
+import matplotlib.pyplot as plt
+from PIL import Image
+from tqdm import tqdm as tqdm
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+print("Using : ", device)
 
 class ImageTransform():    
     def __init__(self, resize, mean, std):
@@ -34,7 +36,7 @@ class ImageTransform():
         
     def __call__(self, img, phase):
         return self.data_transform[phase](img)
-
+    
 cat_directory = 'data/Cat/'
 dog_directory = 'data/Dog/'
 
@@ -46,31 +48,10 @@ correct_images_filepaths = [i for i in images_filepaths if cv2.imread(i) is not 
 random.seed(42)    
 random.shuffle(correct_images_filepaths)
 
-# If you have more data, then you can chagne the following codes.
-#train_images_filepaths = correct_images_filepaths[:400]    
-#val_images_filepaths = correct_images_filepaths[400:-10]  
-
 train_images_filepaths = correct_images_filepaths[:6400]    
-val_images_filepaths = correct_images_filepaths[6400:-10]  
+val_images_filepaths = correct_images_filepaths[6400:-10] 
 test_images_filepaths = correct_images_filepaths[-10:]    
 print(len(train_images_filepaths), len(val_images_filepaths), len(test_images_filepaths))
-
-def display_image_grid(images_filepaths, predicted_labels=(), cols=5):
-    rows = len(images_filepaths) // cols
-    figure, ax = plt.subplots(nrows=rows, ncols=cols, figsize=(12, 6))
-    for i, image_filepath in enumerate(images_filepaths):
-        image = cv2.imread(image_filepath)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        true_label = os.path.normpath(image_filepath).split(os.sep)[-2]
-        predicted_label = predicted_labels[i] if predicted_labels else true_label
-        color = "green" if true_label == predicted_label else "red"
-        ax.ravel()[i].imshow(image)
-        ax.ravel()[i].set_title(predicted_label, color=color)
-        ax.ravel()[i].set_axis_off()
-    plt.tight_layout()
-    plt.show()
-    
-display_image_grid(test_images_filepaths)
 
 class DogvsCatDataset(Dataset):    
     def __init__(self, file_list, transform=None, phase='train'):    
@@ -81,9 +62,9 @@ class DogvsCatDataset(Dataset):
     def __len__(self):
         return len(self.file_list)
     
-    def __getitem__(self, idx):       
+    def __getitem__(self, idx):        
         img_path = self.file_list[idx]
-        img = Image.open(img_path)        
+        img = Image.open(img_path)
         img_transformed = self.transform(img, self.phase)
         
         label = img_path.split('/')[-1].split('.')[0]
@@ -91,15 +72,17 @@ class DogvsCatDataset(Dataset):
             label = 1
         elif label == 'cat':
             label = 0
+
         return img_transformed, label
     
-size = 224
-mean = (0.485, 0.456, 0.406)
-std = (0.229, 0.224, 0.225)
+size = 256
+mean = (0.485, 0.456, 0.406) # ?
+std = (0.229, 0.224, 0.225)  # ?
 batch_size = 32
 
 train_dataset = DogvsCatDataset(train_images_filepaths, transform=ImageTransform(size, mean, std), phase='train')
 val_dataset = DogvsCatDataset(val_images_filepaths, transform=ImageTransform(size, mean, std), phase='val')
+test_dataset = DogvsCatDataset(val_images_filepaths, transform=ImageTransform(size, mean, std), phase='val')
 
 index = 0
 print(train_dataset.__getitem__(index)[0].size())
@@ -107,6 +90,7 @@ print(train_dataset.__getitem__(index)[1])
 
 train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 dataloader_dict = {'train': train_dataloader, 'val': val_dataloader}
 
 batch_iterator = iter(train_dataloader)
@@ -114,49 +98,51 @@ inputs, label = next(batch_iterator)
 print(inputs.size())
 print(label)
 
-class LeNet(nn.Module):
-    def __init__(self):
-        super(LeNet, self).__init__()
-        self.cnn1 = nn.Conv2d(in_channels=3, out_channels=16, kernel_size=5, stride=1, padding=0) 
-        self.relu1 = nn.ReLU() 
-        self.maxpool1 = nn.MaxPool2d(kernel_size=2) 
-        self.cnn2 = nn.Conv2d(in_channels=16, out_channels=32, kernel_size=5, stride=1, padding=0) 
-        self.relu2 = nn.ReLU() # activation
-        self.maxpool2 = nn.MaxPool2d(kernel_size=2)         
-        self.fc1 = nn.Linear(32*53*53, 512) 
-        self.relu5 = nn.ReLU()         
-        self.fc2 = nn.Linear(512, 2) 
-        self.output = nn.Softmax(dim=1)        
+class AlexNet(nn.Module):
+    def __init__(self) -> None:
+        super(AlexNet, self).__init__()
+        self.features = nn.Sequential(
+            nn.Conv2d(3, 64, kernel_size=11, stride=4, padding=2),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2),
+            nn.Conv2d(64, 192, kernel_size=5, padding=2),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2),
+            nn.Conv2d(192, 384, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(384, 256, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(256, 256, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2),
+        )
+        self.avgpool = nn.AdaptiveAvgPool2d((6, 6))
+        self.classifier = nn.Sequential(
+            nn.Dropout(),
+            nn.Linear(256 * 6 * 6, 4096),
+            nn.ReLU(inplace=True),
+            nn.Dropout(),
+            nn.Linear(4096, 512),
+            nn.ReLU(inplace=True),
+            nn.Linear(512, 2),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = self.features(x)
+        x = self.avgpool(x)
+        x = torch.flatten(x, 1)
+        x = self.classifier(x)
+        return x
     
-    def forward(self, x):
-        out = self.cnn1(x) 
-        out = self.relu1(out)
-        out = self.maxpool1(out)
-        out = self.cnn2(out) 
-        out = self.relu2(out) 
-        out = self.maxpool2(out) 
-        out = out.view(out.size(0), -1) 
-        out = self.fc1(out) 
-        out = self.fc2(out)                    
-        out = self.output(out)
-        return out
     
-model = LeNet().to(device)
-print(model)
-
-from torchsummary import summary
-summary(model, input_size=(3, 224, 224))
-
-def count_parameters(model):
-    return sum(p.numel() for p in model.parameters() if p.requires_grad)
-
-print(f'The model has {count_parameters(model):,} trainable parameters')
+model = AlexNet()
+model.to(device)
 
 optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
-criterion = nn.CrossEntropyLoss()
+criterion = nn.CrossEntropyLoss().to(device)
 
-model = model.to(device)
-criterion = criterion.to(device)
+from torchsummary import summary
+summary(model, input_size=(3, 256, 256))
 
 def train_model(model, dataloader_dict, criterion, optimizer, num_epoch):    
     since = time.time()
@@ -166,7 +152,7 @@ def train_model(model, dataloader_dict, criterion, optimizer, num_epoch):
         print('Epoch {}/{}'.format(epoch + 1, num_epoch))
         print('-'*20)
         
-        for phase in ['train', 'val']:           
+        for phase in ['train', 'val']:            
             if phase == 'train':
                 model.train()
             else:
@@ -196,22 +182,17 @@ def train_model(model, dataloader_dict, criterion, optimizer, num_epoch):
             epoch_acc = epoch_corrects.double() / len(dataloader_dict[phase].dataset)
             
             print('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, epoch_loss, epoch_acc))
-            
-            if phase == 'val' and epoch_acc > best_acc:
-                best_acc = epoch_acc
-                best_model_wts = model.state_dict()
-                
+   
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(
         time_elapsed // 60, time_elapsed % 60))
-    print('Best val Acc: {:4f}'.format(best_acc))
     return model
 
-import time
-num_epoch = 20 # 10 -> 20 changed.
+num_epoch = 20
 model = train_model(model, dataloader_dict, criterion, optimizer, num_epoch)
 
 import pandas as pd
+
 id_list = []
 pred_list = []
 _id=0
@@ -235,8 +216,8 @@ res = pd.DataFrame({
     'id': id_list,
     'label': pred_list
 })
+res.to_csv('alexnet.csv', index=False)
 
-res.to_csv('renet.csv', index=False)
 res.head(10)
 
 class_ = classes = {0:'cat', 1:'dog'}
