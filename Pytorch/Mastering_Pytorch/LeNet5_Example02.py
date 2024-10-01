@@ -234,7 +234,7 @@ res = pd.DataFrame({
     'label': pred_list
 })
 
-res.to_csv('alexnet.csv', index=False)
+res.to_csv('renet.csv', index=False)
 res.head(10)
 
 class_ = classes = {0:'cat', 1:'dog'}
