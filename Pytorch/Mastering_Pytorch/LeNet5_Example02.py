@@ -47,8 +47,10 @@ random.seed(42)
 random.shuffle(correct_images_filepaths)
 
 # If you have more data, then you can chagne the following codes.
-train_images_filepaths = correct_images_filepaths[:400]    
-val_images_filepaths = correct_images_filepaths[400:-10]  
+#train_images_filepaths = correct_images_filepaths[:400]    
+#val_images_filepaths = correct_images_filepaths[400:-10]  
+train_images_filepaths = correct_images_filepaths[:3200]    
+val_images_filepaths = correct_images_filepaths[3200:-10]  
 
 test_images_filepaths = correct_images_filepaths[-10:]    
 print(len(train_images_filepaths), len(val_images_filepaths), len(test_images_filepaths))
