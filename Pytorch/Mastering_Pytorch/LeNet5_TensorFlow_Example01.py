@@ -3,6 +3,8 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = "2"
 
 import tensorflow as tf
 from tensorflow.keras import datasets, layers, models, optimizers
+#import tqdm
+#import tensorflow_addons as tfa
 
 # network and training
 EPOCHS = 50
@@ -54,10 +56,14 @@ model = build(input_shape=INPUT_SHAPE, classes=NB_CLASSES)
 model.compile(loss="categorical_crossentropy", optimizer=OPTIMIZER, metrics=["accuracy"])
 model.summary()
 
+# initialize tqdm callback with default parameters
+#tqdm_callback = tfa.callbacks.TQDMProgressBar()
+
 # use TensorBoard, princess Aurora!
 callbacks = [
   # Write TensorBoard logs to './logs' directory
-  tf.keras.callbacks.TensorBoard(log_dir='./logs')
+  tf.keras.callbacks.TensorBoard(log_dir='./logs'),
+#  tqdm_callback
 ]
 
 # fit
