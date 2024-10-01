@@ -206,7 +206,7 @@ def train_model(model, dataloader_dict, criterion, optimizer, num_epoch):
     return model
 
 import time
-num_epoch = 10
+num_epoch = 50 # 10 -> 50 changed.
 model = train_model(model, dataloader_dict, criterion, optimizer, num_epoch)
 
 import pandas as pd
