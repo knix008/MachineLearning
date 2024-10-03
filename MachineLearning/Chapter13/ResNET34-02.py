@@ -8,13 +8,6 @@ import tensorflow as tf
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-# Hyperparams if GPU is available
-if tf.test.is_gpu_available():
-# Hyperparams for CPU training
-    print("Using GPU for training")
-else:
-    print("Using CPU for training")
-
 mnist = tf.keras.datasets.fashion_mnist.load_data()
 (X_train_full, y_train_full), (X_test, y_test) = mnist
 X_train_full = np.expand_dims(X_train_full, axis=-1).astype(np.float32) / 255
@@ -58,7 +51,7 @@ class ResidualUnit(tf.keras.layers.Layer):
         return self.activation(Z + skip_Z)
     
 model = tf.keras.Sequential([
-    DefaultConv2D(64, kernel_size=7, strides=2, input_shape=[224, 224, 3]),
+    DefaultConv2D(64, kernel_size=7, strides=2, input_shape=[28 28, 1]),
     tf.keras.layers.BatchNormalization(),
     tf.keras.layers.Activation("relu"),
     tf.keras.layers.MaxPool2D(pool_size=3, strides=2, padding="same"),

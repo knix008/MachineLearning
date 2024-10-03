@@ -2,21 +2,98 @@ import tensorflow as tf
 import numpy as np
 from functools import partial
 import matplotlib.pyplot as plt
+import pathlib
+#import PIL
 
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+print(tf.__version__)
 
-mnist = tf.keras.datasets.fashion_mnist.load_data()
-(X_train_full, y_train_full), (X_test, y_test) = mnist
-X_train_full = np.expand_dims(X_train_full, axis=-1).astype(np.float32) / 255
-X_test = np.expand_dims(X_test.astype(np.float32), axis=-1) / 255
-X_train, X_valid = X_train_full[:-5000], X_train_full[-5000:]
-y_train, y_valid = y_train_full[:-5000], y_train_full[-5000:]
+BATCH_SIZE = 32
+HEIGHT= 224
+WIDTH = 224
+EPOCHS = 5
 
-print("Train Input : ", X_train.shape)
+# Check training dataset directory
+data_dir = pathlib.Path('flowers/train')
+image_count = len(list(data_dir.glob('*/*.jpg')))
+print("The numbe of training images : ", image_count)
+
+# Read train dataset
+train_ds = tf.keras.utils.image_dataset_from_directory(
+    data_dir, 
+    seed=123,
+    image_size=(HEIGHT, WIDTH),
+    batch_size=BATCH_SIZE
+)
+
+data_dir = pathlib.Path('flowers/validation')
+image_count = len(list(data_dir.glob('*/*.jpg')))
+print("The numbe of validation images : ", image_count)
+
+val_ds = tf.keras.utils.image_dataset_from_directory(
+  data_dir,
+  seed=123,
+  image_size=(HEIGHT, WIDTH),
+  batch_size=BATCH_SIZE
+)
+
+data_dir = pathlib.Path('flowers/test')
+image_count = len(list(data_dir.glob('*/*.jpg')))
+print("The numbe of test images : ", image_count)
+
+test_ds = tf.keras.utils.image_dataset_from_directory(
+  data_dir,
+  seed=123,
+  image_size=(HEIGHT, WIDTH),
+  batch_size=BATCH_SIZE
+)
+
+#roses = list(data_dir.glob('roses/*'))
+#image = PIL.Image.open(str(roses[1]))
+#image.show()
+
+class_names = train_ds.class_names
+print(class_names)
+
+# Get some images and show
+plt.figure(figsize=(10, 10))
+for images, labels in train_ds.take(1):
+  for i in range(9):
+    ax = plt.subplot(3, 3, i + 1)
+    plt.imshow(images[i].numpy().astype("uint8"))
+    plt.title(class_names[labels[i]])
+    plt.axis("off")
+plt.show()
+
+# Get train dataset and it's label for each batch
+print("Training DS : ")
+for image_batch, labels_batch in train_ds:
+  print(image_batch.shape)
+  print(labels_batch.shape)
+  break
+
+print("Validation DS : ")
+for image_batch, labels_batch in val_ds:
+  print(image_batch.shape)
+  print(labels_batch.shape)
+  break
+
+print("Test DS : ")
+for image_batch, labels_batch in test_ds:
+  print(image_batch.shape)
+  print(labels_batch.shape)
+  break
+
+# Normalize
+normalization_layer = tf.keras.layers.Rescaling(1./255)
+train_ds = train_ds.map(lambda x, y: (normalization_layer(x), y))
+val_ds = val_ds.map(lambda x, y: (normalization_layer(x), y))
+test_ds = test_ds.map(lambda x, y: (normalization_layer(x), y))
 
 tf.random.set_seed(42)  # extra code – ensures reproducibility
 
+# Define model
 DefaultConv2D = partial(tf.keras.layers.Conv2D, kernel_size=3, strides=1,
                         padding="same", kernel_initializer="he_normal",
                         use_bias=False)
@@ -49,7 +126,7 @@ class ResidualUnit(tf.keras.layers.Layer):
         return self.activation(Z + skip_Z)
     
 model = tf.keras.Sequential([
-    DefaultConv2D(64, kernel_size=7, strides=2, input_shape=[28, 28, 1]), # Changed from [ 224, 224, 3 ]
+    DefaultConv2D(64, kernel_size=7, strides=2, input_shape=[224, 224, 3]),
     tf.keras.layers.BatchNormalization(),
     tf.keras.layers.Activation("relu"),
     tf.keras.layers.MaxPool2D(pool_size=3, strides=2, padding="same"),
@@ -63,17 +140,20 @@ for filters in [64] * 3 + [128] * 4 + [256] * 6 + [512] * 3:
 
 model.add(tf.keras.layers.GlobalAvgPool2D())
 model.add(tf.keras.layers.Flatten())
-model.add(tf.keras.layers.Dense(10, activation="softmax"))
-model.summary()
+model.add(tf.keras.layers.Dense(5, activation="softmax"))
 
-# extra code – compiles, fits, evaluates, and uses the model to make predictions
+# Model compile, summary, training, and evaluating
 model.compile(loss="sparse_categorical_crossentropy", optimizer="nadam",
               metrics=["accuracy"])
-history = model.fit(X_train, y_train, epochs=10,
-                    validation_data=(X_valid, y_valid))
-score = model.evaluate(X_test, y_test)
-X_new = X_test[:10]  # pretend we have new images
-y_pred = model.predict(X_new)
+model.summary()
+
+history = model.fit(train_ds,
+                    validation_data=val_ds,
+                    epochs=EPOCHS
+                    )
+
+score = model.evaluate(test_ds)
+print("The Scores : ", score[0], score[1])
 
 # summarize history for accuracy
 plt.plot(history.history['accuracy'])
