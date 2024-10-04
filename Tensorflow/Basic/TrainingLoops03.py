@@ -11,6 +11,7 @@ print("TensorFlow Version : ", tf.__version__)
 TRUE_W = 3.0
 TRUE_B = 2.0
 NUM_EXAMPLES = 201
+BATCH_SIZE = 32
 
 # A vector of random x values
 x = tf.linspace(-2,2, NUM_EXAMPLES)
@@ -24,6 +25,7 @@ noise = tf.random.normal(shape=[NUM_EXAMPLES])
 
 # Calculate y
 y = f(x) + noise
+#print(x)
 #print(y)
 
 class MyModelKeras(tf.keras.Model):
@@ -38,7 +40,6 @@ class MyModelKeras(tf.keras.Model):
     return self.w * x + self.b
 
 keras_model = MyModelKeras()
-keras_model.summary()
 
 # compile sets the training parameters
 keras_model.compile(
@@ -52,8 +53,8 @@ keras_model.compile(
     # Keras comes with built-in MSE error
     # However, you could use the loss function
     # defined above
-    loss=tf.keras.losses.MeanSquaredError,
+    loss=tf.keras.losses.MeanSquaredError()
 )
 
 print(x.shape[0])
-keras_model.fit(x, y, epochs=10, batch_size=32)
+keras_model.fit(x, y, epochs=10, batch_size=BATCH_SIZE)
