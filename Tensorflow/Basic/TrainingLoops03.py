@@ -40,6 +40,7 @@ class MyModelKeras(tf.keras.Model):
     return self.w * x + self.b
 
 keras_model = MyModelKeras()
+#keras_model.summary()
 
 # compile sets the training parameters
 keras_model.compile(
