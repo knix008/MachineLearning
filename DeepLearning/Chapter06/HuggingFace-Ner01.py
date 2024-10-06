@@ -1,5 +1,4 @@
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 os.environ['HF_HUB_DISABLE_SYMLINKS_WARNING'] = 'True'
 
 import warnings
@@ -19,5 +18,6 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 ner_pipe = pipeline("ner", model='bert-large-cased', device=device)
 sequence = """Mr. and Mrs. Dursley, of number four, Privet Drive, were proud to say that they were perfectly normal, thank you very much."""
+
 for entity in ner_pipe(sequence):
     print(entity) 
