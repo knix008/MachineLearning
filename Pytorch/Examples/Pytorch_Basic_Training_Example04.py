@@ -107,25 +107,25 @@ def train(model, num_epochs, train_dl, x_valid, y_valid):
 
 history = train(model, num_epochs, train_dl, x_valid, y_valid)
 
-fig = plt.figure(figsize=(16, 4))
+fig = plt.figure(figsize=(14, 4))
 ax = fig.add_subplot(1, 3, 1)
 plt.plot(history[0], lw=4)
 plt.plot(history[1], lw=4)
-plt.legend(['Train loss', 'Validation loss'], fontsize=15)
-ax.set_xlabel('Epochs', size=15)
+plt.legend(['Train loss', 'Validation loss'], fontsize=12)
+ax.set_xlabel('Epochs', size=12)
 
 ax = fig.add_subplot(1, 3, 2)
 plt.plot(history[2], lw=4)
 plt.plot(history[3], lw=4)
-plt.legend(['Train acc.', 'Validation acc.'], fontsize=15)
-ax.set_xlabel('Epochs', size=15)
+plt.legend(['Train acc.', 'Validation acc.'], fontsize=12)
+ax.set_xlabel('Epochs', size=12)
 
 ax = fig.add_subplot(1, 3, 3)
 plot_decision_regions(X=x_valid.numpy(), 
                       y=y_valid.numpy().astype(np.int64),
                       clf=model)
-ax.set_xlabel(r'$x_1$', size=15)
+ax.set_xlabel(r'$x_1$', size=12)
 ax.xaxis.set_label_coords(1, -0.025)
-ax.set_ylabel(r'$x_2$', size=15)
+ax.set_ylabel(r'$x_2$', size=12)
 ax.yaxis.set_label_coords(-0.025, 1)
 plt.show()
