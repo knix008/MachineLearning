@@ -6,25 +6,29 @@ import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader, TensorDataset
 from mlxtend.plotting import plot_decision_regions
 
+BATCH_SIZE = 2
+NUMBER_TRAINING = 100
+EPOCHS = 200
+
 # You need to run the following command.
 # $ pip install mlxtend
+def make_dataLoader():
+    np.random.seed(1)
+    torch.manual_seed(1)
+    x = np.random.uniform(low=-1, high=1, size=(200, 2))
+    y = np.ones(len(x))
+    y[x[:, 0] * x[:, 1]<0] = 0
 
-np.random.seed(1)
-torch.manual_seed(1)
-x = np.random.uniform(low=-1, high=1, size=(200, 2))
-y = np.ones(len(x))
-y[x[:, 0] * x[:, 1]<0] = 0
+    n_train = NUMBER_TRAINING
+    x_train = torch.tensor(x[:n_train, :], dtype=torch.float32)
+    y_train = torch.tensor(y[:n_train], dtype=torch.float32)
+    x_valid = torch.tensor(x[n_train:, :], dtype=torch.float32)
+    y_valid = torch.tensor(y[n_train:], dtype=torch.float32)
 
-n_train = 100
-x_train = torch.tensor(x[:n_train, :], dtype=torch.float32)
-y_train = torch.tensor(y[:n_train], dtype=torch.float32)
-x_valid = torch.tensor(x[n_train:, :], dtype=torch.float32)
-y_valid = torch.tensor(y[n_train:], dtype=torch.float32)
-
-train_ds = TensorDataset(x_train, y_train)
-batch_size = 2
-torch.manual_seed(1)
-train_dl = DataLoader(train_ds, batch_size, shuffle=True)
+    train_ds = TensorDataset(x_train, y_train)
+    torch.manual_seed(1)
+    train_dl = DataLoader(train_ds, BATCH_SIZE, shuffle=True)
+    return train_dl, x_valid, y_valid
 
 # ## Writing custom layers in PyTorch
 # 
@@ -70,17 +74,16 @@ class MyNoisyModule(nn.Module):
         pred = self.forward(x)[:, 0]
         return (pred>=0.5).float()
 
-torch.manual_seed(1)
-model = MyNoisyModule()
-loss_fn = nn.BCELoss()
-optimizer = torch.optim.SGD(model.parameters(), lr=0.015)
-num_epochs = 200
-
-def train(model, num_epochs, train_dl, x_valid, y_valid):
+def train(model, train_dl, x_valid, y_valid):
+    torch.manual_seed(1)
+    optimizer = torch.optim.SGD(model.parameters(), lr=0.015)
+    num_epochs = EPOCHS
+    
     loss_hist_train = [0] * num_epochs
     accuracy_hist_train = [0] * num_epochs
     loss_hist_valid = [0] * num_epochs
     accuracy_hist_valid = [0] * num_epochs
+    loss_fn = nn.BCELoss()
 
     for epoch in range(num_epochs):
         for x_batch, y_batch in train_dl:
@@ -93,8 +96,8 @@ def train(model, num_epochs, train_dl, x_valid, y_valid):
             is_correct = ((pred>=0.5).float() == y_batch).float()
             accuracy_hist_train[epoch] += is_correct.mean()
 
-        loss_hist_train[epoch] /= n_train/batch_size
-        accuracy_hist_train[epoch] /= n_train/batch_size
+        loss_hist_train[epoch] /=  NUMBER_TRAINING/BATCH_SIZE
+        accuracy_hist_train[epoch] /=  NUMBER_TRAINING/BATCH_SIZE
 
         pred = model(x_valid)[:, 0]
         loss = loss_fn(pred, y_valid)
@@ -105,27 +108,43 @@ def train(model, num_epochs, train_dl, x_valid, y_valid):
             print("Epoch : {0:3d} -- Loss : {1:0.2f}, Accuracy : {2:0.2f}".format(epoch, loss, is_correct.mean()))
     return loss_hist_train, loss_hist_valid, accuracy_hist_train, accuracy_hist_valid
 
-history = train(model, num_epochs, train_dl, x_valid, y_valid)
+def show_diagram(model, history, x_valid, y_valid):
+    fig = plt.figure(figsize=(14, 4))
+    ax = fig.add_subplot(1, 3, 1)
+    plt.plot(history[0], lw=4)
+    plt.plot(history[1], lw=4)
+    plt.legend(['Train loss', 'Validation loss'], fontsize=12)
+    ax.set_xlabel('Epochs', size=12)
 
-fig = plt.figure(figsize=(14, 4))
-ax = fig.add_subplot(1, 3, 1)
-plt.plot(history[0], lw=4)
-plt.plot(history[1], lw=4)
-plt.legend(['Train loss', 'Validation loss'], fontsize=12)
-ax.set_xlabel('Epochs', size=12)
+    ax = fig.add_subplot(1, 3, 2)
+    plt.plot(history[2], lw=4)
+    plt.plot(history[3], lw=4)
+    plt.legend(['Train acc.', 'Validation acc.'], fontsize=12)
+    ax.set_xlabel('Epochs', size=12)
 
-ax = fig.add_subplot(1, 3, 2)
-plt.plot(history[2], lw=4)
-plt.plot(history[3], lw=4)
-plt.legend(['Train acc.', 'Validation acc.'], fontsize=12)
-ax.set_xlabel('Epochs', size=12)
+    ax = fig.add_subplot(1, 3, 3)
+    plot_decision_regions(X=x_valid.numpy(), 
+                        y=y_valid.numpy().astype(np.int64),
+                        clf=model)
+    ax.set_xlabel(r'$x_1$', size=12)
+    ax.xaxis.set_label_coords(1, -0.025)
+    ax.set_ylabel(r'$x_2$', size=12)
+    ax.yaxis.set_label_coords(-0.025, 1)
+    plt.show()
+    
+def main():
+    model = MyNoisyModule()
+    train_dl, x_valid, y_valid= make_dataLoader()
+    history = train(model, train_dl, x_valid, y_valid)
+    show_diagram(model, history, x_valid, y_valid)
 
-ax = fig.add_subplot(1, 3, 3)
-plot_decision_regions(X=x_valid.numpy(), 
-                      y=y_valid.numpy().astype(np.int64),
-                      clf=model)
-ax.set_xlabel(r'$x_1$', size=12)
-ax.xaxis.set_label_coords(1, -0.025)
-ax.set_ylabel(r'$x_2$', size=12)
-ax.yaxis.set_label_coords(-0.025, 1)
-plt.show()
+if __name__ == '__main__':
+    d = {
+        'numpy': '1.21.2',
+        'scipy': '1.7.0',
+        'matplotlib': '3.4.3',
+        'sklearn': '1.0',
+        'pandas': '1.3.2'
+    }
+    check_packages(d)
+    main()
