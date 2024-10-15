@@ -6,6 +6,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 import torch
+import time
 from diffusers import DiffusionPipeline
 
 # Device configuration
@@ -23,10 +24,16 @@ pipe.to(device)
 prompt1 = "A dog is sitting on a bench in the yard"
 prompt2 = "A Woman is walking in the street"
 
+start = time.time()
 image = pipe(prompt=prompt1).images[0]
 print("Saving... : ", f"{prompt1}.png")
 image.save(f"{prompt1}.png")
+end = time.time()
+print("Elapsed : ", end - start)
 
+start = time.time()
 image = pipe(prompt=prompt2).images[0]
 print("Saving... : ", f"{prompt2}.png")
 image.save(f"{prompt2}.png")
+end = time.time()
+print("Elapsed : ", end - start)

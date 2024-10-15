@@ -70,7 +70,7 @@ def build_vocabulary(json, threshold):
     return vocab
  
 vocab = build_vocabulary(json='data_dir/annotations/captions_train2014.json', threshold=4)
-vocab_path = 'data_dir/vocabulary.pkl'
+vocab_path = './data_dir/vocabulary.pkl'
 with open(vocab_path, 'wb') as f:
     pickle.dump(vocab, f)
 print("Total vocabulary size: {}".format(len(vocab)))
@@ -97,7 +97,7 @@ def reshape_images(image_path, output_path, shape):
             print ("[{}/{}] Resized the images and saved into '{}'."
                    .format(i+1, num_im, output_path))
 
-image_path = './data_dir/train2014/'
+image_path = './data_dir/train/'
 output_path = './data_dir/resized_images/'
 image_shape = [256, 256]
 reshape_images(image_path, output_path, image_shape)

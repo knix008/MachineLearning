@@ -1,24 +1,34 @@
 import os
+# Disable Hugging Face Warning Messages.
+os.environ['HF_HUB_DISABLE_SYMLINKS_WARNING'] = 'True'
+
+import warnings
+warnings.filterwarnings("ignore")
+
+import torch
+import time
+from diffusers import DiffusionPipeline
+
 import nltk
 import pickle
 import numpy as np
 from PIL import Image
-from collections import Counter
-from pycocotools.coco import COCO
 import matplotlib.pyplot as plt
  
 import torch
 import torch.nn as nn
-import torch.utils.data as data
 from torchvision import transforms
 from torchvision.models import ResNet152_Weights
 import torchvision.models as models
 import torchvision.transforms as transforms
 from torch.nn.utils.rnn import pack_padded_sequence
 
-# GPU available --> True, else --> False
-print("GPU Available:", torch.cuda.is_available())
-nltk.download('punkt_tab') # Changed from "punkt" to "punkt_tab"
+# Device configuration
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print("Using... : ", device)
+
+# Changed from "punkt" to "punkt_tab"
+nltk.download('punkt_tab') 
 
 # Build Vocabulary
 class Vocab(object):
@@ -40,7 +50,7 @@ class Vocab(object):
             self.w2i[token] = self.index
             self.i2w[self.index] = token
             self.index += 1
-
+            
 def build_vocabulary(json, threshold):
     """Build a simple vocabulary wrapper."""
     coco = COCO(json)
@@ -68,9 +78,14 @@ def build_vocabulary(json, threshold):
     for i, token in enumerate(tokens):
         vocab.add_token(token)
     return vocab
- 
+
+# Create model directory
+if not os.path.exists('data_dir'):
+    os.makedirs('data_dir')
+    
 vocab = build_vocabulary(json='data_dir/annotations/captions_train2014.json', threshold=4)
 vocab_path = 'data_dir/vocabulary.pkl'
+
 with open(vocab_path, 'wb') as f:
     pickle.dump(vocab, f)
 print("Total vocabulary size: {}".format(len(vocab)))
@@ -194,16 +209,13 @@ def get_loader(data_path, coco_json_path, vocabulary, transform, batch_size, shu
                                               shuffle=shuffle,
                                               collate_fn=collate_function)
     return custom_data_loader
-
-# Model Define
+            
 class CNNModel(nn.Module):
     def __init__(self, embedding_size):
         """Load the pretrained ResNet-152 and replace top fc layer."""
         super(CNNModel, self).__init__()
         resnet = models.resnet152(weights=ResNet152_Weights.DEFAULT)
         module_list = list(resnet.children())[:-1]      # delete the last fc layer.
-        #resnet = models.resnet152(weights=True)
-        #module_list = list(resnet.children())[:-1]      # delete the last fc layer.
         self.resnet_module = nn.Sequential(*module_list)
         self.linear_layer = nn.Linear(resnet.fc.in_features, embedding_size)
         self.batch_norm = nn.BatchNorm1d(embedding_size, momentum=0.01)
@@ -215,7 +227,7 @@ class CNNModel(nn.Module):
         resnet_features = resnet_features.reshape(resnet_features.size(0), -1)
         final_features = self.batch_norm(self.linear_layer(resnet_features))
         return final_features
- 
+    
 class LSTMModel(nn.Module):
     def __init__(self, embedding_size, hidden_layer_size, vocabulary_size, num_layers, max_seq_len=20):
         """Set the hyper-parameters and build the layers."""
@@ -239,93 +251,23 @@ class LSTMModel(nn.Module):
         sampled_indices = []
         lstm_inputs = input_features.unsqueeze(1)
         for i in range(self.max_seq_len):
-            hidden_variables, lstm_states = self.lstm_layer(lstm_inputs, lstm_states)          # hiddens: (batch_size, 1, hidden_size)
+            hidden_variables, lstm_states = self.lstm_layer(lstm_inputs, lstm_states) # hiddens: (batch_size, 1, hidden_size)
             model_outputs = self.linear_layer(hidden_variables.squeeze(1))            # outputs:  (batch_size, vocab_size)
-            _, predicted_outputs = model_outputs.max(1)                        # predicted: (batch_size)
+            _, predicted_outputs = model_outputs.max(1)                               # predicted: (batch_size)
             sampled_indices.append(predicted_outputs)
-            lstm_inputs = self.embedding_layer(predicted_outputs)                       # inputs: (batch_size, embed_size)
-            lstm_inputs = lstm_inputs.unsqueeze(1)                         # inputs: (batch_size, 1, embed_size)
-        sampled_indices = torch.stack(sampled_indices, 1)                # sampled_ids: (batch_size, max_seq_length)
+            lstm_inputs = self.embedding_layer(predicted_outputs)                     # inputs: (batch_size, embed_size)
+            lstm_inputs = lstm_inputs.unsqueeze(1)                                    # inputs: (batch_size, 1, embed_size)
+        sampled_indices = torch.stack(sampled_indices, 1)                             # sampled_ids: (batch_size, max_seq_length)
         return sampled_indices
-    
-# Training
-# Device configuration
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-# Create model directory
-if not os.path.exists('models_dir/'):
-    os.makedirs('models_dir/')
-
-# Image preprocessing, normalization for the pretrained resnet
-transform = transforms.Compose([ 
-    transforms.RandomCrop(224),
-    transforms.RandomHorizontalFlip(), 
-    transforms.ToTensor(), 
-    transforms.Normalize((0.485, 0.456, 0.406), 
-                         (0.229, 0.224, 0.225))])
-
-# Load vocabulary wrapper
-with open('data_dir/vocabulary.pkl', 'rb') as f:
-    vocabulary = pickle.load(f)
-
-# Build data loader
-custom_data_loader = get_loader('data_dir/resized_images', 'data_dir/annotations/captions_train2014.json', vocabulary, 
-                         transform, 128,
-                         shuffle=True) 
-
-# Build the models
-encoder_model = CNNModel(256).to(device)
-decoder_model = LSTMModel(256, 512, len(vocabulary), 1).to(device)
- 
-# Loss and optimizer
-loss_criterion = nn.CrossEntropyLoss()
-parameters = list(decoder_model.parameters()) + list(encoder_model.linear_layer.parameters()) + list(encoder_model.batch_norm.parameters())
-optimizer = torch.optim.Adam(parameters, lr=0.001)
-
-# Train the models
-total_num_steps = len(custom_data_loader)
-for epoch in range(5):
-    for i, (imgs, caps, lens) in enumerate(custom_data_loader):
- 
-        # Set mini-batch dataset
-        imgs = imgs.to(device)
-        caps = caps.to(device)
-        tgts = pack_padded_sequence(caps, lens, batch_first=True)[0]
- 
-        # Forward, backward and optimize
-        feats = encoder_model(imgs)
-        outputs = decoder_model(feats, caps, lens)
-        loss = loss_criterion(outputs, tgts)
-        decoder_model.zero_grad()
-        encoder_model.zero_grad()
-        loss.backward()
-        optimizer.step()
- 
-        # Print log info
-        if i % 10 == 0:
-            print('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}, Perplexity: {:5.4f}'
-                  .format(epoch, 5, i, total_num_steps, loss.item(), np.exp(loss.item()))) 
- 
-        # Save the model checkpoints
-        if (i+1) % 1000 == 0:
-            torch.save(decoder_model.state_dict(), os.path.join(
-                'models_dir/', 'decoder-{}-{}.ckpt'.format(epoch+1, i+1)))
-            torch.save(encoder_model.state_dict(), os.path.join(
-                'models_dir/', 'encoder-{}-{}.ckpt'.format(epoch+1, i+1)))
             
 # Caption Prediction
 image_file_path = 'sample.jpg'
- 
-# Device configuration
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
- 
+
 def load_image(image_file_path, transform=None):
     img = Image.open(image_file_path).convert('RGB')
     img = img.resize([224, 224], Image.LANCZOS)
-    
     if transform is not None:
         img = transform(img).unsqueeze(0)
-    
     return img
  
 # Image preprocessing
@@ -355,7 +297,7 @@ img_tensor = img.to(device)
 # Generate an caption from the image
 feat = encoder_model(img_tensor)
 sampled_indices = decoder_model.sample(feat)
-sampled_indices = sampled_indices[0].cpu().numpy()          # (1, max_seq_length) -> (max_seq_length)
+sampled_indices = sampled_indices[0].cpu().numpy()  # (1, max_seq_length) -> (max_seq_length)
 
 # Convert word_ids to words
 predicted_caption = []
@@ -364,13 +306,39 @@ for token_index in sampled_indices:
     predicted_caption.append(word)
     if word == '<end>':
         break
+# Cut the start and end marker
+predicted_caption = predicted_caption[1:-1]
 predicted_sentence = ' '.join(predicted_caption)
 
 # Print out the image and the generated caption
 print (predicted_sentence)
-
-#img = Image.open(image_file_path)
-#plt.imshow(np.asarray(img))
-
 img = Image.open(image_file_path)
 img.show()
+
+exit()
+
+
+pipe = DiffusionPipeline.from_pretrained("stabilityai/stable-diffusion-xl-base-1.0",
+                                         torch_dtype=torch.float16, 
+                                         use_safetensors=True, 
+                                         variant="fp16")
+pipe.to(device)
+
+# if using torch < 2.0
+# pipe.enable_xformers_memory_efficient_attention()
+prompt1 = "A dog is sitting on a bench in the yard"
+prompt2 = "A Woman is walking in the street"
+
+start = time.time()
+image = pipe(prompt=prompt1).images[0]
+print("Saving... : ", f"{prompt1}.png")
+image.save(f"{prompt1}.png")
+end = time.time()
+print("Elapsed : ", end - start)
+
+start = time.time()
+image = pipe(prompt=prompt2).images[0]
+print("Saving... : ", f"{prompt2}.png")
+image.save(f"{prompt2}.png")
+end = time.time()
+print("Elapsed : ", end - start)
