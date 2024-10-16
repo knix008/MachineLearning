@@ -164,9 +164,11 @@ def main():
     nltk.download('punkt_tab')
     
     start = time.time()
-    #prompt = describe_image("sample01.jpg", device)
+    prompt = describe_image("sample01.jpg", device)
     #prompt = describe_image("sample02.jpg", device)
-    prompt = describe_image("sample03.jpg", device)
+    #prompt = describe_image("sample03.jpg", device)
+    #prompt = describe_image("sample04.jpg", device)
+    #prompt = "A woman wearing a swimsuit is walking on a beach"
     image = generate_image(prompt, device)
     end = time.time()
     seconds = end - start
