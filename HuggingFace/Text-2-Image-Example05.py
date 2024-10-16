@@ -7,6 +7,7 @@ warnings.filterwarnings("ignore")
 
 import torch
 import time
+import datetime
 from diffusers import DiffusionPipeline
 
 import nltk
@@ -22,13 +23,6 @@ from torchvision.models import ResNet152_Weights
 import torchvision.models as models
 import torchvision.transforms as transforms
 from torch.nn.utils.rnn import pack_padded_sequence
-
-# Device configuration
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-print("Using... : ", device)
-
-# Changed from "punkt" to "punkt_tab"
-nltk.download('punkt_tab') 
 
 # Build Vocabulary
 class Vocab(object):
@@ -92,21 +86,15 @@ class LSTMModel(nn.Module):
         sampled_indices = []
         lstm_inputs = input_features.unsqueeze(1)
         for i in range(self.max_seq_len):
-            hidden_variables, lstm_states = self.lstm_layer(lstm_inputs, lstm_states)          # hiddens: (batch_size, 1, hidden_size)
+            hidden_variables, lstm_states = self.lstm_layer(lstm_inputs, lstm_states) # hiddens: (batch_size, 1, hidden_size)
             model_outputs = self.linear_layer(hidden_variables.squeeze(1))            # outputs:  (batch_size, vocab_size)
-            _, predicted_outputs = model_outputs.max(1)                        # predicted: (batch_size)
+            _, predicted_outputs = model_outputs.max(1)                               # predicted: (batch_size)
             sampled_indices.append(predicted_outputs)
-            lstm_inputs = self.embedding_layer(predicted_outputs)                       # inputs: (batch_size, embed_size)
-            lstm_inputs = lstm_inputs.unsqueeze(1)                         # inputs: (batch_size, 1, embed_size)
-        sampled_indices = torch.stack(sampled_indices, 1)                # sampled_ids: (batch_size, max_seq_length)
+            lstm_inputs = self.embedding_layer(predicted_outputs)                     # inputs: (batch_size, embed_size)
+            lstm_inputs = lstm_inputs.unsqueeze(1)                                    # inputs: (batch_size, 1, embed_size)
+        sampled_indices = torch.stack(sampled_indices, 1)                             # sampled_ids: (batch_size, max_seq_length)
         return sampled_indices
             
-# Caption Prediction
-image_file_path = 'sample.jpg'
- 
-# Device configuration
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
 def load_image(image_file_path, transform=None):
     img = Image.open(image_file_path).convert('RGB')
     img = img.resize([224, 224], Image.LANCZOS)
@@ -114,66 +102,79 @@ def load_image(image_file_path, transform=None):
         img = transform(img).unsqueeze(0)
     return img
  
-# Image preprocessing
-transform = transforms.Compose([
-    transforms.ToTensor(), 
-    transforms.Normalize((0.485, 0.456, 0.406), 
-                         (0.229, 0.224, 0.225))])
+def describe_image(image, device):
+    # Image preprocessing
+    transform = transforms.Compose([
+        transforms.ToTensor(), 
+        transforms.Normalize((0.485, 0.456, 0.406), 
+                            (0.229, 0.224, 0.225))])
 
-# Load vocabulary wrapper
-with open('data_dir/vocabulary.pkl', 'rb') as f:
-    vocabulary = pickle.load(f)
+    # Load vocabulary wrapper
+    with open('data_dir/vocabulary.pkl', 'rb') as f:
+        vocabulary = pickle.load(f)
 
-# Build models
-encoder_model = CNNModel(256).eval()  # eval mode (batchnorm uses moving mean/variance)
-decoder_model = LSTMModel(256, 512, len(vocabulary), 1)
-encoder_model = encoder_model.to(device)
-decoder_model = decoder_model.to(device)
+    # Build models
+    encoder_model = CNNModel(256).eval()  # eval mode (batchnorm uses moving mean/variance)
+    decoder_model = LSTMModel(256, 512, len(vocabulary), 1)
+    encoder_model = encoder_model.to(device)
+    decoder_model = decoder_model.to(device)
 
-# Load the trained model parameters
-encoder_model.load_state_dict(torch.load('models_dir/encoder-2-3000.ckpt', weights_only=True))
-decoder_model.load_state_dict(torch.load('models_dir/decoder-2-3000.ckpt', weights_only=True))
-
-# Prepare an image
-img = load_image(image_file_path, transform)
-img_tensor = img.to(device)
-
-# Generate an caption from the image
-feat = encoder_model(img_tensor)
-sampled_indices = decoder_model.sample(feat)
-sampled_indices = sampled_indices[0].cpu().numpy()  # (1, max_seq_length) -> (max_seq_length)
-
-# Convert word_ids to words
-predicted_caption = []
-for token_index in sampled_indices:
-    word = vocabulary.i2w[token_index]
-    predicted_caption.append(word)
-    if word == '<end>':
-        break
+    # Load the trained model parameters
+    encoder_model.load_state_dict(torch.load('models_dir/encoder-2-3000.ckpt', weights_only=True))
+    decoder_model.load_state_dict(torch.load('models_dir/decoder-2-3000.ckpt', weights_only=True))
     
-# Strip start and end sentence marker.
-predicted_caption = predicted_caption[1:-1]    
-predicted_sentence = ' '.join(predicted_caption)
+    # Prepare an image
+    img = load_image(image, transform)
+    img_tensor = img.to(device)
 
-# Print out the image and the generated caption
-print ("Prompt : ", predicted_sentence)
-#img = Image.open(image_file_path)
-#img.show()
-#exit()
+    # Generate an caption from the image
+    feat = encoder_model(img_tensor)
+    sampled_indices = decoder_model.sample(feat)
+    sampled_indices = sampled_indices[0].cpu().numpy()  # (1, max_seq_length) -> (max_seq_length)
 
-pipe = DiffusionPipeline.from_pretrained("stabilityai/stable-diffusion-xl-base-1.0",
-                                         torch_dtype=torch.float16, 
-                                         use_safetensors=True, 
-                                         variant="fp16")
-pipe.to(device)
+    # Convert word_ids to words
+    predicted_caption = []
+    for token_index in sampled_indices:
+        word = vocabulary.i2w[token_index]
+        predicted_caption.append(word)
+        if word == '<end>':
+            break
+        
+    # Strip start and end sentence marker.
+    predicted_caption = predicted_caption[1:-2]     # Remove "." 
+    predicted_sentence = ' '.join(predicted_caption)
+    print ("Prompt : ", predicted_sentence)
+    return predicted_sentence
 
-# if using torch < 2.0
-# pipe.enable_xformers_memory_efficient_attention()
-prompt = predicted_sentence
+def generate_image(prompt, device):
+    pipe = DiffusionPipeline.from_pretrained("stabilityai/stable-diffusion-xl-base-1.0",
+                                            torch_dtype=torch.float16, 
+                                            use_safetensors=True, 
+                                            variant="fp16")
+    pipe.to(device)
+    image = pipe(prompt=prompt).images[0]
+    return image
 
-start = time.time()
-image = pipe(prompt=prompt).images[0]
-print("Saving... : ", f"{prompt}.png")
-image.save(f"{prompt}.png")
-end = time.time()
-print("Elapsed : ", end - start)
+def main():
+    # Device configuration
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print("Using... : ", device)
+
+    # Changed from "punkt" to "punkt_tab"
+    nltk.download('punkt_tab')
+    
+    # Make a description for image and generate image with it.
+    start = time.time()
+    prompt = describe_image("sample.jpg", device)
+    image = generate_image(prompt, device)
+    end = time.time()
+    
+    seconds = end - start
+    result = str(datetime.timedelta(seconds=seconds)).split(".")
+    print("Total elapsed time : ", result[0])
+    
+    # Save the gneerated image.
+    image.save(f"{prompt}.png")
+    
+if __name__ == '__main__':
+    main()
