@@ -147,7 +147,7 @@ def describe_image(image, device):
     return predicted_sentence
 
 def generate_image(prompt, device):
-    pipe = DiffusionPipeline.from_pretrained("stabilityai/stable-diffusion-xl-base-1.0",
+    pipe = DiffusionPipeline.from_pretrained("stable-diffusion-v1-5/stable-diffusion-v1-5",
                                             torch_dtype=torch.float16, 
                                             use_safetensors=True, 
                                             variant="fp16")
@@ -166,7 +166,11 @@ def main():
     start = time.time()
     #prompt = describe_image("sample01.jpg", device)
     #prompt = describe_image("sample02.jpg", device)
-    prompt = describe_image("sample03.jpg", device)
+    #prompt = describe_image("sample03.jpg", device)
+    #prompt = describe_image("sample04.jpg", device)
+    #image = generate_image(prompt, device)
+    #prompt = "A woman wearing a swimsuit is working on the street"
+    prompt = "sunset in the beach"
     image = generate_image(prompt, device)
     end = time.time()
     seconds = end - start
