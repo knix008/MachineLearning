@@ -1,14 +1,12 @@
 import os
 import warnings
 import torch
-from lightning.pytorch.utilities import disable_possible_user_warnings
 from transformers import pipeline
 from transformers import AutoProcessor, MusicgenForConditionalGeneration
 import scipy
 os.environ['HF_HUB_DISABLE_SYMLINKS_WARNING'] = 'True'
 warnings.filterwarnings("ignore")
 # ignore all warnings that could be false positives
-disable_possible_user_warnings()
 print("PYtorch version : ", torch.__version__)
 
 def main():
