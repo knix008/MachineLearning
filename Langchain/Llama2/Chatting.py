@@ -13,7 +13,7 @@ from langchain.chains import RetrievalQA
 from langchain.vectorstores import Chroma
 
 import os
-os.environ["HUGGING_FACE_HUB_TOKEN"] = "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"
+os.environ["HUGGING_FACE_HUB_TOKEN"] = "hf_"
 
 #model_id = '/kaggle/input/llama-2/pytorch/7b-chat-hf/1'
 model_id = 'meta-llama/Llama-2-7b-chat-hf'
