@@ -17,7 +17,7 @@ def main():
     pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
     pipe = pipe.to(device)
     
-    prompt = "a woman on a beach walking on the sand and wearing a swimsuit"
+    prompt = "an astronaut riding a green horse in picasso style"
     image = pipe(prompt).images[0]
     image.save(f"{prompt}.jpg")
     
