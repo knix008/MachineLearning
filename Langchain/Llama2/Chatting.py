@@ -88,14 +88,7 @@ test_model(tokenizer,
 llm = HuggingFacePipeline(pipeline=query_pipeline)
 # checking again that everything is working fine
 llm(prompt="Please explain what is the State of the Union address. Give just a definition. Keep it in 100 words.")
-
-import kagglehub
-
-# Download latest version
-path = kagglehub.dataset_download("whegedusich/president-bidens-state-of-the-union-2023")
-print("Path to dataset files:", path)
-loader = TextLoader("biden-sotu-2023-planned-official.txt",
-                    encoding="utf8")
+loader = TextLoader("biden-sotu-2023-planned-official.txt", encoding="utf8")
 documents = loader.load()
 
 text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=20)
