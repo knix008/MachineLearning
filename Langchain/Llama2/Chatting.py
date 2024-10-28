@@ -130,5 +130,3 @@ for doc in docs:
     doc_details = doc.to_json()['kwargs']
     print("Source: ", doc_details['metadata']['source'])
     print("Text: ", doc_details['page_content'], "\n")
-    
-
