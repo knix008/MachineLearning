@@ -1,6 +1,7 @@
 from langchain_community.llms import LlamaCpp
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
+import time
 
 # Please, refer to https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF to download LLM.
 
@@ -25,10 +26,14 @@ Answer:
 prompt = PromptTemplate(template=template, input_variables=["question"])
 
 # Create an LLMChain to manage interactions with the prompt and model
-llm_chain = LLMChain(prompt=prompt, llm=llm)
+llm_chain = prompt | llm
 
 print("Chatbot initialized, ready to chat...")
 while True:
+    start = time.time()
     question = input("> ")
-    answer = llm_chain.run(question)
+    answer = llm_chain.invoke(question)
     print(answer, '\n')
+    end = time.time()
+    elapsed = end - start
+    print(f"{end - start:.5f} sec")
