@@ -2,6 +2,7 @@ from langchain_community.llms import LlamaCpp
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 import time
+import datetime
 
 # Please, refer to https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF to download LLM.
 
@@ -36,4 +37,5 @@ while True:
     print(answer, '\n')
     end = time.time()
     elapsed = end - start
-    print(f"{end - start:.5f} sec")
+    result_list = str(datetime.timedelta(seconds=elapsed)).split(".")
+    print(result_list[0])
