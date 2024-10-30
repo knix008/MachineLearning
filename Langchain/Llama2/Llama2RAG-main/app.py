@@ -24,7 +24,7 @@ from pathlib import Path
 # Define variable to hold llama2 weights naming 
 name = "meta-llama/Llama-2-70b-chat-hf"
 # Set auth token variable from hugging face 
-auth_token = "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"
+auth_token = "hf_"
 
 @st.cache_resource
 def get_tokenizer_model():
