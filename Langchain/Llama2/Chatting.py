@@ -5,15 +5,17 @@ from transformers import AutoTokenizer
 from time import time
 #import chromadb
 #from chromadb.config import Settings
-from langchain.llms import HuggingFacePipeline
-from langchain.document_loaders import TextLoader
+from langchain_huggingface import HuggingFacePipeline
+from langchain_community.document_loaders import TextLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.chains import RetrievalQA
-from langchain.vectorstores import Chroma
+from langchain_community.vectorstores import Chroma
 
 import os
-os.environ["HUGGING_FACE_HUB_TOKEN"] = "hf_"
+os.environ["HUGGING_FACE_HUB_TOKEN"] = "hf_ADD_YOUR_HUGGINGFACE_ACCES_TOKEN_HERE"
+# Disable Hugging Face Warning Messages.
+os.environ['HF_HUB_DISABLE_SYMLINKS_WARNING'] = 'True'
 
 #model_id = '/kaggle/input/llama-2/pytorch/7b-chat-hf/1'
 model_id = 'meta-llama/Llama-2-7b-chat-hf'
@@ -75,6 +77,7 @@ def test_model(tokenizer, pipeline, prompt_to_test):
         top_k=10,
         num_return_sequences=1,
         eos_token_id=tokenizer.eos_token_id,
+        truncation=True,
         max_length=200,)
     time_2 = time()
     print(f"Test inference: {round(time_2-time_1, 3)} sec.")
@@ -86,8 +89,9 @@ test_model(tokenizer,
            "Please explain what is the State of the Union address. Give just a definition. Keep it in 100 words.")
 
 llm = HuggingFacePipeline(pipeline=query_pipeline)
+
 # checking again that everything is working fine
-llm(prompt="Please explain what is the State of the Union address. Give just a definition. Keep it in 100 words.")
+llm.invoke("Please explain what is the State of the Union address. Give just a definition. Keep it in 100 words.")
 loader = TextLoader("biden-sotu-2023-planned-official.txt", encoding="utf8")
 documents = loader.load()
 
@@ -112,7 +116,7 @@ qa = RetrievalQA.from_chain_type(
 def test_rag(qa, query):
     print(f"Query: {query}\n")
     time_1 = time()
-    result = qa.run(query)
+    result = qa.invoke(query)
     time_2 = time()
     print(f"Inference time: {round(time_2-time_1, 3)} sec.")
     print("\nResult: ", result)
