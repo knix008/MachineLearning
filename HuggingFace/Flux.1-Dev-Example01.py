@@ -7,7 +7,7 @@ from diffusers import FluxPipeline
 os.environ['HF_HUB_DISABLE_SYMLINKS_WARNING'] = 'True'
 # Disable all other warning message.
 warnings.filterwarnings("ignore")
-access_token="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"
+access_token="hf_"
 
 def run_flux1_dev():
     # Device configuration
