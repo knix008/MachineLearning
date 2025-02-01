@@ -2,7 +2,7 @@ from paddleocr import PaddleOCR
  
 ocr = PaddleOCR(lang="korean")
  
-img_path = "assets/images/test_image_1.jpg"
+img_path = "Test01.png"
 result = ocr.ocr(img_path, cls=False)
  
 ocr_result = result[0]
