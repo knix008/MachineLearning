@@ -1,10 +1,11 @@
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+
 import tensorflow as tf
 from tensorflow.keras import datasets, layers, models, regularizers, optimizers
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import numpy as np
-
-import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 # Check tensorflow version and GPU availability
 print("TensorFlow version : ", tf.__version__)
