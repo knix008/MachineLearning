@@ -1,6 +1,9 @@
 from diffusers import DiffusionPipeline
 import torch
 
+import os
+os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
+
 model_id = "model/2880"
 pipe = DiffusionPipeline.from_pretrained(model_id, torch_dtype=torch.float16).to("cuda")
 
