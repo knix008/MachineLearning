@@ -4,7 +4,7 @@ def predict():
     model = YOLO("yolo11n.yaml")
     model = YOLO("yolo11n.pt")
     results = model("http://ultralytics.com/images/bus.jpg")
-    #Sprint(results)
+    #print(results)
     results = model.export(format="onnx")
     print(results)
     return results
