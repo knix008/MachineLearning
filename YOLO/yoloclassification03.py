@@ -26,7 +26,7 @@ def predict():
     model = YOLO("runs/classify/train/weights/best.pt")  # load a custom model
 
     # Predict with the model
-    results = model("https://ultralytics.com/images/bus.jpg", save=True, imgsz=64, conf=0.5)  # predict on an image
+    results = model("https://ultralytics.com/images/bus.jpg", save=True, imgsz=640, conf=0.5)  # predict on an image
 
     for result in results:
         boxes = result.boxes  # Boxes object for bounding box outputs
