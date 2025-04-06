@@ -3,6 +3,10 @@ import time
 import requests
 from io import BytesIO
 from PIL import Image
+import os
+
+# Disable Hugging Face Warning Messages.
+os.environ['HF_HUB_DISABLE_SYMLINKS_WARNING'] = 'True'
 
 aura_sr = AuraSR.from_pretrained("fal/AuraSR-v2")
 
