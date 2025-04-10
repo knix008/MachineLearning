@@ -1,3 +1,0 @@
-/home/shkwon/Projects/MachineLearning/Tesseract/build/CMakeFiles/opencv-tesseract.dir
-/home/shkwon/Projects/MachineLearning/Tesseract/build/CMakeFiles/edit_cache.dir
-/home/shkwon/Projects/MachineLearning/Tesseract/build/CMakeFiles/rebuild_cache.dir
