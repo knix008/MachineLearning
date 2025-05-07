@@ -18,12 +18,12 @@ def load_image_from_url(url):
 def upscale():
     #image = load_image_from_url("https://mingukkang.github.io/GigaGAN/static/images/iguana_output.jpg").resize((256, 256))
     #image.save("resized2.jpg")
-    image = Image.open("Test03.jpg")
+    image = Image.open("upscaled2.jpg")
     start = time.time()
     upscaled_image = aura_sr.upscale_4x_overlapped(image)
     end = time.time()
     print(f"{end - start:.5f} sec")
-    upscaled_image.save("upscaled3.jpg")
+    upscaled_image.save("upscaled4.jpg")
     
 if __name__ == "__main__":
     upscale()
