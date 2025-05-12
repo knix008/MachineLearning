@@ -39,10 +39,13 @@ tf_validation_dataset = small_eval_dataset.to_tf_dataset(
 import tensorflow as tf
 from transformers import TFAutoModelForSequenceClassification
 
-model = TFAutoModelForSequenceClassification.from_pretrained("bert-base-cased", num_labels=5)
+model = TFAutoModelForSequenceClassification.from_pretrained(
+    "bert-base-cased", num_labels=5
+)
 
 model.compile(
     optimizer=tf.keras.optimizers.Adam(learning_rate=5e-5),
     loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-    metrics=tf.metrics.SparseCategoricalAccuracy(),)
-model.fit(tf_train_dataset, validation_data=tf_validation_dataset,epochs=3)
+    metrics=tf.metrics.SparseCategoricalAccuracy(),
+)
+model.fit(tf_train_dataset, validation_data=tf_validation_dataset, epochs=3)
