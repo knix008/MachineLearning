@@ -375,3 +375,4 @@ for epoch in range(EPOCHS):
 
     print(f'Epoch {epoch + 1} Loss {train_loss.result():.4f} Accuracy {train_accuracy.result():.4f}')
     print(f'Time taken for 1 epoch: {time.time() - start:.2f} secs\n')
+
