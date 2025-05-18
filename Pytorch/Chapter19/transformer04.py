@@ -24,6 +24,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=1e-5)
 
 # Example: Using GPU for model inference
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print("> Device : ", device)
 model.to(device)
 inputs.to(device)
 outputs = model(**inputs)
