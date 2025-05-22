@@ -25,6 +25,6 @@ qconfig = AutoQuantizationConfig.arm64(is_static=False, per_channel=False)
 quantizer = ORTQuantizer.from_pretrained(model_onnx)
 quantizer.quantize(save_dir=onnx_directory, quantization_config=qconfig)
 
-model_quantized = ORTModelForSequenceClassification.from_pretrained(onnx_directory, file_name="model.onnx")
+model_quantized = ORTModelForSequenceClassification.from_pretrained(onnx_directory, file_name="model_quantized.onnx")
 model_quantized(**input_ids)
 print("> Loading quantized Onnx model...")
