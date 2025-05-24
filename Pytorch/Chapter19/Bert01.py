@@ -3,6 +3,9 @@ import os
 import torch
 
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
+# Example: Using GPU for model inference
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print("> Device : ", device)
 
 tokenizer = AutoTokenizer.from_pretrained("google-bert/bert-base-uncased")
 model = BertForPreTraining.from_pretrained("google-bert/bert-base-uncased")
