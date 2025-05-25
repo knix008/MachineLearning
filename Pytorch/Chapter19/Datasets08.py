@@ -33,7 +33,7 @@ from torch.optim import AdamW
 
 # Load pre-trained BERT model for sequence classification
 model = BertForSequenceClassification.from_pretrained("bert-base-uncased")
-
+model.to(device)
 # Optimizer and learning rate scheduler setup
 optimizer = AdamW(model.parameters(), lr=5e-5)
 
@@ -45,8 +45,11 @@ for epoch in range(3):  # Train for 3 epochs as an example
     for batch in tqdm(train_dataloader):
         optimizer.zero_grad()
         input_ids = batch['input_ids']
+        input_ids = input_ids.to(device)
         attention_mask = batch['attention_mask']
+        attention_mask = attention_mask.to(device)
         labels = batch['label']
+        labels = labels.to(device)
 
         outputs = model(input_ids=input_ids, attention_mask=attention_mask, labels=labels)
         loss = outputs.loss
@@ -60,8 +63,11 @@ for epoch in range(3):  # Train for 3 epochs as an example
     for batch in tqdm(eval_dataloader):
         with torch.no_grad():
             input_ids = batch['input_ids']
+            input_ids = input_ids.to(device)
             attention_mask = batch['attention_mask']
+            attention_mask = attention_mask.to(device)
             labels = batch['label']
+            labels = labels.to(device)
 
             outputs = model(input_ids=input_ids, attention_mask=attention_mask)
             predictions = torch.argmax(outputs.logits, dim=1)
