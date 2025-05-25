@@ -2,6 +2,10 @@ import torch
 from datasets import load_dataset
 from transformers import BertTokenizer
 
+# Example: Using GPU for model inference
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print("> Device : ", device)
+
 #print("Imporing...")
 # Loading a dataset from HuggingFace Datasets library
 dataset = load_dataset("rotten_tomatoes")
