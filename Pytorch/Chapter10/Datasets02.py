@@ -19,8 +19,10 @@ os.write(file, img['bytes'])
 import matplotlib.pyplot as plt
 import cv2
 
+print("> Showing image...")
 img = cv2.imread('imageB-0.png')
 img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
 #show iage
 plt.imshow(img)
+plt.show()
