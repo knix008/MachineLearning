@@ -11,6 +11,7 @@ from datasets import load_dataset
 dataset = load_dataset("huggan/selfie2anime", split="train")
 print("> Loading datasets : ", dataset)
 
-#print("Dataset['imageB']", dataset["imageB"])
 img = dataset["imageB"][0]
-img.save("imageB[0].jpg")
+
+file = os.open("imageB-0.png", os.O_WRONLY | os.O_CREAT | os.O_BINARY)
+os.write(file, img['bytes'])
