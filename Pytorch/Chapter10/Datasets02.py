@@ -15,3 +15,12 @@ img = dataset["imageB"][0]
 
 file = os.open("imageB-0.png", os.O_WRONLY | os.O_CREAT | os.O_BINARY)
 os.write(file, img['bytes'])
+
+import matplotlib.pyplot as plt
+import cv2
+
+img = cv2.imread('imageB-0.png')
+img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+#show iage
+plt.imshow(img)
