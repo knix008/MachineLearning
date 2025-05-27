@@ -24,7 +24,7 @@ preprocess = transforms.Compose(
 )
 
 #img = dataset["imageB"][0]
-#Sprint(img)
+#print(img)
 
 def transform(examples):
     images = [preprocess(image) for image in examples["imageB"]]
