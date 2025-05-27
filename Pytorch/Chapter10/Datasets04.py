@@ -35,3 +35,17 @@ dataset.set_transform(transform)
 
 BSIZE = 16 # batch size
 train_dataloader = torch.utils.data.DataLoader(dataset, batch_size=BSIZE, shuffle=True)
+
+clean_images = next(iter(train_dataloader))["images"]
+
+# Sample noise to add to the images
+noise = torch.randn(clean_images.shape, device=clean_images.device)
+bs = clean_images.shape[0] # batch size
+
+# Get timesteps from 10 to 160 for each of the 16 images
+timesteps = torch.range(10, 161, 10, dtype=torch.int64)
+
+# Add noise to the clean images according to the noise
+# magnitude at each timestep
+# (this is the forward diffusion process)
+noisy_images = noise_scheduler.add_noise(clean_images, noise, timesteps)
