@@ -40,9 +40,5 @@ if __name__ == "__main__":
     # generate an image
     prompt = "high resolution, a photograph of an astronaut riding a horse"
     text2img_pipe = init_pipeline()
-    start = time.time()
     image = generate_image(text2img_pipe, prompt)
-    end = time.time()
-    result = datetime.timedelta(seconds=end - start)
-    print(result)
     image.save("astronaut_riding_horse.png")
