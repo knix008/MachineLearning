@@ -9,9 +9,14 @@ print("> Device : ", device)
 # Disable warning messages.
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "True"
 
-text2img_pipe = StableDiffusionPipeline.from_pretrained(
-    "runwayml/stable-diffusion-v1-5", torch_dtype=torch.float16
-).to(device)
+if device == "cuda":
+    text2img_pipe = StableDiffusionPipeline.from_pretrained(
+        "runwayml/stable-diffusion-v1-5", torch_dtype=torch.float16
+    ).to(device)
+else:
+    text2img_pipe = StableDiffusionPipeline.from_pretrained(
+        "runwayml/stable-diffusion-v1-5"
+    ).to(device)
 
 # generate an image
 prompt = "high resolution, a photograph of an astronaut riding a horse"
