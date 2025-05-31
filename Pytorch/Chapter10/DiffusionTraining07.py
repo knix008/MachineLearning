@@ -39,16 +39,7 @@ class TrainingConfig:
 
 config = TrainingConfig()
 config.dataset_name = "huggan/smithsonian_butterflies_subset"
-
 dataset = load_dataset(config.dataset_name, split="train")
-# print("> Dataset : ", dataset)
-
-# fig, axs = plt.subplots(1, 4, figsize=(16, 4))
-# for i, image in enumerate(dataset[:4]["image"]):
-#    axs[i].imshow(image)
-#    axs[i].set_axis_off()
-# fig.show()
-# fig.savefig("butterflies.png", bbox_inches="tight", dpi=300)
 
 preprocess = transforms.Compose(
     [
@@ -66,12 +57,10 @@ def transform(examples):
 
 
 dataset.set_transform(transform)
-# print("> Dataset Transformed : ", dataset)
 
 train_dataloader = torch.utils.data.DataLoader(
     dataset, batch_size=config.train_batch_size, shuffle=True
 )
-# print("> Train Dataloader : ", train_dataloader)
 
 model = UNet2DModel(
     sample_size=config.image_size,  # the target image resolution
@@ -104,8 +93,17 @@ model = UNet2DModel(
     ),
 )
 
-# print("> UNet Model : ", model)
-
 sample_image = dataset[0]["images"].unsqueeze(0)
 print("> Input shape:", sample_image.shape)
 print("> Output shape:", model(sample_image, timestep=0).sample.shape)
+
+noise_scheduler = DDPMScheduler(num_train_timesteps=1000)
+noise = torch.randn(sample_image.shape)
+timesteps = torch.LongTensor([50])
+noisy_image = noise_scheduler.add_noise(sample_image, noise, timesteps)
+
+image = Image.fromarray(
+    ((noisy_image.permute(0, 2, 3, 1) + 1.0) * 127.5).type(torch.uint8).numpy()[0]
+)
+
+print("> Image : ", image)
