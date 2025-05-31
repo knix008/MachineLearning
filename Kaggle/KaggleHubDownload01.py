@@ -5,6 +5,7 @@ import os
 from PIL import Image
 import matplotlib.pyplot as plt
 
+
 class StanfordCars(torch.utils.data.Dataset):
     def __init__(self, root_path, transform=None):
         self.images = [os.path.join(root_path, file) for file in os.listdir(root_path)]
@@ -36,13 +37,13 @@ def show_images(dataset, num_samples=20, cols=4):
 if __name__ == "__main__":
     # ​Download latest version
     image_path = r"vehicle dataset\train\images"
-    
+
     path = kagglehub.dataset_download(
         "nadinpethiyagoda/vehicle-dataset-for-yolo", force_download=False
     )
     print("Path to dataset files:", path)
     train_image_path = os.path.join(path, image_path)
-    #print("Training images path : ", train_image_path)
+    # print("Training images path : ", train_image_path)
     stanfordcars = StanfordCars(
         train_image_path, transform=torchvision.transforms.ToTensor()
     )
