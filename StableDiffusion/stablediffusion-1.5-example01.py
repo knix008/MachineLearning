@@ -9,7 +9,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("> Device : ", device)
 
 # Disable warning messages.
-os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "True"
+os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
 
 
 def init_pipeline():
@@ -29,7 +29,7 @@ def generate_image(pipe, prompt):
     image = pipe(prompt=prompt).images[0]
     end = time.time()
     result = datetime.timedelta(seconds=end - start)
-    print(result)
+    print("The elapsed time : ", result)
     # show image
     plt.imshow(image)
     plt.show()
