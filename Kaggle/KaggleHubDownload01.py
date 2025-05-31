@@ -23,7 +23,7 @@ class StanfordCars(torch.utils.data.Dataset):
 
 def show_images(dataset, num_samples=20, cols=4):
     """Plots some samples from the dataset"""
-    plt.figure(figsize=(15, 15))
+    plt.figure(figsize=(15, 10))
     for i, img in enumerate(dataset):
         if i == num_samples:
             break
