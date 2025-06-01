@@ -109,6 +109,9 @@ image = Image.fromarray(
     ((noisy_image.permute(0, 2, 3, 1) + 1.0) * 127.5).type(torch.uint8).numpy()[0]
 )
 
+# Displaying the noisy image
+image.show()
+
 # Training step
 noise_pred = model(noisy_image, timesteps).sample
 loss = F.mse_loss(noise_pred, noise)
