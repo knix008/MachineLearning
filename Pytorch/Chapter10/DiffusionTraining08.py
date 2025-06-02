@@ -115,3 +115,5 @@ image.show()
 # Training step
 noise_pred = model(noisy_image, timesteps).sample
 loss = F.mse_loss(noise_pred, noise)
+
+print("> Loss:", loss.item())
