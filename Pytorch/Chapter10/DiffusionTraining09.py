@@ -31,7 +31,7 @@ class TrainingConfig:
     image_size = 128  # the generated image resolution
     train_batch_size = 16
     eval_batch_size = 16  # how many images to sample during evaluation
-    num_epochs = 3 # instead of 50
+    num_epochs = 3  # instead of 50
     gradient_accumulation_steps = 1
     learning_rate = 1e-4
     lr_warmup_steps = 500
@@ -40,7 +40,7 @@ class TrainingConfig:
     mixed_precision = "fp16"  # `no` for float32, `fp16` for automatic mixed precision
     output_dir = "ddpm-butterflies-128"  # the model name locally and on the HF Hub
 
-    push_to_hub = True  # whether to upload the saved model to the HF Hub
+    push_to_hub = False  # whether to upload the saved model to the HF Hub
     hub_model_id = "<your-username>/<my-awesome-model>"  # the name of the repository to create on the HF Hub
     hub_private_repo = None
     overwrite_output_dir = True  # overwrite the old model when re-running the notebook
@@ -165,11 +165,11 @@ def train_loop(
     if accelerator.is_main_process:
         if config.output_dir is not None:
             os.makedirs(config.output_dir, exist_ok=True)
-        #if config.push_to_hub:
-        #    repo_id = create_repo(
-        #        repo_id=config.hub_model_id or Path(config.output_dir).name,
-        #        exist_ok=True,
-        #    ).repo_id
+        if config.push_to_hub:
+            repo_id = create_repo(
+                repo_id=config.hub_model_id or Path(config.output_dir).name,
+                exist_ok=True,
+            ).repo_id
         accelerator.init_trackers("train_example")
 
     # Prepare everything
@@ -243,14 +243,14 @@ def train_loop(
             if (
                 epoch + 1
             ) % config.save_model_epochs == 0 or epoch == config.num_epochs - 1:
-                #if config.push_to_hub:
-                #    upload_folder(
-                #        repo_id=repo_id,
-                #        folder_path=config.output_dir,
-                #        commit_message=f"Epoch {epoch}",
-                #        ignore_patterns=["step_*", "epoch_*"],
-                #    )
-                #else:
+                if config.push_to_hub:
+                    upload_folder(
+                        repo_id=repo_id,
+                        folder_path=config.output_dir,
+                        commit_message=f"Epoch {epoch}",
+                        ignore_patterns=["step_*", "epoch_*"],
+                    )
+                else:
                     pipeline.save_pretrained(config.output_dir)
 
 
