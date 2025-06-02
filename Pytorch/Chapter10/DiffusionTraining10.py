@@ -31,7 +31,7 @@ class TrainingConfig:
     image_size = 128  # the generated image resolution
     train_batch_size = 16
     eval_batch_size = 16  # how many images to sample during evaluation
-    num_epochs = 10  # instead of 50
+    num_epochs = 1  # instead of 50
     gradient_accumulation_steps = 1
     learning_rate = 1e-4
     lr_warmup_steps = 500
@@ -260,5 +260,5 @@ notebook_launcher(train_loop, args, num_processes=1)
 import glob
 
 sample_images = sorted(glob.glob(f"{config.output_dir}/samples/*.png"))
-Image.open(sample_images[-1])
-Image.save("Sample_Images-1.png")
+image = Image.open(sample_images[-1])
+image.save("result.png")
