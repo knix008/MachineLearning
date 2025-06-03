@@ -261,4 +261,5 @@ import glob
 
 sample_images = sorted(glob.glob(f"{config.output_dir}/samples/*.png"))
 image = Image.open(sample_images[-1])
+image.show()
 image.save("result.png")
