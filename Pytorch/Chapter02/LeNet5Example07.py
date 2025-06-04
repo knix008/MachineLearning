@@ -5,6 +5,8 @@ import torchvision
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms as transforms
+import time
+import datetime 
 
 # torch.use_deterministic_algorithms(True)
 
@@ -176,12 +178,16 @@ optim = torch.optim.Adam(lenet.parameters(), lr=0.001)
 
 # training loop over the dataset multiple times
 for epoch in range(50):
+    start = time.time()
     train(lenet, trainloader, optim, epoch)
+    end = time.time()
+    result = datetime.timedelta(seconds=end - start)
+    print("> The elapsed time for epoch : ", epoch, " - ", result)
     print()
     test(lenet, testloader)
     print()
 
-print("Finished Training")
+print("> Finished Training")
 
 model_path = "./cifar_model.pth"
 torch.save(lenet.state_dict(), model_path)
