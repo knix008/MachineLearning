@@ -68,12 +68,12 @@ def imageshow(img, text=None):
     plt.show()
 
 
-#print("> Showing a sample image from the dataset")
+# print("> Showing a sample image from the dataset")
 # Generate one train dataset batch
-#imgs, cls = next(iter(dloaders["train"]))
+# imgs, cls = next(iter(dloaders["train"]))
 # Generate a grid from batch
-#grid = torchvision.utils.make_grid(imgs)
-#imageshow(grid, text=[classes[c] for c in cls])
+# grid = torchvision.utils.make_grid(imgs)
+# imageshow(grid, text=[classes[c] for c in cls])
 
 
 def finetune_model(pretrained_model, loss_func, optim, epochs=10):
@@ -132,6 +132,33 @@ def finetune_model(pretrained_model, loss_func, optim, epochs=10):
     # load the best model version (weights)
     pretrained_model.load_state_dict(model_weights)
     return pretrained_model
+
+
+def visualize_predictions(pretrained_model, max_num_imgs=4):
+    torch.manual_seed(1)
+    was_model_training = pretrained_model.training
+    pretrained_model.eval()
+    imgs_counter = 0
+    fig = plt.figure()
+
+    with torch.no_grad():
+        for i, (imgs, tgts) in enumerate(dloaders["val"]):
+            imgs = imgs.to(dvc)
+            tgts = tgts.to(dvc)
+            ops = pretrained_model(imgs)
+            _, preds = torch.max(ops, 1)
+
+            for j in range(imgs.size()[0]):
+                imgs_counter += 1
+                ax = plt.subplot(max_num_imgs // 2, 2, imgs_counter)
+                ax.axis("off")
+                ax.set_title(f"pred: {classes[preds[j]]} || target: {classes[tgts[j]]}")
+                imageshow(imgs.cpu().data[j])
+
+                if imgs_counter == max_num_imgs:
+                    pretrained_model.train(mode=was_model_training)
+                    return
+        pretrained_model.train(mode=was_model_training)
 
 
 model_finetune = models.alexnet(weights=AlexNet_Weights.DEFAULT)
