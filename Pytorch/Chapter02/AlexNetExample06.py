@@ -11,8 +11,6 @@ from torch.optim import lr_scheduler
 from torchvision import datasets, models, transforms
 from torchvision.models.alexnet import AlexNet_Weights
 
-torch.use_deterministic_algorithms(True)
-
 # Creating a local data directory
 ddir = "hymenoptera_data"
 # Data normalization and augmentation transformations
@@ -81,6 +79,7 @@ def finetune_model(pretrained_model, loss_func, optim, epochs=10):
 
     model_weights = copy.deepcopy(pretrained_model.state_dict())
     accuracy = 0.0
+    pretrained_model = pretrained_model.to(dvc)
 
     for e in range(epochs):
         print(f"Epoch number {e}/{epochs - 1}")
@@ -126,7 +125,7 @@ def finetune_model(pretrained_model, loss_func, optim, epochs=10):
         print()
 
     time_delta = time.time() - start
-    print(f"Training finished in {time_delta // 60}mins {time_delta % 60}secs")
+    print(f"Training finished in {time_delta // 60} mins {time_delta % 60}secs")
     print(f"Best validation set accuracy: {accuracy}")
 
     # load the best model version (weights)
@@ -161,7 +160,9 @@ def visualize_predictions(pretrained_model, max_num_imgs=4):
         pretrained_model.train(mode=was_model_training)
 
 
+#model_finetune = models.alexnet(weights=AlexNet_Weights.IMAGENET1K_V1)
 model_finetune = models.alexnet(weights=AlexNet_Weights.DEFAULT)
+
 # print(model_finetune.features)
 # print(model_finetune.classifier)
 # change the last layer from 1000 classes to 2 classes
