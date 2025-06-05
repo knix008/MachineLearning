@@ -65,6 +65,9 @@ def imageshow(img, text=None):
         plt.title(text)
 
 
+#    plt.show()
+
+
 # print("> Showing a sample image from the dataset")
 # Generate one train dataset batch
 # imgs, cls = next(iter(dloaders["train"]))
@@ -156,6 +159,8 @@ def visualize_predictions(pretrained_model, max_num_imgs=4):
                 if imgs_counter == max_num_imgs:
                     pretrained_model.train(mode=was_model_training)
                     return
+        plt.show()
+        fig.savefig("Result.png")
 
         pretrained_model.train(mode=was_model_training)
 
