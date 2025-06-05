@@ -63,7 +63,7 @@ def imageshow(img, text=None):
     plt.imshow(img)
     if text is not None:
         plt.title(text)
-    plt.show()
+#    plt.show()
 
 
 # print("> Showing a sample image from the dataset")
@@ -154,10 +154,11 @@ def visualize_predictions(pretrained_model, max_num_imgs=4):
                 ax.axis("off")
                 ax.set_title(f"pred: {classes[preds[j]]} || target: {classes[tgts[j]]}")
                 imageshow(imgs.cpu().data[j])
-
                 if imgs_counter == max_num_imgs:
                     pretrained_model.train(mode=was_model_training)
                     return
+            imgs.save("Result.png")
+            
         pretrained_model.train(mode=was_model_training)
 
 

@@ -63,7 +63,6 @@ def imageshow(img, text=None):
     plt.imshow(img)
     if text is not None:
         plt.title(text)
-    plt.show()
 
 
 # print("> Showing a sample image from the dataset")
@@ -157,10 +156,11 @@ def visualize_predictions(pretrained_model, max_num_imgs=4):
                 if imgs_counter == max_num_imgs:
                     pretrained_model.train(mode=was_model_training)
                     return
+
         pretrained_model.train(mode=was_model_training)
 
 
-#model_finetune = models.alexnet(weights=AlexNet_Weights.IMAGENET1K_V1)
+# model_finetune = models.alexnet(weights=AlexNet_Weights.IMAGENET1K_V1)
 model_finetune = models.alexnet(weights=AlexNet_Weights.DEFAULT)
 
 # print(model_finetune.features)
@@ -176,4 +176,3 @@ model_finetune = finetune_model(model_finetune, loss_func, optim_finetune, epoch
 
 # visualize the predictions
 visualize_predictions(model_finetune)
-
