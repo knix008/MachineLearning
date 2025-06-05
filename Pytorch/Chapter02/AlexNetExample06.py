@@ -137,6 +137,7 @@ def visualize_predictions(pretrained_model, max_num_imgs=4):
     torch.manual_seed(1)
     was_model_training = pretrained_model.training
     pretrained_model.eval()
+    pretrained_model = pretrained_model.to(dvc)
     imgs_counter = 0
     fig = plt.figure()
 
