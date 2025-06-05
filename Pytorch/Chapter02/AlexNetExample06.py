@@ -125,7 +125,7 @@ def finetune_model(pretrained_model, loss_func, optim, epochs=10):
         print()
 
     time_delta = time.time() - start
-    print(f"Training finished in {time_delta // 60} mins {time_delta % 60}secs")
+    print(f"Training finished in {time_delta // 60} mins {time_delta % 60} secs")
     print(f"Best validation set accuracy: {accuracy}")
 
     # load the best model version (weights)
