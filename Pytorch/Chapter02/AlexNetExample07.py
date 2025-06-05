@@ -53,16 +53,6 @@ classes = img_data["train"].classes
 dvc = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("> Loading the dataset and check the device : ", dvc)
 
-def imageshow(img, text=None):
-    img = img.numpy().transpose((1, 2, 0))
-    avg = np.array([0.490, 0.449, 0.411])
-    stddev = np.array([0.231, 0.221, 0.230])
-    img = stddev * img + avg
-    img = np.clip(img, 0, 1)
-    plt.imshow(img)
-    if text is not None:
-        plt.title(text)
-    
 
 def finetune_model(pretrained_model, loss_func, optim, epochs=10):
     start = time.time()
@@ -123,12 +113,22 @@ def finetune_model(pretrained_model, loss_func, optim, epochs=10):
     return pretrained_model
 
 
+def imageshow(img, text=None):
+    img = img.numpy().transpose((1, 2, 0))
+    avg = np.array([0.490, 0.449, 0.411])
+    stddev = np.array([0.231, 0.221, 0.230])
+    img = stddev * img + avg
+    img = np.clip(img, 0, 1)
+    plt.imshow(img)
+    if text is not None:
+        plt.title(text)
+    # plt.show()
+
 def visualize_predictions(pretrained_model, max_num_imgs=4):
     torch.manual_seed(1)
     was_model_training = pretrained_model.training
     pretrained_model.eval()
     imgs_counter = 0
-    plt.figure()
 
     with torch.no_grad():
         for i, (imgs, tgts) in enumerate(dloaders["val"]):
@@ -137,19 +137,19 @@ def visualize_predictions(pretrained_model, max_num_imgs=4):
             ops = pretrained_model(imgs)
             _, preds = torch.max(ops, 1)
 
+            plt.figure()
             for j in range(imgs.size()[0]):
                 imgs_counter += 1
                 ax = plt.subplot(max_num_imgs // 2, 2, imgs_counter)
                 ax.axis("off")
                 ax.set_title(f"pred: {classes[preds[j]]} || target: {classes[tgts[j]]}")
                 imageshow(imgs.cpu().data[j])
-                #plt.show()
                 if imgs_counter == max_num_imgs:
                     pretrained_model.train(mode=was_model_training)
+                    plt.show()
                     return
-            plt.show()
-
         pretrained_model.train(mode=was_model_training)
+
 
 # model_finetune = models.alexnet(weights=AlexNet_Weights.IMAGENET1K_V1)
 model_finetune = models.alexnet(weights=AlexNet_Weights.DEFAULT)
