@@ -53,7 +53,6 @@ classes = img_data["train"].classes
 dvc = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("> Loading the dataset and check the device : ", dvc)
 
-
 def imageshow(img, text=None):
     img = img.numpy().transpose((1, 2, 0))
     avg = np.array([0.490, 0.449, 0.411])
@@ -63,18 +62,7 @@ def imageshow(img, text=None):
     plt.imshow(img)
     if text is not None:
         plt.title(text)
-
-
-#    plt.show()
-
-
-# print("> Showing a sample image from the dataset")
-# Generate one train dataset batch
-# imgs, cls = next(iter(dloaders["train"]))
-# Generate a grid from batch
-# grid = torchvision.utils.make_grid(imgs)
-# imageshow(grid, text=[classes[c] for c in cls])
-
+    
 
 def finetune_model(pretrained_model, loss_func, optim, epochs=10):
     start = time.time()
@@ -140,7 +128,7 @@ def visualize_predictions(pretrained_model, max_num_imgs=4):
     was_model_training = pretrained_model.training
     pretrained_model.eval()
     imgs_counter = 0
-    fig = plt.figure()
+    plt.figure()
 
     with torch.no_grad():
         for i, (imgs, tgts) in enumerate(dloaders["val"]):
@@ -155,15 +143,13 @@ def visualize_predictions(pretrained_model, max_num_imgs=4):
                 ax.axis("off")
                 ax.set_title(f"pred: {classes[preds[j]]} || target: {classes[tgts[j]]}")
                 imageshow(imgs.cpu().data[j])
-
+                #plt.show()
                 if imgs_counter == max_num_imgs:
                     pretrained_model.train(mode=was_model_training)
                     return
-        plt.show()
-        fig.savefig("Result.png")
+            plt.show()
 
         pretrained_model.train(mode=was_model_training)
-
 
 # model_finetune = models.alexnet(weights=AlexNet_Weights.IMAGENET1K_V1)
 model_finetune = models.alexnet(weights=AlexNet_Weights.DEFAULT)
