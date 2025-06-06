@@ -84,7 +84,7 @@ def read_categories():
     return categories
 
 
-def show_top_categories(probabilities):
+def show_top_categories(categories, probabilities):
     """
     Show the top categories and their probabilities.
     """
@@ -113,7 +113,7 @@ def main():
         input_batch = input_batch.to(device)  # Move the input to GPU
 
     probabilities = run_model(model, input_batch)  # Run the model on the input batch
-    show_top_categories(probabilities)  # Show the top categories
+    show_top_categories(categories, probabilities)  # Show the top categories
     print("> Inference completed.")
 
 if __name__ == "__main__":
