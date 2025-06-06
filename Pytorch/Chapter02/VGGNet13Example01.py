@@ -1,60 +1,14 @@
 import os
-import time
-import copy
 import numpy as np
 import matplotlib.pyplot as plt
-
 import torch
-import torchvision
-import torch.nn as nn
-import torch.optim as optim
-from torch.optim import lr_scheduler
 from torchvision import datasets, models, transforms
+from torchvision.models import VGG13_Weights
 
-ddir = "hymenoptera_data"
-
-# Data normalization and augmentation transformations for train dataset
-# Only normalization transformation for validation dataset
-data_transformers = {
-    "train": transforms.Compose(
-        [
-            transforms.RandomResizedCrop(224),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-            transforms.Normalize([0.490, 0.449, 0.411], [0.231, 0.221, 0.230]),
-        ]
-    ),
-    "val": transforms.Compose(
-        [
-            transforms.Resize(256),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            transforms.Normalize([0.490, 0.449, 0.411], [0.231, 0.221, 0.230]),
-        ]
-    ),
-}
-
-img_data = {
-    k: datasets.ImageFolder(os.path.join(ddir, k), data_transformers[k])
-    for k in ["train", "val"]
-}
-dloaders = {
-    k: torch.utils.data.DataLoader(
-        img_data[k], batch_size=8, shuffle=True, num_workers=2
-    )
-    for k in ["train", "val"]
-}
-dset_sizes = {x: len(img_data[x]) for x in ["train", "val"]}
-# Check if GPU is available and set device accordingly
-dvc = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
+from multiprocessing import freeze_support
 import ast
 
-with open("./imagenet1000_clsidx_to_labels.txt") as f:
-    classes_data = f.read()
-classes_dict = ast.literal_eval(classes_data)
-print({k: classes_dict[k] for k in list(classes_dict)[:5]})
-
+ddir = "hymenoptera_data"  # Directory containing the dataset
 
 def imageshow(img, text=None):
     img = img.numpy().transpose((1, 2, 0))
@@ -71,7 +25,6 @@ def visualize_predictions(pretrained_model, max_num_imgs=4):
     torch.manual_seed(1)
     was_model_training = pretrained_model.training
     pretrained_model.eval()
-    pretrained_model.to(dvc)
     imgs_counter = 0
 
     with torch.no_grad():
@@ -93,5 +46,51 @@ def visualize_predictions(pretrained_model, max_num_imgs=4):
         pretrained_model.train(mode=was_model_training)
 
 
-model = models.vgg13(pretrained=True)
-visualize_predictions(model)
+if __name__ == "__main__":
+    freeze_support()  # For Windows supportddir = "hymenoptera_data"
+
+    # Data normalization and augmentation transformations for train dataset
+    # Only normalization transformation for validation dataset
+    data_transformers = {
+        "train": transforms.Compose(
+            [
+                transforms.RandomResizedCrop(224),
+                transforms.RandomHorizontalFlip(),
+                transforms.ToTensor(),
+                transforms.Normalize([0.490, 0.449, 0.411], [0.231, 0.221, 0.230]),
+            ]
+        ),
+        "val": transforms.Compose(
+            [
+                transforms.Resize(256),
+                transforms.CenterCrop(224),
+                transforms.ToTensor(),
+                transforms.Normalize([0.490, 0.449, 0.411], [0.231, 0.221, 0.230]),
+            ]
+        ),
+    }
+
+    img_data = {
+        k: datasets.ImageFolder(os.path.join(ddir, k), data_transformers[k])
+        for k in ["train", "val"]
+    }
+    dloaders = {
+        k: torch.utils.data.DataLoader(
+            img_data[k], batch_size=8, shuffle=True, num_workers=2
+        )
+        for k in ["train", "val"]
+    }
+
+    dset_sizes = {x: len(img_data[x]) for x in ["train", "val"]}
+    # Check if GPU is available and set device accordingly
+    dvc = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+    with open("./imagenet1000_clsidx_to_labels.txt") as f:
+        classes_data = f.read()
+    classes_dict = ast.literal_eval(classes_data)
+    print({k: classes_dict[k] for k in list(classes_dict)[:5]})
+
+    # model = models.vgg13(weights=VGG13_Weights.IMAGENET1K_V1)
+    model = models.vgg13(weights=VGG13_Weights.DEFAULT)
+    model.to(dvc)
+    visualize_predictions(model)
