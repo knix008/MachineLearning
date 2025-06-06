@@ -45,8 +45,15 @@ def transform_image(image_path):
 
 
 # move the input and model to GPU for speed if available
-def get_device():
-    return "cuda" if torch.cuda.is_available() else "cpu"
+def get_device_name():
+    """
+    Get the name of the device being used.
+    """
+    if torch.cuda.is_available():
+        print("> The GPU device name : ", torch.cuda.get_device_name(0))
+        return "cuda"
+    else:
+        return "cpu"
 
 
 # Run the model on the input image
@@ -86,14 +93,16 @@ if __name__ == "__main__":
     model = get_model()  # Load the model
     download_sample_image()  # Download the sample image
     input_batch = transform_image(sample)  # Transform the image
-    device = get_device()  # Get the device
     categories = read_categories()
-    if device == "cuda":
+    device = get_device_name()  # Get the device
+    print("> Using device:", device)
+    if device == "cpu":
+        print("> Using CPU for inference.")
+    else:
         print("> Using GPU for inference.")
         model.to(device)  # Move the model to GPU
         input_batch = input_batch.to(device)  # Move the input to GPU
-    else:
-        print("> Using CPU for inference.")
+
     probabilities = run_model(model, input_batch)  # Run the model on the input batch
     show_top_categories(probabilities)  # Show the top categories
     print("> Inference completed.")
