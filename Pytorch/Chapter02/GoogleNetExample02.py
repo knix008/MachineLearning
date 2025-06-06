@@ -6,14 +6,18 @@ import urllib
 
 sample = "dog.jpg"
 
+
 def get_model():
     """
     Load the GoogLeNet model with pretrained weights.
     """
     # Load the GoogLeNet model with pretrained weights
-    model = torch.hub.load("pytorch/vision:v0.10.0", "googlenet", weights=GoogLeNet_Weights.DEFAULT)
+    model = torch.hub.load(
+        "pytorch/vision:v0.10.0", "googlenet", weights=GoogLeNet_Weights.DEFAULT
+    )
     print("> Initialized GoogLeNet model with default weights.")
     return model.eval()  # Set the model to evaluation mode
+
 
 def download_sample_image():
     """
@@ -66,8 +70,9 @@ def run_model(model, input_batch):
         output = model(input_batch)
     # The output has unnormalized scores. To get probabilities, you can run a softmax on it.
     probabilities = torch.nn.functional.softmax(output[0], dim=0)
-    #print(probabilities)
+    # print(probabilities)
     return probabilities  # Return the probabilities for further processing
+
 
 def read_categories():
     """
@@ -76,7 +81,8 @@ def read_categories():
     # Read the categories
     with open("imagenet1000_clsidx_to_labels.txt", "r") as f:
         categories = [s.strip() for s in f.readlines()]
-    return categories   
+    return categories
+
 
 def show_top_categories(probabilities):
     """
@@ -86,6 +92,7 @@ def show_top_categories(probabilities):
     top5_prob, top5_catid = torch.topk(probabilities, 5)
     for i in range(top5_prob.size(0)):
         print(categories[top5_catid[i]], top5_prob[i].item())
+
 
 if __name__ == "__main__":
     print("> GoogleNet Example")
