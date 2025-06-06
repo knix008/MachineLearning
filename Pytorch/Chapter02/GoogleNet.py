@@ -70,18 +70,14 @@ class GoogLeNet(nn.Module):
 
         self.im1 = InceptionModule(192, 64, 96, 128, 16, 32, 32)
         self.im2 = InceptionModule(256, 128, 128, 192, 32, 96, 64)
-
         self.max_pool = nn.MaxPool2d(3, stride=2, padding=1)
-
         self.im3 = InceptionModule(480, 192, 96, 208, 16, 48, 64)
         self.im4 = InceptionModule(512, 160, 112, 224, 24, 64, 64)
         self.im5 = InceptionModule(512, 128, 128, 256, 24, 64, 64)
         self.im6 = InceptionModule(512, 112, 144, 288, 32, 64, 64)
         self.im7 = InceptionModule(528, 256, 160, 320, 32, 128, 128)
-
         self.im8 = InceptionModule(832, 256, 160, 320, 32, 128, 128)
         self.im9 = InceptionModule(832, 384, 192, 384, 48, 128, 128)
-
         self.average_pool = nn.AvgPool2d(7, stride=1)
         self.fc = nn.Linear(4096, 1000)
 
@@ -89,7 +85,7 @@ class GoogLeNet(nn.Module):
         op = self.stem(ip)
         out = self.im1(op)
         out = self.im2(op)
-        op = self.maxpool(op)
+        op = self.max_pool(op)
         op = self.a4(op)
         op = self.b4(op)
         op = self.c4(op)
@@ -98,7 +94,7 @@ class GoogLeNet(nn.Module):
         op = self.max_pool(op)
         op = self.a5(op)
         op = self.b5(op)
-        op = self.avgerage_pool(op)
+        op = self.average_pool(op)
         op = op.view(op.size(0), -1)
         op = self.fc(op)
         return op
