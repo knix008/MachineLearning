@@ -107,6 +107,7 @@ def main():
     input_batch = transform_image(sample)  # Transform the image
     categories = read_categories()
     device = get_device_name()  # Get the device
+    #device = "cpu"
     print("> Using device:", device)
     if device == "cpu":
         print("> Using CPU for inference.")
