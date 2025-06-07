@@ -2,7 +2,7 @@ import torch
 from PIL import Image
 from torchvision import transforms
 from torchvision import models
-from torchvision.models import DenseNet201_Weights
+from torchvision.models import DenseNet169_Weights, DenseNet161_Weights, DenseNet121_Weights, DenseNet201_Weights
 import urllib
 
 sample = "dog.jpg"
@@ -12,7 +12,11 @@ def get_model():
     """
     Load the DenseNet model with pretrained weights.
     """
-    # Load the DenseNet201 model with pretrained weights
+    
+    # Load the DenseNet model with pretrained weights
+    #model = models.densenet121(weights=DenseNet121_Weights.DEFAULT)
+    #model = models.densenet161(weights=DenseNet161_Weights.DEFAULT)
+    #model = models.densenet169(weights=DenseNet169_Weights.DEFAULT)
     model = models.densenet201(weights=DenseNet201_Weights.DEFAULT)
     print("> Initialized DenseNet201 model with default weights.")
     return model.eval()  # Set the model to evaluation mode
