@@ -1,8 +1,10 @@
 # This example is from "https://huggingface.co/blog/vlms"
 import torch
 from transformers import LlavaNextProcessor, LlavaNextForConditionalGeneration
+
 from PIL import Image
 import time
+import datetime
 
 
 def initialize_device():
@@ -23,21 +25,30 @@ def initialize_model(device):
     return model, processor
 
 
+def load_image(image_path):
+    image = Image.open(image_path).convert("RGB")
+    return image
+
+
+def run_inference(model, processor, image, prompt, device):
+    inputs = processor(images=image, text=prompt, return_tensors="pt").to(device)
+    output = model.generate(**inputs, max_new_tokens=100)
+    return processor.decode(output[0], skip_special_tokens=True)
+
+
 def main():
-    sample = "llava_v1_5_radar.jpg"
-    image = Image.open(sample)
+    image = load_image("llava_v1_5_radar.jpg")
     prompt = "[INST] <image>\nWhat is shown in this image? [/INST]"
 
     device = initialize_device()
     model, processor = initialize_model(device)
 
-    inputs = processor(prompt, image, return_tensors="pt").to(device)
     start = time.time()
-    output = model.generate(**inputs, max_new_tokens=500)
+    output = run_inference(model, processor, image, prompt, device)
     end = time.time()
 
-    print(processor.decode(output[0], skip_special_tokens=True))
-    print("> The elapsed time : ", end - start)
+    print("> Output : ", output)
+    print("> The elapsed time : ", str(datetime.timedelta(seconds=sec)).split("."))
 
 
 if __name__ == "__main__":
