@@ -49,7 +49,10 @@ def main():
     elapsed_time = end - start
 
     print("> Output : ", output)
-    print("> The elapsed time : ", str(datetime.timedelta(seconds=elapsed_time)).split("."))
+    print(
+        "> The elapsed time : ",
+        str(datetime.timedelta(seconds=elapsed_time)).split("."),
+    )
 
 
 if __name__ == "__main__":
