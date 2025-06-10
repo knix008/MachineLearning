@@ -3,7 +3,6 @@ import torch
 from transformers import LlavaNextProcessor, LlavaNextForConditionalGeneration
 from PIL import Image
 import time
-import datetime
 
 
 def initialize_device():
