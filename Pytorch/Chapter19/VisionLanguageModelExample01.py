@@ -46,9 +46,10 @@ def main():
     start = time.time()
     output = run_inference(model, processor, image, prompt, device)
     end = time.time()
+    elapsed_time = end - start
 
     print("> Output : ", output)
-    print("> The elapsed time : ", str(datetime.timedelta(seconds=sec)).split("."))
+    print("> The elapsed time : ", str(datetime.timedelta(seconds=elapsed_time)).split("."))
 
 
 if __name__ == "__main__":
