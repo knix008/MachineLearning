@@ -1,9 +1,9 @@
 import collections
 import numpy as np
 
-train_path = "./data/ptbdataset/ptb.train.txt"
-valid_path = "./data/ptbdataset/ptb.valid.txt"
-test_path = "./data/ptbdataset/ptb.test.txt"
+train_path = "./ptbdataset/ptb.train.txt"
+valid_path = "./ptbdataset/ptb.valid.txt"
+test_path  = "./ptbdataset/ptb.test.txt"
 
 
 def read_words(filename):
