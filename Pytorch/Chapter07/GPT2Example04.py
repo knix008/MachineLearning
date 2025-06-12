@@ -1,8 +1,12 @@
+import torch
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print("> Using device : ", device)
 
 # 모델과 토크나이저 로드
 model_name = "gpt2"  # 또는 "gpt2-medium", "gpt2-large", "gpt2-xl" 등
-model = GPT2LMHeadModel.from_pretrained(model_name)
+model = GPT2LMHeadModel.from_pretrained(model_name).to(device)
 tokenizer = GPT2Tokenizer.from_pretrained(model_name)
 
 # pad_token_id를 eos_token_id로 설정
@@ -11,9 +15,8 @@ tokenizer.pad_token = tokenizer.eos_token
 
 # 텍스트 생성 함수
 def generate_response(input_text):
-    # 입력 텍스트 토큰화
-    inputs = tokenizer(input_text, return_tensors="pt", padding=True, truncation=True)
-
+    
+    inputs = tokenizer(input_text, return_tensors="pt", padding=True, truncation=True).to(device)
     # attention_mask와 pad_token_id를 명시적으로 설정
     attention_mask = inputs["attention_mask"]
     pad_token_id = tokenizer.pad_token_id
@@ -39,5 +42,5 @@ def generate_response(input_text):
 
 if __name__ == "__main__":
     print("> Testing GPT2")
-    response = generate_response("Tell me about korea")
+    response = generate_response("Tell me about korea : ")
     print(response)
