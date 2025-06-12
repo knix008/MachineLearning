@@ -23,8 +23,8 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 NUM_EPOCHS = 3
 
-#url = "https://github.com/rasbt/machine-learning-book/raw/main/ch08/movie_data.csv.gz"
-#filename = url.split("/")[-1]
+# url = "https://github.com/rasbt/machine-learning-book/raw/main/ch08/movie_data.csv.gz"
+# filename = url.split("/")[-1]
 filename = "movie_data.csv"
 
 with open(filename, "wb") as f:
