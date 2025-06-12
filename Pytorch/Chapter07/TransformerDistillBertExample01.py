@@ -1,4 +1,6 @@
 import sys
+sys.dont_write_bytecode = True
+
 from python_environment_check import check_packages
 import time
 import pandas as pd
