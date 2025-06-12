@@ -64,8 +64,8 @@ for epoch in range(num_epochs):
 # Inference
 model.eval()
 with torch.no_grad():
-    input_seq = torch.tensor([token_to_index["this"]]).unsqueeze(0)
+    input_seq = torch.tensor([token_to_index["example"]]).unsqueeze(0)
     output = model(input_seq)
     predicted_index = output.argmax(dim=-1).item()
     predicted_token = index_to_token[predicted_index]
-    print(f"> Input: this, Prediction: {predicted_token}")
+    print(f"> Input: example, Prediction: {predicted_token}")
