@@ -11,7 +11,6 @@ def main():
     gen = tkz(cue, return_tensors="pt")
     to_ret = gen["input_ids"][0]
 
-    prv = None
     for i in range(ln):
         outputs = mdl(**gen)
         next_token_logits = torch.argmax(outputs.logits[-1, :])
