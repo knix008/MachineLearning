@@ -1,10 +1,9 @@
 import sys
+sys.dont_write_bytecode = True
+
 from python_environment_check import check_packages
-import gzip
-import shutil
 import time
 import pandas as pd
-import requests
 import torch
 import torch.nn.functional as F
 
@@ -20,6 +19,7 @@ torch.backends.cudnn.deterministic = True
 RANDOM_SEED = 123
 torch.manual_seed(RANDOM_SEED)
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print("> Device : ", DEVICE)
 NUM_EPOCHS = 3
 
 df = pd.read_csv("movie_data.csv")
@@ -41,8 +41,6 @@ tokenizer = DistilBertTokenizerFast.from_pretrained("distilbert-base-uncased")
 train_encodings = tokenizer(list(train_texts), truncation=True, padding=True)
 valid_encodings = tokenizer(list(valid_texts), truncation=True, padding=True)
 test_encodings = tokenizer(list(test_texts), truncation=True, padding=True)
-
-
 print("> Train Encoding : ", train_encodings[0])
 
 
@@ -139,7 +137,6 @@ print(f"Test accuracy: {compute_accuracy(model, test_loader, DEVICE):.2f}%")
 
 del model  # free memory
 
-
 model = DistilBertForSequenceClassification.from_pretrained("distilbert-base-uncased")
 model.to(DEVICE)
 model.train()
@@ -195,9 +192,9 @@ trainer = Trainer(
 trainer.args._n_gpu = 1
 start_time = time.time()
 trainer.train()
-print(f"Total Training Time: {(time.time() - start_time)/60:.2f} min")
+print(f"> Total Training Time: {(time.time() - start_time)/60:.2f} min")
 trainer.evaluate()
 
 model.eval()
 model.to(DEVICE)
-print(f"Test accuracy: {compute_accuracy(model, test_loader, DEVICE):.2f}%")
+print(f"> Test accuracy: {compute_accuracy(model, test_loader, DEVICE):.2f}%")
