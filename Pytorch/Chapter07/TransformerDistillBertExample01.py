@@ -17,6 +17,7 @@ torch.backends.cudnn.deterministic = True
 RANDOM_SEED = 123
 torch.manual_seed(RANDOM_SEED)
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print("> Device : ", DEVICE)
 NUM_EPOCHS = 3
 
 df = pd.read_csv("movie_data.csv")
