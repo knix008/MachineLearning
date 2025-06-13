@@ -30,9 +30,16 @@ def greedy_search2():
     mdl = GPT2LMHeadModel.from_pretrained("gpt2").to(device)
     ln = 10
     cue = "They"
+    tkz.pad_token = tkz.eos_token
 
-    ip_ids = tkz.encode(cue, return_tensors="pt")
-    op_greedy = mdl.generate(ip_ids, max_length=ln, pad_token_id=tkz.eos_token_id)
+    input = tkz(cue, return_tensors="pt", padding=True, truncation=True).to(device)
+    attention_mask = input["attention_mask"]
+    op_greedy = mdl.generate(
+        input["input_ids"],
+        max_length=ln,
+        pad_token_id=tkz.eos_token_id,
+        attention_mask=attention_mask,
+    )
     seq = tkz.decode(op_greedy[0], skip_special_tokens=True)
     return seq
 
