@@ -28,7 +28,7 @@ def greedy_search2():
     torch.manual_seed(799)
     tkz = GPT2Tokenizer.from_pretrained("gpt2")
     mdl = GPT2LMHeadModel.from_pretrained("gpt2").to(device)
-    ln = 10
+    ln = 11
     cue = "They"
     tkz.pad_token = tkz.eos_token
 
