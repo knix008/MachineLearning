@@ -6,6 +6,7 @@ from io import BytesIO
 # Define constants for MIDI meta events
 # MTC_MIDI = 0xF0
 MIDI_TIME_CODE = 0xF1
+SEQ_SPC = 0x7F
 
 # Define constants for MIDI events
 NOTE_MIDI_OFF = 0x80
