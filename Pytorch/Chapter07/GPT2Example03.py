@@ -45,6 +45,9 @@ def greedy_search2():
 
 
 if __name__ == "__main__":
+    print("> Greedy Search 1")
+    seq = greedy_search1()
+    print("> The output : ", seq)
     print("> Greedy Search 2")
     seq = greedy_search2()
     print("> The output : ", seq)
