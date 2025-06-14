@@ -1,17 +1,15 @@
 import sys
 sys.dont_write_bytecode = True
 
-import numpy as np
-import skimage.io as io
-from matplotlib import pyplot as plt
-
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
 import torch.utils.data as data
 
-from MIDI import midiwrite
+import skimage.io as io
+from matplotlib import pyplot as plt
 
+from MIDI import midiwrite
 from MIDIDataLoader import NtGenDataset, pos_proc_seq
 
 class MusicLSTM(nn.Module):    

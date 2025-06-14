@@ -76,22 +76,3 @@ def pos_proc_seq(btch):
     ord_btch_lens_l = list(ord_btch_lens)
     ord_btch_lens_l = map(lambda k: int(k), ord_btch_lens_l)
     return tps_ip_seq_btch, ord_op_seq_btch, list(ord_btch_lens_l)
-
-
-training_dataset = NtGenDataset('./mozart/train', mx_seq_ln=None)
-training_datasetloader = data.DataLoader(training_dataset, batch_size=5,shuffle=True, drop_last=True)
-
-X_train = next(iter(training_datasetloader))
-X_train[0].shape
-
-validation_dataset = NtGenDataset('./mozart/valid/', mx_seq_ln=None)
-validation_datasetloader = data.DataLoader(validation_dataset, batch_size=3, shuffle=False, drop_last=False)
-
-X_validation = next(iter(validation_datasetloader))
-X_validation[0].shape
-
-plt.figure(figsize=(10,7))
-plt.title("Matrix representation of a Mozart composition")
-plt.imshow(X_validation[0][0][:300].numpy().T);
-plt.show()
-
