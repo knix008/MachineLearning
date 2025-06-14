@@ -139,7 +139,7 @@ def train_model(model, loss_fn, train_loader, val_loader, device):
                 val_loss += loss_fn(val_outputs, val_y).item()
 
         print(
-            f"Epoch {epoch+1}/{epochs}, Train Loss: {running_loss/len(train_loader):.4f}, Val Loss: {val_loss/len(val_loader):.4f}"
+            f"> Epoch {epoch+1}/{epochs}, Train Loss: {running_loss/len(train_loader):.4f}, Val Loss: {val_loss/len(val_loader):.4f}"
         )
 
 
@@ -151,7 +151,7 @@ def evaluate_model(model, loss_fn, test_loader, device):
             test_x, test_y = test_x.to(device), test_y.to(device)
             test_outputs = model(test_x)
             test_loss += loss_fn(test_outputs, test_y).item()
-    print(f"Test Loss: {test_loss/len(test_loader):.4f}")
+    print(f"> Test Loss: {test_loss/len(test_loader):.4f}")
 
 
 def generate_notes_lstm(
@@ -210,9 +210,9 @@ def main():
             sequence_length=sequence_length,
             device=device,
         )
-        print("Generated Notes:", generated_notes)
+        print("> Generated Notes:", generated_notes)
     else:
-        print("Not enough test data to generate notes.")
+        print("> Not enough test data to generate notes.")
 
 
 if __name__ == "__main__":
