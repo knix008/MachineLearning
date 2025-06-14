@@ -112,10 +112,9 @@ class MusicLSTM(nn.Module):
         return out
 
 
-def train_model(model, loss_fn, train_loader, val_loader, device):
+def train_model(model, loss_fn, train_loader, val_loader, epochs, device):
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-    epochs = 5  # Originally 50, reduced for quicker testing
-
+    
     for epoch in range(epochs):
         model.train()
         running_loss = 0.0
@@ -196,7 +195,8 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
     loss_fn = nn.CrossEntropyLoss()
-    train_model(model, loss_fn, train_loader, val_loader, device)
+    epochs = 50  # Number of epochs for training
+    train_model(model, loss_fn, train_loader, val_loader, epochs, device)
     evaluate_model(model, loss_fn, test_loader, device)
 
     # Example: Generate 100 notes from a random seed in test dataset
