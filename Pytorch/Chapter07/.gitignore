@@ -1,3 +1,4 @@
 # Ignore Python cache files
 __pycache__/
 best_model.pth
+generated_music.mid
