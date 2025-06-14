@@ -68,15 +68,6 @@ def load_data_from_midi_files():
     return training_datasetloader, validation_datasetloader
 
 
-def visualize_validation_data(validation_datasetloader):
-    print("> Visualizing validation data")
-    X_validation = next(iter(validation_datasetloader))
-    plt.figure(figsize=(10, 7))
-    plt.title("Matrix representation of a Nottingham composition")
-    plt.imshow(X_validation[0][0][1000:].numpy().T)
-    plt.show()
-
-
 def lstm_model_training(
     lstm_model,
     training_datasetloader,
@@ -171,6 +162,15 @@ def generate_music(lstm_model, ln=100, tmp=1, seq_st=None):
     return gen_seq
 
 
+def visualize_validation_data(validation_datasetloader):
+    print("> Visualizing validation data")
+    X_validation = next(iter(validation_datasetloader))
+    plt.figure(figsize=(10, 7))
+    plt.title("Matrix representation of a Nottingham composition")
+    plt.imshow(X_validation[0][0][1000:].numpy().T)
+    plt.show()
+
+
 def main():
     print("> Starting Music LSTM Generation Example")
     training_datasetloader, validation_datasetloader = load_data_from_midi_files()
@@ -178,10 +178,15 @@ def main():
     loss_func = nn.CrossEntropyLoss().cpu()
     lstm_model = MusicLSTM(ip_sz=88, hd_sz=512, n_cls=88).cpu()
     lstm_model = lstm_model_training(
-        lstm_model, training_datasetloader, validation_datasetloader, loss_func, evaluate_model, lr=0.01, ep=1
+        lstm_model,
+        training_datasetloader,
+        validation_datasetloader,
+        loss_func,
+        evaluate_model,
+        lr=0.01,
+        ep=1,
     )
     seq = generate_music(lstm_model, ln=100, tmp=0.8, seq_st=None).transpose()
-    io.imshow(seq)
     midiwrite("generated_music.mid", seq.transpose(), dtm=0.25)
 
 
