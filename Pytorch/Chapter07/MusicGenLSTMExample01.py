@@ -30,7 +30,7 @@ def extract_notes(midi_folder):
 
 # Directories for datasets
 train_dir = './data/Nottingham/train'
-val_dir   = './data/Nottingham/val'
+val_dir   = './data/Nottingham/valid'
 test_dir  = './data/Nottingham/test'
 
 # Extract notes from each split
