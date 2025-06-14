@@ -4,6 +4,10 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 # Install mido and python-rtmidi if needed:
 # pip install mido python-rtmidi
 
+from huggingface_hub import login
+# Login to Hugging Face Hub if needed
+login(token="your_huggingface_token_here")  # Replace with your actual token
+
 import mido
 
 def parse_generated_midi_events(text):
