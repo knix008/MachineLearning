@@ -48,21 +48,21 @@ class MusicLSTM(nn.Module):
         return flt_lgts, hd
     
     
-training_dataset = NtGenDataset('./mozart/train', mx_seq_ln=None)
+training_dataset = NtGenDataset('./data/Nottingham/train', mx_seq_ln=None)
 training_datasetloader = data.DataLoader(training_dataset, batch_size=5,shuffle=True, drop_last=True)
 
 X_train = next(iter(training_datasetloader))
-X_train[0].shape
+print(X_train[0].shape)
 
-validation_dataset = NtGenDataset('./mozart/valid/', mx_seq_ln=None)
+validation_dataset = NtGenDataset('./data/Nottingham/valid/', mx_seq_ln=None)
 validation_datasetloader = data.DataLoader(validation_dataset, batch_size=3, shuffle=False, drop_last=False)
 
 X_validation = next(iter(validation_datasetloader))
-X_validation[0].shape
+print(X_validation[0].shape)
 
 plt.figure(figsize=(10,7))
-plt.title("Matrix representation of a Mozart composition")
-plt.imshow(X_validation[0][0][:300].numpy().T);
+plt.title("Matrix representation of a Nottingham composition")
+plt.imshow(X_validation[0][0][1000:].numpy().T)
 plt.show()
 
     
@@ -88,6 +88,7 @@ def lstm_model_training(lstm_model, lr, ep=10, val_loss_best=float("inf")):
             loss.backward()
             torch.nn.utils.clip_grad_norm_(lstm_model.parameters(), grad_clip)
             opt.step()
+            print(f'EPOCH : {curr_ep} , Batch Loss = {loss.item()}')
 
         tr_ep_cur = sum(loss_ep)/len(training_datasetloader)
         print(f'ep {curr_ep} , train loss = {tr_ep_cur}')
@@ -122,7 +123,7 @@ def evaluate_model(lstm_model):
 
 loss_func = nn.CrossEntropyLoss().cpu()
 lstm_model = MusicLSTM(ip_sz=88, hd_sz=512, n_cls=88).cpu()
-val_loss_best, lstm_model = lstm_model_training(lstm_model, lr=0.01, ep=10)
+val_loss_best, lstm_model = lstm_model_training(lstm_model, lr=0.01, ep=1)
 
 
 def generate_music(lstm_model, ln=100, tmp=1, seq_st=None):
