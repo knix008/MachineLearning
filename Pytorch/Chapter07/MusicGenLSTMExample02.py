@@ -47,8 +47,7 @@ def build_vocabulary(notes_train, notes_val, notes_test):
     note_to_int = {note: i for i, note in enumerate(pitches)}
     int_to_note = {i: note for note, i in note_to_int.items()}
     n_vocab = len(note_to_int)
-    sequence_length = 32
-    return note_to_int, int_to_note, n_vocab, sequence_length
+    return note_to_int, int_to_note, n_vocab
 
 
 def prepare_sequences(notes, note_to_int, sequence_length):
@@ -180,9 +179,12 @@ def main():
     print("> Music Generation with LSTM")
     # Extract notes from MIDI files
     notes_train, notes_val, notes_test = extract_notes_from_midi_files()
-    note_to_int, int_to_note, n_vocab, sequence_length = build_vocabulary(
+    note_to_int, int_to_note, n_vocab = build_vocabulary(
         notes_train, notes_val, notes_test
     )
+    sequence_length = 32  # Fixed sequence length for LSTM
+    print(f"> Vocabulary Size: {n_vocab}, Sequence Length: {sequence_length}")
+    
     X_train, y_train, X_val, y_val, X_test, y_test = load_data(
         notes_train, notes_val, notes_test, note_to_int, sequence_length
     )
