@@ -2,3 +2,4 @@
 __pycache__/
 best_model.pth
 generated_music.mid
+transformer_model.pth
