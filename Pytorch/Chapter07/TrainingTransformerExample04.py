@@ -7,9 +7,7 @@ import os
 
 
 nltk.download("ptb")
-from nltk.corpus import ptb
-
-
+from nltk.corpus import treebank as ptb
 from collections import Counter
 
 
