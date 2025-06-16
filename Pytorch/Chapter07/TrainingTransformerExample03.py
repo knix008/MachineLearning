@@ -193,7 +193,7 @@ def generate_text(
 def main(
     seq_len=32,
     batch_size=64,
-    epochs=5,
+    epochs=15,
     embed_dim=128,
     num_heads=4,
     num_layers=2,
