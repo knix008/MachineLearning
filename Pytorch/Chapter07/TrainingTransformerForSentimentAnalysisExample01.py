@@ -116,7 +116,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = TransformerClassifier(len(vocab)).to(device)
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=1e-3)
-epochs = 10 # Default is 5
+epochs = 15 # Default is 5
 
 def train():
     model.train()
