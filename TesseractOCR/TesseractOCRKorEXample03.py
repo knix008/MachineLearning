@@ -10,7 +10,7 @@ from PIL import Image
 
 def recognize_korean(image):
     image_cv = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
-    data = pytesseract.image_to_data(image_cv, lang='kor', output_type=pytesseract.Output.DICT)
+    data = pytesseract.image_to_data(image_cv, lang='eng+kor', output_type=pytesseract.Output.DICT)
     recognized_text = []
     n_boxes = len(data['level'])
     for i in range(n_boxes):

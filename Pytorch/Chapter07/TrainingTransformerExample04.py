@@ -163,7 +163,7 @@ def load_model(path="transformer_ptb_model.pth", device="cpu"):
 
 
 def generate_text(
-    model, vocab, seed_text, generate_len=50, device="cpu", temperature=1.0, seq_len=32
+    model, vocab, seed_text, generate_len=50, device="gpu", temperature=1.0, seq_len=32
 ):
     model.eval()
     tokens = nltk.word_tokenize(seed_text)
@@ -239,10 +239,16 @@ def main(
     if do_generate:
         seed_text = "The company announced"
         print("\nGenerating text:")
-        generated = generate_text(
-            model, vocab, seed_text, generate_len=50, device=device, seq_len=seq_len
-        )
-        print(generated)
+        for i in range(5):
+            print(f"Generation {i + 1}:")
+            # Generate text with the model
+            text = generate_text(
+                model, vocab, seed_text, generate_len=1, device=device, seq_len=seq_len
+            )
+            print(text)
+            # Update seed_text for next generation
+            result = text.split()
+            seed_text = " ".join(result[-seq_len:])
 
 
 if __name__ == "__main__":

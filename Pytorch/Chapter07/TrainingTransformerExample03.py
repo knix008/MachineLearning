@@ -193,7 +193,7 @@ def generate_text(
 def main(
     seq_len=32,
     batch_size=64,
-    epochs=5,
+    epochs=15,
     embed_dim=128,
     num_heads=4,
     num_layers=2,
@@ -249,7 +249,7 @@ def main(
         seed_text = "Emma Woodhouse, handsome, clever, and rich,"
         print("\nGenerating text:")
         generated = generate_text(
-            model, vocab, seed_text, generate_len=50, device=device, seq_len=seq_len
+            model, vocab, seed_text, generate_len=5, device=device, seq_len=seq_len
         )
         print(generated)
 
