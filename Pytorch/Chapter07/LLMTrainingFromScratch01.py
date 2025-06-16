@@ -173,7 +173,7 @@ if __name__ == "__main__":
     accelerator = Accelerator()
     device = accelerator.device
     doing_quantization = False  # Change to True if imported bitsandbytes
-    
+
     print("> Using device:", device)
 
     # Dataset
@@ -215,8 +215,7 @@ if __name__ == "__main__":
         if iter % eval_interval == 0 or iter == max_iters - 1:
             losses = estimate_loss()
             print(
-                f"| step {iter}: train loss {losses['train']:.4f} "
-                "| validation loss {losses['val']:.4f} |"
+                f"| step {iter}: train loss {losses['train']:.4f} | validation loss {losses['val']:.4f} |"
             )
 
         xb, yb = get_batch("train")
