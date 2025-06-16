@@ -5,8 +5,7 @@ import numpy as np
 import nltk
 import os
 
-
-nltk.download("ptb")
+nltk.download("treebank")
 from nltk.corpus import treebank as ptb
 from collections import Counter
 
@@ -187,7 +186,7 @@ def generate_text(
 def main(
     seq_len=32,
     batch_size=64,
-    epochs=10, # Originally 5
+    epochs=10,  # Originally 5
     embed_dim=128,
     num_heads=4,
     num_layers=2,
