@@ -5,3 +5,4 @@ generated_music.mid
 transformer_model.pth
 transformer_ptb_model.pth
 trained_gpt2_nltk
+models
