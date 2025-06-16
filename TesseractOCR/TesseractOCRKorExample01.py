@@ -19,11 +19,8 @@ def ocr_pdf(pdf_path, lang='eng+kor'):
 
 if __name__ == '__main__':
     # Example usage
-    image_file = 'sample_image.png'
-    pdf_file = 'sample_document.pdf'
+    image_file = 'test_kor.png'
+    pdf_file = 'test_kor.png'
     
     print("OCR result for image file (English+Korean):")
     print(ocr_image(image_file, lang='eng+kor'))
-
-    print("\nOCR result for PDF file (English+Korean):")
-    print(ocr_pdf(pdf_file, lang='eng+kor'))
