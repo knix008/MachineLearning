@@ -11,9 +11,10 @@ from torch.utils.data import Dataset, DataLoader
 # 1. MIDI 파일에서 note와 chord 추출
 def get_notes(midi_folder="./data/Nottingham/train/"):
     notes = []
+    print(f"> Loading MIDI files from {midi_folder}...")
     for file in glob.glob(f"{midi_folder}/*.mid"):
         midi = converter.parse(file)
-        print(f"Parsing {file}")
+        #print(f"Parsing {file}")
         parts = instrument.partitionByInstrument(midi)
         if parts:
             notes_to_parse = parts.parts[0].recurse()
@@ -77,6 +78,7 @@ class LSTMMusicModel(nn.Module):
 
 # 4. 학습 함수
 def train(model, loader, epochs, lr, device):
+    print("> Starting training...")
     model.train()
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=lr)
@@ -159,6 +161,7 @@ def main():
         model, network_input, pitchnames, n_vocab, device
     )
     create_midi(prediction_output, output_file="generated_nottingham_pytorch.mid")
+    print("> MIDI generation completed. Output saved to 'generated_nottingham_pytorch.mid'.")
 
 
 if __name__ == "__main__":
