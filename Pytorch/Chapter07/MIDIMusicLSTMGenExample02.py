@@ -184,7 +184,7 @@ def main():
         loss_func,
         evaluate_model,
         lr=0.01,
-        ep=1,
+        ep=10,
     )
     seq = generate_music(lstm_model, ln=100, tmp=0.8, seq_st=None).transpose()
     midiwrite("generated_music.mid", seq.transpose(), dtm=0.25)
