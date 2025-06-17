@@ -148,19 +148,18 @@ def main(
     for epoch in range(epochs):
         train_loss = train_epoch(model, train_loader, loss_fn, optimizer, device)
         val_loss = evaluate(model, val_loader, loss_fn, device)
-        print(
-            f"Epoch {epoch+1}/{epochs} | Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f}"
-        )
+        
+    print(f"> Epoch {epoch+1}/{epochs} | Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f}")
 
     # Test
     test_loss = evaluate(model, test_loader, loss_fn, device)
-    print(f"Test Loss: {test_loss:.4f}")
+    print(f"> Test Loss: {test_loss:.4f}")
 
     # Generate new music
     start_seq = train_set.dataset.data[:seq_len]
     generated_notes = generate_notes(model, start_seq, 200, dataset.idx2note, device)
     note_sequence_to_midi(generated_notes, output_midi)
-    print(f"Generated MIDI saved to {output_midi}")
+    print(f"> Generated MIDI saved to {output_midi}")
 
 
 if __name__ == "__main__":
