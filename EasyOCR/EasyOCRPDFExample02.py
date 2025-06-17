@@ -3,8 +3,8 @@ import numpy as np
 from PIL import Image, ImageDraw
 import gradio as gr
 import fitz
-import torch
 
+import torch
 import time
 import datetime
 
