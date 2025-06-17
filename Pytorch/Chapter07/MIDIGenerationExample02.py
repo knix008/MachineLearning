@@ -14,7 +14,7 @@ def get_notes(midi_folder="./data/Nottingham/train/"):
     print(f"> Loading MIDI files from {midi_folder}...")
     for file in glob.glob(f"{midi_folder}/*.mid"):
         midi = converter.parse(file)
-        #print(f"Parsing {file}")
+        # print(f"Parsing {file}")
         parts = instrument.partitionByInstrument(midi)
         if parts:
             notes_to_parse = parts.parts[0].recurse()
@@ -156,12 +156,14 @@ def main():
     dataset = MidiDataset(network_input, network_output)
     loader = DataLoader(dataset, batch_size=64, shuffle=True)
     model = LSTMMusicModel(n_vocab, sequence_length).to(device)
-    train(model, loader, epochs=1, lr=0.001, device=device) # Adjust epochs as needed
+    train(model, loader, epochs=1, lr=0.001, device=device)  # Adjust epochs as needed
     prediction_output = generate_notes(
         model, network_input, pitchnames, n_vocab, device
     )
     create_midi(prediction_output, output_file="generated_nottingham_pytorch.mid")
-    print("> MIDI generation completed. Output saved to 'generated_nottingham_pytorch.mid'.")
+    print(
+        "> MIDI generation completed. Output saved to 'generated_nottingham_pytorch.mid'."
+    )
 
 
 if __name__ == "__main__":
