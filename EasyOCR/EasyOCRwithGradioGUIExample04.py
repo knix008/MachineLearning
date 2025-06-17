@@ -62,7 +62,7 @@ iface = gr.Interface(
     ],
     title="Korean & English OCR (EasyOCR + Gradio)",
     description="Upload an image file (JPG, PNG, etc.) or PDF containing Korean or English text. The processed image with boxes will be shown first, followed by the recognized text.",
-    allow_flagging="never"
+    flagging_mode="never"
 )
 
 if __name__ == "__main__":
