@@ -5,6 +5,10 @@ from torch.utils.data import Dataset, DataLoader
 import numpy as np
 from datasets import load_dataset
 
+import warnings 
+# Suppress warnings
+warnings.filterwarnings(action='ignore') 
+
 # 1. Penn Treebank Dataset Loader (word-level)
 class PTBDataset(Dataset):
     def __init__(self, texts, seq_len, word2idx, idx2word):
