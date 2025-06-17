@@ -2,6 +2,7 @@
 __pycache__/
 best_model.pth
 generated_music.mid
+generated_nottingham_pytorch.mid
 transformer_model.pth
 transformer_ptb_model.pth
 trained_gpt2_nltk
