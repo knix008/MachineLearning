@@ -7,6 +7,10 @@ import fitz
 import torch
 import time
 import datetime
+import warnings
+
+# Suppress warnings from EasyOCR
+warnings.filterwarnings("ignore", category=UserWarning, module='easyocr')
 
 # Check if CUDA is available and set the device accordingly
 device = "cuda" if torch.cuda.is_available() else "cpu"
