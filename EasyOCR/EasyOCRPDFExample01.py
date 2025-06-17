@@ -25,7 +25,7 @@ def process_file(input_file):
         if not pages:
             return None, "No pages found in PDF."
         image = pages[0].get_pixmap()   # Get the first page as an image    
-        print("Image size:", image.width, image.height)
+        print("The Covverted image size:", image.width, image.height)
         image = Image.frombytes("RGB", [image.width, image.height], image.samples)
         # Convert to numpy array for EasyOCR
         np_img = np.array(image)
