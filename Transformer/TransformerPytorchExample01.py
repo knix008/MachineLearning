@@ -42,7 +42,7 @@ class BasicTransformer(nn.Module):
         super().__init__()
         self.embed = nn.Embedding(vocab_size, d_model)
         self.pos_embed = nn.Parameter(torch.zeros(1, max_seq_len, d_model))
-        encoder_layer = nn.TransformerEncoderLayer(d_model, nhead, dim_feedforward, batch_first=True)
+        encoder_layer = nn.TransformerEncoderLayer(d_model, nhead, dim_feedforward)
         self.transformer = nn.TransformerEncoder(encoder_layer, num_layers)
         self.fc = nn.Linear(d_model, vocab_size)
         self.max_seq_len = max_seq_len
