@@ -38,7 +38,14 @@ def train_gpt2_ptb(epochs, batch_size):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model_name = "gpt2"
     tokenizer = GPT2Tokenizer.from_pretrained(model_name)
+    tokenizer.pad_token = tokenizer.eos_token
+    tokenizer.add_special_tokens({'eos_token': ''})  # idempotent
+    
     model = GPT2LMHeadModel.from_pretrained(model_name).to(device)
+    model.resize_token_embeddings(len(tokenizer))
+    model.config.pad_token_id = tokenizer.pad_token_id
+    model.config.eos_token_id = tokenizer.eos_token_id
+    
     train_dataset = get_dataset(tokenizer, "ptb_train.txt")
     val_dataset = get_dataset(tokenizer, "ptb_val.txt")
     data_collator = get_data_collator(tokenizer)
@@ -75,6 +82,9 @@ def train_gpt2_ptb(epochs, batch_size):
 def generate_text_ptb(prompt, max_length):
     model = GPT2LMHeadModel.from_pretrained("./data/gpt2-ptb-finetuned")
     tokenizer = GPT2Tokenizer.from_pretrained("./data/gpt2-ptb-finetuned")
+    tokenizer.pad_token = tokenizer.eos_token
+    model.config.pad_token_id = tokenizer.pad_token_id
+    model.config.eos_token_id = tokenizer.eos_token_id
     input_ids = tokenizer.encode(prompt, return_tensors="pt")
     sample_output = model.generate(
         input_ids,
@@ -83,6 +93,8 @@ def generate_text_ptb(prompt, max_length):
         top_k=50,
         top_p=0.95,
         num_return_sequences=1,
+        pad_token_id=tokenizer.pad_token_id,
+        eos_token_id=tokenizer.eos_token_id
     )
     return tokenizer.decode(sample_output[0], skip_special_tokens=True)
 
