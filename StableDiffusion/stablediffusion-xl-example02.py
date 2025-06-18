@@ -5,13 +5,12 @@ import time
 
 
 def generate_high_resolution_image(prompt, resolution=(1024, 1024)):
-    model_id = "stabilityai/stable-diffusion-xl-base-1.0"
     base = DiffusionPipeline.from_pretrained(
-        model_id, torch_dtype=torch.float16, variant="fp16", use_safetensors=True
+        "stabilityai/stable-diffusion-xl-base-1.0", torch_dtype=torch.float16, variant="fp16", use_safetensors=True
     )
     base.to("cuda")
     refiner = DiffusionPipeline.from_pretrained(
-        model_id,
+        "stabilityai/stable-diffusion-xl-refiner-1.0",
         text_encoder_2=base.text_encoder_2,
         vae=base.vae,
         torch_dtype=torch.float16,
