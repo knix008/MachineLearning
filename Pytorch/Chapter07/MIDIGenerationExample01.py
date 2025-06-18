@@ -148,8 +148,7 @@ def main(
     for epoch in range(epochs):
         train_loss = train_epoch(model, train_loader, loss_fn, optimizer, device)
         val_loss = evaluate(model, val_loader, loss_fn, device)
-        
-    print(f"> Epoch {epoch+1}/{epochs} | Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f}")
+        print(f"> Epoch {epoch+1}/{epochs} | Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f}")
 
     # Test
     test_loss = evaluate(model, test_loader, loss_fn, device)

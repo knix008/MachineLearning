@@ -156,7 +156,7 @@ def main():
     dataset = MidiDataset(network_input, network_output)
     loader = DataLoader(dataset, batch_size=64, shuffle=True)
     model = LSTMMusicModel(n_vocab, sequence_length).to(device)
-    train(model, loader, epochs=10, lr=0.001, device=device)  # Adjust epochs as needed
+    train(model, loader, epochs=20, lr=0.001, device=device)  # Adjust epochs as needed
     prediction_output = generate_notes(
         model, network_input, pitchnames, n_vocab, device
     )
