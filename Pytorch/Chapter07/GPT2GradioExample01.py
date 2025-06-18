@@ -85,9 +85,12 @@ def generate_text_ptb(prompt, max_length):
     tokenizer.pad_token = tokenizer.eos_token
     model.config.pad_token_id = tokenizer.pad_token_id
     model.config.eos_token_id = tokenizer.eos_token_id
+    encoded = tokenizer(prompt, return_tensors="pt", padding="longest")
     input_ids = tokenizer.encode(prompt, return_tensors="pt")
+    attention_mask = encoded["attention_mask"]
     sample_output = model.generate(
         input_ids,
+        attention_mask=attention_mask,
         do_sample=True,
         max_length=int(max_length),
         top_k=50,
