@@ -43,7 +43,7 @@ def generate_high_resolution_image(prompt, output_path="output.png", resolution=
     
 def main():
     prompt = "a futuristic cityscape at night, ultra high resolution, photorealistic, 8k"
-    generate_high_resolution_image(prompt, output_path="highres_result.png", resolution=(1024, 1024))
+    generate_high_resolution_image(prompt, output_path="high_resolution_result.png", resolution=(1024, 1024))
 
 if __name__ == "__main__":
     print("Stable Diffusion XL 예제 시작")
