@@ -116,7 +116,7 @@ class DiffusionScheduler:
         return torch.randint(0, self.timesteps, (batch_size,))
 
 # 4. 학습 함수
-def train(model, dataloader, scheduler, epochs=1, device='cuda', save_path=None, print_interval=100):
+def train(model, dataloader, scheduler, epochs=20, device='cuda', save_path=None, print_interval=100):
     optimizer = optim.Adam(model.parameters(), lr=2e-4)
     mse = nn.MSELoss()
     model.train()
