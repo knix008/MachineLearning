@@ -210,7 +210,7 @@ def main():
     # 학습이 오래 걸릴 수 있습니다. 중간 저장 경로를 지정하면 epoch마다 저장됩니다.
     train(
         model, train_loader, scheduler,
-        epochs=1,  # 실제로는 더 많은 epoch 권장
+        epochs=20,  # 실제로는 더 많은 epoch 권장
         device=device,
         save_path="unet2d_selfie2anime.pth"
     )
