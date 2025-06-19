@@ -115,8 +115,8 @@ class DiffusionScheduler:
     def sample_timesteps(self, batch_size):
         return torch.randint(0, self.timesteps, (batch_size,))
 
-# 4. 학습 및 샘플링 루프
-def train(model, dataloader, scheduler, epochs=10, device='cuda'):
+# 4. 학습 함수
+def train(model, dataloader, scheduler, epochs=1, device='cuda', save_path=None, print_interval=100):
     optimizer = optim.Adam(model.parameters(), lr=2e-4)
     mse = nn.MSELoss()
     model.train()
@@ -131,52 +131,65 @@ def train(model, dataloader, scheduler, epochs=10, device='cuda'):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            if i % 100 == 0:
-                print(f"Epoch {epoch}/{epochs}, Step {i}, Loss: {loss.item():.4f}")
+            if i % print_interval == 0:
+                print(f"Epoch {epoch+1}/{epochs}, Step {i}, Loss: {loss.item():.4f}")
+        if save_path:
+            torch.save(model.state_dict(), save_path)
+            print(f"Model saved to {save_path}")
 
-# --- 노이즈에서 애니메이션 이미지 생성 + 중간 이미지 저장 ---
-def sample_from_noise_with_intermediates(
-    model, scheduler, img_shape=(3, 128, 128), device='cuda', n_samples=4,
-    save_dir="./samples", intermediate_steps=[0, 100, 200, 400, 600, 800, 999]
+# --- 노이즈에서 애니메이션 이미지 생성 + 중간과정 그리드 저장 ---
+def sample_from_noise_with_interpolations(
+    model, scheduler, img_shape=(3, 128, 128), device='cuda', save_grid_path="interpolation_grid.png",
+    n_steps=8
 ):
-    os.makedirs(save_dir, exist_ok=True)
     model.eval()
-    all_final_images = []
     with torch.no_grad():
-        for sample_idx in range(n_samples):
-            img = torch.randn(1, *img_shape).to(device).float()
-            intermediates = {}
-            for t in reversed(range(scheduler.timesteps)):
-                t_batch = torch.tensor([t], device=device)
-                pred_noise = model(img, t_batch)
-                alpha = torch.tensor(scheduler.alpha[t], device=device).float()
-                alpha_bar = torch.tensor(scheduler.alpha_bar[t], device=device).float()
-                beta = torch.tensor(scheduler.beta[t], device=device).float()
-                img = (1 / torch.sqrt(alpha)) * (img - (beta / torch.sqrt(1 - alpha_bar)) * pred_noise)
-                if t > 0:
-                    noise = torch.randn_like(img)
-                    img = img + torch.sqrt(beta) * noise
-                if t in intermediate_steps:
-                    # 저장용 이미지
-                    img_to_save = torch.clamp(img, -1, 1)
-                    img_to_save = (img_to_save + 1) / 2
-                    np_img = img_to_save.squeeze().cpu().permute(1, 2, 0).numpy()
-                    np_img = (np_img * 255).astype(np.uint8)
-                    img_pil = Image.fromarray(np_img)
-                    img_pil.save(os.path.join(save_dir, f"sample{sample_idx}_step{t}.png"))
-                    intermediates[t] = np_img
-            # 최종 이미지 저장
-            img_final = torch.clamp(img, -1, 1)
-            img_final = (img_final + 1) / 2
-            all_final_images.append(img_final.cpu().squeeze())
-            np_img = img_final.squeeze().cpu().permute(1, 2, 0).numpy()
+        img = torch.randn(1, *img_shape).to(device).float()
+        timesteps = np.linspace(scheduler.timesteps-1, 0, n_steps, dtype=int)
+        images = []
+
+        for idx, t in enumerate(reversed(range(scheduler.timesteps))):
+            t_batch = torch.tensor([t], device=device)
+            pred_noise = model(img, t_batch)
+            alpha = torch.tensor(scheduler.alpha[t], device=device).float()
+            alpha_bar = torch.tensor(scheduler.alpha_bar[t], device=device).float()
+            beta = torch.tensor(scheduler.beta[t], device=device).float()
+            img = (1 / torch.sqrt(alpha)) * (img - (beta / torch.sqrt(1 - alpha_bar)) * pred_noise)
+            if t > 0:
+                noise = torch.randn_like(img)
+                img = img + torch.sqrt(beta) * noise
+            if t in timesteps:
+                img_to_save = torch.clamp(img, -1, 1)
+                img_to_save = (img_to_save + 1) / 2
+                images.append(img_to_save.squeeze().cpu())
+
+        # 만약 timesteps가 0을 포함하지 않으면 마지막 이미지를 추가
+        if 0 not in timesteps:
+            img_to_save = torch.clamp(img, -1, 1)
+            img_to_save = (img_to_save + 1) / 2
+            images.append(img_to_save.squeeze().cpu())
+
+        # 그리드로 저장 및 시각화
+        fig, axs = plt.subplots(1, len(images), figsize=(len(images)*3, 3))
+        for i, img in enumerate(images):
+            np_img = img.permute(1, 2, 0).numpy()
+            axs[i].imshow(np.clip(np_img, 0, 1))
+            axs[i].set_title(f"t={timesteps[i] if i < len(timesteps) else 0}")
+            axs[i].axis('off')
+        plt.suptitle("Progressive Anime Face Generation from Noise")
+        plt.tight_layout()
+        plt.savefig(save_grid_path)
+        plt.show()
+
+        # 개별 이미지 파일도 저장 (선택)
+        for i, img in enumerate(images):
+            np_img = img.permute(1, 2, 0).numpy()
             np_img = (np_img * 255).astype(np.uint8)
             img_pil = Image.fromarray(np_img)
-            img_pil.save(os.path.join(save_dir, f"sample{sample_idx}_final.png"))
-    return all_final_images
+            img_pil.save(f"interpolation_step_{timesteps[i] if i < len(timesteps) else 0}.png")
 
 # 5. 실행 예제
-if __name__ == "__main__":
+def main():
     data_root = "./data/selfie2anime"  # selfie2anime 데이터셋 경로
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -192,24 +205,22 @@ if __name__ == "__main__":
     model = UNet2d(in_channels=4, out_channels=3).to(device)
     scheduler = DiffusionScheduler(timesteps=1000)
     
-    # 훈련
-    # train(model, train_loader, scheduler, epochs=10, device=device)  # 이미 학습된 모델 사용 시 주석
-
-    # --- 노이즈에서 애니메이션 이미지 생성 및 중간 이미지 저장 ---
-    n_samples = 4
-    # 원하는 중간 timestep 저장 리스트
-    intermediate_steps = [0, 100, 200, 400, 600, 800, 999]  # 0은 시작 노이즈, 999는 최종 복원
-
-    all_final_images = sample_from_noise_with_intermediates(
-        model, scheduler, img_shape=(3, 128, 128), device=device,
-        n_samples=n_samples, save_dir="./samples", intermediate_steps=intermediate_steps
+    # --- 모델 훈련 ---
+    # epochs와 batch_size는 하드웨어 상황에 맞게 조정하세요.
+    # 학습이 오래 걸릴 수 있습니다. 중간 저장 경로를 지정하면 epoch마다 저장됩니다.
+    train(
+        model, train_loader, scheduler,
+        epochs=1,  # 실제로는 더 많은 epoch 권장
+        device=device,
+        save_path="unet2d_selfie2anime.pth"
     )
 
-    # 최종 샘플들 시각화
-    fig, axs = plt.subplots(1, n_samples, figsize=(n_samples*3, 3))
-    for i, img in enumerate(all_final_images):
-        np_img = img.permute(1, 2, 0).numpy()
-        axs[i].imshow(np.clip(np_img, 0, 1))
-        axs[i].axis('off')
-    plt.suptitle('Generated Anime Faces from Noise (Final Results)')
-    plt.show()
+    # --- 노이즈에서 애니메이션 이미지 생성 및 중간과정 그리드 저장 ---
+    sample_from_noise_with_interpolations(
+        model, scheduler, img_shape=(3, 128, 128), device=device,
+        save_grid_path="interpolation_grid.png", n_steps=8
+    )
+    
+    
+if __name__ == "__main__":
+    main()  

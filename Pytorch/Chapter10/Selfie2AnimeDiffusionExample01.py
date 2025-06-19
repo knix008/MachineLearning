@@ -167,9 +167,7 @@ def sample(model, scheduler, img_shape=(3, 128, 128), device="cuda"):
         img = (img + 1) / 2
         return img
 
-
-# 5. 실행 예제
-if __name__ == "__main__":
+def main():
     data_root = "./data/selfie2anime"  # selfie2anime 데이터셋 경로
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -197,3 +195,6 @@ if __name__ == "__main__":
     plt.title("Generated Anime Face")
     plt.axis("off")
     plt.show()
+    
+if __name__ == "__main__":
+    main()
