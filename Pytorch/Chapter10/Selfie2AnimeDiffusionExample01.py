@@ -128,7 +128,7 @@ class DiffusionScheduler:
         return torch.randint(0, self.timesteps, (batch_size,))
 
 
-def train(model, dataloader, scheduler, epochs=10, device="cuda"):
+def train(model, dataloader, scheduler, epochs=30, device="cuda"):
     optimizer = optim.Adam(model.parameters(), lr=2e-4)
     mse = nn.MSELoss()
     model.train()
