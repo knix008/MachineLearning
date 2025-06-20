@@ -1,7 +1,6 @@
 import os
 import torch
 import torch.nn.functional as F
-import numpy as np
 from torchvision import transforms
 from diffusers.utils import make_image_grid
 from diffusers import UNet2DModel
@@ -10,11 +9,20 @@ from diffusers.optimization import get_cosine_schedule_with_warmup
 from datasets import load_dataset
 from diffusers import DDPMPipeline
 from accelerate import Accelerator
-from PIL import Image
 from tqdm import tqdm
 
+DATASET_PATH = "./data/selfie2anime/train/imageB"
 
-def load_train_dataset(dataset, batch_size=16):
+
+def loading_dataset():
+    dataset = load_dataset(DATASET_PATH, split="train")
+    return dataset
+
+
+BATCH_SIZE = 16
+
+
+def load_train_dataset(dataset, batch_size=BATCH_SIZE):
     train_dataloader = torch.utils.data.DataLoader(
         dataset, batch_size=batch_size, shuffle=True
     )
@@ -100,7 +108,7 @@ def train(
         progress_bar = tqdm(
             total=len(train_dataloader), disable=not accelerator.is_local_main_process
         )
-        progress_bar.set_description(f"Epoch {epoch}")
+        progress_bar.set_description(f"Epoch {epoch+1}")
 
         for step, batch in enumerate(train_dataloader):
             clean_images = batch["images"]
@@ -164,16 +172,10 @@ def train(
                 pipeline.save_pretrained(MODEL_SAVE_DIR)
 
 
-def load_dataset():
-    dataset = load_dataset("./data/selfie2anime/train/imageB", split="train")
-    print(dataset)
-    return dataset
-
-
 IMAGE_SIZE = 128
 preprocess = transforms.Compose(
     [
-        transforms.Resize(IMAGE_SIZE, IMAGE_SIZE),
+        transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         transforms.Normalize([0.5], [0.5]),
@@ -202,27 +204,33 @@ def main():
 
     # Load the model and dataset
     print("> Loading model and dataset...")
-    dataset = load_dataset()
-    optimizer = torch.optim.AdamW(model.parameters(), lr=LR)
-    set_lr_scheduler = get_cosine_schedule_with_warmup(
-        optimizer=optimizer,
-        num_warmup_steps=LR_WARMUP_STEPS,
-        num_training_steps=(len(dataset) * NUM_EPOCHS),
-    )
-    print("> Setting learning rate scheduler...")
-    lr_scheduler = set_lr_scheduler(
-        optimizer, LR_WARMUP_STEPS, len(dataset) * NUM_EPOCHS
-    )
-    print("> Loading train loader...")
-    train_dataloader = load_train_dataset(dataset, batch_size=16)
-    print("> Setting dataset transform...")
-    dataset.set_transform(transform)
-    print("> Initializeing accelerator...")
-    accelerator = initialize_accelerator()
+    dataset = loading_dataset()
+    if dataset is None:
+        print("Error: Dataset could not be loaded.")
+        return
+
+    print("> Dataset loaded with", len(dataset), "samples")
     print("> Initializing model...")
     model = initialize_model()
+    optimizer = torch.optim.AdamW(model.parameters(), lr=LR)
+
+    print("> Loading train loader...")
+    train_dataloader = load_train_dataset(dataset, batch_size=16)
+
+    print("> Setting learning rate scheduler...")
+    lr_scheduler = set_lr_scheduler(
+        optimizer, train_dataloader, NUM_EPOCHS, LR_WARMUP_STEPS
+    )
+
+    print("> Setting dataset transform...")
+    dataset.set_transform(transform)
+
+    print("> Initializeing accelerator...")
+    accelerator = initialize_accelerator()
+
     print("> Initializing noise scheduler...")
     noise_scheduler = initialize_noise_scheduler()
+
     print(
         "> Preparing model, optimizer, dataloader, and lr_scheduler with accelerator..."
     )
