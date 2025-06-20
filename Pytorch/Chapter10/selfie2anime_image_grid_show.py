@@ -1,4 +1,3 @@
-from diffusers.utils import make_image_grid
 from datasets import load_dataset
 from diffusers.utils import make_image_grid
 import matplotlib.pyplot as plt
