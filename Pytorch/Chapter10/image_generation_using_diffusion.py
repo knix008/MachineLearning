@@ -136,7 +136,7 @@ model = UNet2DModel(
 
 from diffusers.optimization import get_cosine_schedule_with_warmup
 
-NUM_EPOCHS = 20
+NUM_EPOCHS = 1
 LR = 1e-4
 LR_WARMUP_STEPS = 500
 
