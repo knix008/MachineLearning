@@ -1,22 +1,29 @@
-import requests
-from PIL import Image
-from io import BytesIO
-from diffusers import StableDiffusionUpscalePipeline
 import torch
+from PIL import Image
+from diffusers import StableDiffusionUpscalePipeline
+import time
+import datetime
 
-# load model and scheduler
-model_id = "stabilityai/stable-diffusion-x4-upscaler"
-pipeline = StableDiffusionUpscalePipeline.from_pretrained(
-    model_id, torch_dtype=torch.float16
-)
-pipeline = pipeline.to("cuda")
-IMAGE_PATH = "generated_image.png"
+def main():
+    # load model and scheduler
+    model_id = "stabilityai/stable-diffusion-x4-upscaler"
+    pipeline = StableDiffusionUpscalePipeline.from_pretrained(
+        model_id, torch_dtype=torch.float16
+    )
+    pipeline = pipeline.to("cuda")
+    IMAGE_PATH = "sample_face.jpg"
 
-low_res_img = Image.open(IMAGE_PATH).convert("RGB")
-low_res_img = low_res_img.resize((512, 512))
-low_res_img.save("low_res_cat.png")
+    low_res_img = Image.open(IMAGE_PATH).convert("RGB")
+    low_res_img = low_res_img.resize((512, 512))
+    low_res_img.save("low_res_cat.png")
 
-prompt = "a white cat"
+    prompt = "a white cat"
+    start = time.time()
+    upscaled_image = pipeline(prompt=prompt, image=low_res_img).images[0]
+    end = time.time()
+    print(f"Upscaling took {datetime.timedelta(seconds=end - start)}")
+    upscaled_image.save("upscaled_image.png")
 
-upscaled_image = pipeline(prompt=prompt, image=low_res_img).images[0]
-upscaled_image.save("upscaled_image.png")
+if __name__ == "__main__":
+    print("Upscaling example...")
+    main()
