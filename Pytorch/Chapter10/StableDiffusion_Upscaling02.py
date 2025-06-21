@@ -57,9 +57,11 @@ IMAGE_SIZE = 512
 def main():
     generator_pipe = initialize_generator_pipeline()
     prompt = "a vivid blue and yellow macaw in a tropical jungle, cinematic lighting, ultra-high detail"
-    seed = torch.manual_seed(42)
+    seed = torch.manual_seed(71)
     image = generate_image(generator_pipe, prompt, seed, image_size=IMAGE_SIZE)
     image.save("generated_image.png")
+    del generator_pipe # Free up memory --> important for large models. Sometimes it will make OOM error.
+    
     # Upscaling generated image
     print("> Upscaling generated image...")
     image = Image.open("generated_image.png").convert("RGB")
@@ -71,6 +73,7 @@ def main():
     end = time.time()
     print(f"> Upscaling completed in {datetime.timedelta(seconds=end - start)}")
     image.save("upscaled_image.png")
+    del upscaler_pipe  # Free up memory
 
 
 if __name__ == "__main__":
