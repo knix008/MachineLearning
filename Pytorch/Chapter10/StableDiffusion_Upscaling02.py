@@ -3,6 +3,8 @@ from diffusers import StableDiffusionPipeline, StableDiffusionUpscalePipeline
 import torchvision.transforms as T
 import warnings
 from PIL import Image
+import time
+import datetime
 
 warnings.filterwarnings("ignore")
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -63,7 +65,11 @@ def main():
     image = Image.open("generated_image.png").convert("RGB")
     image = image.resize((IMAGE_SIZE, IMAGE_SIZE))
     upscaler_pipe = initialize_upscaler_pipeline()
+    
+    start = time.time()
     image = upscale_image(upscaler_pipe, prompt, image)
+    end = time.time()
+    print(f"> Upscaling completed in {datetime.timedelta(seconds=end - start)}")
     image.save("upscaled_image.png")
 
 
