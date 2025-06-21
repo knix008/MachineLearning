@@ -114,7 +114,7 @@ def generate_multiple_invisible_qr(data, background_path, output_prefix="invisib
 
 if __name__ == "__main__":
     # Example usage with sample01.png
-    data_to_encode = "https://github.com/your-repo/invisible-qr-demo"
+    data_to_encode = "http://blog.naver.com/knix009"
     
     # Generate a single invisible QR code
     generate_invisible_qr_enhanced(
