@@ -17,7 +17,7 @@ def main():
     low_res_img = low_res_img.resize((512, 512))
     low_res_img.save("low_res_cat.png")
 
-    prompt = "a white cat"
+    prompt = "A high-resolution image of a baautiful face, ultra detailed and vibrant"
     start = time.time()
     upscaled_image = pipeline(prompt=prompt, image=low_res_img).images[0]
     end = time.time()
