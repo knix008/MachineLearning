@@ -88,13 +88,13 @@ def decode():
 
 def main():
     """Main function for user interaction."""
-    choice = input(":: Welcome to Steganography ::\n1. Encode\n2. Decode\n")
+    choice = input("> Welcome to Steganography ::\n1. Encode\n2. Decode\n")
     if choice == "1":
         encode()
     elif choice == "2":
-        print("Decoded Word: " + decode())
+        print("> Decoded Word: " + decode())
     else:
-        print("Invalid choice, exiting.")
+        print("> Invalid choice, exiting.")
 
 
 if __name__ == "__main__":
