@@ -198,7 +198,7 @@ def set_lr_scheduler(optimizer, train_dataloader, epochs, num_warmup_steps=500):
 
 
 def main():
-    NUM_EPOCHS = 1  # Number of epochs to train : 20
+    NUM_EPOCHS = 3  # Number of epochs to train : 20
     LR = 1e-4
     LR_WARMUP_STEPS = 500
 
