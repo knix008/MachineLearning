@@ -10,15 +10,19 @@ QR_OUTPUT_IMAGE = "qr_output.png"
 # 고정된 QR 코드 데이터
 QR_TEXT = "http://blog.naver.com/knix009"
 
+
 def genData(data):
     return [format(ord(i), "08b") for i in data]
+
 
 def modPix(pix, data):
     datalist = genData(data)
     lendata = len(datalist)
     imdata = iter(pix)
     for i in range(lendata):
-        pixels = [value for value in next(imdata)[:3] + next(imdata)[:3] + next(imdata)[:3]]
+        pixels = [
+            value for value in next(imdata)[:3] + next(imdata)[:3] + next(imdata)[:3]
+        ]
         for j in range(8):
             if datalist[i][j] == "0" and pixels[j] % 2 != 0:
                 pixels[j] -= 1
@@ -32,6 +36,7 @@ def modPix(pix, data):
         yield tuple(pixels[3:6])
         yield tuple(pixels[6:9])
 
+
 def encode_enc(newimg, data):
     w = newimg.size[0]
     (x, y) = (0, 0)
@@ -39,6 +44,7 @@ def encode_enc(newimg, data):
         newimg.putpixel((x, y), pixel)
         x = 0 if x == w - 1 else x + 1
         y += 1 if x == 0 else 0
+
 
 def encode_with_qr():
     # 1. 고정된 텍스트를 QR 코드로 변환
@@ -54,13 +60,16 @@ def encode_with_qr():
     newimg.save(OUTPUT_IMAGE)
     print(f"[INFO] Steganography image saved as {OUTPUT_IMAGE}")
 
+
 def decode_from_qr():
     # 1. steganography_qr.png에서 텍스트 추출
     image = Image.open(OUTPUT_IMAGE, "r")
     imgdata = iter(image.getdata())
     data = ""
     while True:
-        pixels = [value for value in next(imgdata)[:3] + next(imgdata)[:3] + next(imgdata)[:3]]
+        pixels = [
+            value for value in next(imgdata)[:3] + next(imgdata)[:3] + next(imgdata)[:3]
+        ]
         binstr = "".join(["1" if i % 2 else "0" for i in pixels[:8]])
         data += chr(int(binstr, 2))
         if pixels[-1] % 2 != 0:
@@ -75,8 +84,11 @@ def decode_from_qr():
     print(f"[INFO] QR code image saved as {QR_OUTPUT_IMAGE}")
     return data
 
+
 def main():
-    print("> Steganography with QR Code ::\n1. Encode(text→QR+stegano)\n2. Decode(stegano→text→QR)")
+    print(
+        "> Steganography with QR Code ::\n1. Encode(text→QR+stegano)\n2. Decode(stegano→text→QR)"
+    )
     choice = input("Choice: ")
     if choice == "1":
         encode_with_qr()
@@ -84,6 +96,7 @@ def main():
         decode_from_qr()
     else:
         print("Invalid choice.")
+
 
 if __name__ == "__main__":
     main()
