@@ -18,7 +18,7 @@ class OCRWidget : public QWidget {
 public:
     OCRWidget(QWidget *parent = nullptr) : QWidget(parent) {
         QVBoxLayout *layout = new QVBoxLayout(this);
-        
+
         imageLabel = new QLabel("No image loaded", this);
         imageLabel->setAlignment(Qt::AlignCenter);
         layout->addWidget(imageLabel);
