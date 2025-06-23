@@ -44,5 +44,5 @@ def verify_face(input_image_path, registered_dir, threshold=0.6):
 if __name__ == "__main__":
     # 예시 사용법
     registered_dir = "Registered"         # 등록된 이미지 폴더
-    input_image_path = "person3.jpg"               # 비교할 입력 이미지
+    input_image_path = "person3.jpg"      # 비교할 입력 이미지
     verify_face(input_image_path, registered_dir)
