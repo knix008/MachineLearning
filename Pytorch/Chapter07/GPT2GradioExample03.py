@@ -479,3 +479,4 @@ if __name__ == "__main__":
     # Create and launch the Gradio interface
     demo = create_gradio_interface()
     demo.launch(share=True, debug=True)
+
