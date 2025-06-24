@@ -17,7 +17,7 @@ def detect_faces_and_save_with_progress(input_video, progress=gr.Progress(track_
         fps = 24
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    fourcc = cv2.VideoWriter_fourcc(*'avc1')
+    fourcc = cv2.VideoWriter_fourcc(*'avc1') # 'mp4v' for .mp4 files
     out = cv2.VideoWriter(save_path, fourcc, fps, (width, height))
 
     processed = 0
