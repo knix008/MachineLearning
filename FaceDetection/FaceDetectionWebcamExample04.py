@@ -41,7 +41,7 @@ class FaceDetectorApp:
     def __init__(self, window, window_title):
         self.window = window
         self.window.title(window_title)
-        
+
         # 웹캠 초기화
         self.vid = cv2.VideoCapture(0)
         if not self.vid.isOpened():
@@ -49,10 +49,10 @@ class FaceDetectorApp:
 
         self.width = int(self.vid.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.height = int(self.vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        
+
         # GUI 요소 생성
         self.create_widgets()
-        
+
         # 비디오 루프 시작을 위해 첫 프레임 업데이트 예약
         self.delay = 15  # 프레임 업데이트 간격 (ms)
         self.update_frame()
@@ -64,7 +64,7 @@ class FaceDetectorApp:
         # 전체 프레임
         main_frame = ttk.Frame(self.window, padding="10")
         main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
-        
+
         # 제목 레이블
         title_label = ttk.Label(main_frame, text="실시간 얼굴 인식 (입력 vs 출력)", font=("Helvetica", 16))
         title_label.grid(row=0, column=0, columnspan=2, pady=10)
@@ -74,7 +74,7 @@ class FaceDetectorApp:
         input_frame.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
         self.input_panel = ttk.Label(input_frame)
         self.input_panel.pack(padx=5, pady=5)
-        
+
         # 출력(결과) 비디오 패널
         output_frame = ttk.LabelFrame(main_frame, text="출력 (얼굴 인식)")
         output_frame.grid(row=1, column=1, padx=10, pady=10, sticky="nsew")
@@ -84,11 +84,11 @@ class FaceDetectorApp:
     def update_frame(self):
         """웹캠에서 프레임을 읽고 GUI를 업데이트합니다."""
         ret, frame = self.vid.read()
-        
+
         if ret:
             # OpenCV는 BGR 형식이지만 Pillow는 RGB 형식을 사용하므로 변환
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            
+
             # 얼굴 인식 수행
             detected_frame = self.detect_faces(frame.copy())
             detected_frame_rgb = cv2.cvtColor(detected_frame, cv2.COLOR_BGR2RGB)
@@ -101,7 +101,7 @@ class FaceDetectorApp:
             # GUI 패널 업데이트
             self.input_panel.config(image=self.original_photo)
             self.output_panel.config(image=self.detected_photo)
-            
+
             # 다음 프레임 업데이트를 예약
             self.window.after(self.delay, self.update_frame)
         else:
