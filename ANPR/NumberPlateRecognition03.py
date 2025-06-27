@@ -27,7 +27,7 @@ except Exception as e:
 # YOLO 모델 로드
 MODEL_PATH = 'license_plate_detector.pt'
 if not os.path.exists(MODEL_PATH):
-    raise FileNotFoundError(f"'{MODEL_PATH}' 파일을 찾을 수 없습니다. 터미널에서 'yolo export model=keremberke/yolov8m-license-plate format=pt' 명령을 실행하여 모델을 먼저 다운로드하세요.")
+    raise FileNotFoundError(f"'{MODEL_PATH}' 파일을 찾을 수 없습니다.")
 model = YOLO(MODEL_PATH)
 
 
@@ -96,7 +96,7 @@ iface = gr.Interface(
         gr.Textbox(label="입력 이미지 해상도")
     ],
     title="YOLOv8 & EasyOCR 자동차 번호판 인식",
-    description="YOLOv8로 자동차 번호판을 탐지하고 EasyOCR로 텍스트를 인식하는 Gradio 앱입니다. 인식된 한글 번호판을.",
+    description="YOLOv8로 자동차 번호판을 탐지하고 EasyOCR로 텍스트를 인식하는 Gradio 앱입니다.",
 )
 
 if __name__ == "__main__":
