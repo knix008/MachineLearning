@@ -40,7 +40,7 @@ demo = gr.Interface(
     ],
     title=title,
     description=description,
-    allow_flagging="never"
+    flagging_mode="never"
 )
 
 if __name__ == "__main__":
