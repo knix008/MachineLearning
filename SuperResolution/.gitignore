@@ -1,3 +1,6 @@
 weights
 RealESRGAN_x4plus.pth
 results
+gfpgan
+EDSR_x4.pb
+ESPCN_x4.pb
