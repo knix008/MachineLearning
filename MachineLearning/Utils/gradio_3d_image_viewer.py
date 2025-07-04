@@ -6,6 +6,9 @@ import numpy as np
 import plotly.graph_objs as go
 from PIL import Image
 import tempfile
+import os
+import plotly.io as pio
+import io
 
 # MiDaS 모델 로드 (최초 1회만)
 def load_midas():
@@ -24,10 +27,16 @@ def load_midas():
 midas, midas_transform, device = load_midas()
 
 def estimate_depth(image):
-    # PIL.Image -> torch tensor
-    input_batch = midas_transform(image).to(device)
+    # 이미지를 RGB로 변환
+    if image.mode != "RGB":
+        image = image.convert("RGB")
+    img_np = np.array(image)
+    input_tensor = midas_transform(img_np).to(device)
     with torch.no_grad():
-        prediction = midas(input_batch)
+        prediction = midas(input_tensor)
+        # DPT 계열은 (1, H, W), MiDaS small은 (1, 1, H, W)
+        if prediction.ndim == 4:
+            prediction = prediction.squeeze(0)
         prediction = torch.nn.functional.interpolate(
             prediction.unsqueeze(1),
             size=image.size[::-1],
@@ -38,7 +47,9 @@ def estimate_depth(image):
     return depth
 
 def depth_to_pointcloud(image, depth, sample_step=4):
-    # 이미지를 numpy로 변환
+    # 이미지를 numpy로 변환 (항상 RGB)
+    if image.mode != "RGB":
+        image = image.convert("RGB")
     img = np.array(image)
     h, w = depth.shape
     # 샘플링 (속도/메모리 절약)
@@ -66,23 +77,23 @@ def plot_3d_pointcloud(x, y, z, colors):
         margin=dict(l=0, r=0, b=0, t=30),
         title="3D Point Cloud from Single Image (MiDaS)"
     )
-    # Plotly HTML을 임시파일로 저장 후 경로 반환
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.html') as tmpfile:
-        fig.write_html(tmpfile.name)
-        return tmpfile.name
+    # Plotly Figure를 PNG로 변환
+    img_bytes = fig.to_image(format='png', width=800, height=600, scale=2)
+    img = Image.open(io.BytesIO(img_bytes))
+    return img
 
 def image_to_3d_view(image):
     depth = estimate_depth(image)
     x, y, z, colors = depth_to_pointcloud(image, depth)
-    html_path = plot_3d_pointcloud(x, y, z, colors)
-    return gr.HTML.update(value=open(html_path, encoding='utf8').read())
+    img = plot_3d_pointcloud(x, y, z, colors)
+    return img
 
 demo = gr.Interface(
     fn=image_to_3d_view,
     inputs=gr.Image(type="pil", label="2D 이미지 업로드"),
-    outputs=gr.HTML(label="3D 포인트클라우드 시각화 (회전 가능)"),
+    outputs=gr.Image(type="pil", label="3D 포인트클라우드 시각화"),
     title="2D 이미지를 3D로 변환 (MiDaS)",
-    description="이미지를 업로드하면 MiDaS로 깊이 추정 후 3D 포인트클라우드로 시각화합니다. 마우스로 회전/확대 가능합니다."
+    description="이미지를 업로드하면 MiDaS로 깊이 추정 후 3D 포인트클라우드로 시각화합니다."
 )
 
 if __name__ == "__main__":
