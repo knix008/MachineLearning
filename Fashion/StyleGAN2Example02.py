@@ -11,7 +11,10 @@ import torch
 
 import legacy
 
-os.environ["TORCH_CUDA_ARCH_LIST"] = "8.6 8.0 7.5 7.0 6.1 6.0 5.2 5.0"  # CUDA 아키텍처 설정
+os.environ["TORCH_CUDA_ARCH_LIST"] = (
+    "8.6 8.0 7.5 7.0 6.1 6.0 5.2 5.0"  # CUDA 아키텍처 설정
+)
+
 
 def num_range(s: str) -> List[int]:
     range_re = re.compile(r"^(\d+)-(\d+)$")
@@ -88,19 +91,9 @@ def stylemix(row_seeds, col_seeds, style_layers, truncation_psi, noise_mode):
     canvas.save(grid_path)
 
     grid_img = PIL.Image.open(grid_path)
-    single_images = []
-    for (row_seed, col_seed), image in image_dict.items():
-        pil_img = PIL.Image.fromarray(image, "RGB")
-        single_images.append((f"{row_seed}-{col_seed}.png", pil_img))
 
-    # 10개만 추출
-    single_images = [img for _, img in single_images[:10]]
-    # 부족한 개수는 None으로 채우기
-    while len(single_images) < 10:
-        single_images.append(None)
-
-    outputs = [grid_img] + single_images  # 총 11개
-    return outputs
+    # style mixing grid 이미지만 반환
+    return grid_img
 
 
 with gr.Blocks() as demo:
@@ -108,7 +101,6 @@ with gr.Blocks() as demo:
 
     with gr.Row():
         with gr.Column():
-            # network_pkl 입력 제거!
             row_seeds = gr.Textbox(label="Row Seeds (예: 85,100,75,458,1500)")
             col_seeds = gr.Textbox(label="Col Seeds (예: 55,821,1789,293)")
             style_layers = gr.Textbox(label="Style Layer Range (예: 0-6)", value="0-6")
@@ -121,33 +113,11 @@ with gr.Blocks() as demo:
             run_btn = gr.Button("이미지 생성")
         with gr.Column():
             out_grid = gr.Image(label="Style Mixing Grid")
-            out_img1 = gr.Image(label="이미지 1")
-            out_img2 = gr.Image(label="이미지 2")
-            out_img3 = gr.Image(label="이미지 3")
-            out_img4 = gr.Image(label="이미지 4")
-            out_img5 = gr.Image(label="이미지 5")
-            out_img6 = gr.Image(label="이미지 6")
-            out_img7 = gr.Image(label="이미지 7")
-            out_img8 = gr.Image(label="이미지 8")
-            out_img9 = gr.Image(label="이미지 9")
-            out_img10 = gr.Image(label="이미지 10")
 
     run_btn.click(
         stylemix,
         [row_seeds, col_seeds, style_layers, truncation_psi, noise_mode],
-        [
-            out_grid,
-            out_img1,
-            out_img2,
-            out_img3,
-            out_img4,
-            out_img5,
-            out_img6,
-            out_img7,
-            out_img8,
-            out_img9,
-            out_img10,
-        ],
+        out_grid,
     )
 
 if __name__ == "__main__":

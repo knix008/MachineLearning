@@ -5,3 +5,6 @@ model_deblurring.pth
 single_image_defocus_deblurring.pth
 gfpgan
 __pycheck__
+.gradio
+Stylegan2
+ffhq.pkl
