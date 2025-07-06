@@ -53,6 +53,8 @@ def decode_and_read(image):
     return qr_img, qr_text
 
 
+# The code snippet you provided is creating a Gradio interface for a Steganography QR Code Extractor
+# application.
 with gr.Blocks() as demo:
     gr.Markdown("# Steganography QR Code Extractor")
     with gr.Row():
