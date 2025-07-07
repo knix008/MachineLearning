@@ -4,21 +4,21 @@ import gradio as gr
 import time
 from PIL import Image
 
-access_token = ""
+#access_token = ""
 
-from huggingface_hub import login
-login(access_token)
+#from huggingface_hub import login
+#login(access_token)
 
 # 모델 로딩 (최초 한 번만)
 pipe = FluxPipeline.from_pretrained(
     "black-forest-labs/FLUX.1-schnell", torch_dtype=torch.bfloat16
 )
-pipe.enable_model_cpu_offload()
+pipe.enable_model_cpu_offload() # This can make a warning message like "add_prefix_space" ...
 
 
 def generate_image(prompt):
     start_time = time.time()
-    generator = torch.Generator("cpu").manual_seed(0)
+    generator = torch.Generator("cpu").manual_seed(0) # For reproducibility, how about using "cuda"?
     image = pipe(
         prompt,
         guidance_scale=0.0,
