@@ -6,11 +6,14 @@ import gradio as gr
 model_path = "stabilityai/stable-diffusion-3.5-medium"
 
 try:
-    pipe = StableDiffusion3Pipeline.from_pretrained("stabilityai/stable-diffusion-3.5-medium", torch_dtype=torch.bfloat16)
+    pipe = StableDiffusion3Pipeline.from_pretrained(
+        model_path, torch_dtype=torch.bfloat16
+    )
     pipe = pipe.to("cuda")
 except Exception as e:
     print(f"Error loading model: {e}")
     pipe = None
+
 
 def generate_image(prompt, negative_prompt="", steps=28, guidance=7.0):
     if pipe is None:
