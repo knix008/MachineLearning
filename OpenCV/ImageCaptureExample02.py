@@ -76,7 +76,18 @@ class VideoApp:
 
     def toggle_recording(self):
         if not self.is_recording:
-            fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+            # Works fine #
+            #fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+            #self.out = cv2.VideoWriter(
+            #    "output.mp4", fourcc, self.save_fps, (self.width, self.height)
+            #)
+            
+            # XVID Warning #
+            #fourcc = cv2.VideoWriter_fourcc(*"XVID")
+            #self.out = cv2.VideoWriter(
+            #    "output.mp4", fourcc, self.save_fps, (self.width, self.height)
+            #)
+            fourcc = cv2.VideoWriter_fourcc(*"avc1")
             self.out = cv2.VideoWriter(
                 "output.mp4", fourcc, self.save_fps, (self.width, self.height)
             )
