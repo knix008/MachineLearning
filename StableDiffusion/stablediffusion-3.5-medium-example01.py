@@ -2,10 +2,6 @@ import torch
 from diffusers import StableDiffusion3Pipeline
 import os
 
-# Disable Hugging Face Warning Messages.
-os.environ['HF_HUB_DISABLE_SYMLINKS_WARNING'] = 'True'
-access_token = ""
-
 def run():
     #pipe = StableDiffusion3Pipeline.from_pretrained("stabilityai/stable-diffusion-3.5-medium", torch_dtype=torch.bfloat16)
     #pipe = pipe.to("cuda")

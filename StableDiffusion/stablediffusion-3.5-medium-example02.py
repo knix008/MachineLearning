@@ -3,8 +3,6 @@ from diffusers import StableDiffusion3Pipeline
 import os
 import gradio as gr
 
-#access_token = ""  # 필요시 Hugging Face 토큰 입력
-
 model_path = "stabilityai/stable-diffusion-3.5-medium"
 
 try:
