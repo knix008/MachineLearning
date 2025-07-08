@@ -1,11 +1,7 @@
 import gradio as gr
 import numpy as np
 import plotly.graph_objects as go
-import plotly.express as px
-from plotly.subplots import make_subplots
 import trimesh
-import tempfile
-import os
 
 
 def load_and_display_3d_model(file_path):
@@ -145,4 +141,4 @@ if __name__ == "__main__":
 
     # 데모 실행
     demo = create_advanced_3d_viewer()
-    demo.launch(share=True)
+    demo.launch()
