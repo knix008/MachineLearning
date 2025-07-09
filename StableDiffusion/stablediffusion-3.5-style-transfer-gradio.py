@@ -5,7 +5,7 @@ from PIL import Image
 import numpy as np
 import os
 
-access_token = "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"
+access_token = "Your Access Token Here"  # Hugging Face Access Token
 from huggingface_hub import login
 login(access_token)
 
