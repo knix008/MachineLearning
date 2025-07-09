@@ -32,6 +32,25 @@ def load_model():
         print("CPU를 사용하여 모델을 로드했습니다.")
     
     return pipe
+    # 파이프라인 생성
+    pipe = StableDiffusionImg2ImgPipeline.from_pretrained(
+        model_id,
+        torch_dtype=torch.float16,
+        variant="fp16",
+        use_safetensors=True
+    )
+    
+    # 스케줄러 설정
+    pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
+    
+    # GPU 사용 가능시 GPU로 이동
+    if torch.cuda.is_available():
+        pipe = pipe.to("cuda")
+        print("GPU를 사용하여 모델을 로드했습니다.")
+    else:
+        print("CPU를 사용하여 모델을 로드했습니다.")
+    
+    return pipe
 
 def style_transfer(
     input_image,
@@ -56,6 +75,18 @@ def style_transfer(
     
     Returns:
         변환된 이미지
+    
+    Args:
+        input_image: 입력 이미지 (PIL Image)
+        style_prompt: 스타일 프롬프트
+        negative_prompt: 네거티브 프롬프트
+        strength: 변환 강도 (0.0-1.0)
+        guidance_scale: 가이던스 스케일
+        num_inference_steps: 추론 스텝 수
+        seed: 랜덤 시드 (-1이면 랜덤)
+    
+    Returns:
+        변환된 이미지
     """
     try:
         # 모델 로드
@@ -65,11 +96,14 @@ def style_transfer(
         if seed == -1:
             seed = torch.randint(0, 2**32, (1,)).item()
         generator = torch.Generator(device="cuda" if torch.cuda.is_available() else "cpu").manual_seed(seed)
+        generator = torch.Generator(device="cuda" if torch.cuda.is_available() else "cpu").manual_seed(seed)
         
         # 이미지 전처리
         if input_image is None:
             return None, "입력 이미지를 업로드해주세요."
         
+        # 이미지 크기 조정 (메모리 효율성을 위해)
+        max_size = 768
         # 이미지 크기 조정 (메모리 효율성을 위해)
         max_size = 768
         width, height = input_image.size
@@ -78,8 +112,18 @@ def style_transfer(
             new_width = int(width * ratio)
             new_height = int(height * ratio)
             input_image = input_image.resize((new_width, new_height), Image.LANCZOS)
+            input_image = input_image.resize((new_width, new_height), Image.LANCZOS)
         
         # 이미지 변환
+        result = pipe(
+            prompt=style_prompt,
+            negative_prompt=negative_prompt,
+            image=input_image,
+            strength=strength,
+            guidance_scale=guidance_scale,
+            num_inference_steps=num_inference_steps,
+            generator=generator
+        )
         result = pipe(
             prompt=style_prompt,
             negative_prompt=negative_prompt,
@@ -95,6 +139,7 @@ def style_transfer(
         
         # 메모리 정리
         del pipe
+        torch.cuda.empty_cache() if torch.cuda.is_available() else None
         torch.cuda.empty_cache() if torch.cuda.is_available() else None
         
         return output_image, f"변환 완료! 사용된 시드: {seed}"
