@@ -5,10 +5,6 @@ from PIL import Image
 import numpy as np
 import os
 
-access_token = "Your Access Token Here"  # Hugging Face Access Token
-from huggingface_hub import login
-login(access_token)
-
 def load_model():
     """Stable Diffusion 3.5 Medium 모델을 로드합니다."""
     model_id = "stabilityai/stable-diffusion-3.5-medium"
