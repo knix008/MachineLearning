@@ -10,10 +10,10 @@ from PIL import Image
 # 2. Hugging Face Hub 로그인 (최초 1회 필요)
 # 터미널에서 아래 명령어를 실행하여 Hugging Face에 로그인하세요.
 # huggingface-cli login
-# SD3 모델은 사용 전 동의가 필요하므로, 모델 페이지(https://huggingface.co/stabilityai/stable-diffusion-3-medium-diffusers)를 방문하여 접근 권한을 요청해야 합니다.
-access_token = "Enter your Hugging Face access token here"
-from huggingface_hub import login
-login(access_token)
+# SD3 모델은 사용 전 동의가 필요하므로, 모델 페이지(https://huggingface.co/stabilityai/stable-diffusion-3-medium)를 방문하여 접근 권한을 요청해야 합니다.
+#access_token = "Enter your Hugging Face access token here"
+#from huggingface_hub import login
+#login(access_token)
 
 # 3. 모델 로드
 # GPU 사용 가능 여부를 확인하고 장치를 설정합니다.
