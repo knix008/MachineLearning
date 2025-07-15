@@ -4,8 +4,9 @@ from diffusers import StableDiffusion3Img2ImgPipeline
 from PIL import Image
 
 # 2. Hugging Face Hub 로그인 (최초 1회 필요)
-# huggingface-cli login
-# SD3 모델은 사용 전 동의가 필요하므로, 모델 페이지(https://huggingface.co/stabilityai/stable-diffusion-3-medium)를 방문하여 접근 권한을 요청해야 합니다.
+#from huggingface_hub import login
+#access_token = "YOUR_HUGGINGFACE_ACCESS_TOKEN"  # 여기에 Hugging Face Access Token을 입력하세요
+#login(token=access_token)  # 주석 해제하고 최초 1회 실행 필요
 
 # 3. 모델 로드
 try:
