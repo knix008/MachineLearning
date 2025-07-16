@@ -1,14 +1,17 @@
 import torch
-from diffusers import DiffusionPipeline
+from diffusers import StableDiffusion3Pipeline, DiffusionPipeline
 import gradio as gr
 import time
 
 
 def generate_high_resolution_image(prompt, resolution=(1024, 1024)):
-    base = DiffusionPipeline.from_pretrained(
-        "stabilityai/stable-diffusion-xl-base-1.0", torch_dtype=torch.float16, variant="fp16", use_safetensors=True
+    base = StableDiffusion3Pipeline.from_pretrained(
+        "stabilityai/stable-diffusion-3.5-large", torch_dtype=torch.bfloat16
     )
-    base.to("cuda")
+    base.enable_model_cpu_offload()
+    print("> Base Model loaded successfully.")
+    base.to("cpu")
+
     refiner = DiffusionPipeline.from_pretrained(
         "stabilityai/stable-diffusion-xl-refiner-1.0",
         text_encoder_2=base.text_encoder_2,
@@ -17,19 +20,30 @@ def generate_high_resolution_image(prompt, resolution=(1024, 1024)):
         use_safetensors=True,
         variant="fp16",
     )
-    refiner.to("cuda")
+    refiner.enable_model_cpu_offload()
+    print("> Refiner Model loaded successfully.")
+    refiner.to("cpu")
 
     n_steps = 40
     high_noise_frac = 0.8
-
+    seed = -1
+    # 시드 설정
+    generator = None
+    if seed is not None and int(seed) != -1:
+        generator = torch.Generator(device=base.device).manual_seed(int(seed))
+    
+    # Extract width and height from resolution parameter
+    width, height = resolution
+        
     image = base(
         prompt=prompt,
+        negative_prompt=None,
         num_inference_steps=n_steps,
-        denoising_end=high_noise_frac,
-        output_type="latent",
-        height=resolution[1],
-        width=resolution[0],
-    ).images
+        width=width,
+        height=height,
+        generator=generator,
+    ).images[0]
+
     image = refiner(
         prompt=prompt,
         num_inference_steps=n_steps,
@@ -51,11 +65,11 @@ def gradio_interface(prompt, width, height):
 
 
 with gr.Blocks() as demo:
-    gr.Markdown("# Stable Diffusion XL 고해상도 이미지 생성기")
+    gr.Markdown("# Stable Diffusion 3.5 Large + Refine 고해상도 이미지 생성기")
     with gr.Row():
         prompt = gr.Textbox(
             label="프롬프트",
-            value="a futuristic cityscape at night, ultra high resolution, photorealistic, 8k",
+            value="a beautiful skinny woman wearing a high legged red bikini, walking on the sunny beach, photorealistic, 8k resolution, ultra detailed, vibrant colors, highly detailed, cinematic lighting, realistic shadows, depth of field, no bad anatomy, no text, no watermark, no logo, no signature, no low quality, no blurry, no bad quality, no low resolution, no cropped image",
         )
     with gr.Row():
         width = gr.Slider(512, 2048, value=1024, step=64, label="가로 해상도")
