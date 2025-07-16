@@ -5,8 +5,9 @@ import time
 
 
 def generate_high_resolution_image(prompt, resolution=(1024, 1024)):
+    # Notice!!! Refiner model supports float16 precision only.
     base = StableDiffusion3Pipeline.from_pretrained(
-        "stabilityai/stable-diffusion-3.5-large", torch_dtype=torch.bfloat16
+        "stabilityai/stable-diffusion-3.5-large", torch_dtype=torch.float16
     )
     base.enable_model_cpu_offload()
     print("> Base Model loaded successfully.")
@@ -24,7 +25,7 @@ def generate_high_resolution_image(prompt, resolution=(1024, 1024)):
     print("> Refiner Model loaded successfully.")
     refiner.to("cpu")
 
-    n_steps = 40
+    n_steps = 5
     high_noise_frac = 0.8
     seed = -1
     # 시드 설정
