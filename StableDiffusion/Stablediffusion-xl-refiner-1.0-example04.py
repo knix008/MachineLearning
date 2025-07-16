@@ -13,7 +13,13 @@ pipe = StableDiffusionXLImg2ImgPipeline.from_pretrained(
     variant="fp16",
     use_safetensors=True,
 )
-pipe = pipe.to("cuda")
+
+if torch.cuda.is_available():
+    pipe = pipe.to("cuda")
+else:
+    print("CUDA가 사용 불가능합니다!!!");
+    exit(1)
+    
 print("모델 로딩 완료!")
 
 
