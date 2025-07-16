@@ -67,9 +67,10 @@ def gradio_interface(prompt, width, height):
 with gr.Blocks() as demo:
     gr.Markdown("# Stable Diffusion 3.5 Large + Refine 고해상도 이미지 생성기")
     with gr.Row():
+        # 주의!!! CLIP의 Tokenizer의 index sequence가 70이상이 되면 안됩니다.
         prompt = gr.Textbox(
             label="프롬프트",
-            value="a beautiful skinny woman wearing a high legged red bikini, walking on the sunny beach, photorealistic, 8k resolution, ultra detailed, vibrant colors, highly detailed, cinematic lighting, realistic shadows, depth of field, no bad anatomy, no text, no watermark, no logo, no signature, no low quality, no blurry, no bad quality, no low resolution, no cropped image",
+            value="a beautiful woman in red bikini walking on sunny beach, photorealistic, 8k, detailed",
         )
     with gr.Row():
         width = gr.Slider(512, 2048, value=1024, step=64, label="가로 해상도")
