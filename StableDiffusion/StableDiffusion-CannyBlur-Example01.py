@@ -76,31 +76,11 @@ def process_all(img, blur_kernel_size, canny_low, canny_high):
     
     return blur_result, canny_result
 
-def validate_image_format(img):
-    """이미지 형식 검증 (선택적)"""
-    if img is None:
-        return False
-    
-    # PIL Image 객체에서는 format 속성으로 확인 가능
-    allowed_formats = ['JPEG', 'PNG', 'BMP', 'TIFF', 'WEBP']
-    return img.format in allowed_formats if hasattr(img, 'format') else True
-
-def update_image_info(img):
-    """이미지 정보 업데이트"""
-    if img is None:
-        return "이미지가 없습니다."
-    
-    # 형식 검증 (선택적)
-    if not validate_image_format(img):
-        return "지원되지 않는 이미지 형식입니다."
-    
-    return f"크기: {img.size[0]} x {img.size[1]}, 모드: {img.mode}"
 
 # Gradio 인터페이스 생성
 with gr.Blocks(title="이미지 처리 도구") as demo:
     gr.Markdown("# 이미지 처리 도구")
     gr.Markdown("이미지를 업로드하고 다양한 처리를 적용해보세요. (원본 크기 및 비율 유지)")
-    gr.Markdown("**지원 형식**: JPG, JPEG, PNG, BMP, TIFF, WEBP")
     
     with gr.Row():
         with gr.Column():
@@ -108,13 +88,6 @@ with gr.Blocks(title="이미지 처리 도구") as demo:
                 type="pil", 
                 label="입력 이미지",
                 sources=["upload", "clipboard"]
-            )
-            
-            # 이미지 정보 표시
-            image_info = gr.Textbox(
-                label="이미지 정보",
-                interactive=False,
-                placeholder="이미지를 업로드하면 크기 정보가 표시됩니다."
             )
             
             # 컨트롤 패널
@@ -159,13 +132,6 @@ with gr.Blocks(title="이미지 처리 도구") as demo:
                 label="엣지 검출 결과"
             )
 
-    # 이벤트 핸들러 (gr.Blocks 컨텍스트 안에서 정의)
-    input_image.change(
-        fn=update_image_info,
-        inputs=[input_image],
-        outputs=[image_info]
-    )
-
     process_btn.click(
         fn=process_all,
         inputs=[input_image, blur_kernel, canny_low, canny_high],
@@ -185,4 +151,4 @@ with gr.Blocks(title="이미지 처리 도구") as demo:
     )
 
 if __name__ == "__main__":
-    demo.launch(share=False, inbrowser=True)
+    demo.launch()
