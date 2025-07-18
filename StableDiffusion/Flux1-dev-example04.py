@@ -4,6 +4,7 @@ import time
 from diffusers import FluxPipeline
 from PIL import Image
 import numpy as np
+import os
 
 # Load model with memory optimizations
 print("모델을 로딩 중입니다...")
@@ -18,6 +19,18 @@ pipe.enable_sequential_cpu_offload()  # More aggressive CPU offloading
 pipe.enable_attention_slicing(1)  # Slice attention computation
 pipe.enable_vae_slicing()  # Slice VAE computation
 print("모델 로딩 완료!")
+
+# 기본 이미지 로드 함수
+def load_default_image():
+    """기본 이미지 파일이 존재하면 로드"""
+    default_path = "cloe-test01.jpg"
+    if os.path.exists(default_path):
+        try:
+            return Image.open(default_path)
+        except Exception as e:
+            print(f"기본 이미지 로드 실패: {e}")
+            return None
+    return None
 
 def generate_image(prompt, input_image, width, height, guidance_scale, num_inference_steps, max_sequence_length, strength, seed):
     """이미지 생성 함수 (텍스트-투-이미지 또는 이미지-투-이미지)"""
@@ -63,7 +76,7 @@ def generate_image(prompt, input_image, width, height, guidance_scale, num_infer
             # 입력 이미지 크기 조정
             input_image = input_image.resize((adjusted_width, adjusted_height), Image.LANCZOS)
             
-            # img2img 생성
+            # img2img 생성 - 원본 이미지 보존을 위한 최적화된 설정
             image = pipe(
                 prompt,
                 image=input_image,
@@ -72,24 +85,44 @@ def generate_image(prompt, input_image, width, height, guidance_scale, num_infer
                 guidance_scale=guidance_scale,
                 num_inference_steps=int(num_inference_steps),
                 max_sequence_length=int(max_sequence_length),
-                strength=strength,
+                strength=min(strength, 0.8),  # 최대 0.8로 제한하여 원본 더 보존
                 generator=generator
             ).images[0]
             
             generation_type = "이미지-투-이미지"
         else:
-            # txt2img 생성
-            image = pipe(
-                prompt,
-                height=adjusted_height,
-                width=adjusted_width,
-                guidance_scale=guidance_scale,
-                num_inference_steps=int(num_inference_steps),
-                max_sequence_length=int(max_sequence_length),
-                generator=generator
-            ).images[0]
-            
-            generation_type = "텍스트-투-이미지"
+            # 기본 이미지가 있는지 확인
+            default_image = load_default_image()
+            if default_image is not None:
+                # 기본 이미지를 사용한 img2img
+                default_image = default_image.resize((adjusted_width, adjusted_height), Image.LANCZOS)
+                
+                image = pipe(
+                    prompt,
+                    image=default_image,
+                    height=adjusted_height,
+                    width=adjusted_width,
+                    guidance_scale=guidance_scale,
+                    num_inference_steps=int(num_inference_steps),
+                    max_sequence_length=int(max_sequence_length),
+                    strength=0.5,  # 기본 이미지 사용 시 낮은 strength로 원본 특성 유지
+                    generator=generator
+                ).images[0]
+                
+                generation_type = "기본이미지-투-이미지"
+            else:
+                # txt2img 생성
+                image = pipe(
+                    prompt,
+                    height=adjusted_height,
+                    width=adjusted_width,
+                    guidance_scale=guidance_scale,
+                    num_inference_steps=int(num_inference_steps),
+                    max_sequence_length=int(max_sequence_length),
+                    generator=generator
+                ).images[0]
+                
+                generation_type = "텍스트-투-이미지"
         
         end_time = time.time()
         generation_time = end_time - start_time
@@ -134,14 +167,14 @@ with gr.Blocks(title="FLUX.1-dev 이미지 생성기") as demo:
                 label="입력 이미지 (선택사항)",
                 type="pil",
                 sources=["upload", "clipboard"],
-                value = "cloe-test01.jpg"
+                value=load_default_image()
             )
             
             # 입력 컨트롤들
             prompt_input = gr.Textbox(
                 label="프롬프트",
                 placeholder="생성하고 싶은 이미지를 설명해주세요...",
-                value="blue eyes, photorealistic, 8k resolution, ultra detailed, vibrant colors, cinematic lighting, realistic shadows, high quality, masterpiece, best quality, looking at viewer, perfect anatomy",
+                value="full body, good hands, good hair, good legs, skinny, blue eyes, photorealistic, 8k resolution, ultra detailed, vibrant colors, cinematic lighting, realistic shadows, high quality, masterpiece, best quality, looking at viewer, perfect anatomy",
                 lines=4
             )
             
@@ -189,7 +222,7 @@ with gr.Blocks(title="FLUX.1-dev 이미지 생성기") as demo:
             strength_slider = gr.Slider(
                 minimum=0.1,
                 maximum=1.0,
-                value=0.7,
+                value=0.5,  # 기본값을 0.5로 낮춤 (원본 더 보존)
                 step=0.1,
                 label="변형 강도 (낮을수록 원본 유지)",
                 visible=False
