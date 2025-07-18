@@ -15,16 +15,17 @@ pipe.enable_vae_slicing()  # Slice VAE computation
 
 # Don't manually move to CPU - let sequential_cpu_offload handle device management
 
-prompt = "A cat holding a sign that says hello world"
+#prompt = "a futuristic city skyline at sunset, cyberpunk style"
+prompt = "a futuristic city skyline, photorealistic, 8k resolution, ultra detailed, vibrant colors, cinematic lighting, realistic shadows, high quality, masterpiece, best quality"
 
 # Reduce image size to save memory
 image = pipe(
     prompt,
-    height=512,  # Reduced from 1024 to save memory
-    width=512,   # Reduced from 1024 to save memory
+    height=1024,  # Reduced from 1024 to save memory
+    width=1024,   # Reduced from 1024 to save memory
     guidance_scale=3.5,
-    num_inference_steps=28,  # Reduced steps for faster generation
+    num_inference_steps=50,  # Reduced steps for faster generation
     max_sequence_length=256,  # Reduced sequence length
     generator=torch.Generator("cpu").manual_seed(0)
 ).images[0]
-image.save("flux-dev.png")
+image.save("flux-dev03.png")
