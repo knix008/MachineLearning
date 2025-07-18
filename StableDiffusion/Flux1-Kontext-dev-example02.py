@@ -47,9 +47,13 @@ def generate_image(
     max_sequence_length,
     strength,
     seed,
-):
+):  
+    # Set the default prompt for image generation
+    default_prompt = "photorealistic, 8k resolution, ultra detailed, vibrant colors, cinematic lighting, realistic shadows, high quality, masterpiece, best quality, looking at viewer, perfect anatomy"
+    
     """이미지 생성 함수 (텍스트-투-이미지 또는 이미지-투-이미지)"""
     start_time = time.time()
+    prompt = prompt + default_prompt
 
     # 입력 이미지가 있는 경우 해당 이미지의 비율 사용
     if input_image is not None:
@@ -248,7 +252,6 @@ with gr.Blocks(title="FLUX.1-dev 이미지 생성기") as demo:
 
     with gr.Row():
         with gr.Column(scale=1):
-            default_prompt = "photorealistic, 8k resolution, ultra detailed, vibrant colors, cinematic lighting, realistic shadows, high quality, masterpiece, best quality, looking at viewer, perfect anatomy"
             # 입력 이미지 (선택사항)
             input_image = gr.Image(
                 label="입력 이미지 (선택사항)",
@@ -267,11 +270,9 @@ with gr.Blocks(title="FLUX.1-dev 이미지 생성기") as demo:
             prompt_input = gr.Textbox(
                 label="프롬프트",
                 placeholder="생성하고 싶은 이미지를 설명해주세요...",
-                value="skinny, blue eyes, full body, beautiful face, good body shape, good hair, good fingers, good legs",
+                value="blue bikini, skinny, blue eyes, full body, beautiful face, good body shape, good hair, good fingers, good legs",
                 lines=4,
             )
-            
-            prompt = prompt_input + default_prompt
 
             with gr.Row():
                 width_slider = gr.Slider(
