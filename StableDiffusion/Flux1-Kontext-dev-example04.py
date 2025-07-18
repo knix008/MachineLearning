@@ -2,8 +2,8 @@ import torch
 import gradio as gr
 import time
 from diffusers import FluxKontextPipeline
+from diffusers.utils import load_image
 from PIL import Image
-import numpy as np
 import os
 
 # Dependency!!! : 
@@ -30,7 +30,7 @@ def load_default_image():
     default_path = "chloe-test01.jpg"
     if os.path.exists(default_path):
         try:
-            return Image.open(default_path)
+            return load_image(default_path)
         except Exception as e:
             print(f"기본 이미지 로드 실패: {e}")
             return None
@@ -93,20 +93,19 @@ def generate_image(
                 (adjusted_width, adjusted_height), Image.LANCZOS
             )
 
-            # img2img 생성 - 원본 이미지 보존을 위한 최적화된 설정
+            # img2img 생성 - FluxKontextPipeline은 strength 파라미터 미지원
             image = pipe(
-                prompt,
+                prompt=prompt,
                 image=input_image,
                 height=adjusted_height,
                 width=adjusted_width,
                 guidance_scale=guidance_scale,
                 num_inference_steps=int(num_inference_steps),
                 max_sequence_length=int(max_sequence_length),
-                strength=min(strength, 0.8),  # 최대 0.8로 제한하여 원본 더 보존
                 generator=generator,
             ).images[0]
 
-            generation_type = "Image-to-Image"
+            generation_type = "이미지 투 이미지"
         else:
             # 기본 이미지가 있는지 확인
             default_image = load_default_image()
@@ -117,22 +116,21 @@ def generate_image(
                 )
 
                 image = pipe(
-                    prompt,
+                    prompt=prompt,
                     image=default_image,
                     height=adjusted_height,
                     width=adjusted_width,
                     guidance_scale=guidance_scale,
                     num_inference_steps=int(num_inference_steps),
                     max_sequence_length=int(max_sequence_length),
-                    strength=0.5,  # 기본 이미지 사용 시 낮은 strength로 원본 특성 유지
                     generator=generator,
                 ).images[0]
 
-                generation_type = "Image-to-Image"
+                generation_type = "기본이미지-투-이미지"
             else:
                 # txt2img 생성
                 image = pipe(
-                    prompt,
+                    prompt=prompt,
                     height=adjusted_height,
                     width=adjusted_width,
                     guidance_scale=guidance_scale,
@@ -141,7 +139,7 @@ def generate_image(
                     generator=generator,
                 ).images[0]
 
-                generation_type = "Text-to-Image"
+                generation_type = "텍스트 투 이미지"
 
         end_time = time.time()
         generation_time = end_time - start_time
@@ -151,15 +149,18 @@ def generate_image(
         filename = f"flux_generated_{timestamp}.png"
         image.save(filename)
 
+        # 생성된 이미지 크기 정보
+        generated_width, generated_height = image.size
+
         # 크기 조정 정보 포함
-        size_info = ""
+        size_info = f"\n생성된 이미지 크기: {generated_width}x{generated_height}"
         if width != adjusted_width or height != adjusted_height:
             original_ratio = width / height
             final_ratio = adjusted_width / adjusted_height
-            size_info = (
-                f"\n크기 조정: {width}x{height} → {adjusted_width}x{adjusted_height}"
-            )
-            size_info += f"\n비율 유지: {original_ratio:.2f} → {final_ratio:.2f}"
+            size_info += f"\n요청 크기: {width}x{height} → 조정됨: {adjusted_width}x{adjusted_height}"
+            size_info += f"\n비율 변화: {original_ratio:.2f} → {final_ratio:.2f}"
+        else:
+            size_info += f"\n요청 크기: {width}x{height} (조정 없음)"
 
         info_text = f"생성 완료! ({generation_type})\n시간: {generation_time:.2f}초\n시드: {seed}\n저장된 파일: {filename}{size_info}"
 
@@ -173,14 +174,14 @@ def generate_image(
 def update_ui_visibility(input_image):
     """입력 이미지에 따라 UI 요소 표시/숨김 및 기본 이미지 표시"""
     if input_image is not None:
-        return gr.update(visible=True), gr.update(
+        return gr.update(visible=False), gr.update(
             value="이미지를 프롬프트에 맞게 수정합니다..."
         )
     else:
         # 기본 이미지가 있는지 확인하고 표시
         default_image = load_default_image()
         if default_image is not None:
-            return gr.update(visible=True), gr.update(
+            return gr.update(visible=False), gr.update(
                 value="기본 이미지를 사용하여 프롬프트에 맞게 수정합니다..."
             )
         else:
