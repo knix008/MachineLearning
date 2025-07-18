@@ -133,14 +133,15 @@ with gr.Blocks(title="FLUX.1-dev 이미지 생성기") as demo:
             input_image = gr.Image(
                 label="입력 이미지 (선택사항)",
                 type="pil",
-                sources=["upload", "clipboard"]
+                sources=["upload", "clipboard"],
+                value = "cloe-test01.jpg"
             )
             
             # 입력 컨트롤들
             prompt_input = gr.Textbox(
                 label="프롬프트",
                 placeholder="생성하고 싶은 이미지를 설명해주세요...",
-                value="photorealistic, 8k resolution, ultra detailed, vibrant colors, cinematic lighting, realistic shadows, high quality, masterpiece, best quality,looking at viewer, perfect anatomy",
+                value="blue eyes, photorealistic, 8k resolution, ultra detailed, vibrant colors, cinematic lighting, realistic shadows, high quality, masterpiece, best quality, looking at viewer, perfect anatomy",
                 lines=4
             )
             
@@ -255,4 +256,4 @@ with gr.Blocks(title="FLUX.1-dev 이미지 생성기") as demo:
     )
 
 if __name__ == "__main__":
-    demo.launch(share=False)
+    demo.launch(share=False, inbrowser=True)
