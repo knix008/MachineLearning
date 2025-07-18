@@ -1,15 +1,19 @@
 import torch
 import gradio as gr
 import time
-from diffusers import FluxPipeline
+from diffusers import FluxKontextPipeline
 from PIL import Image
 import numpy as np
 import os
 
+# Dependency!!! : 
+# You need to install the diffusers with the following command:
+# pip install git+https://github.com/huggingface/diffusers.git
+
 # Load model with memory optimizations
 print("모델을 로딩 중입니다...")
-pipe = FluxPipeline.from_pretrained(
-    "black-forest-labs/FLUX.1-dev", torch_dtype=torch.bfloat16
+pipe = FluxKontextPipeline.from_pretrained(
+    "black-forest-labs/FLUX.1-Kontext-dev", torch_dtype=torch.bfloat16
 )
 
 # Enable multiple memory optimizations
@@ -23,7 +27,7 @@ print("모델 로딩 완료!")
 # 기본 이미지 로드 함수
 def load_default_image():
     """기본 이미지 파일이 존재하면 로드"""
-    default_path = "cloe-test01.jpg"
+    default_path = "chloe-test01.jpg"
     if os.path.exists(default_path):
         try:
             return Image.open(default_path)
@@ -215,7 +219,7 @@ with gr.Blocks(title="FLUX.1-dev 이미지 생성기") as demo:
             prompt_input = gr.Textbox(
                 label="프롬프트",
                 placeholder="생성하고 싶은 이미지를 설명해주세요...",
-                value="blue eyes, full body, photorealistic, 8k resolution, ultra detailed, vibrant colors, cinematic lighting, realistic shadows, high quality, masterpiece, best quality, looking at viewer, perfect anatomy",
+                value="blue eyes, full body, beautiful face, good body shape, good hair, good fingers, good legs, photorealistic, 8k resolution, ultra detailed, vibrant colors, cinematic lighting, realistic shadows, high quality, masterpiece, best quality, looking at viewer, perfect anatomy",
                 lines=4,
             )
 
