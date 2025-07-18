@@ -51,33 +51,80 @@ def generate_image(
     """이미지 생성 함수 (텍스트-투-이미지 또는 이미지-투-이미지)"""
     start_time = time.time()
 
-    # 폭과 높이를 16으로 나누어지도록 조정 (축소 방향으로만, 비율 유지)
-    width = int(width)
-    height = int(height)
-
-    # 원본 비율 계산
-    aspect_ratio = width / height
-
-    # 16의 배수로 내림 (축소)
-    adjusted_width = (width // 16) * 16
-    adjusted_height = (height // 16) * 16
-
-    # 최소 크기 512x512 보장하면서 비율 유지
-    if adjusted_width < 512 or adjusted_height < 512:
+    # 입력 이미지가 있는 경우 해당 이미지의 비율 사용
+    if input_image is not None:
+        input_width, input_height = input_image.size
+        aspect_ratio = input_width / input_height
+        
+        # 입력 이미지 비율에 맞춰 크기 조정
         if aspect_ratio >= 1.0:  # 가로가 더 크거나 같은 경우
-            adjusted_height = 512
-            adjusted_width = int(512 * aspect_ratio)
+            adjusted_width = max(768, int(width))
+            adjusted_height = int(adjusted_width / aspect_ratio)
+        else:  # 세로가 더 큰 경우
+            adjusted_height = max(768, int(height))
+            adjusted_width = int(adjusted_height * aspect_ratio)
+        
+        # 16의 배수로 조정
+        adjusted_width = (adjusted_width // 16) * 16
+        adjusted_height = (adjusted_height // 16) * 16
+        
+        # 최소 크기 보장
+        adjusted_width = max(adjusted_width, 512)
+        adjusted_height = max(adjusted_height, 512)
+        
+        generation_type = "이미지 투 이미지"
+        
+    else:
+        # 기본 이미지가 있는지 확인
+        default_image = load_default_image()
+        if default_image is not None:
+            # 기본 이미지의 비율 사용
+            default_width, default_height = default_image.size
+            aspect_ratio = default_width / default_height
+            
+            # 기본 이미지 비율에 맞춰 크기 조정
+            if aspect_ratio >= 1.0:  # 가로가 더 크거나 같은 경우
+                adjusted_width = max(768, int(width))
+                adjusted_height = int(adjusted_width / aspect_ratio)
+            else:  # 세로가 더 큰 경우
+                adjusted_height = max(768, int(height))
+                adjusted_width = int(adjusted_height * aspect_ratio)
+            
             # 16의 배수로 조정
             adjusted_width = (adjusted_width // 16) * 16
-        else:  # 세로가 더 큰 경우
-            adjusted_width = 512
-            adjusted_height = int(512 / aspect_ratio)
-            # 16의 배수로 조정
             adjusted_height = (adjusted_height // 16) * 16
-
-    # 최종 최소 크기 확인
-    adjusted_width = max(adjusted_width, 512)
-    adjusted_height = max(adjusted_height, 512)
+            
+            # 최소 크기 보장
+            adjusted_width = max(adjusted_width, 512)
+            adjusted_height = max(adjusted_height, 512)
+            
+            generation_type = "기본이미지-투-이미지"
+        else:
+            # 사용자 지정 크기 사용
+            width = int(width)
+            height = int(height)
+            aspect_ratio = width / height
+            
+            # 16의 배수로 조정
+            adjusted_width = (width // 16) * 16
+            adjusted_height = (height // 16) * 16
+            
+            # 최소 크기 보장하면서 비율 유지
+            if adjusted_width < 512 or adjusted_height < 512:
+                if aspect_ratio >= 1.0:  # 가로가 더 크거나 같은 경우
+                    adjusted_height = 512
+                    adjusted_width = int(512 * aspect_ratio)
+                    adjusted_width = (adjusted_width // 16) * 16
+                else:  # 세로가 더 큰 경우
+                    adjusted_width = 512
+                    adjusted_height = int(512 / aspect_ratio)
+                    adjusted_height = (adjusted_height // 16) * 16
+            
+            # 최종 최소 크기 확인
+            adjusted_width = max(adjusted_width, 512)
+            adjusted_height = max(adjusted_height, 512)
+            
+            generation_type = "텍스트 투 이미지"
 
     # 시드 설정
     if seed == -1:
@@ -93,7 +140,7 @@ def generate_image(
                 (adjusted_width, adjusted_height), Image.LANCZOS
             )
 
-            # img2img 생성 - FluxKontextPipeline은 strength 파라미터 미지원
+            # img2img 생성
             image = pipe(
                 prompt=prompt,
                 image=input_image,
@@ -105,7 +152,6 @@ def generate_image(
                 generator=generator,
             ).images[0]
 
-            generation_type = "이미지 투 이미지"
         else:
             # 기본 이미지가 있는지 확인
             default_image = load_default_image()
@@ -126,7 +172,6 @@ def generate_image(
                     generator=generator,
                 ).images[0]
 
-                generation_type = "기본이미지-투-이미지"
             else:
                 # txt2img 생성
                 image = pipe(
@@ -138,8 +183,6 @@ def generate_image(
                     max_sequence_length=int(max_sequence_length),
                     generator=generator,
                 ).images[0]
-
-                generation_type = "텍스트 투 이미지"
 
         end_time = time.time()
         generation_time = end_time - start_time
@@ -154,13 +197,16 @@ def generate_image(
 
         # 크기 조정 정보 포함
         size_info = f"\n생성된 이미지 크기: {generated_width}x{generated_height}"
-        if width != adjusted_width or height != adjusted_height:
-            original_ratio = width / height
-            final_ratio = adjusted_width / adjusted_height
-            size_info += f"\n요청 크기: {width}x{height} → 조정됨: {adjusted_width}x{adjusted_height}"
-            size_info += f"\n비율 변화: {original_ratio:.2f} → {final_ratio:.2f}"
+        if input_image is not None:
+            original_width, original_height = input_image.size
+            size_info += f"\n입력 이미지 크기: {original_width}x{original_height}"
+            size_info += f"\n비율 맞춤: {original_width/original_height:.2f} → {generated_width/generated_height:.2f}"
+        elif default_image is not None:
+            default_width, default_height = default_image.size
+            size_info += f"\n기본 이미지 크기: {default_width}x{default_height}"
+            size_info += f"\n비율 맞춤: {default_width/default_height:.2f} → {generated_width/generated_height:.2f}"
         else:
-            size_info += f"\n요청 크기: {width}x{height} (조정 없음)"
+            size_info += f"\n요청 크기: {width}x{height}"
 
         info_text = f"생성 완료! ({generation_type})\n시간: {generation_time:.2f}초\n시드: {seed}\n저장된 파일: {filename}{size_info}"
 
