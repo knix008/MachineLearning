@@ -11,7 +11,7 @@ from PIL import Image
 # Load model with memory optimizations
 print("모델을 로딩 중입니다...")
 pipe = FluxKontextPipeline.from_pretrained(
-    "black-forest-labs/FLUX.1-Kontext-dev", torch_dtype=torch.bfloat16
+    "black-forest-labs/FLUX.1-Kontext-dev", torch_dtype=torch.bfloat16, use_fast=True
 )
 
 # Enable multiple memory optimizations
@@ -148,15 +148,15 @@ with gr.Blocks(title="FLUX.1-dev 이미지 생성기") as demo:
                 label="입력 이미지 (선택사항)",
                 type="pil",
                 sources=["upload", "clipboard"],
-                height=400,
-                width=400,
+                height=768,
+                width=768
             )
 
             # 입력 컨트롤들
             prompt_input = gr.Textbox(
                 label="프롬프트",
                 placeholder="생성하고 싶은 이미지를 설명해주세요...",
-                value="skinny, good hair, good fingers, good legs, photorealistic, ultra high definition, ultra high resolution,8k resolution, ultra detail, vibrant colors, cinematic lighting, realistic shadows, high quality, masterpiece, best quality, perfect anatomy",
+                value="photorealistic, ultra high definition, ultra high resolution,8k resolution, ultra detail, vibrant colors, cinematic lighting, realistic shadows, high quality, masterpiece, best quality, perfect anatomy, good hair, good fingers, good legs",
                 lines=4,
             )
 
