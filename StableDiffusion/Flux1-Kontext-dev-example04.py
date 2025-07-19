@@ -2,9 +2,7 @@ import torch
 import gradio as gr
 import time
 from diffusers import FluxKontextPipeline
-from diffusers.utils import load_image
 from PIL import Image
-import os
 
 # Dependency!!! :
 # You need to install the diffusers with the following command:
