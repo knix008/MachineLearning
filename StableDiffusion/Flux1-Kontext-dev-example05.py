@@ -11,7 +11,7 @@ from PIL import Image
 # Load model with memory optimizations
 print("모델을 로딩 중입니다...")
 pipe = FluxKontextPipeline.from_pretrained(
-    "black-forest-labs/FLUX.1-Kontext-dev", torch_dtype=torch.bfloat16, use_fast=True
+    "black-forest-labs/FLUX.1-Kontext-dev", torch_dtype=torch.bfloat16, use_fast_tokenizer=True
 )
 
 # Enable multiple memory optimizations
