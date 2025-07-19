@@ -11,7 +11,7 @@ import base64
 
 
 class ControlNetImageGenerator:
-    def __init__(self, model_id="runwayml/stable-diffusion-v1-5", device="cuda"):
+    def __init__(self, model_id="stabilityai/stable-diffusion-2-1", device="cuda"):
         """
         Initialize ControlNet pipeline
 
@@ -22,9 +22,9 @@ class ControlNetImageGenerator:
         self.device = device if torch.cuda.is_available() else "cpu"
         print(f"Using device: {self.device}")
 
-        # Load ControlNet model for Canny edge detection
+        # Load ControlNet model for Canny edge detection (SD 2.1 compatible)
         self.controlnet = ControlNetModel.from_pretrained(
-            "lllyasviel/sd-controlnet-canny",
+            "thibaud/controlnet-sd21-canny-diffusers",
             torch_dtype=torch.float16 if self.device == "cuda" else torch.float32,
         )
 
@@ -76,9 +76,9 @@ class ControlNetImageGenerator:
 
         return canny_image
 
-    def create_simple_sketch(self, width=512, height=512):
+    def create_simple_sketch(self, width=768, height=768):
         """
-        Create a simple sketch for demonstration
+        Create a simple sketch for demonstration (SD 2.1 default resolution)
 
         Returns:
             PIL Image of a simple sketch
@@ -87,23 +87,57 @@ class ControlNetImageGenerator:
         img = Image.new("RGB", (width, height), "white")
         draw = ImageDraw.Draw(img)
 
-        # Draw a simple house
+        # Draw a simple house (scaled for 768x768)
         # House base
-        draw.rectangle([150, 300, 350, 450], outline="black", width=3)
+        draw.rectangle([225, 450, 525, 675], outline="black", width=4)
 
         # Roof
-        draw.polygon([(130, 300), (250, 200), (370, 300)], outline="black", width=3)
+        draw.polygon([(195, 450), (375, 300), (555, 450)], outline="black", width=4)
 
         # Door
-        draw.rectangle([220, 380, 280, 450], outline="black", width=2)
+        draw.rectangle([330, 570, 420, 675], outline="black", width=3)
 
         # Windows
-        draw.rectangle([170, 320, 210, 360], outline="black", width=2)
-        draw.rectangle([290, 320, 330, 360], outline="black", width=2)
+        draw.rectangle([255, 480, 315, 540], outline="black", width=3)
+        draw.rectangle([435, 480, 495, 540], outline="black", width=3)
 
         # Convert to grayscale and then to canny-like edges
         gray = img.convert("L")
         return gray.convert("RGB")
+
+    def resize_image_with_aspect_ratio(self, image, max_size=768):
+        """
+        Resize image while maintaining aspect ratio
+        
+        Args:
+            image: PIL Image to resize
+            max_size: Maximum dimension size
+            
+        Returns:
+            Resized PIL Image with maintained aspect ratio
+        """
+        # Get original dimensions
+        width, height = image.size
+        
+        # Calculate scaling factor
+        if width > height:
+            # Landscape or square
+            new_width = max_size
+            new_height = int((height * max_size) / width)
+        else:
+            # Portrait
+            new_height = max_size
+            new_width = int((width * max_size) / height)
+        
+        # Ensure dimensions are multiples of 8 (requirement for Stable Diffusion)
+        new_width = (new_width // 8) * 8
+        new_height = (new_height // 8) * 8
+        
+        # Minimum size constraints
+        new_width = max(new_width, 512)
+        new_height = max(new_height, 512)
+        
+        return image.resize((new_width, new_height), Image.Resampling.LANCZOS)
 
     def generate_image(
         self,
@@ -114,6 +148,8 @@ class ControlNetImageGenerator:
         guidance_scale=7.5,
         controlnet_conditioning_scale=1.0,
         seed=None,
+        width=None,
+        height=None,
     ):
         """
         Generate image using ControlNet
@@ -126,6 +162,8 @@ class ControlNetImageGenerator:
             guidance_scale: How closely to follow the prompt
             controlnet_conditioning_scale: How strongly to follow control image
             seed: Random seed for reproducibility
+            width: Output image width (optional)
+            height: Output image height (optional)
 
         Returns:
             Generated PIL Image
@@ -134,6 +172,10 @@ class ControlNetImageGenerator:
             generator = torch.Generator(device=self.device).manual_seed(seed)
         else:
             generator = None
+
+        # Use control image dimensions if width/height not specified
+        if width is None or height is None:
+            width, height = control_image.size
 
         # Generate image
         image = self.pipe(
@@ -144,6 +186,8 @@ class ControlNetImageGenerator:
             guidance_scale=guidance_scale,
             controlnet_conditioning_scale=controlnet_conditioning_scale,
             generator=generator,
+            height=height,
+            width=width,
         ).images[0]
 
         return image
@@ -199,15 +243,20 @@ def generate_with_controlnet(
             # Create a simple sketch
             input_image = generator.create_simple_sketch()
             control_image = input_image
+            target_width, target_height = 768, 768
             status = "ℹ️ No image uploaded, using default sketch"
         else:
+            # Resize input image while maintaining aspect ratio
+            resized_image = generator.resize_image_with_aspect_ratio(input_image)
+            target_width, target_height = resized_image.size
+            
             # Create Canny edge detection
             control_image = generator.create_canny_edge(
-                input_image, int(canny_low), int(canny_high)
+                resized_image, int(canny_low), int(canny_high)
             )
-            status = "✅ Canny edges created from uploaded image"
+            status = f"✅ Canny edges created from uploaded image (resized to {target_width}x{target_height})"
 
-        # Generate the image
+        # Generate the image with original aspect ratio
         generated_image = generator.generate_image(
             prompt=prompt,
             control_image=control_image,
@@ -216,9 +265,11 @@ def generate_with_controlnet(
             guidance_scale=float(guidance_scale),
             controlnet_conditioning_scale=float(controlnet_scale),
             seed=int(seed) if seed != -1 else None,
+            width=target_width,
+            height=target_height,
         )
 
-        return control_image, generated_image, "✅ Image generated successfully!"
+        return control_image, generated_image, status
 
     except Exception as e:
         return None, None, f"❌ Error generating image: {str(e)}"
