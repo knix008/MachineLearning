@@ -331,14 +331,14 @@ def create_interface():
                     label="프롬프트",
                     placeholder="예: A beautiful landscape painting in impressionist style",
                     lines=3,
-                    value="A beautiful photo of a majestic parrot on a branch, high quality, detailed.",
+                    value="A photorealistic, high-quality, detailed, masterpiece, 8k resolution, professional photography, sharp focus, vivid colors, perfect composition, dramatic lighting, cinematic quality",
                 )
 
                 negative_prompt = gr.Textbox(
                     label="네거티브 프롬프트 (선택사항)",
                     placeholder="예: blurry, low quality, distorted",
                     lines=2,
-                    value="blurry, low quality, bad anatomy, distorted, ugly",
+                    value="blurry, low quality, bad anatomy, distorted, ugly, deformed, poorly drawn, bad hands, bad fingers, missing limbs, extra limbs, cropped, worst quality, low resolution, jpeg artifacts, watermark, text, signature, username, over saturated, under saturated, overexposed, underexposed",
                 )
 
                 # 고급 설정

@@ -36,15 +36,26 @@ pipe.to("cuda")
 
 # 3. 이미지 생성 🎨
 # 텍스트 프롬프트를 정의합니다.
-prompt = "A beautiful photo of a majestic parrot on a branch, high quality, detailed."
+prompt = """A beautiful photo of a majestic parrot on a branch, 
+photorealistic, ultra high definition, 8k resolution, ultra detail, 
+vibrant colors, cinematic lighting, realistic shadows, high quality, 
+masterpiece, best quality, perfect anatomy"""
+
+# 네거티브 프롬프트 (생성하지 않을 요소들)
+negative_prompt = """blurry, low quality, bad anatomy, bad hands, text, error, 
+missing fingers, extra digit, fewer digits, cropped, worst quality, 
+low quality, normal quality, jpeg artifacts, signature, watermark, 
+username, deformed, distorted, disfigured, mutation, mutated"""
 
 # 파이프라인을 실행하여 이미지를 생성합니다.
 # control_image가 구조를, prompt가 내용을 결정합니다.
 generated_image = pipe(
     prompt,
+    negative_prompt=negative_prompt,
     control_image=control_image,
     num_inference_steps=25,
     guidance_scale=7.5,
+    controlnet_conditioning_scale=1.0,
 ).images[0]
 
 # 4. 결과 저장 💾
