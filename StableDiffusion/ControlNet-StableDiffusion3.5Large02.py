@@ -279,17 +279,12 @@ def create_interface():
         css="""
         .main-container { max-width: 1200px; margin: 0 auto; }
         .status-box { background-color: #f0f8ff; padding: 10px; border-radius: 5px; }
-        #info-box { background-color: #f9f9f9; padding: 8px; border-radius: 4px; font-size: 0.9em; border-left: 3px solid #007acc; margin: 10px 0; }
         """,
     ) as demo:
 
         gr.Markdown(
             """
             # 🎨 Stable Diffusion 3.5 Large + ControlNet 이미지 생성기
-            
-            최신 **Stable Diffusion 3.5 Large** 모델과 **ControlNet Canny**를 사용하여 
-            **원본 이미지 비율을 유지**하면서 고품질 이미지를 생성합니다. 
-            입력 이미지의 윤곽선을 정확히 따라하며 새로운 스타일의 이미지를 만들 수 있습니다.
             """
         )
 
@@ -299,22 +294,6 @@ def create_interface():
                 gr.Markdown("### 📥 입력")
                 input_image = gr.Image(
                     label="입력 이미지 (구조 참조용)", type="pil", height=350
-                )
-
-                # 이미지 제약 조건 안내
-                gr.Markdown(
-                    """
-                    **📋 이미지 요구사항:**
-                    - **지원 형식:** JPG, PNG, WEBP, BMP
-                    - **권장 크기:** 512x512 ~ 1536x1536 픽셀
-                    - **최소 크기:** 512x512 픽셀 (비율 유지하며 확대)
-                    - **최대 크기:** 1536x1536 픽셀 (비율 유지하며 축소)
-                    - **비율 유지:** 원본 이미지의 가로세로 비율 보존
-                    - **해상도 정규화:** 자동으로 16의 배수로 조정
-                    - **채널:** RGB, RGBA, Grayscale 모두 지원
-                    - **출력:** 입력 이미지와 동일한 비율 및 크기로 생성
-                    """,
-                    elem_id="info-box",
                 )
 
                 prompt = gr.Textbox(
