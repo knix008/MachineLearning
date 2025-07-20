@@ -279,7 +279,7 @@ def create_interface():
         css="""
         .main-container { max-width: 1200px; margin: 0 auto; }
         .status-box { background-color: #f0f8ff; padding: 10px; border-radius: 5px; }
-        .info-box { background-color: #f9f9f9; padding: 8px; border-radius: 4px; font-size: 0.9em; border-left: 3px solid #007acc; }
+        #info-box { background-color: #f9f9f9; padding: 8px; border-radius: 4px; font-size: 0.9em; border-left: 3px solid #007acc; margin: 10px 0; }
         """,
     ) as demo:
 
@@ -292,16 +292,6 @@ def create_interface():
             입력 이미지의 윤곽선을 정확히 따라하며 새로운 스타일의 이미지를 만들 수 있습니다.
             """
         )
-
-        # 모델 상태 표시
-        with gr.Row():
-            model_status = gr.Textbox(
-                label="📊 모델 상태",
-                value="모델을 초기화하려면 '모델 로드' 버튼을 클릭하세요.",
-                interactive=False,
-                elem_classes=["status-box"],
-            )
-            load_model_btn = gr.Button("🚀 모델 로드", variant="secondary", size="sm")
 
         with gr.Row():
             with gr.Column(scale=1):
@@ -324,7 +314,7 @@ def create_interface():
                     - **채널:** RGB, RGBA, Grayscale 모두 지원
                     - **출력:** 입력 이미지와 동일한 비율 및 크기로 생성
                     """,
-                    elem_classes=["info-box"],
+                    elem_id="info-box",
                 )
 
                 prompt = gr.Textbox(
@@ -385,7 +375,7 @@ def create_interface():
                         )
 
                 generate_btn = gr.Button(
-                    "🎨 이미지 생성", variant="primary", size="lg", interactive=False
+                    "🎨 이미지 생성", variant="primary", size="lg", interactive=True
                 )
 
             with gr.Column(scale=1):
@@ -421,19 +411,6 @@ def create_interface():
                 )
 
         # 이벤트 함수들
-        def update_model_status():
-            success = initialize_models()
-            if success:
-                return (
-                    "✅ 모델이 성공적으로 로드되었습니다! 이제 이미지를 생성할 수 있습니다.",
-                    gr.update(interactive=True),  # 생성 버튼 활성화
-                )
-            else:
-                return (
-                    "❌ 모델 로드에 실패했습니다. 다시 시도해주세요.",
-                    gr.update(interactive=False),  # 생성 버튼 비활성화
-                )
-
         def preview_canny(image, low_thresh, high_thresh):
             if image is None:
                 return None
@@ -473,10 +450,6 @@ def create_interface():
             return canny_preview, generated_img, status
 
         # 이벤트 바인딩
-        load_model_btn.click(
-            fn=update_model_status, outputs=[model_status, generate_btn]
-        )
-
         # Canny 미리보기 업데이트
         for component in [input_image, low_threshold, high_threshold]:
             component.change(
@@ -507,6 +480,13 @@ def create_interface():
 # 메인 실행부
 if __name__ == "__main__":
     print("🚀 Stable Diffusion 3.5 Large ControlNet GUI를 시작합니다...")
+
+    # 모델 자동 초기화
+    print("모델을 초기화하는 중...")
+    success = initialize_models()
+    if not success:
+        print("❌ 모델 초기화에 실패했습니다. 프로그램을 종료합니다.")
+        exit(1)
 
     # Gradio 인터페이스 생성 및 실행
     demo = create_interface()
