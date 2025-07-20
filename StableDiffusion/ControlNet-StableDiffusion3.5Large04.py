@@ -180,7 +180,7 @@ def create_interface():
                     label="프롬프트",
                     placeholder="예: A beautiful landscape painting in impressionist style",
                     lines=3,
-                    value="A beautiful photo of a majestic parrot on a branch",
+                    value="A beautiful woman wearing a red bikini and walking on the beach",
                 )
 
                 negative_prompt = gr.Textbox(
