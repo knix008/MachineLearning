@@ -1,11 +1,9 @@
 import torch
 import gradio as gr
 from diffusers import StableDiffusion3ControlNetPipeline, SD3ControlNetModel
-from diffusers.utils import load_image
 import cv2
 import numpy as np
 from PIL import Image
-import os
 
 # 전역 변수로 파이프라인 저장
 pipe = None
