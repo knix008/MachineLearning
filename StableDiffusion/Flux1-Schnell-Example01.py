@@ -31,8 +31,14 @@ print("모델 로딩 완료!")
 try:
     pipe.enable_xformers_memory_efficient_attention()
     print("xformers 메모리 효율적 어텐션 활성화 완료.")
-except ImportError:
-    print("xformers가 설치되지 않아 어텐션 최적화를 건너뜁니다.")
+except (ImportError, AttributeError) as e:
+    print(f"xformers 어텐션 최적화를 건너뜁니다: {e}")
+    # Alternative: Use torch's built-in attention optimization
+    try:
+        pipe.unet.set_attn_processor(None)  # Use default attention
+        print("기본 어텐션 프로세서를 사용합니다.")
+    except Exception:
+        print("어텐션 최적화를 건너뜁니다.")
 
 
 # (선택) 추가 최적화: VAE Tiling
