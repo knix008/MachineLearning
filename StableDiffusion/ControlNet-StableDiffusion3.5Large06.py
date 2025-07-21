@@ -60,7 +60,7 @@ controlnet = SD3ControlNetModel.from_pretrained(
 pipe = StableDiffusion3ControlNetPipeline.from_pretrained(
     "stabilityai/stable-diffusion-3.5-large",
     controlnet=controlnet,
-    torch_dtype=torch.float16,
+    torch_dtype=torch.float16
 ).to("cuda")
 
 # Text encoder들을 명시적으로 CUDA로 이동
