@@ -14,33 +14,50 @@ class SD3CannyImageProcessor(VaeImageProcessor):
         super().__init__(do_normalize=False)
 
     def preprocess(self, image, **kwargs):
-        image = super().preprocess(image, **kwargs)
-        image = image * 255 * 0.5 + 0.5
-
-        # assuming img is a PIL image
-        img = F.to_tensor(image)
-        img = cv2.cvtColor(img.transpose(1, 2, 0), cv2.COLOR_RGB2GRAY)
-        img = cv2.Canny(img, 100, 200)
+        # PIL 이미지를 numpy 배열로 변환
+        if isinstance(image, Image.Image):
+            image_array = np.array(image)
+        elif isinstance(image, torch.Tensor):
+            image_array = image.cpu().numpy()
+            if image_array.ndim == 4:  # batch dimension이 있는 경우
+                image_array = image_array[0]
+            if image_array.shape[0] == 3:  # CHW format인 경우
+                image_array = image_array.transpose(1, 2, 0)
+        else:
+            image_array = np.array(image)
         
-        return image
+        # RGB에서 그레이스케일로 변환
+        if len(image_array.shape) == 3:
+            gray = cv2.cvtColor(image_array, cv2.COLOR_RGB2GRAY)
+        else:
+            gray = image_array
+        
+        # Canny edge detection 적용
+        canny = cv2.Canny(gray, 100, 200)
+        
+        # PIL 이미지로 변환 후 다시 텐서로 변환
+        canny_image = Image.fromarray(canny)
+        processed_image = super().preprocess(canny_image, **kwargs)
+        
+        return processed_image
 
     def postprocess(self, image, do_denormalize=True, **kwargs):
-        do_denormalize = [True] * image.shape[0]
+        if isinstance(do_denormalize, bool):
+            do_denormalize = [do_denormalize] * image.shape[0]
         image = super().postprocess(image, **kwargs, do_denormalize=do_denormalize)
         return image
 
 
 # 모델 로드
 controlnet = SD3ControlNetModel.from_pretrained(
-    "stabilityai/stable-diffusion-3.5-large-controlnet-canny", torch_dtype=torch.float16
-)
+    "stabilityai/stable-diffusion-3.5-large-controlnet-canny", 
+    torch_dtype=torch.float16
+).to("cuda")
+
 pipe = StableDiffusion3ControlNetPipeline.from_pretrained(
     "stabilityai/stable-diffusion-3.5-large",
     controlnet=controlnet,
     torch_dtype=torch.float16,
-    text_encoder_device_map="auto",
-    text_encoder_2_device_map="auto", 
-    text_encoder_3_device_map="auto"
 ).to("cuda")
 
 # Text encoder들을 명시적으로 CUDA로 이동
@@ -105,7 +122,7 @@ with gr.Blocks(title="Stable Diffusion 3.5 ControlNet Canny") as demo:
                 label="입력 이미지",
                 type="pil",
                 height=400,
-                value="default_image.jpg",  # 기본 이미지 경로
+                value="default.jpg",  # 기본 이미지 경로
             )
             prompt = gr.Textbox(
                 label="프롬프트",
