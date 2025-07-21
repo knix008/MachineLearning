@@ -35,8 +35,11 @@ class SD3CannyImageProcessor(VaeImageProcessor):
         # Canny edge detection 적용
         canny = cv2.Canny(gray, 100, 200)
         
+        # 1채널 그레이스케일을 3채널 RGB로 변환
+        canny_rgb = cv2.cvtColor(canny, cv2.COLOR_GRAY2RGB)
+        
         # PIL 이미지로 변환 후 다시 텐서로 변환
-        canny_image = Image.fromarray(canny)
+        canny_image = Image.fromarray(canny_rgb)
         processed_image = super().preprocess(canny_image, **kwargs)
         
         return processed_image
@@ -76,7 +79,9 @@ def preprocess_canny(image, low_threshold=100, high_threshold=200):
     image_array = np.array(image)
     gray = cv2.cvtColor(image_array, cv2.COLOR_RGB2GRAY)
     canny = cv2.Canny(gray, low_threshold, high_threshold)
-    canny_image = Image.fromarray(canny)
+    # 1채널을 3채널로 변환
+    canny_rgb = cv2.cvtColor(canny, cv2.COLOR_GRAY2RGB)
+    canny_image = Image.fromarray(canny_rgb)
     return canny_image
 
 
