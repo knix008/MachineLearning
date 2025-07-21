@@ -175,7 +175,7 @@ with gr.Blocks(title="Stable Diffusion 3.5 ControlNet Canny") as demo:
                 label="프롬프트",
                 placeholder="생성할 이미지에 대한 설명을 입력하세요...",
                 lines=3,
-                value="A beautiful woman in a red bikini, walking on a sunn beach, blue ocean in the background",
+                value="A beautiful woman in a red bikini, walking on a sunny beach, blue ocean in the background",
             )
             negative_prompt = gr.Textbox(
                 label="네거티브 프롬프트",
