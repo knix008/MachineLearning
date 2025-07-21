@@ -3,10 +3,27 @@ import gradio as gr
 import cv2
 import numpy as np
 from diffusers import StableDiffusion3ControlNetPipeline, SD3ControlNetModel
-from diffusers.utils import load_image
 from diffusers.image_processor import VaeImageProcessor
 from PIL import Image
 import torchvision.transforms.functional as F
+
+
+# 모델 로드
+controlnet = SD3ControlNetModel.from_pretrained(
+    "stabilityai/stable-diffusion-3.5-large-controlnet-canny",
+    torch_dtype=torch.bfloat16,
+)
+
+pipe = StableDiffusion3ControlNetPipeline.from_pretrained(
+    "stabilityai/stable-diffusion-3.5-large",
+    controlnet=controlnet,
+    torch_dtype=torch.bfloat16,
+)
+
+# Aggressive memory management
+pipe.enable_model_cpu_offload()  # Offload model to CPU when not in use
+pipe.enable_sequential_cpu_offload()  # More aggressive CPU offloading
+pipe.enable_attention_slicing(1)  # Slice attention computation
 
 
 class SD3CannyImageProcessor(VaeImageProcessor):
@@ -50,27 +67,6 @@ class SD3CannyImageProcessor(VaeImageProcessor):
         image = super().postprocess(image, **kwargs, do_denormalize=do_denormalize)
         return image
 
-
-# 모델 로드
-controlnet = SD3ControlNetModel.from_pretrained(
-    "stabilityai/stable-diffusion-3.5-large-controlnet-canny",
-    torch_dtype=torch.bfloat16,
-)
-
-pipe = StableDiffusion3ControlNetPipeline.from_pretrained(
-    "stabilityai/stable-diffusion-3.5-large",
-    controlnet=controlnet,
-    torch_dtype=torch.bfloat16,
-)
-
-# Aggressive memory management
-pipe.enable_model_cpu_offload()  # Offload model to CPU when not in use
-pipe.enable_sequential_cpu_offload()  # More aggressive CPU offloading
-pipe.enable_attention_slicing(1)  # Slice attention computation
-
-pipe.image_processor = SD3CannyImageProcessor()
-
-
 def preprocess_canny(image, low_threshold=100, high_threshold=200):
     """입력 이미지를 Canny edge detection으로 전처리"""
     image_array = np.array(image)
@@ -96,6 +92,7 @@ def generate_image(
         return None, "입력 이미지를 선택해주세요."
 
     try:
+        pipe.image_processor = SD3CannyImageProcessor()
         # Canny edge detection 적용
         control_image = preprocess_canny(input_image)
 
