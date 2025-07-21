@@ -12,13 +12,18 @@ import torchvision.transforms.functional as F
 controlnet_id = "stabilityai/stable-diffusion-3.5-large-controlnet-canny"
 model_id = "stabilityai/stable-diffusion-3.5-large"
 
+print("Loading ControlNet...")
 controlnet = SD3ControlNetModel.from_pretrained(
     controlnet_id,
     torch_dtype=torch.bfloat16,
 )
 
+print("Loading quantized transformer...")
+
 nf4_config = BitsAndBytesConfig(
-    load_in_4bit=True, bnb_4bit_quant_type="nf4", bnb_4bit_compute_dtype=torch.bfloat16
+    load_in_4bit=True, 
+    bnb_4bit_quant_type="nf4", 
+    bnb_4bit_compute_dtype=torch.bfloat16
 )
 
 model_nf4 = SD3Transformer2DModel.from_pretrained(
@@ -28,6 +33,7 @@ model_nf4 = SD3Transformer2DModel.from_pretrained(
     torch_dtype=torch.bfloat16,
 )
 
+print("Creating pipeline...")
 pipe = StableDiffusion3ControlNetPipeline.from_pretrained(
     model_id,
     transformer=model_nf4,
@@ -35,16 +41,17 @@ pipe = StableDiffusion3ControlNetPipeline.from_pretrained(
     torch_dtype=torch.bfloat16,
 )
 
-# Set running device
+print("Configuring memory management...")
+# 메모리 관리 설정 - 하나의 오프로드 방식만 사용
 if torch.cuda.is_available():
-    pipe.to("cuda" if torch.cuda.is_available() else "cpu")
+    pipe.enable_model_cpu_offload()  # 모델을 CPU로 오프로드
+    pipe.enable_attention_slicing(1)  # Attention slicing
+    print("Memory optimizations enabled")
 else:
-    # Aggressive memory management
-    pipe.enable_model_cpu_offload()  # Offload model to CPU when not in use
-    pipe.enable_sequential_cpu_offload()  # More aggressive CPU offloading
-    pipe.enable_attention_slicing(1)  # Slice attention computation
-    pipe.to("cpu")  # Add this line to ensure proper device handling
+    pipe.to("cpu")
+    print("Running on CPU")
 
+print("Pipeline initialization complete!")
 
 class SD3CannyImageProcessor(VaeImageProcessor):
     def __init__(self):
@@ -55,13 +62,27 @@ class SD3CannyImageProcessor(VaeImageProcessor):
         if isinstance(image, Image.Image):
             image_array = np.array(image)
         elif isinstance(image, torch.Tensor):
-            image_array = image.cpu().numpy()
+            # 메타 텐서 체크
+            if image.device.type == 'meta':
+                raise ValueError("Cannot process meta tensor. Please restart the script.")
+            
+            image_array = image.detach().cpu().numpy()
             if image_array.ndim == 4:  # batch dimension이 있는 경우
                 image_array = image_array[0]
             if image_array.shape[0] == 3:  # CHW format인 경우
                 image_array = image_array.transpose(1, 2, 0)
+            # 값 범위 정규화
+            if image_array.max() <= 1.0:
+                image_array = (image_array * 255).astype(np.uint8)
         else:
             image_array = np.array(image)
+
+        # 데이터 타입 확인
+        if image_array.dtype != np.uint8:
+            if image_array.max() <= 1.0:
+                image_array = (image_array * 255).astype(np.uint8)
+            else:
+                image_array = image_array.astype(np.uint8)
 
         # RGB에서 그레이스케일로 변환
         if len(image_array.shape) == 3:
@@ -113,21 +134,19 @@ def generate_image(
         return None, "입력 이미지를 선택해주세요."
 
     try:
-        # Clear cache before generation
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
-
         pipe.image_processor = SD3CannyImageProcessor()
+        
         # Canny edge detection 적용
         control_image = preprocess_canny(input_image)
 
-        # 시드 설정 - use cuda if available
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        generator = torch.Generator(device=device).manual_seed(seed)
+        # 시드 설정 - CPU generator 사용 (안정성을 위해)
+        generator = torch.Generator(device="cpu").manual_seed(seed)
 
+        print("Starting image generation...")
+        
         # 이미지 생성
         result = pipe(
-            prompt,
+            prompt=prompt,
             negative_prompt=negative_prompt,
             control_image=control_image,
             controlnet_conditioning_scale=controlnet_conditioning_scale,
@@ -138,17 +157,9 @@ def generate_image(
         )
 
         generated_image = result.images[0]
-
-        # Clear cache after generation
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
-
         return generated_image, "이미지 생성 완료!"
 
     except Exception as e:
-        # Clear cache on error
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
         return None, f"오류 발생: {str(e)}"
 
 
@@ -169,7 +180,7 @@ with gr.Blocks(title="Stable Diffusion 3.5 ControlNet Canny") as demo:
                 label="프롬프트",
                 placeholder="생성할 이미지에 대한 설명을 입력하세요...",
                 lines=3,
-                value="A beautiful woman in a red bikini, walking on a beach at sunset, ultra high definition, ultra detail, looking at viewer",
+                value="A beautiful woman in a red bikini, standing on a beach at sunset, with a serene expression",
             )
             negative_prompt = gr.Textbox(
                 label="네거티브 프롬프트",
