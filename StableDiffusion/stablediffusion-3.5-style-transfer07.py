@@ -169,4 +169,4 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
     )
 # 6. Gradio 앱 실행
 if __name__ == "__main__":
-    demo.launch(debug=True)
+    demo.launch(share=False, inbrowser=True))
