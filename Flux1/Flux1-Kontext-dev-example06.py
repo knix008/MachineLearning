@@ -172,7 +172,7 @@ def show_image_info(image):
 # ⭐ FluxKontext 모델용 스타일 프리셋 (인물 화질 최적화)
 STYLE_PRESETS = {
     "기본": {
-        "prompt_prefix": "high quality, detailed, enhanced",
+        "prompt_prefix": "ultra high quality, ultra detailed, 8k resolution, perfect skin, highly enhanced",
         "guidance_scale": 4.0,
         "num_inference_steps": 30,
     },
@@ -258,7 +258,8 @@ with gr.Blocks(
                 label="원본 이미지 업로드 (필수)",
                 type="pil",
                 sources=["upload", "clipboard"],
-                height=400
+                height=400,
+                value="default.jpg",  # 기본 이미지 (예시용)
             )
             
             # ⭐ 입력 이미지 정보 표시
