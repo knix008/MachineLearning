@@ -25,8 +25,6 @@ print("모델 로딩 완료!")
 def generate_image(
     prompt,
     input_image,
-    width,
-    height,
     guidance_scale,
     num_inference_steps,
     max_sequence_length,
@@ -45,11 +43,11 @@ def generate_image(
     # Progress bar 시작
     progress(0.1, desc="🎨 이미지 처리 시작...")
 
-    # 원본 이미지 크기 저장
+    # ⭐ 원본 이미지 크기 자동 사용
     original_width, original_height = input_image.size
     original_ratio = original_width / original_height
 
-    progress(0.2, desc="📐 원본 크기 유지 설정 중...")
+    progress(0.2, desc=f"📐 원본 크기 감지: {original_width}x{original_height}")
 
     # 시드 설정
     if seed == -1:
@@ -69,8 +67,11 @@ def generate_image(
         image = pipe(
             prompt=prompt,
             image=input_image_for_processing,
+            width=original_width,
+            height=original_height,
             guidance_scale=guidance_scale,
             num_inference_steps=int(num_inference_steps),
+            max_sequence_length=max_sequence_length,
             generator=generator,
         ).images[0]
 
@@ -390,8 +391,6 @@ with gr.Blocks(
         inputs=[
             prompt_input,
             input_image,
-            gr.State(768),  # width (사용되지 않음)
-            gr.State(768),  # height (사용되지 않음)
             guidance_slider,
             steps_slider,
             gr.State(320),  # max_sequence_length
