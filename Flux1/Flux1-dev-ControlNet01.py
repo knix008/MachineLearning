@@ -2,7 +2,8 @@ import torch
 from diffusers.utils import load_image
 
 from diffusers import FluxControlNetPipeline, FluxControlNetModel
-from diffusers.models import FluxMultiControlNetModel
+from diffusers.models.transformers.transformer_flux import FluxMultiControlNetModel
+
 
 base_model = 'black-forest-labs/FLUX.1-dev'
 controlnet_model_union = 'Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro'
