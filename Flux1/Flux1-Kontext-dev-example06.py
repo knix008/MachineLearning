@@ -29,6 +29,7 @@ def generate_image(
     num_inference_steps,
     max_sequence_length,
     seed,
+    style_preset_name,  # Add this parameter
     progress=gr.Progress(),
 ):
     """이미지 생성 함수 (FluxKontext 전용 - Image-to-Image만 지원)"""
@@ -42,6 +43,16 @@ def generate_image(
 
     # Progress bar 시작
     progress(0.1, desc="🎨 이미지 처리 시작...")
+
+    # ⭐ 선택된 스타일 프리셋의 프롬프트 적용
+    preset = STYLE_PRESETS.get(style_preset_name, STYLE_PRESETS["기본"])
+    preset_prompt = preset["prompt_prefix"]
+    
+    # 사용자 프롬프트와 프리셋 프롬프트 결합
+    if prompt.strip():
+        final_prompt = f"{preset_prompt}, {prompt.strip()}"
+    else:
+        final_prompt = preset_prompt
 
     # ⭐ 원본 이미지 크기 자동 사용
     original_width, original_height = input_image.size
@@ -60,12 +71,22 @@ def generate_image(
 
         # ⭐ 무조건 원본 크기 그대로 사용
         input_image_for_processing = input_image.convert("RGB")
-        
         progress(0.5, desc="🧠 AI 모델 처리 중 (원본 크기 유지)...")
         
-        # ⭐ 원본 크기 그대로 모델에 전달
+        print("> ⭐ Input to Pipeline ⭐")
+        print("===========================================================")
+        print("> Final Prompt : ", final_prompt)  # Changed to show final prompt
+        print("> Preset Used : ", style_preset_name)
+        print("> User Input : ", prompt)
+        print("> Seed : ", seed)
+        print("> Guidance Scale : ", guidance_scale)
+        print("> Num Inference Steps : ", num_inference_steps)
+        print("> Max Sequence Length : ", max_sequence_length)
+        print("> =========================================================")
+
+        # ⭐ 원본 크기 그대로 모델에 전달 (final_prompt 사용)
         image = pipe(
-            prompt=prompt,
+            prompt=final_prompt,  # Use the combined prompt
             image=input_image_for_processing,
             width=original_width,
             height=original_height,
@@ -103,7 +124,7 @@ def generate_image(
 
         progress(1.0, desc="✅ 완료!")
 
-        info_text = f"✅ 이미지 변환 완료!\n⏱️ 처리 시간: {generation_time:.2f}초\n🎲 시드: {seed}\n💾 저장 파일: {filename}\n🎨 가이던스: {guidance_scale} | ⚡ 스텝: {num_inference_steps}{size_info}\n\n📝 사용된 프롬프트:\n{prompt[:100]}..."
+        info_text = f"✅ 이미지 변환 완료!\n⏱️ 처리 시간: {generation_time:.2f}초\n🎲 시드: {seed}\n💾 저장 파일: {filename}\n🎨 가이던스: {guidance_scale} | ⚡ 스텝: {num_inference_steps}{size_info}\n🎯 사용된 프리셋: {style_preset_name}\n\n📝 최종 프롬프트:\n{final_prompt[:150]}..."  # Show final prompt in info
 
         return image, info_text
 
@@ -329,6 +350,16 @@ with gr.Blocks(
                 info="처리 단계 수 (프리셋에 따라 자동 설정됨)"
             )
             
+        with gr.Row():
+            max_sequence_length_slider = gr.Slider(
+                minimum=128,
+                maximum=512,
+                value=320,
+                step=32,
+                label="📝 최대 시퀀스 길이",
+                info="텍스트 프롬프트 처리 길이 (길수록 복잡한 프롬프트 처리 가능, 메모리 사용량 증가)"
+            )
+            
             seed_input = gr.Number(
                 label="🎲 시드 (-1은 랜덤)",
                 value=-1,
@@ -394,8 +425,9 @@ with gr.Blocks(
             input_image,
             guidance_slider,
             steps_slider,
-            gr.State(320),  # max_sequence_length
+            max_sequence_length_slider,  # Use the slider instead of gr.State(320)
             seed_input,
+            style_preset,
         ],
         outputs=[output_image, info_output],
         show_progress=True,
