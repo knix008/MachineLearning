@@ -198,7 +198,7 @@ STYLE_PRESETS = {
         "num_inference_steps": 30,
     },
     "📸 인물 - 최고 화질": {
-        "prompt_prefix": "ultra high quality portrait, photorealistic, 8k resolution, professional photography, perfect skin texture, natural lighting, detailed facial features, crystal clear, ultra detailed, masterpiece quality, professional grade",
+        "prompt_prefix": "ultra high quality portrait, 8k resolution, professional photography, perfect skin texture, natural lighting, detailed facial features, crystal clear, ultra detailed, masterpiece quality, professional grade",
         "guidance_scale": 4.8,
         "num_inference_steps": 40,
     },
