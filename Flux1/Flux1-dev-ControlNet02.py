@@ -17,7 +17,6 @@ pipe = FluxControlNetPipeline.from_pretrained(base_model, controlnet=controlnet,
 pipe.enable_model_cpu_offload()  # Offload model to CPU when not in use
 pipe.enable_sequential_cpu_offload()  # More aggressive CPU offloading
 pipe.enable_attention_slicing(1)  # Slice attention computation
-pipe.enable_vae_slicing()  # Slice VAE computation
 print("모델 로딩 완료!")
 
 
