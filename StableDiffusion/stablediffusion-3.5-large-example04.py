@@ -23,12 +23,12 @@ except Exception as e:
 
 # 4. 이미지 생성 함수 정의
 def generate_image(
-    input_image, 
-    prompt, 
-    strength=0.8, 
-    guidance_scale=7.0, 
-    num_inference_steps=28, 
-    negative_prompt="", 
+    input_image,
+    prompt,
+    strength=0.8,
+    guidance_scale=7.0,
+    num_inference_steps=28,
+    negative_prompt="",
     seed=-1
 ):
     """
@@ -60,42 +60,42 @@ def generate_image(
         init_image = Image.fromarray(input_image).convert("RGB")
         width, height = init_image.size
 
-        # 최대 크기 및 16의 배수로 맞추기
-        max_size = 1024
+        # 최대 크기 제한 없이, 16의 배수로 리사이즈 (비율 유지)
         def round_to_16(x):
-            return max(16, (x // 16) * 16)
+            return max(16, ((x + 15) // 16) * 16)  # 16의 배수로 올림
 
-        if width > max_size or height > max_size:
-            if width >= height:
-                new_width = max_size
-                new_height = int(height * max_size / width)
-            else:
-                new_height = max_size
-                new_width = int(width * max_size / height)
-            width, height = new_width, new_height
+        orig_width, orig_height = width, height
+        aspect_ratio = orig_width / orig_height
 
-        width = round_to_16(width)
-        height = round_to_16(height)
+        # 16의 배수로 리사이즈 (비율 유지)
+        if orig_width >= orig_height:
+            width = round_to_16(orig_width)
+            height = round_to_16(width / aspect_ratio)
+        else:
+            height = round_to_16(orig_height)
+            width = round_to_16(height * aspect_ratio)
+
+        width, height = int(width), int(height)
         init_image = init_image.resize((width, height), Image.LANCZOS)
 
         # 시드 설정
         generator = None
         if seed is not None and int(seed) != -1:
             generator = torch.Generator(device=pipe.device).manual_seed(int(seed))
-        
+
         # For debugging purposes
-        print(f"Generating image with prompt: {prompt}")
-        print(f"Image size: {width}x{height}, Strength: {strength}, Guidance Scale: {guidance_scale}, Steps: {num_inference_steps}, Seed: {seed}")
+        print(f"Prompt: {prompt}")
         print(f"Negative Prompt: {negative_prompt}")
-        print(f"Using generator: {generator}")
+        print(f"Image size: {width}x{height}")
         # 네거티브 프롬프트가 비어있으면 None으로 설정
         if not negative_prompt:
             negative_prompt = None
         else:
             negative_prompt = negative_prompt.strip()
-        print("Stength:", strength)
-        print("Guidance Scale:", guidance_scale)
-        print("Num Inference Steps:", num_inference_steps)
+        print(f"Strength: {strength}")
+        print(f"Guidance Scale: {guidance_scale}")
+        print(f"Num Inference Steps: {num_inference_steps}")
+        print(f"Seed: {seed}")
 
         # 파이프라인을 실행하여 이미지 생성
         generated_image = pipe(
@@ -175,12 +175,12 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
     generate_button.click(
         fn=generate_image,
         inputs=[
-            image_input, 
-            prompt_input, 
-            strength_slider, 
-            guidance_slider, 
-            steps_slider, 
-            negative_prompt_input, 
+            image_input,
+            prompt_input,
+            strength_slider,
+            guidance_slider,
+            steps_slider,
+            negative_prompt_input,
             seed_slider
         ],
         outputs=image_output,
