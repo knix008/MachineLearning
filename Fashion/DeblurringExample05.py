@@ -10,14 +10,16 @@ def deblur_and_enhance(image, half_precision=True, scale=4):
     업로드된 이미지를 Real-ESRGAN 딥러닝 모델로 더욱 효과적으로 선명하게 복원합니다.
     - scale: 업스케일 배수 (권장: 2 또는 4)
     """
+    # Create the model with correct architecture for RealESRGAN_x4plus
     model = RRDBNet(
         num_in_ch=3,
         num_out_ch=3,
         num_feat=64,
         num_block=23,
         num_grow_ch=32,
-        scale=scale,
+        scale=4,
     )
+
     upsampler = RealESRGANer(
         scale=scale,
         model_path="RealESRGAN_x4plus.pth",
