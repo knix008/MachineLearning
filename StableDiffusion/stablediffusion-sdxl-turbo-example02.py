@@ -50,32 +50,27 @@ demo = gr.Interface(
     fn=generate,
     inputs=[
         gr.Image(
-            label="입력 이미지",
+            label="입력 이미지 (이미지 변환의 기준이 되는 입력 이미지입니다.)",
             type="pil",
             height=500,
-            info="이미지 변환의 기준이 되는 입력 이미지입니다."
         ),
         gr.Textbox(
-            label="프롬프트",
-            value="detailed, 8k, high quality, high definition, masterpiece",
-            info="생성될 이미지의 내용을 설명하는 텍스트입니다."
+            label="프롬프트 (생성될 이미지의 내용을 설명하는 텍스트입니다.)",
+            value="highly detailed, 8k, high quality, ultra high definition, masterpiece, photorealistic, cinematic lighting, intricate details",
         ),
         gr.Slider(
-            1, 50, value=28, step=1, label="Inference Steps",
-            info="이미지 생성 반복 횟수 (높을수록 품질↑, 속도↓)"
+            1, 50, value=28, step=1, label="Inference Steps (이미지 생성 반복 횟수, 높을수록 품질↑, 속도↓)"
         ),
         gr.Slider(
-            0.0, 1.0, value=0.5, step=0.01, label="Strength",
-            info="원본 이미지 변형 강도 (높을수록 원본과 달라짐)"
+            0.0, 1.0, value=0.5, step=0.01, label="Strength (원본 이미지 변형 강도, 높을수록 원본과 달라짐)"
         ),
         gr.Slider(
-            0.0, 10.0, value=0.0, step=0.01, label="Guidance Scale",
-            info="프롬프트 반영 강도 (높을수록 프롬프트 영향↑)"
+            0.0, 10.0, value=5.0, step=0.01, label="Guidance Scale (프롬프트 반영 강도, 높을수록 프롬프트 영향↑)"
         ),
     ],
     outputs=[
-        gr.Image(label="결과 이미지", height=500, info="생성된 결과 이미지입니다."),
-        gr.Textbox(label="이미지 설명", info="생성 과정 및 파라미터 정보가 표시됩니다."),
+        gr.Image(label="결과 이미지 (생성된 결과 이미지입니다.)", height=500),
+        gr.Textbox(label="이미지 설명 (생성 과정 및 파라미터 정보가 표시됩니다.)"),
     ],
     title="SDXL Turbo 이미지 변환",
     description="각 항목의 설명을 참고하여 이미지를 생성하세요.",
