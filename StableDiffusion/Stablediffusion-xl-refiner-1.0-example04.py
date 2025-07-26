@@ -142,7 +142,7 @@ with gr.Blocks(title="Stable Diffusion XL Refiner", theme=gr.themes.Soft()) as d
             with gr.Accordion("고급 설정", open=False):
                 strength = gr.Slider(
                     label="Strength (변형 강도)",
-                    minimum=0.0,
+                    minimum=0.1,
                     maximum=1.0,
                     value=0.8,
                     step=0.05,
