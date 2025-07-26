@@ -23,39 +23,20 @@ else:
 print("모델 로딩 완료!")
 
 
-def resize_image_to_sdxl(image, max_size=1024):
-    """이미지를 SDXL에 적합한 크기로 리사이즈하면서 원본 크기 최대한 유지"""
+def resize_image_to_sdxl(image):
+    """이미지의 비율은 유지하면서, 가로/세로가 16의 배수로만 맞춤"""
     width, height = image.size
-    
-    # 원본 크기가 너무 큰 경우에만 다운스케일
-    if max(width, height) > max_size:
-        aspect_ratio = width / height
-        if width > height:
-            new_width = max_size
-            new_height = int(max_size / aspect_ratio)
-        else:
-            new_height = max_size
-            new_width = int(max_size * aspect_ratio)
-    else:
-        # 원본 크기 유지
-        new_width = width
-        new_height = height
-    
-    # 8의 배수로 조정 (Stable Diffusion 요구사항)
-    new_width = (new_width // 8) * 8
-    new_height = (new_height // 8) * 8
-    
-    # 최소 크기 보장 (512px 미만인 경우만)
-    if new_width < 512:
-        new_width = 512
-    if new_height < 512:
-        new_height = 512
-    
-    # 원본과 크기가 같으면 리사이즈 하지 않음
-    if new_width == width and new_height == height:
-        return image
-    
-    return image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+
+    def round_to_16(x):
+        return max(16, (x // 16) * 16)
+
+    new_width = round_to_16(width)
+    new_height = round_to_16(height)
+
+    # 크기가 변경되면 리사이즈, 아니면 원본 반환
+    if new_width != width or new_height != height:
+        return image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+    return image
 
 
 def generate_image(input_image, prompt, negative_prompt, strength, guidance_scale, num_inference_steps, progress=gr.Progress()):
@@ -141,14 +122,14 @@ with gr.Blocks(title="Stable Diffusion XL Refiner", theme=gr.themes.Soft()) as d
             input_image = gr.Image(
                 label="입력 이미지",
                 type="pil",
-                height=300
+                height=500
             )
             
             prompt = gr.Textbox(
                 label="Prompt (프롬프트)",
                 placeholder="예: blue bikini, ultra high definition photo realistic portrait, similar to a photo",
                 lines=3,
-                value="ultra high definition photo realistic portrait, professional photography, ultra detailed, no deformed"
+                value="ultra high definition photo realistic portrait, professional photography, ultra detail, similar to a photo, no deformed"
             )
             
             negative_prompt = gr.Textbox(
@@ -161,7 +142,7 @@ with gr.Blocks(title="Stable Diffusion XL Refiner", theme=gr.themes.Soft()) as d
             with gr.Accordion("고급 설정", open=False):
                 strength = gr.Slider(
                     label="Strength (변형 강도)",
-                    minimum=0.1,
+                    minimum=0.0,
                     maximum=1.0,
                     value=0.8,
                     step=0.05,

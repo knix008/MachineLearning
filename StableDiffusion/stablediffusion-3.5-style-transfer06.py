@@ -55,20 +55,9 @@ def generate_image(input_image, prompt, strength=0.8, guidance_scale=7.0):
         init_image = Image.fromarray(input_image).convert("RGB")
         width, height = init_image.size  # 원본 이미지 크기 추출
 
-        # 최대 크기 및 16의 배수로 맞추기
-        max_size = 1024
+        # 16의 배수로만 맞추기
         def round_to_16(x):
             return max(16, (x // 16) * 16)
-
-        # 비율 유지하며 리사이즈
-        if width > max_size or height > max_size:
-            if width >= height:
-                new_width = max_size
-                new_height = int(height * max_size / width)
-            else:
-                new_height = max_size
-                new_width = int(width * max_size / height)
-            width, height = new_width, new_height
 
         width = round_to_16(width)
         height = round_to_16(height)
