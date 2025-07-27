@@ -1,12 +1,21 @@
-from diffusers import AutoPipelineForImage2Image
 import torch
+from diffusers import AutoPipelineForImage2Image
 from PIL import Image
 import gradio as gr
+
+# 텐서 비우기
+torch.cuda.empty_cache()
 
 pipe = AutoPipelineForImage2Image.from_pretrained(
     "stabilityai/sdxl-turbo", torch_dtype=torch.float16, variant="fp16"
 )
-pipe.to("cuda")
+
+# Use CPU RAM for model weights
+pipe.enable_model_cpu_offload()
+pipe.enable_sequential_cpu_offload()
+pipe.enable_attention_slicing()
+pipe.enable_xformers_memory_efficient_attention()
+pipe.enable_vae_slicing()
 
 
 def resize_to_multiple_of_16(image):
@@ -43,6 +52,7 @@ def generate(input_image, prompt, num_inference_steps, strength, guidance_scale)
         f"출력 이미지 크기: {out_w}x{out_h}\n"
         f"Inference Steps: {num_inference_steps}, Strength: {strength}, Guidance Scale: {guidance_scale}"
     )
+    torch.cuda.empty_cache()  # 메모리 정리 (CUDA가 다룬되느 일이 종종 발생했다.)
     return result, description
 
 
@@ -56,7 +66,7 @@ demo = gr.Interface(
         ),
         gr.Textbox(
             label="프롬프트 (생성될 이미지의 내용을 설명하는 텍스트입니다.)",
-            value="highly detailed, 8k, high quality, ultra high definition, masterpiece, photorealistic, cinematic lighting, intricate details",
+            value="visible pores, highly detailed, 8k, high quality, ultra high definition, masterpiece, photorealistic, cinematic lighting, intricate details",
         ),
         gr.Slider(
             1, 50, value=28, step=1, label="Inference Steps (이미지 생성 반복 횟수, 높을수록 품질↑, 속도↓)"
