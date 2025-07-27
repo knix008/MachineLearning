@@ -191,7 +191,7 @@ with gr.Blocks(title="FLUX.1-dev 이미지 생성기") as demo:
 
             guidance_slider = gr.Slider(
                 minimum=1.0,
-                maximum=7.0,
+                maximum=10.0,
                 value=5.0,
                 step=0.1,
                 label="가이던스 스케일",
