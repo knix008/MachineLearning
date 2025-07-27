@@ -32,7 +32,8 @@ def generate_image(
     max_sequence_length,
     seed,
     negative_prompt,
-    strength,  # 추가
+    strength,
+    sampler,  # 추가
 ):
     """이미지 생성 함수 (텍스트-투-이미지 또는 이미지-투-이미지)"""
     start_time = time.time()
@@ -75,9 +76,6 @@ def generate_image(
             input_image = input_image.resize(
                 (adjusted_width, adjusted_height), Image.LANCZOS
             )
-
-            # negative_prompt를 사용자 입력으로 사용
-            # img2img 생성
             image = pipe(
                 prompt=prompt,
                 negative_prompt=negative_prompt,
@@ -88,10 +86,10 @@ def generate_image(
                 num_inference_steps=int(num_inference_steps),
                 max_sequence_length=int(max_sequence_length),
                 generator=generator,
-                strength=strength,  # 추가
+                strength=strength,
+                sampler=sampler,  # 추가
             ).images[0]
         else:
-            # txt2img 생성
             image = pipe(
                 prompt=prompt,
                 negative_prompt=negative_prompt,
@@ -101,6 +99,7 @@ def generate_image(
                 num_inference_steps=int(num_inference_steps),
                 max_sequence_length=int(max_sequence_length),
                 generator=generator,
+                sampler=sampler,  # 추가
             ).images[0]
 
         end_time = time.time()
@@ -228,10 +227,15 @@ with gr.Blocks(title="FLUX.1-dev 이미지 생성기") as demo:
                 maximum=1.0,
                 value=0.75,
                 step=0.05,
-                label="이미지 반영 강도 (strength)",
-                info="이미지-투-이미지에서 원본 이미지를 얼마나 반영할지 결정합니다. 낮을수록 프롬프트에 더 많이 맞춰집니다.",
+                label="이미지 반영 강도 (denoise strength)",
+                info="이미지-투-이미지에서 원본 이미지를 얼마나 반영할지 결정합니다.",
             )
-
+            sampler_dropdown = gr.Dropdown(
+                choices=["ddim", "pndm", "euler", "euler_a", "dpm_solver", "dpmpp_2m"],  # 지원되는 샘플러 이름으로 수정
+                value="ddim",
+                label="샘플러(Sampler)",
+                info="이미지 생성에 사용할 샘플러를 선택하세요.",
+            )
             generate_btn = gr.Button("🎨 이미지 생성", variant="primary", size="lg")
 
             # 설정 가이드 추가
@@ -278,7 +282,8 @@ with gr.Blocks(title="FLUX.1-dev 이미지 생성기") as demo:
             sequence_slider,
             seed_input,
             negative_prompt_input,
-            strength_slider,  # 추가
+            strength_slider,
+            sampler_dropdown,  # 추가
         ],
         outputs=[output_image, info_output],
     )
