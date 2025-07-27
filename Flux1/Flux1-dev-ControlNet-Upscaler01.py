@@ -4,6 +4,7 @@ from diffusers import FluxControlNetModel
 from diffusers.pipelines import FluxControlNetPipeline
 import datetime
 
+# Reference : https://huggingface.co/jasperai/Flux.1-dev-Controlnet-Upscaler
 # Load pipeline
 controlnet = FluxControlNetModel.from_pretrained(
     "jasperai/Flux.1-dev-Controlnet-Upscaler", torch_dtype=torch.bfloat16
