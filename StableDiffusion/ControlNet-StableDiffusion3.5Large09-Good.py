@@ -21,9 +21,7 @@ controlnet = SD3ControlNetModel.from_pretrained(
 print("Loading quantized transformer...")
 
 nf4_config = BitsAndBytesConfig(
-    load_in_4bit=True, 
-    bnb_4bit_quant_type="nf4", 
-    bnb_4bit_compute_dtype=torch.bfloat16
+    load_in_4bit=True, bnb_4bit_quant_type="nf4", bnb_4bit_compute_dtype=torch.bfloat16
 )
 
 model_nf4 = SD3Transformer2DModel.from_pretrained(
@@ -53,6 +51,7 @@ else:
 
 print("Pipeline initialization complete!")
 
+
 class SD3CannyImageProcessor(VaeImageProcessor):
     def __init__(self):
         super().__init__(do_normalize=False)
@@ -63,9 +62,11 @@ class SD3CannyImageProcessor(VaeImageProcessor):
             image_array = np.array(image)
         elif isinstance(image, torch.Tensor):
             # 메타 텐서 체크
-            if image.device.type == 'meta':
-                raise ValueError("Cannot process meta tensor. Please restart the script.")
-            
+            if image.device.type == "meta":
+                raise ValueError(
+                    "Cannot process meta tensor. Please restart the script."
+                )
+
             image_array = image.detach().cpu().numpy()
             if image_array.ndim == 4:  # batch dimension이 있는 경우
                 image_array = image_array[0]
@@ -135,7 +136,6 @@ def generate_image(
 
     try:
         pipe.image_processor = SD3CannyImageProcessor()
-        
         # Canny edge detection 적용
         control_image = preprocess_canny(input_image)
 
@@ -143,7 +143,7 @@ def generate_image(
         generator = torch.Generator(device="cpu").manual_seed(seed)
 
         print("Starting image generation...")
-        
+
         # 이미지 생성
         result = pipe(
             prompt=prompt,
@@ -173,14 +173,14 @@ with gr.Blocks(title="Stable Diffusion 3.5 ControlNet Canny") as demo:
             input_image = gr.Image(
                 label="입력 이미지",
                 type="pil",
-                height=400,
-                value="default.jpg",  # 기본 이미지 경로
+                height=500,
+                # value="default.jpg",  # 기본 이미지 경로
             )
             prompt = gr.Textbox(
                 label="프롬프트",
                 placeholder="생성할 이미지에 대한 설명을 입력하세요...",
                 lines=3,
-                value="A beautiful woman in a red bikini, standing on a beach at sunset, with a serene expression",
+                value="ultra detail, ultra high resolution, high quality, photo realistic, 8k, cinematic lighting",
             )
             negative_prompt = gr.Textbox(
                 label="네거티브 프롬프트",

@@ -44,7 +44,7 @@ def generate_image(
     if input_image is not None:
         # 원본 이미지 크기 저장
         original_width, original_height = input_image.size
-        
+
         # 원본 이미지 크기를 16의 배수로 조정
         adjusted_width = (original_width // 16) * 16
         adjusted_height = (original_height // 16) * 16
@@ -120,7 +120,7 @@ def generate_image(
             # 원본 이미지 정보 표시
             size_info += f"\n입력 이미지 원본 크기: {original_width}x{original_height}"
             size_info += f"\n비율 유지: {original_width/original_height:.3f} → {generated_width/generated_height:.3f}"
-            
+
             # 크기 조정 정보 표시
             if adjusted_width != original_width or adjusted_height != original_height:
                 size_info += f"\n크기 조정: 16의 배수로 조정"
@@ -160,14 +160,14 @@ with gr.Blocks(title="FLUX.1-dev 이미지 생성기") as demo:
             prompt_input = gr.Textbox(
                 label="프롬프트",
                 placeholder="생성하고 싶은 이미지를 설명해주세요...",
-                value="ultra high definition, ultra high resolution, 8k resolution, ultra detail, realistic shadows, high quality",
+                value="8k, high detail, realistic, high quality, masterpiece, best quality, detailed, intricate, sharp focus, cinematic lighting",
                 lines=4,
             )
 
             negative_prompt_input = gr.Textbox(
                 label="네거티브 프롬프트",
                 placeholder="원하지 않는 요소를 입력하세요...",
-                value="blurring, low quality, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username",
+                value="blurring, low quality, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, normal quality, jpeg artifacts, signature, watermark, username",
                 lines=2,
             )
 
@@ -191,11 +191,11 @@ with gr.Blocks(title="FLUX.1-dev 이미지 생성기") as demo:
 
             guidance_slider = gr.Slider(
                 minimum=1.0,
-                maximum=10.0,
+                maximum=7.0,
                 value=3.5,
                 step=0.1,
                 label="가이던스 스케일",
-                info="프롬프트 준수 정도. 높을수록 프롬프트를 더 정확히 따르지만 창의성이 줄어들 수 있습니다. (권장: 3.5-7.5)",
+                info="프롬프트 준수 정도. 높을수록 프롬프트를 더 정확히 따르지만 창의성이 줄어들 수 있습니다. (권장: 3.5-7.0)",
             )
 
             steps_slider = gr.Slider(
@@ -230,23 +230,22 @@ with gr.Blocks(title="FLUX.1-dev 이미지 생성기") as demo:
                 gr.Markdown(
                     """
                 ### 🎯 주요 설정 설명
-                
+
                 **🎨 가이던스 스케일 (Guidance Scale)**
                 - 1.0-3.0: 창의적이고 다양한 결과, 프롬프트를 느슨하게 따름
-                - 3.5-7.5: 균형잡힌 결과 (권장)
-                - 8.0-10.0: 프롬프트를 매우 정확히 따르지만 창의성 부족
-                
+                - 3.5-7.0: 균형잡힌 결과 (권장)
+
                 **⚡ 추론 스텝 수 (Inference Steps)**
                 - 10-15: 빠른 생성, 낮은 품질
                 - 20-30: 균형잡힌 품질과 속도 (권장)
                 - 35-50: 높은 품질, 긴 생성 시간
-                
+
                 **📏 최대 시퀀스 길이 (Max Sequence Length)**
                 - 128-192: 짧은 프롬프트용, 빠른 처리
                 - 256: 표준 길이, 대부분의 프롬프트에 적합 (권장)
                 - 320-512: 긴 프롬프트용, 복잡한 설명 처리 가능
                 - 높을수록 더 긴 프롬프트를 정확히 처리하지만 처리 시간 증가
-                
+
                 **🎲 시드 (Seed)**
                 - -1: 매번 다른 결과 생성
                 - 고정값: 같은 설정으로 일관된 결과 생성
@@ -297,26 +296,26 @@ with gr.Blocks(title="FLUX.1-dev 이미지 생성기") as demo:
         gr.Markdown(
             """
         ### 🚀 효과적인 사용법
-        
+
         **📝 프롬프트 작성 팁**
         - 구체적이고 명확한 설명 사용
         - 스타일 키워드 포함: "photorealistic", "oil painting", "anime style" 등
         - 품질 키워드 추가: "high quality", "detailed", "masterpiece" 등
         - 긴 프롬프트 사용 시 최대 시퀀스 길이를 320-512로 증가
-        
+
         **🎨 새 이미지 생성 (Text-to-Image)**
         - 가이던스 스케일: 3.5-7.5
         - 추론 스텝: 25-30
         - 해상도: 768x768 또는 1024x1024
         - 최대 시퀀스 길이: 256 (표준), 긴 프롬프트 시 512
-        
+
         **🖼️ 이미지 수정 (Image-to-Image)**
         - 업로드한 이미지를 기반으로 프롬프트에 맞게 수정
         - 원본 이미지의 구조와 내용을 유지하면서 변형
         - 원본 이미지 비율 유지: 입력 이미지의 가로세로 비율이 그대로 유지됩니다
         - 자동 크기 조정: 16의 배수로만 조정 (원본 크기 최대한 유지)
         - 복잡한 수정 요청 시 시퀀스 길이를 높여보세요
-        
+
         **⚡ 성능 최적화**
         - 메모리 부족 시: 해상도를 512x512로 낮추기
         - 빠른 생성: 추론 스텝 15-20, 시퀀스 길이 192-256
@@ -325,4 +324,4 @@ with gr.Blocks(title="FLUX.1-dev 이미지 생성기") as demo:
         )
 
 if __name__ == "__main__":
-    demo.launch(share=False, inbrowser=True)
+    demo.launch(inbrowser=True)
