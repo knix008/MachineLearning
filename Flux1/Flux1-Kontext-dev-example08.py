@@ -45,9 +45,9 @@ def generate_image(
         # 원본 이미지 크기 저장
         original_width, original_height = input_image.size
 
-        # 원본 이미지 크기를 16의 배수로 조정
-        adjusted_width = (original_width // 16) * 16
-        adjusted_height = (original_height // 16) * 16
+        # 원본 이미지 크기를 16의 배수로 내림, 원본보다 커지지 않도록
+        adjusted_width = max((original_width // 16) * 16, 16)
+        adjusted_height = max((original_height // 16) * 16, 16)
 
         generation_type = "이미지 투 이미지"
 
