@@ -32,8 +32,8 @@ def generate_image(
     max_sequence_length,
     seed,
     negative_prompt,
-    strength,
-    sampler,  # 추가
+    denoise,  # 변수명 변경
+    sampler,
 ):
     """이미지 생성 함수 (텍스트-투-이미지 또는 이미지-투-이미지)"""
     start_time = time.time()
@@ -72,7 +72,6 @@ def generate_image(
 
     try:
         if input_image is not None:
-            # 입력 이미지 크기 조정
             input_image = input_image.resize(
                 (adjusted_width, adjusted_height), Image.LANCZOS
             )
@@ -86,8 +85,7 @@ def generate_image(
                 num_inference_steps=int(num_inference_steps),
                 max_sequence_length=int(max_sequence_length),
                 generator=generator,
-                strength=strength,
-                sampler=sampler,  # 추가
+                sampler=sampler,
             ).images[0]
         else:
             image = pipe(
@@ -99,7 +97,7 @@ def generate_image(
                 num_inference_steps=int(num_inference_steps),
                 max_sequence_length=int(max_sequence_length),
                 generator=generator,
-                sampler=sampler,  # 추가
+                sampler=sampler,
             ).images[0]
 
         end_time = time.time()
@@ -222,12 +220,12 @@ with gr.Blocks(title="FLUX.1-dev 이미지 생성기") as demo:
                 info="생성 결과의 일관성을 위한 난수 시드. 같은 시드로 같은 설정이면 비슷한 결과가 나옵니다. -1은 무작위 시드 사용",
             )
 
-            strength_slider = gr.Slider(
+            denoise_slider = gr.Slider(
                 minimum=0.1,
                 maximum=1.0,
                 value=0.75,
                 step=0.05,
-                label="이미지 반영 강도 (denoise strength)",
+                label="이미지 반영 강도 (denoise)",
                 info="이미지-투-이미지에서 원본 이미지를 얼마나 반영할지 결정합니다.",
             )
             sampler_dropdown = gr.Dropdown(
@@ -282,8 +280,8 @@ with gr.Blocks(title="FLUX.1-dev 이미지 생성기") as demo:
             sequence_slider,
             seed_input,
             negative_prompt_input,
-            strength_slider,
-            sampler_dropdown,  # 추가
+            denoise_slider,  # 변수명 변경
+            sampler_dropdown,
         ],
         outputs=[output_image, info_output],
     )
