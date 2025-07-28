@@ -23,7 +23,7 @@ def resize_image_keep_aspect(image, max_size=1024):
     w, h = image.size
     if w <= max_size and h <= max_size:
         return image
-    
+
     # 비율 계산
     if w > h:
         new_w = max_size
@@ -31,7 +31,7 @@ def resize_image_keep_aspect(image, max_size=1024):
     else:
         new_h = max_size
         new_w = int(w * max_size / h)
-    
+
     return image.resize((new_w, new_h), Image.LANCZOS)
 
 def upscale_image(
@@ -44,11 +44,11 @@ def upscale_image(
 ):
     if input_image is None:
         return None, "이미지를 업로드하세요."
-    
+
     # 입력 이미지를 512 이하로 리사이즈 (비율 유지)
-    resized_input = resize_image_keep_aspect(input_image, max_size=512)
+    resized_input = resize_image_keep_aspect(input_image)
     w, h = resized_input.size
-    
+
     # 업스케일 적용
     new_w = int(w * upscale_factor)
     new_h = int(h * upscale_factor)
