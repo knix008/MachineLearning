@@ -18,7 +18,7 @@ pipe.enable_sequential_cpu_offload()
 pipe.enable_attention_slicing(1)
 print("모델 로딩 완료!")
 
-def resize_image_keep_aspect(image, max_size=512):
+def resize_image_keep_aspect(image, max_size=1024):
     """이미지 비율을 유지하면서 최대 크기 제한"""
     w, h = image.size
     if w <= max_size and h <= max_size:
