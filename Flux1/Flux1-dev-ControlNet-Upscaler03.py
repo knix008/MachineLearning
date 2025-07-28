@@ -45,14 +45,13 @@ def upscale_image(
     if input_image is None:
         return None, "이미지를 업로드하세요."
 
-    # 입력 이미지를 512 이하로 리사이즈 (비율 유지)
-    resized_input = resize_image_keep_aspect(input_image)
-    w, h = resized_input.size
+    # 입력 이미지를 그대로 사용 (크기 제한/리사이즈 없음)
+    w, h = input_image.size
 
     # 업스케일 적용
     new_w = int(w * upscale_factor)
     new_h = int(h * upscale_factor)
-    resized_image = resized_input.resize((new_w, new_h), Image.LANCZOS)
+    resized_image = input_image.resize((new_w, new_h), Image.LANCZOS)
 
     try:
         image = pipe(
@@ -66,7 +65,7 @@ def upscale_image(
         ).images[0]
         filename = f"Flux1-Upscaled-{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.png"
         image.save(filename)
-        info = f"생성 완료!\n저장 파일: {filename}\n입력 크기: {input_image.size[0]}x{input_image.size[1]}\n리사이즈 후: {w}x{h}\n최종 크기: {new_w}x{new_h}\n가이던스 스케일: {guidance_scale}\n추론 스텝: {num_inference_steps}\n컨디셔닝 스케일: {controlnet_conditioning_scale}"
+        info = f"생성 완료!\n저장 파일: {filename}\n입력 크기: {w}x{h}\n최종 크기: {new_w}x{new_h}\n가이던스 스케일: {guidance_scale}\n추론 스텝: {num_inference_steps}\n컨디셔닝 스케일: {controlnet_conditioning_scale}"
         return image, info
     except Exception as e:
         return None, f"오류 발생: {str(e)}"
@@ -87,7 +86,7 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
             prompt_input = gr.Textbox(
                 label="프롬프트 (선택)",
                 placeholder="이미지에 적용할 스타일이나 설명을 입력하세요...",
-                value="8k, blue bikini, high detail, realistic, high quality, masterpiece, best quality, smooth",
+                value="8k, blue bikini, high detail, realistic, high quality, masterpiece, best quality, smooth, cinematic lighting, sharp focus, hyper-realistic",
                 lines=2,
             )
             upscale_slider = gr.Slider(
