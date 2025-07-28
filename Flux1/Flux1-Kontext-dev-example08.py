@@ -2,140 +2,62 @@ import torch
 import gradio as gr
 import time
 from diffusers import FluxKontextPipeline
-from PIL import Image
 
-# Dependency!!! :
-# You need to install the diffusers with the following command:
-# pip install git+https://github.com/huggingface/diffusers.git
-
-# Load model with memory optimizations
 print("모델을 로딩 중입니다...")
 pipe = FluxKontextPipeline.from_pretrained(
     "black-forest-labs/FLUX.1-Kontext-dev", torch_dtype=torch.bfloat16
 )
-
-# Enable multiple memory optimizations
-pipe.enable_model_cpu_offload()  # Offload model to CPU when not in use
-pipe.enable_sequential_cpu_offload()  # More aggressive CPU offloading
-pipe.enable_attention_slicing(1)  # Slice attention computation
-pipe.enable_vae_slicing()  # Slice VAE computation
+pipe.enable_model_cpu_offload()
+pipe.enable_sequential_cpu_offload()
+pipe.enable_attention_slicing(1)
+pipe.enable_vae_slicing()
 print("모델 로딩 완료!")
 
 
+def adjust16(x): return max((int(x) // 16) * 16, 16)
+
+
 def generate_image(
-    prompt,
-    input_image,
-    width,
-    height,
-    guidance_scale,
-    num_inference_steps,
-    max_sequence_length,
-    seed,
-    negative_prompt,
+    prompt, input_image, width, height, guidance_scale, steps, seq_len, seed, negative_prompt
 ):
-    """이미지 생성 함수 (텍스트-투-이미지 또는 이미지-투-이미지)"""
-    start_time = time.time()
+    """이미지-투-이미지만 지원"""
+    start = time.time()
+    negative_prompt = None if not negative_prompt or str(negative_prompt).strip() == "" else negative_prompt
 
-    # negative_prompt가 비어 있으면 None으로 처리
-    if not negative_prompt or str(negative_prompt).strip() == "":
-        negative_prompt = None
+    if input_image is None:
+        return None, "이미지-투-이미지만 지원합니다. 입력 이미지를 업로드하세요."
 
-    # 입력 이미지가 있는 경우 해당 이미지의 비율 사용
-    if input_image is not None:
-        # 원본 이미지 크기 저장
-        original_width, original_height = input_image.size
+    ow, oh = input_image.size
+    w, h = adjust16(ow), adjust16(oh)
+    info = f"\n입력 이미지 원본 크기: {ow}x{oh}"
+    info += f"\n비율 유지: {ow/oh:.3f} → {w/h:.3f}"
+    info += "\n크기 조정: 16의 배수로 조정" if (w != ow or h != oh) else "\n크기 조정: 원본 크기 유지"
 
-        # 원본 이미지 크기를 16의 배수로 내림, 원본보다 커지지 않도록
-        adjusted_width = max((original_width // 16) * 16, 16)
-        adjusted_height = max((original_height // 16) * 16, 16)
-
-        generation_type = "이미지 투 이미지"
-
-    else:
-        # 사용자 지정 크기 사용 (텍스트-투-이미지)
-        width = int(width)
-        height = int(height)
-
-        # 16의 배수로 조정
-        adjusted_width = (width // 16) * 16
-        adjusted_height = (height // 16) * 16
-
-        generation_type = "텍스트 투 이미지"
-
-    # 시드 설정
-    if seed == -1:
-        seed = torch.randint(0, 2**32 - 1, (1,)).item()
-
-    generator = torch.Generator("cpu").manual_seed(seed)
+    pipe_args = dict(
+        prompt=prompt,
+        negative_prompt=negative_prompt,
+        image=input_image,
+        width=w,
+        height=h,
+        guidance_scale=guidance_scale,
+        num_inference_steps=int(steps),
+        max_sequence_length=int(seq_len),
+        generator=torch.Generator("cpu").manual_seed(
+            torch.randint(0, 2**32 - 1, (1,)).item() if seed == -1 else int(seed)
+        ),
+    )
 
     try:
-        # 입력 이미지가 있는 경우 img2img, 없는 경우 txt2img
-        if input_image is not None:
-            # 입력 이미지 크기 조정
-            input_image = input_image.resize(
-                (adjusted_width, adjusted_height), Image.LANCZOS
-            )
-
-            # negative_prompt를 사용자 입력으로 사용
-            # img2img 생성
-            image = pipe(
-                prompt=prompt,
-                negative_prompt=negative_prompt,
-                image=input_image,
-                height=adjusted_height,
-                width=adjusted_width,
-                guidance_scale=guidance_scale,
-                num_inference_steps=int(num_inference_steps),
-                max_sequence_length=int(max_sequence_length),
-                generator=generator,
-            ).images[0]
-
-        else:
-            # txt2img 생성
-            image = pipe(
-                prompt=prompt,
-                negative_prompt=negative_prompt,
-                height=adjusted_height,
-                width=adjusted_width,
-                guidance_scale=guidance_scale,
-                num_inference_steps=int(num_inference_steps),
-                max_sequence_length=int(max_sequence_length),
-                generator=generator,
-            ).images[0]
-
-        end_time = time.time()
-        generation_time = end_time - start_time
-
-        # 이미지 저장
-        timestamp = int(time.time())
-        filename = f"flux_generated_{timestamp}.png"
+        image = pipe(**pipe_args).images[0]
+        filename = f"flux_generated_{int(time.time())}.png"
         image.save(filename)
-
-        # 생성된 이미지 크기 정보
-        generated_width, generated_height = image.size
-
-        # 크기 조정 정보 포함
-        size_info = f"\n생성된 이미지 크기: {generated_width}x{generated_height}"
-        if input_image is not None:
-            # 원본 이미지 정보 표시
-            size_info += f"\n입력 이미지 원본 크기: {original_width}x{original_height}"
-            size_info += f"\n비율 유지: {original_width/original_height:.3f} → {generated_width/generated_height:.3f}"
-
-            # 크기 조정 정보 표시
-            if adjusted_width != original_width or adjusted_height != original_height:
-                size_info += f"\n크기 조정: 16의 배수로 조정"
-            else:
-                size_info += f"\n크기 조정: 원본 크기 유지"
-        else:
-            size_info += f"\n요청 크기: {width}x{height}"
-
-        info_text = f"생성 완료! ({generation_type})\n시간: {generation_time:.2f}초\n시드: {seed}\n저장된 파일: {filename}{size_info}"
-
+        info_text = (
+            f"생성 완료! (이미지 투 이미지)\n시간: {time.time()-start:.2f}초\n시드: {seed}\n저장된 파일: {filename}"
+            f"\n생성된 이미지 크기: {image.size[0]}x{image.size[1]}{info}"
+        )
         return image, info_text
-
     except Exception as e:
-        error_text = f"오류 발생: {str(e)}"
-        return None, error_text
+        return None, f"오류 발생: {str(e)}"
 
 
 # Gradio 인터페이스 생성
@@ -146,21 +68,20 @@ with gr.Blocks(title="FLUX.1-dev 이미지 생성기") as demo:
     )
 
     with gr.Row():
-        with gr.Column(scale=1):
+        with gr.Column():
             # 입력 이미지 (선택사항)
             input_image = gr.Image(
                 label="입력 이미지 (선택사항)",
                 type="pil",
                 sources=["upload", "clipboard"],
-                height=768,
-                width=768
+                height=500,
             )
 
             # 입력 컨트롤들
             prompt_input = gr.Textbox(
                 label="프롬프트",
                 placeholder="생성하고 싶은 이미지를 설명해주세요...",
-                value="8k, high detail, realistic, high quality, masterpiece, best quality, detailed, intricate, smooth, cinematic lighting",
+                value="8k, high detail, realistic, high quality, masterpiece, best quality, smooth",
                 lines=4,
             )
 
@@ -253,7 +174,7 @@ with gr.Blocks(title="FLUX.1-dev 이미지 생성기") as demo:
                 """
                 )
 
-        with gr.Column(scale=1):
+        with gr.Column():
             # 출력 영역
             output_image = gr.Image(label="생성된 이미지", type="pil", height=500)
 
