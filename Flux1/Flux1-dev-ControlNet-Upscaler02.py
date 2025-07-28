@@ -18,6 +18,22 @@ pipe.enable_sequential_cpu_offload()
 pipe.enable_attention_slicing(1)
 print("모델 로딩 완료!")
 
+def resize_image_keep_aspect(image, max_size=512):
+    """이미지 비율을 유지하면서 최대 크기 제한"""
+    w, h = image.size
+    if w <= max_size and h <= max_size:
+        return image
+    
+    # 비율 계산
+    if w > h:
+        new_w = max_size
+        new_h = int(h * max_size / w)
+    else:
+        new_h = max_size
+        new_w = int(w * max_size / h)
+    
+    return image.resize((new_w, new_h), Image.LANCZOS)
+
 def upscale_image(
     input_image,
     upscale_factor,
@@ -28,11 +44,15 @@ def upscale_image(
 ):
     if input_image is None:
         return None, "이미지를 업로드하세요."
-    w, h = input_image.size
-    # 크기 제약 없이 업스케일
+    
+    # 입력 이미지를 512 이하로 리사이즈 (비율 유지)
+    resized_input = resize_image_keep_aspect(input_image, max_size=512)
+    w, h = resized_input.size
+    
+    # 업스케일 적용
     new_w = int(w * upscale_factor)
     new_h = int(h * upscale_factor)
-    resized_image = input_image.resize((new_w, new_h), Image.LANCZOS)
+    resized_image = resized_input.resize((new_w, new_h), Image.LANCZOS)
 
     try:
         image = pipe(
@@ -46,7 +66,7 @@ def upscale_image(
         ).images[0]
         filename = f"Flux1-Upscaled-{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.png"
         image.save(filename)
-        info = f"생성 완료!\n저장 파일: {filename}\n크기: {new_w}x{new_h}\n가이던스 스케일: {guidance_scale}\n추론 스텝: {num_inference_steps}\n컨디셔닝 스케일: {controlnet_conditioning_scale}"
+        info = f"생성 완료!\n저장 파일: {filename}\n입력 크기: {input_image.size[0]}x{input_image.size[1]}\n리사이즈 후: {w}x{h}\n최종 크기: {new_w}x{new_h}\n가이던스 스케일: {guidance_scale}\n추론 스텝: {num_inference_steps}\n컨디셔닝 스케일: {controlnet_conditioning_scale}"
         return image, info
     except Exception as e:
         return None, f"오류 발생: {str(e)}"
@@ -61,7 +81,8 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
                 label="입력 이미지",
                 type="pil",
                 sources=["upload", "clipboard"],
-                height=500,
+                height=400,
+                value="default.jpg",  # 기본 이미지 경로 (예시용)
             )
             prompt_input = gr.Textbox(
                 label="프롬프트 (선택)",
