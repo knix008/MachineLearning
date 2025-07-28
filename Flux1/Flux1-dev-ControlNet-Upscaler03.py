@@ -18,21 +18,6 @@ pipe.enable_sequential_cpu_offload()
 pipe.enable_attention_slicing(1)
 print("모델 로딩 완료!")
 
-def resize_image_keep_aspect(image, max_size=512):
-    """이미지 비율을 유지하면서 최대 크기 제한"""
-    w, h = image.size
-    if w <= max_size and h <= max_size:
-        return image
-
-    # 비율 계산
-    if w > h:
-        new_w = max_size
-        new_h = int(h * max_size / w)
-    else:
-        new_h = max_size
-        new_w = int(w * max_size / h)
-
-    return image.resize((new_w, new_h), Image.LANCZOS)
 
 def upscale_image(
     input_image,
@@ -45,10 +30,10 @@ def upscale_image(
     if input_image is None:
         return None, "이미지를 업로드하세요."
 
-    # 입력 이미지를 그대로 사용 (크기 제한/리사이즈 없음)
+    # 입력 이미지 크기
     w, h = input_image.size
 
-    # 업스케일 적용
+    # 업스케일: 비율 유지 (w/h 비율 그대로)
     new_w = int(w * upscale_factor)
     new_h = int(h * upscale_factor)
     resized_image = input_image.resize((new_w, new_h), Image.LANCZOS)
@@ -86,7 +71,7 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
             prompt_input = gr.Textbox(
                 label="프롬프트 (선택)",
                 placeholder="이미지에 적용할 스타일이나 설명을 입력하세요...",
-                value="8k, blue bikini, high detail, realistic, high quality, masterpiece, best quality, smooth, cinematic lighting, sharp focus, hyper-realistic",
+                value="8k, high detail, realistic, high quality, masterpiece, best quality",
                 lines=2,
             )
             upscale_slider = gr.Slider(
