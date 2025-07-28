@@ -81,7 +81,7 @@ with gr.Blocks(title="FLUX.1-dev 이미지 생성기") as demo:
             prompt_input = gr.Textbox(
                 label="프롬프트",
                 placeholder="생성하고 싶은 이미지를 설명해주세요...",
-                value="8k, high detail, realistic, high quality, masterpiece, best quality, smooth",
+                value="8k, high detail, realistic, high quality, masterpiece, best quality",
                 lines=4,
             )
 
