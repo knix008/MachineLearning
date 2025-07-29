@@ -2,10 +2,11 @@ import torch
 import gradio as gr
 import time
 from diffusers import FluxKontextPipeline
+from PIL import Image, ImageOps  # 패딩을 위해 추가
 
 print("모델을 로딩 중입니다...")
 pipe = FluxKontextPipeline.from_pretrained(
-    "black-forest-labs/FLUX.1-Kontext-dev", torch_dtype=torch.bfloat16
+    "fofr/kontext-make-person-real", torch_dtype=torch.bfloat16
 )
 pipe.enable_model_cpu_offload()
 pipe.enable_sequential_cpu_offload()
@@ -15,6 +16,19 @@ print("모델 로딩 완료!")
 
 
 def adjust16(x): return max((int(x) // 16) * 16, 16)
+
+
+def pad_to_16_multiple(img):
+    """이미지 크기를 16의 배수로 패딩(인물 크기 유지)"""
+    ow, oh = img.size
+    w, h = adjust16(ow), adjust16(oh)
+    pad_w = w - ow
+    pad_h = h - oh
+    # (left, top, right, bottom)
+    padding = (pad_w // 2, pad_h // 2, pad_w - pad_w // 2, pad_h - pad_h // 2)
+    if pad_w > 0 or pad_h > 0:
+        img = ImageOps.expand(img, padding, fill=(0, 0, 0))
+    return img, w, h, padding
 
 
 def generate_image(
@@ -27,16 +41,16 @@ def generate_image(
     if input_image is None:
         return None, "이미지-투-이미지만 지원합니다. 입력 이미지를 업로드하세요."
 
-    ow, oh = input_image.size
-    w, h = adjust16(ow), adjust16(oh)
-    info = f"\n입력 이미지 원본 크기: {ow}x{oh}"
-    info += f"\n비율 유지: {ow/oh:.3f} → {w/h:.3f}"
-    info += "\n크기 조정: 16의 배수로 조정" if (w != ow or h != oh) else "\n크기 조정: 원본 크기 유지"
+    # 패딩 적용
+    padded_image, w, h, padding = pad_to_16_multiple(input_image)
+    info = f"\n입력 이미지 원본 크기: {input_image.size[0]}x{input_image.size[1]}"
+    info += f"\n패딩 후 크기: {w}x{h} (좌:{padding[0]}, 상:{padding[1]}, 우:{padding[2]}, 하:{padding[3]})"
+    info += "\n인물 크기 유지: 패딩으로 16의 배수 맞춤"
 
     pipe_args = dict(
         prompt=prompt,
         negative_prompt=negative_prompt,
-        image=input_image,
+        image=padded_image,
         width=w,
         height=h,
         guidance_scale=guidance_scale,
