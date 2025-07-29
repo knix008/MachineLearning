@@ -153,7 +153,8 @@ with gr.Blocks(title="FLUX.1 ControlNet 이미지 생성기") as demo:
         with gr.Column(scale=1):
             # 입력 컨트롤
             input_image = gr.Image(
-                label="입력 이미지 (1024px 초과시 자동 축소)", type="pil", height=400
+                label="입력 이미지 (1024px 초과시 자동 축소)", type="pil", height=500,
+                value="default2.jpg"
             )
 
             prompt = gr.Textbox(

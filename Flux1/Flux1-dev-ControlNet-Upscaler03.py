@@ -33,6 +33,14 @@ def upscale_image(
     # 입력 이미지 크기
     w, h = input_image.size
 
+    # 최대 크기 512로 리사이즈 (비율 유지)
+    max_dim = max(w, h)
+    if max_dim > 512:
+        scale = 512 / max_dim
+        w = int(w * scale)
+        h = int(h * scale)
+        input_image = input_image.resize((w, h), Image.LANCZOS)
+
     # 업스케일: 비율 유지 (w/h 비율 그대로)
     new_w = int(w * upscale_factor)
     new_h = int(h * upscale_factor)
@@ -66,7 +74,7 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
                 type="pil",
                 sources=["upload", "clipboard"],
                 height=500,
-                value="default.jpg",  # 기본 이미지 경로 (예시용)
+                value="default2.jpg",  # 기본 이미지 경로 (예시용)
             )
             prompt_input = gr.Textbox(
                 label="프롬프트 (선택)",
