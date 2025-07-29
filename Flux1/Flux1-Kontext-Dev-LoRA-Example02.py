@@ -20,20 +20,17 @@ pipe.enable_vae_slicing()
 print("Model and LoRA loaded successfully.")
 
 
-def resize_image(image, max_size=1024):
+def resize_image(image):
     """
     이미지를 RGB로 변환하고,
-    한 변이 max_size를 넘지 않도록 비율 유지 리사이즈,
-    그리고 가로/세로 모두 16의 배수로 맞춤.
+    입력 이미지의 가로세로 비율을 유지하면서,
+    가로/세로 모두 16의 배수로 맞춤.
     """
     image = image.convert("RGB")
     w, h = image.size
-    # 비율 유지 최대 크기 조정
-    scale = min(max_size / w, max_size / h, 1.0)
-    new_w, new_h = int(w * scale), int(h * scale)
-    # 16의 배수로 맞추기
-    new_w = (new_w // 16) * 16
-    new_h = (new_h // 16) * 16
+    # 16의 배수로 맞추기 (최대 크기 제한 없음)
+    new_w = (w // 16) * 16
+    new_h = (h // 16) * 16
     image = image.resize((new_w, new_h), Image.LANCZOS)
     print(f"Resized image to: {new_w}x{new_h}")
     return image
