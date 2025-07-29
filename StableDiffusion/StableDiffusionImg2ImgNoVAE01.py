@@ -1,6 +1,7 @@
 import torch
 from diffusers import StableDiffusionImg2ImgPipeline
 from PIL import Image
+import datetime
 
 pipe = StableDiffusionImg2ImgPipeline.from_pretrained(
     "SG161222/Realistic_Vision_V6.0_B1_noVAE", torch_dtype=torch.float16
@@ -17,4 +18,4 @@ result = pipe(
     num_inference_steps=30,
 ).images[0]
 
-result.save("realistic_img2img_result.png")
+result.save(f"realistic_img2img_result_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.png")
