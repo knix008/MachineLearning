@@ -77,7 +77,7 @@ demo = gr.Interface(
         ),
         gr.Slider(
             1,
-            100,
+            50,
             value=25,
             step=1,
             label="Inference Steps",
