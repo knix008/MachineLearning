@@ -127,7 +127,7 @@ with gr.Blocks() as demo:
     gr.Markdown("# Real-ESRGAN 업스케일러 (Gradio 데모)")
     with gr.Row():
         with gr.Column():
-            input_img = gr.Image(label="입력 이미지", type="pil")
+            input_img = gr.Image(label="입력 이미지", type="pil", height=500)
             model_name = gr.Dropdown(
                 choices=[
                     "RealESRGAN_x4plus",
