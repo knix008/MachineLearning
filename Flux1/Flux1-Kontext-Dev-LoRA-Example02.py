@@ -89,7 +89,7 @@ demo = gr.Interface(
             info="시드 값. 같은 값이면 같은 결과가 재현됩니다. 0이면 무작위",
         ),
     ],
-    outputs=gr.Image(type="pil", label="Result Image"),
+    outputs=gr.Image(type="pil", label="Result Image", height=500),
     title="Flux Kontext LoRA Demo",
     description="이미지를 업로드하고 프롬프트 및 파라미터를 조절해 FLUX Kontext + LoRA로 이미지를 변환합니다.",
 )
