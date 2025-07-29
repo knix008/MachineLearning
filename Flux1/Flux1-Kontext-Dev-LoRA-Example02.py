@@ -64,7 +64,7 @@ demo = gr.Interface(
         gr.Textbox(
             lines=2,
             label="Prompt",
-            value="make this person look real, 8k uhd, high detail skin texture, detailed eyes",
+            value="8k UHD, high detail skin texture, detailed eyes, make this person look real",
             placeholder="Enter your prompt here...",
         ),
         gr.Slider(
