@@ -64,7 +64,7 @@ with gr.Blocks() as demo:
         with gr.Column():
             prompt = gr.Textbox(
                 label="Prompt",
-                value="A skinny woman walking on a sunset beach and wearing a dark blue bikini with high leg style, looking at viewer, 8k, high detail, full body figure, cinematic lighting, realistic",
+                value="8k, a skinny woman photo, walking on a sunset beach, wearing a dark blue bikini with high leg style, high detail, full body figure, cinematic lighting, photo realistic",
                 info="생성하고 싶은 이미지를 설명하세요.",
             )
             negative_prompt = gr.Textbox(
