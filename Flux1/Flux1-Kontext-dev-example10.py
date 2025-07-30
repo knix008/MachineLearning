@@ -2,6 +2,7 @@ import torch
 import gradio as gr
 import time
 from diffusers import FluxKontextPipeline
+from PIL import Image
 
 print("모델을 로딩 중입니다...")
 pipe = FluxKontextPipeline.from_pretrained(
@@ -13,9 +14,23 @@ pipe.enable_attention_slicing(1)
 pipe.enable_vae_slicing()
 print("모델 로딩 완료!")
 
+def resize_image(image):
+    """
+    이미지를 RGB로 변환하고,
+    입력 이미지의 가로세로 비율을 유지하면서,
+    가로/세로 모두 16의 배수로 맞춤.
+    """
+    image = image.convert("RGB")
+    w, h = image.size
+    # 16의 배수로 맞추기 (최대 크기 제한 없음)
+    new_w = (w // 16) * 16
+    new_h = (h // 16) * 16
+    image = image.resize((new_w, new_h), Image.LANCZOS)
+    print(f"Resized image to: {new_w}x{new_h}")
+    return image
 
 def generate_image(
-    prompt, input_image, width, height, guidance_scale, steps, seq_len, seed, negative_prompt
+    prompt, input_image, guidance_scale, steps, seq_len, seed, negative_prompt
 ):
     """이미지-투-이미지만 지원"""
     start = time.time()
@@ -23,6 +38,8 @@ def generate_image(
 
     if input_image is None:
         return None, "이미지-투-이미지만 지원합니다. 입력 이미지를 업로드하세요."
+
+    input_image = resize_image(input_image)  # 이미지 크기 조정
 
     # 패딩 적용
     info = f"\n입력 이미지 원본 크기: {input_image.size[0]}x{input_image.size[1]}"
@@ -76,7 +93,7 @@ with gr.Blocks(title="FLUX.1-dev 이미지 생성기") as demo:
             prompt_input = gr.Textbox(
                 label="프롬프트",
                 placeholder="생성하고 싶은 이미지를 설명해주세요...",
-                value="8k, high detail, high quality, realistic, masterpiece, best quality, blue bikini",
+                value="8k, high detail, high quality, photo realistic, masterpiece, best quality, dark blue bikini",
                 lines=4,
             )
 
@@ -86,24 +103,6 @@ with gr.Blocks(title="FLUX.1-dev 이미지 생성기") as demo:
                 value="blurring, low quality, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, normal quality, jpeg artifacts, signature, watermark, username",
                 lines=2,
             )
-
-            with gr.Row():
-                width_slider = gr.Slider(
-                    minimum=256,
-                    maximum=1024,
-                    value=768,
-                    step=64,
-                    label="너비",
-                    info="생성할 이미지의 너비 (픽셀). 높을수록 더 넓은 이미지가 생성됩니다.",
-                )
-                height_slider = gr.Slider(
-                    minimum=256,
-                    maximum=1024,
-                    value=768,
-                    step=64,
-                    label="높이",
-                    info="생성할 이미지의 높이 (픽셀). 높을수록 더 긴 이미지가 생성됩니다.",
-                )
 
             guidance_slider = gr.Slider(
                 minimum=1.0,
@@ -181,8 +180,6 @@ with gr.Blocks(title="FLUX.1-dev 이미지 생성기") as demo:
         inputs=[
             prompt_input,
             input_image,
-            width_slider,
-            height_slider,
             guidance_slider,
             steps_slider,
             sequence_slider,
@@ -206,38 +203,6 @@ with gr.Blocks(title="FLUX.1-dev 이미지 생성기") as demo:
         ],
         inputs=prompt_input,
     )
-
-    # 사용 팁 추가
-    with gr.Accordion("💡 사용 팁", open=False):
-        gr.Markdown(
-            """
-        ### 🚀 효과적인 사용법
-
-        **📝 프롬프트 작성 팁**
-        - 구체적이고 명확한 설명 사용
-        - 스타일 키워드 포함: "photorealistic", "oil painting", "anime style" 등
-        - 품질 키워드 추가: "high quality", "detailed", "masterpiece" 등
-        - 긴 프롬프트 사용 시 최대 시퀀스 길이를 320-512로 증가
-
-        **🎨 새 이미지 생성 (Text-to-Image)**
-        - 가이던스 스케일: 3.5-7.5
-        - 추론 스텝: 25-30
-        - 해상도: 768x768 또는 1024x1024
-        - 최대 시퀀스 길이: 256 (표준), 긴 프롬프트 시 512
-
-        **🖼️ 이미지 수정 (Image-to-Image)**
-        - 업로드한 이미지를 기반으로 프롬프트에 맞게 수정
-        - 원본 이미지의 구조와 내용을 유지하면서 변형
-        - 원본 이미지 비율 유지: 입력 이미지의 가로세로 비율이 그대로 유지됩니다
-        - 자동 크기 조정: 16의 배수로만 조정 (원본 크기 최대한 유지)
-        - 복잡한 수정 요청 시 시퀀스 길이를 높여보세요
-
-        **⚡ 성능 최적화**
-        - 메모리 부족 시: 해상도를 512x512로 낮추기
-        - 빠른 생성: 추론 스텝 15-20, 시퀀스 길이 192-256
-        - 고품질 생성: 추론 스텝 30-40, 시퀀스 길이 256-320
-        """
-        )
 
 if __name__ == "__main__":
     demo.launch(inbrowser=True)
