@@ -100,7 +100,8 @@ def generate_image(
 
         # 축소 여부 확인하여 상태 메시지 작성
         status_message = f"생성된 이미지의 크기 : {output_image.size[0]}x{output_image.size[1]}"
-        output_image.save(f"flux1_dev_controlnet_{int(datetime.datetime.now().timestamp())}.png")
+        # 이미지를 저장할 때 몇 월 몇 일 시간을 사용
+        output_image.save(f"flux1_dev_controlnet_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.png")
 
         return output_image, status_message
 
