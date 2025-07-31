@@ -123,7 +123,7 @@ with gr.Blocks(title="Stable Diffusion XL Refiner", theme=gr.themes.Soft()) as d
                 label="Prompt (프롬프트)",
                 placeholder="예: blue bikini, ultra high definition photo realistic portrait, similar to a photo",
                 lines=3,
-                value="ultra high definition photo realistic portrait, professional photography"
+                value="high detail, ultra high definition, 8k, perfect skin texture",
             )
             
             negative_prompt = gr.Textbox(
