@@ -21,11 +21,6 @@ print("모델 로딩 완료!")
 
 
 def resize_image(image):
-    """
-    이미지를 RGB로 변환하고,
-    입력 이미지의 가로세로 비율을 유지하면서,
-    가로/세로 모두 16의 배수로 맞춤.
-    """
     image = image.convert("RGB")
     w, h = image.size
     # 16의 배수로 맞추기 (최대 크기 제한 없음)
@@ -162,21 +157,6 @@ with gr.Blocks(title="FLUX.1 Kontext Dev 이미지 생성기") as demo:
             negative_prompt_input,  # 추가
         ],
         outputs=[output_image, info_output],
-    )
-
-    # 예제 프롬프트
-    gr.Examples(
-        examples=[
-            ["a cute cat holding a sign that says hello world"],
-            ["a futuristic city skyline at sunset, cyberpunk style"],
-            ["a beautiful landscape with mountains and a lake, oil painting style"],
-            ["a portrait of a woman with blue eyes, renaissance painting style"],
-            ["a magical forest with glowing mushrooms, fantasy art"],
-            ["convert this image to anime style, vibrant colors"],
-            ["make this image look like a watercolor painting"],
-            ["transform this to a cyberpunk style with neon lights"],
-        ],
-        inputs=prompt_input,
     )
 
 if __name__ == "__main__":
