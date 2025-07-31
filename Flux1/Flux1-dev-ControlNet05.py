@@ -29,31 +29,6 @@ pipe.enable_attention_slicing(1)
 print("모델 로딩 완료!")
 
 
-def resize_to_multiple_of_16(image, max_size=1024):
-    """이미지를 16의 배수로 리사이즈하면서 비율 유지"""
-    width, height = image.size
-
-    # 1024보다 큰 경우 비율을 유지하며 축소
-    if width > max_size or height > max_size:
-        # 더 큰 쪽을 기준으로 축소 비율 계산
-        scale_factor = max_size / max(width, height)
-        width = int(width * scale_factor)
-        height = int(height * scale_factor)
-
-    # 16의 배수로 조정
-    new_width = (width // 16) * 16
-    new_height = (height // 16) * 16
-
-    # 최소 크기 보장 (256x256)
-    new_width = max(new_width, 256)
-    new_height = max(new_height, 256)
-
-    # 이미지 리사이즈
-    resized_image = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
-
-    return resized_image, new_width, new_height
-
-
 def create_canny_edge(image, low_threshold=50, high_threshold=150):
     """입력 이미지에서 Canny edge 이미지 생성"""
     image_array = np.array(image)
@@ -85,25 +60,21 @@ def generate_image(
     try:
         # 입력 이미지 전처리 - RGB 변환 및 16의 배수로 리사이즈
         input_image = input_image.convert("RGB")
-        original_size = input_image.size
-
-        # 16의 배수로 리사이즈 (1024보다 큰 경우 축소)
-        resized_image, width, height = resize_to_multiple_of_16(input_image)
-
+ 
         control_images = []
         control_modes = []
         conditioning_scales = []
 
         if use_canny:
             # Canny edge 이미지 생성 (리사이즈된 이미지 사용)
-            canny_image = create_canny_edge(resized_image)
+            canny_image = create_canny_edge(input_image)
             control_images.append(canny_image)
             control_modes.append(0)  # Canny mode
             conditioning_scales.append(canny_strength)
 
         if use_depth:
             # 여기서는 리사이즈된 이미지를 depth로 사용 (실제로는 depth 모델이 필요)
-            control_images.append(resized_image)
+            control_images.append(input_image)
             control_modes.append(2)  # Depth mode
             conditioning_scales.append(depth_strength)
 
@@ -117,8 +88,8 @@ def generate_image(
             prompt=prompt,
             control_image=control_images,
             control_mode=control_modes,
-            width=width,
-            height=height,
+            width=input_image.width,
+            height=input_image.height,
             controlnet_conditioning_scale=conditioning_scales,
             num_inference_steps=num_steps,
             guidance_scale=guidance_scale,
@@ -128,12 +99,7 @@ def generate_image(
         output_image = result.images[0]
 
         # 축소 여부 확인하여 상태 메시지 작성
-        was_resized = original_size[0] > 1024 or original_size[1] > 1024
-        if was_resized:
-            status_message = f"이미지 생성 완료! 원본 크기: {original_size[0]}x{original_size[1]} → 축소 및 조정된 크기: {width}x{height}"
-        else:
-            status_message = f"이미지 생성 완료! 원본 크기: {original_size[0]}x{original_size[1]} → 조정된 크기: {width}x{height}"
-
+        status_message = f"생성된 이미지의 크기 : {output_image.size[0]}x{output_image.size[1]}"
         output_image.save(f"flux1_dev_controlnet_{int(datetime.datetime.now().timestamp())}.png")
 
         return output_image, status_message
