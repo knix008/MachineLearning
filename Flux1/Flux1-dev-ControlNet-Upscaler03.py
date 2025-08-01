@@ -79,7 +79,7 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
             prompt_input = gr.Textbox(
                 label="프롬프트 (선택)",
                 placeholder="이미지에 적용할 스타일이나 설명을 입력하세요...",
-                value="8k, high detail, realistic, high quality, masterpiece, best quality",
+                value="dark blue bikini, 8k, high detail, realistic, high quality, masterpiece, best quality",
                 lines=2,
             )
             upscale_slider = gr.Slider(
