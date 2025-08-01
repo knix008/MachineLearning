@@ -72,6 +72,7 @@ def enhance_image(input_img, sharpen_strength):
     except Exception as e:
         return None, None, f"Error: {str(e)}"
     elapsed = time.time() - start_time
+    # 반환값 수정
     return pil_resized, temp_file_path, f"완료! 처리 시간: {elapsed:.2f}초"
 
 

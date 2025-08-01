@@ -55,7 +55,17 @@ def enhance_image(
 
     output = cv2.cvtColor(output, cv2.COLOR_BGR2RGB)
     output = Image.fromarray(output)
-    filename = f"RealESRGAN_x4plus_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.{ext}"
+    # 확장자 처리
+    if ext == "auto":
+        # 입력 이미지에서 확장자 추출 (없으면 png)
+        if hasattr(input_img, "filename") and input_img.filename:
+            orig_ext = os.path.splitext(input_img.filename)[-1].replace('.', '')
+            ext_to_use = orig_ext if orig_ext in ["png", "jpg", "jpeg"] else "png"
+        else:
+            ext_to_use = "png"
+    else:
+        ext_to_use = ext
+    filename = f"RealESRGAN_x4plus_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.{ext_to_use}"
     output.save(filename)
 
     elapsed = time.time() - start_time
