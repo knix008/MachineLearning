@@ -7,10 +7,7 @@ from PIL import Image
 model_id = "black-forest-labs/FLUX.1-Kontext-dev"
 
 print("모델을 로딩 중입니다...")
-pipe = FluxKontextPipeline.from_pretrained(
-    model_id,
-    torch_dtype=torch.bfloat16
-)
+pipe = FluxKontextPipeline.from_pretrained(model_id, torch_dtype=torch.bfloat16)
 
 # CPU 오프로드 및 Attention 슬라이싱 활성화
 pipe.enable_model_cpu_offload()
@@ -34,7 +31,6 @@ def resize_image(image):
 def generate_image(
     prompt, input_image, guidance_scale, steps, seq_len, seed, negative_prompt
 ):
-    """이미지-투-이미지만 지원"""
     start = time.time()
 
     if input_image is None:
@@ -91,7 +87,7 @@ with gr.Blocks(title="FLUX.1 Kontext Dev 이미지 생성기") as demo:
             prompt_input = gr.Textbox(
                 label="프롬프트",
                 placeholder="생성하고 싶은 이미지를 설명해주세요...",
-                value="8k, animation style, high detail, high quality, detail skin, photo realistic, masterpiece, best quality, dark blue bikini, intricate details",
+                value="8k, high detail, high quality, detail skin, photo realistic, masterpiece, best quality, dark blue bikini, intricate details",
                 lines=4,
             )
 
