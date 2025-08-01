@@ -11,7 +11,6 @@ from realesrgan import RealESRGANer
 
 
 def get_model():
-    # RealESRGAN_x4plus만 사용
     model = RRDBNet(
         num_in_ch=3,
         num_out_ch=3,
@@ -20,9 +19,11 @@ def get_model():
         num_grow_ch=32,
         scale=4,
     )
-    model_path = "RealESRGAN_x4plus.pth"  # 실제 경로에 맞게 수정 필요
-
-    return model, model_path
+    model_path = os.path.join("weights", "RealESRGAN_x4plus.pth")
+    if not os.path.exists(model_path):
+        raise FileNotFoundError(f"모델 파일이 존재하지 않습니다: {model_path}")
+    dni_weight = None  # 필요시 [1.0] 또는 [0.7, 0.3] 등으로 변경
+    return model, model_path, 4, dni_weight
 
 def enhance_image(
     input_img,
@@ -114,4 +115,4 @@ with gr.Blocks() as demo:
     )
 
 if __name__ == "__main__":
-    demo.launch(inbrowser=True)
+    demo.launch(share=False, inbrowser=True)
