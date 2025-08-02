@@ -1,5 +1,7 @@
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
+
 import torch
-from diffusers.utils import load_image
 from diffusers import FluxControlNetPipeline, FluxControlNetModel
 import datetime
 import cv2
