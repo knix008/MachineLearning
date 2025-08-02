@@ -7,9 +7,8 @@ import datetime
 # load model and scheduler
 model_id = "stabilityai/stable-diffusion-x4-upscaler"
 pipeline = StableDiffusionUpscalePipeline.from_pretrained(
-    model_id, torch_dtype=torch.float32
+    model_id, variant="fp16", torch_dtype=torch.float16
 )
-pipeline = pipeline.to("cpu")
 
 pipeline.enable_attention_slicing()
 pipeline.enable_sequential_cpu_offload()
@@ -19,13 +18,24 @@ pipeline.enable_xformers_memory_efficient_attention()
 print(f"Model {model_id} loaded successfully.")
 
 
-def upscale_image(input_image, prompt, num_inference_steps, guidance_scale, scale_factor):
+def upscale_image(input_image, prompt, num_inference_steps, guidance_scale):
     image = input_image.convert("RGB")
     w, h = image.size
 
-    # 원하는 배율로 리사이즈
-    new_w = int(w * scale_factor)
-    new_h = int(h * scale_factor)
+    # 최대 크기 1024, 비율 유지, 16의 배수로 맞춤
+    max_size = 1024
+    scale = min(max_size / w, max_size / h, 1.0)
+    new_w = int(w * scale)
+    new_h = int(h * scale)
+
+    # 16의 배수로 내림
+    new_w = (new_w // 16) * 16
+    new_h = (new_h // 16) * 16
+
+    # 최소 16 보장 (실제로는 512 이상이지만, max_size만 제한 요청이므로 16만 보장)
+    new_w = max(16, new_w)
+    new_h = max(16, new_h)
+
     image = image.resize((new_w, new_h), Image.LANCZOS)
 
     result = pipeline(
@@ -69,12 +79,7 @@ demo = gr.Interface(
             label="guidance_scale",
             info="프롬프트 반영 강도(높을수록 프롬프트에 더 충실하게 생성).",
         ),
-        gr.Radio(
-            choices=[1, 2, 4],
-            value=2,
-            label="Scaling 배율",
-            info="이미지를 몇 배로 업스케일할지 선택하세요."
-        ),
+        # scaling factor 입력 제거
     ],
     outputs=gr.Image(type="pil", label="Upscaled Image"),
     title="Stable Diffusion x4 Upscaler",
