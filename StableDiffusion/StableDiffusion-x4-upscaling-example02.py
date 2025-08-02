@@ -18,12 +18,19 @@ pipeline.enable_xformers_memory_efficient_attention()
 print(f"Model {model_id} loaded successfully.")
 
 
+MAX_SIZE = 512  # 메모리 한계로 인한 최대 크기 제한
+
 def upscale_image(input_image, prompt, num_inference_steps, guidance_scale):
     image = input_image.convert("RGB")
     w, h = image.size
 
     # 최대 크기 1024, 비율 유지, 16의 배수로 맞춤
-    max_size = 1024
+    max_size = MAX_SIZE
+    if w > h:
+        max_size = min(MAX_SIZE, w)
+    else:
+        max_size = min(MAX_SIZE, h)
+
     scale = min(max_size / w, max_size / h, 1.0)
     new_w = int(w * scale)
     new_h = int(h * scale)
