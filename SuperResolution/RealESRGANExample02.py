@@ -55,16 +55,8 @@ def enhance_image(
 
     output = cv2.cvtColor(output, cv2.COLOR_BGR2RGB)
     output = Image.fromarray(output)
-    # 확장자 처리
-    if ext == "auto":
-        # 입력 이미지에서 확장자 추출 (없으면 png)
-        if hasattr(input_img, "filename") and input_img.filename:
-            orig_ext = os.path.splitext(input_img.filename)[-1].replace('.', '')
-            ext_to_use = orig_ext if orig_ext in ["png", "jpg", "jpeg"] else "png"
-        else:
-            ext_to_use = "png"
-    else:
-        ext_to_use = ext
+    # 확장자 처리: 항상 사용자가 선택한 ext 사용
+    ext_to_use = ext
     filename = f"RealESRGAN_x4plus_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.{ext_to_use}"
     output.save(filename)
 
@@ -83,7 +75,7 @@ with gr.Blocks() as demo:
                 value="default.jpg",  # 기본 이미지 경로 (예시용)
             )
             outscale = gr.Slider(
-                1, 4, value=4, step=0.1,
+                1, 4, value=2, step=0.1,
                 label="업스케일 배수",
                 info="이미지를 몇 배로 확대할지 설정합니다. (1~4)"
             )
@@ -108,8 +100,8 @@ with gr.Blocks() as demo:
                 info="체크 시 FP32(고정소수점) 연산을 사용합니다. (메모리 여유가 많을 때 권장)"
             )
             ext = gr.Radio(
-                choices=["auto", "png", "jpg"],
-                value="auto",
+                choices=["png", "jpg"],
+                value="png",
                 label="저장 확장자",
                 info="결과 이미지를 저장할 파일 형식입니다."
             )
