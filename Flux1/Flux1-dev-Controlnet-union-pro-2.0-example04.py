@@ -83,7 +83,7 @@ demo = gr.Interface(
         gr.Textbox(
             lines=3,
             label="Prompt",
-            value="dark blue bikini, 8k, high detail, realistic, high quality, masterpiece, best quality, sunny beach, summer, sunset, vibrant colors",
+            value="dark blue bikini, 8k, high detail, realistic, detail skin, high quality, masterpiece, best quality, sunny beach, vibrant colors",
             info="생성할 이미지의 내용을 설명하는 프롬프트를 입력하세요.",
         ),
         gr.Slider(
