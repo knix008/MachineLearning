@@ -57,7 +57,7 @@ def generate_image(
 
     try:
         image = pipe(**pipe_args).images[0]
-        filename = f"flux1-kontext-dev-example10_{time.strftime('%Y%m%d-%H%M%S')}.png"
+        filename = f"flux1-kontext-dev-example11_{time.strftime('%Y%m%d-%H%M%S')}.png"
         image.save(filename)
         info_text = (
             f"생성 완료! (이미지 투 이미지)\n시간: {time.time()-start:.2f}초\n시드: {seed}\n저장된 파일: {filename}"
