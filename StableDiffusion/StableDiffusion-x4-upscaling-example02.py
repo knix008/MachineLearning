@@ -7,9 +7,16 @@ import datetime
 # load model and scheduler
 model_id = "stabilityai/stable-diffusion-x4-upscaler"
 pipeline = StableDiffusionUpscalePipeline.from_pretrained(
-    model_id, variant="fp16", torch_dtype=torch.float16
+    model_id, torch_dtype=torch.float32
 )
-pipeline = pipeline.to("cuda")
+pipeline = pipeline.to("cpu")
+
+pipeline.enable_attention_slicing()
+pipeline.enable_sequential_cpu_offload()
+pipeline.enable_model_cpu_offload()
+pipeline.enable_xformers_memory_efficient_attention()
+
+print(f"Model {model_id} loaded successfully.")
 
 
 def upscale_image(input_image, prompt, num_inference_steps, guidance_scale, scale_factor):
@@ -63,8 +70,8 @@ demo = gr.Interface(
             info="프롬프트 반영 강도(높을수록 프롬프트에 더 충실하게 생성).",
         ),
         gr.Radio(
-            choices=[1, 2, 4, 8],
-            value=4,
+            choices=[1, 2, 4],
+            value=2,
             label="Scaling 배율",
             info="이미지를 몇 배로 업스케일할지 선택하세요."
         ),
