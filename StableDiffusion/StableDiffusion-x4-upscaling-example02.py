@@ -34,7 +34,7 @@ def upscale_image(input_image, prompt, num_inference_steps, guidance_scale, scal
     return result
 
 
-default_prompt = "Ultra high resolution, hight detailed, photo realistic, 8k resolution, high quality, masterpiece, cinematic, award winning, hyper realistic, intricate details, sharp focus, depth of field, volumetric lighting, realistic shadows, high dynamic range, ultra detailed textures"
+default_prompt = "Ultra high resolution, high detailed, photo realistic, 8k resolution, high quality, masterpiece, cinematic, award winning, hyper realistic, intricate details, sharp focus, depth of field, volumetric lighting, realistic shadows, high dynamic range, ultra detailed textures"
 
 demo = gr.Interface(
     fn=upscale_image,
