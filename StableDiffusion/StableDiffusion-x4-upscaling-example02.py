@@ -12,17 +12,15 @@ pipeline = StableDiffusionUpscalePipeline.from_pretrained(
 pipeline = pipeline.to("cuda")
 
 
-def upscale_image(input_image, prompt, num_inference_steps, guidance_scale):
+def upscale_image(input_image, prompt, num_inference_steps, guidance_scale, scale_factor):
     image = input_image.convert("RGB")
     w, h = image.size
 
-    if w >= h:
-        new_w = 512
-        new_h = int(h * 512 / w)
-    else:
-        new_h = 512
-        new_w = int(w * 512 / h)
+    # 원하는 배율로 리사이즈
+    new_w = int(w * scale_factor)
+    new_h = int(h * scale_factor)
     image = image.resize((new_w, new_h), Image.LANCZOS)
+
     result = pipeline(
         prompt=prompt,
         image=image,
@@ -63,6 +61,12 @@ demo = gr.Interface(
             step=0.1,
             label="guidance_scale",
             info="프롬프트 반영 강도(높을수록 프롬프트에 더 충실하게 생성).",
+        ),
+        gr.Radio(
+            choices=[1, 2, 4, 8],
+            value=4,
+            label="Scaling 배율",
+            info="이미지를 몇 배로 업스케일할지 선택하세요."
         ),
     ],
     outputs=gr.Image(type="pil", label="Upscaled Image"),
