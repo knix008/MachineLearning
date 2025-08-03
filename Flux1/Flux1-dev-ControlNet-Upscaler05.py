@@ -106,8 +106,8 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
             )
             upscale_slider = gr.Slider(
                 minimum=1,
-                maximum=8,
-                value=4,
+                maximum=4,
+                value=2,
                 step=1,
                 label="업스케일 배율",
                 info="이미지를 몇 배로 확대할지 선택 (예: 4배)",
