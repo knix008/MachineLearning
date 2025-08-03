@@ -4,6 +4,10 @@ from diffusers.pipelines import FluxControlNetPipeline
 import datetime
 import gradio as gr
 
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+warnings.filterwarnings("ignore", category=FutureWarning)
+
 # 모델 로딩
 controlnet = FluxControlNetModel.from_pretrained(
     "jasperai/Flux.1-dev-Controlnet-Upscaler", torch_dtype=torch.bfloat16
