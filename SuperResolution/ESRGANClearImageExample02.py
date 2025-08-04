@@ -28,14 +28,15 @@ def get_model():
     model_path = os.path.join("weights", "RealESRGAN_x4plus.pth")
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"모델 파일이 존재하지 않습니다: {model_path}")
-    return model, model_path, 4
+    dni_weight = None  # 필요에 따라 값을 지정하세요 (예: [1.0] 또는 [0.7, 0.3])
+    return model, model_path, 4, dni_weight
 
 
 def enhance_image(input_img, sharpen_strength):
     start_time = time.time()
     img = cv2.cvtColor(np.array(input_img), cv2.COLOR_RGB2BGR)
     try:
-        model, model_path, netscale = get_model()
+        model, model_path, netscale, dni_weight = get_model()
         outscale = 4
         tile = 0
         tile_pad = 10
@@ -51,6 +52,7 @@ def enhance_image(input_img, sharpen_strength):
             pre_pad=pre_pad,
             half=not fp32,
             gpu_id=None,
+            dni_weight=dni_weight,  # dni_weight 전달
         )
         output, _ = upsampler.enhance(img, outscale=outscale)
         output = sharpen_image(output, sharpen_strength)
@@ -70,6 +72,7 @@ def enhance_image(input_img, sharpen_strength):
     except Exception as e:
         return None, None, f"Error: {str(e)}"
     elapsed = time.time() - start_time
+    # 반환값 수정
     return pil_resized, temp_file_path, f"완료! 처리 시간: {elapsed:.2f}초"
 
 

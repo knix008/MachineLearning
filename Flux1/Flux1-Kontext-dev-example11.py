@@ -7,10 +7,7 @@ from PIL import Image
 model_id = "black-forest-labs/FLUX.1-Kontext-dev"
 
 print("모델을 로딩 중입니다...")
-pipe = FluxKontextPipeline.from_pretrained(
-    model_id,
-    torch_dtype=torch.bfloat16
-)
+pipe = FluxKontextPipeline.from_pretrained(model_id, torch_dtype=torch.bfloat16)
 
 # CPU 오프로드 및 Attention 슬라이싱 활성화
 pipe.enable_model_cpu_offload()
@@ -34,7 +31,6 @@ def resize_image(image):
 def generate_image(
     prompt, input_image, guidance_scale, steps, seq_len, seed, negative_prompt
 ):
-    """이미지-투-이미지만 지원"""
     start = time.time()
 
     if input_image is None:
@@ -61,7 +57,7 @@ def generate_image(
 
     try:
         image = pipe(**pipe_args).images[0]
-        filename = f"flux1-kontext-dev-example10_{time.strftime('%Y%m%d-%H%M%S')}.png"
+        filename = f"flux1-kontext-dev-example11_{time.strftime('%Y%m%d-%H%M%S')}.png"
         image.save(filename)
         info_text = (
             f"생성 완료! (이미지 투 이미지)\n시간: {time.time()-start:.2f}초\n시드: {seed}\n저장된 파일: {filename}"
@@ -91,7 +87,7 @@ with gr.Blocks(title="FLUX.1 Kontext Dev 이미지 생성기") as demo:
             prompt_input = gr.Textbox(
                 label="프롬프트",
                 placeholder="생성하고 싶은 이미지를 설명해주세요...",
-                value="8k, animation style, high detail, high quality, detail skin, photo realistic, masterpiece, best quality, dark blue bikini, intricate details",
+                value="8k, high detail, high quality, detail skin, realistic, masterpiece, best quality, dark blue bikini, intricate details",
                 lines=4,
             )
 
@@ -141,7 +137,6 @@ with gr.Blocks(title="FLUX.1 Kontext Dev 이미지 생성기") as demo:
         with gr.Column():
             # 출력 영역
             output_image = gr.Image(label="생성된 이미지", type="pil", height=500)
-
             info_output = gr.Textbox(label="생성 정보", lines=4, interactive=False)
 
     # 이벤트 연결

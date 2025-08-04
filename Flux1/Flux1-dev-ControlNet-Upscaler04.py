@@ -3,7 +3,6 @@ from diffusers import FluxControlNetModel
 from diffusers.pipelines import FluxControlNetPipeline
 import datetime
 import gradio as gr
-from PIL import Image
 
 # 모델 로딩
 controlnet = FluxControlNetModel.from_pretrained(
@@ -76,7 +75,7 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
             prompt_input = gr.Textbox(
                 label="프롬프트 (선택)",
                 placeholder="이미지에 적용할 스타일이나 설명을 입력하세요...",
-                value="dark blue bikini, 8k, high detail, realistic, high quality, masterpiece, best quality",
+                value="8k, high detail, realistic, high quality, masterpiece, best quality",
                 lines=2,
             )
             upscale_slider = gr.Slider(
@@ -90,7 +89,7 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
             guidance_slider = gr.Slider(
                 minimum=1.0,
                 maximum=10.0,
-                value=6.0,
+                value=8.0,
                 step=0.1,
                 label="가이던스 스케일",
                 info="프롬프트 준수 정도. 높을수록 프롬프트를 더 정확히 따름.",
