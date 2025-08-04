@@ -32,6 +32,9 @@ def upscale_image(
 
     # 입력 이미지 크기
     w, h = input_image.size
+    # 가로 세로 비율을 유지며 16으로 나누어지게 만듦
+    w = (w // 16) * 16
+    h = (h // 16) * 16
 
     # Upscale x4
     control_image = input_image.resize((w * upscale_factor, h * upscale_factor))
@@ -79,7 +82,7 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
             upscale_slider = gr.Slider(
                 minimum=1,
                 maximum=8,
-                value=4,
+                value=2,
                 step=1,
                 label="업스케일 배율",
                 info="이미지를 몇 배로 확대할지 선택 (예: 4배)",
