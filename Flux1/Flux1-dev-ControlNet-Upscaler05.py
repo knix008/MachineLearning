@@ -23,7 +23,7 @@ pipe.enable_sequential_cpu_offload()
 pipe.enable_attention_slicing(1)
 print("모델을 CPU로 로딩 완료!")
 
-MAX_IMAGE_SIZE = 512  # 최대 이미지 크기 (1024x1024)
+MAX_IMAGE_SIZE = 512  # 최대 이미지 크기
 
 def upscale_image(
     input_image,
@@ -43,7 +43,7 @@ def upscale_image(
         scale = MAX_IMAGE_SIZE / max_dim
         w = int(w * scale)
         h = int(h * scale)
-        input_image = input_image.resize((w, h), Image.LANCZOS)
+        #input_image = input_image.resize((w, h), Image.LANCZOS)
 
     # 업스케일: 비율 유지 (w/h 비율 그대로)
     new_w = int(w * upscale_factor)
@@ -103,7 +103,7 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
             guidance_slider = gr.Slider(
                 minimum=1.0,
                 maximum=10.0,
-                value=6.0,
+                value=3.5,
                 step=0.1,
                 label="가이던스 스케일",
                 info="프롬프트 준수 정도. 높을수록 프롬프트를 더 정확히 따름.",
