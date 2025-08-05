@@ -33,37 +33,40 @@ def upscale_image(
     num_inference_steps,
     controlnet_conditioning_scale,
 ):
+    if input_image is None:
+        return None, "이미지를 업로드하세요."
+
     # 입력 이미지 크기
     w, h = input_image.size
 
-    # 최대 크기 MAX_IMAGE_SIZE로 리사이즈 (비율 유지)
+    # 최대 크기 512로 리사이즈 (비율 유지)
     max_dim = max(w, h)
-    if max_dim > MAX_IMAGE_SIZE:
-        scale = MAX_IMAGE_SIZE / max_dim
+    if max_dim > 512:
+        scale = 512 / max_dim
         w = int(w * scale)
         h = int(h * scale)
-        #input_image = input_image.resize((w, h), Image.LANCZOS)
+        input_image = input_image.resize((w, h), Image.LANCZOS)
 
     # 업스케일: 비율 유지 (w/h 비율 그대로)
     new_w = int(w * upscale_factor)
     new_h = int(h * upscale_factor)
-    control_image = input_image.resize((new_w, new_h), Image.LANCZOS)
+    resized_image = input_image.resize((new_w, new_h), Image.LANCZOS)
 
     try:
         image = pipe(
             prompt=prompt,
-            control_image=control_image,
+            control_image=resized_image,
             controlnet_conditioning_scale=controlnet_conditioning_scale,
             num_inference_steps=int(num_inference_steps),
             guidance_scale=float(guidance_scale),
-            height=control_image.height,
-            width=control_image.width,
+            height=new_h,
+            width=new_w,
         ).images[0]
 
         filename = f"flux1-dev-controlnet-Upscaler05-{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.png"
         image.save(filename)
 
-        info = f"생성 완료!\n저장 파일: {filename}\n조정된 이미지 크기: {w}x{h}\n최종 크기: {control_image.width}x{control_image.height}\n가이던스 스케일: {guidance_scale}\n추론 스텝: {num_inference_steps}\n컨디셔닝 스케일: {controlnet_conditioning_scale}"
+        info = f"생성 완료!\n저장 파일: {filename}\n조정된 이미지 크기: {w}x{h}\n최종 크기: {new_w}x{new_h}\n가이던스 스케일: {guidance_scale}\n추론 스텝: {num_inference_steps}\n컨디셔닝 스케일: {controlnet_conditioning_scale}"
 
         return image, info
     except Exception as e:
