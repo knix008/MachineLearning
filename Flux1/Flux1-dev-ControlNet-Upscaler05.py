@@ -3,8 +3,10 @@ from diffusers import FluxControlNetModel
 from diffusers.pipelines import FluxControlNetPipeline
 import datetime
 import gradio as gr
+from PIL import Image
 
 import warnings
+
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
 
@@ -21,8 +23,11 @@ pipe.enable_sequential_cpu_offload()
 pipe.enable_attention_slicing(1)
 print("모델을 CPU로 로딩 완료!")
 
-#pipe.to("cuda")
-#print("모델을 GPU로 로딩 완료!")
+# pipe.to("cuda")
+# print("모델을 GPU로 로딩 완료!")
+
+MAX_IMAGE_SIZE = 512  # 최대 이미지 크기
+
 
 def upscale_image(
     input_image,
@@ -33,17 +38,21 @@ def upscale_image(
     controlnet_conditioning_scale,
     seed,
 ):
-    if input_image is None:
-        return None, "이미지를 업로드하세요."
-
     # 입력 이미지 크기
     w, h = input_image.size
-    # 가로 세로 비율을 유지며 16으로 나누어지게 만듦
-    w = (w // 16) * 16
-    h = (h // 16) * 16
 
-    # Upscale x4
-    control_image = input_image.resize((w * upscale_factor, h * upscale_factor))
+    # 최대 크기 512로 리사이즈 (비율 유지)
+    max_dim = max(w, h)
+    if max_dim > MAX_IMAGE_SIZE:
+        scale = MAX_IMAGE_SIZE / max_dim
+        w = int(w * scale)
+        h = int(h * scale)
+        input_image = input_image.resize((w, h), Image.LANCZOS)
+
+    # 업스케일: 비율 유지 (w/h 비율 그대로)
+    new_w = int(w * upscale_factor)
+    new_h = int(h * upscale_factor)
+    control_image = input_image.resize((new_w, new_h), Image.LANCZOS)
 
     # Seed 설정
     generator = torch.Generator(device="cpu").manual_seed(seed) if seed != -1 else None
@@ -86,13 +95,13 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
             prompt_input = gr.Textbox(
                 label="프롬프트 (선택)",
                 placeholder="이미지에 적용할 스타일이나 설명을 입력하세요...",
-                value="8k, ultra high detail, high quality, best quality, photo realistic, masterpiece, vibrant colors",
+                value="8k, high detail, realistic, high quality, masterpiece, best quality",
                 lines=2,
             )
             upscale_slider = gr.Slider(
                 minimum=1,
-                maximum=4,
-                value=2,
+                maximum=8,
+                value=4,
                 step=1,
                 label="업스케일 배율",
                 info="이미지를 몇 배로 확대할지 선택 (예: 4배)",
@@ -108,7 +117,7 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
             steps_slider = gr.Slider(
                 minimum=10,
                 maximum=50,
-                value=50,
+                value=28,
                 step=1,
                 label="추론 스텝 수",
                 info="이미지 생성 단계 수. 높을수록 품질이 향상되지만 생성 시간이 늘어남.",
@@ -124,7 +133,7 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
             seed_input = gr.Slider(
                 minimum=-1,
                 maximum=2147483647,
-                value=100,
+                value=42,
                 step=1,
                 label="시드",
                 info="이미지 생성을 위한 시드 값. -1일 경우 랜덤 시드 사용.",
