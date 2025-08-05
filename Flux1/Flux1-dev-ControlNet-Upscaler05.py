@@ -32,7 +32,6 @@ def upscale_image(
     guidance_scale,
     num_inference_steps,
     controlnet_conditioning_scale,
-    seed,
 ):
     # 입력 이미지 크기
     w, h = input_image.size
@@ -50,9 +49,6 @@ def upscale_image(
     new_h = int(h * upscale_factor)
     control_image = input_image.resize((new_w, new_h), Image.LANCZOS)
 
-    # Seed 설정
-    generator = torch.Generator(device="cpu").manual_seed(seed) if seed != -1 else None
-
     try:
         image = pipe(
             prompt=prompt,
@@ -62,13 +58,12 @@ def upscale_image(
             guidance_scale=float(guidance_scale),
             height=control_image.height,
             width=control_image.width,
-            generator=generator,
         ).images[0]
 
         filename = f"flux1-dev-controlnet-Upscaler05-{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.png"
         image.save(filename)
 
-        info = f"생성 완료!\n저장 파일: {filename}\n조정된 이미지 크기: {w}x{h}\n최종 크기: {control_image.width}x{control_image.height}\n가이던스 스케일: {guidance_scale}\n추론 스텝: {num_inference_steps}\n컨디셔닝 스케일: {controlnet_conditioning_scale}\nSeed: {seed if seed != -1 else '랜덤'}"
+        info = f"생성 완료!\n저장 파일: {filename}\n조정된 이미지 크기: {w}x{h}\n최종 크기: {control_image.width}x{control_image.height}\n가이던스 스케일: {guidance_scale}\n추론 스텝: {num_inference_steps}\n컨디셔닝 스케일: {controlnet_conditioning_scale}"
 
         return image, info
     except Exception as e:
@@ -124,14 +119,6 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
                 label="컨디셔닝 스케일",
                 info="ControlNet의 영향력. 높을수록 입력 이미지에 더 강하게 반영됨.",
             )
-            seed_input = gr.Slider(
-                minimum=-1,
-                maximum=2147483647,
-                value=100,
-                step=1,
-                label="시드",
-                info="이미지 생성을 위한 시드 값. -1일 경우 랜덤 시드 사용.",
-            )
             generate_btn = gr.Button(
                 "🖼️ 업스케일 이미지 생성", variant="primary", size="lg"
             )
@@ -149,7 +136,6 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
             guidance_slider,
             steps_slider,
             conditioning_slider,
-            seed_input,
         ],
         outputs=[output_image, info_output],
     )
