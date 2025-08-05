@@ -116,33 +116,6 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
             )
             generate_btn = gr.Button("🖼️ 업스케일 이미지 생성", variant="primary", size="lg")
 
-            with gr.Accordion("📚 설정 가이드", open=False):
-                gr.Markdown(
-                    """
-                    ### 주요 설정 설명
-
-                    **업스케일 배율**  
-                    - 이미지를 몇 배로 확대할지 선택합니다.  
-                    - 너무 크게 하면 메모리 부족이 발생할 수 있습니다.
-
-                    **가이던스 스케일**  
-                    - 프롬프트를 얼마나 엄격하게 따를지 결정합니다.  
-                    - 높을수록 프롬프트에 더 가까운 결과가 나오지만 창의성이 줄어듭니다.
-
-                    **추론 스텝 수**  
-                    - 이미지 생성 단계 수입니다.  
-                    - 높을수록 품질이 좋아지지만 시간이 오래 걸립니다.
-
-                    **컨디셔닝 스케일**  
-                    - ControlNet의 영향력입니다.  
-                    - 높을수록 입력 이미지의 구조를 더 강하게 반영합니다.
-
-                    **프롬프트**  
-                    - 이미지에 적용할 스타일이나 설명을 입력하세요.  
-                    - 예시: "anime style, vibrant colors, high detail"
-                    """
-                )
-
         with gr.Column(scale=1):
             output_image = gr.Image(label="업스케일 결과", type="pil", height=512)
             info_output = gr.Textbox(label="생성 정보", lines=4, interactive=False)

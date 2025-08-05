@@ -23,11 +23,6 @@ pipe.enable_sequential_cpu_offload()
 pipe.enable_attention_slicing(1)
 print("모델을 CPU로 로딩 완료!")
 
-# pipe.to("cuda")
-# print("모델을 GPU로 로딩 완료!")
-
-MAX_IMAGE_SIZE = 1024  # 최대 이미지 크기
-
 
 def upscale_image(
     input_image,
@@ -38,16 +33,7 @@ def upscale_image(
     controlnet_conditioning_scale,
     seed,
 ):
-    # 입력 이미지 크기
-    w, h = input_image.size
-
-    # 최대 크기 MAX_IMAGE_SIZE로 리사이즈 (비율 유지)
-    max_dim = max(w, h)
-    if max_dim > MAX_IMAGE_SIZE:
-        scale = MAX_IMAGE_SIZE / max_dim
-        w = int(w * scale)
-        h = int(h * scale)
-        input_image = input_image.resize((w, h), Image.LANCZOS)
+    (w,h) = input_image.size
 
     # 가로와 세로를 16으로 나누어지게 조정 (비율 유지하며)
     w = (w // 16) * 16
@@ -106,13 +92,11 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
                 value="8k, high detail, high quality, photo realistic, masterpiece, best quality",
                 lines=2,
             )
-            upscale_slider = gr.Slider(
-                minimum=1,
-                maximum=8,
-                value=4,
-                step=1,
+            upscale_slider = gr.Radio(
+                choices=[1, 2, 4],
+                value=2,
                 label="업스케일 배율",
-                info="이미지를 몇 배로 확대할지 선택 (예: 4배)",
+                info="이미지를 몇 배로 확대할지 선택",
             )
             guidance_slider = gr.Slider(
                 minimum=1.0,
