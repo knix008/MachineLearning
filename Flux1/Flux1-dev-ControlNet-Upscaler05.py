@@ -19,9 +19,10 @@ pipe = FluxControlNetPipeline.from_pretrained(
 pipe.enable_model_cpu_offload()
 pipe.enable_sequential_cpu_offload()
 pipe.enable_attention_slicing(1)
-print("모델 로딩 완료!")
+print("모델을 CPU로 로딩 완료!")
 
-MAX_IMAGE_SIZE = 2048  # 최대 이미지 크기 (가로 또는 세로)
+#pipe.to("cuda")
+#print("모델을 GPU로 로딩 완료!")
 
 def upscale_image(
     input_image,
@@ -30,43 +31,22 @@ def upscale_image(
     guidance_scale,
     num_inference_steps,
     controlnet_conditioning_scale,
+    seed,
 ):
     if input_image is None:
         return None, "이미지를 업로드하세요."
 
     # 입력 이미지 크기
-    original_w, original_h = input_image.size
+    w, h = input_image.size
+    # 가로 세로 비율을 유지며 16으로 나누어지게 만듦
+    w = (w // 16) * 16
+    h = (h // 16) * 16
 
-    # 1024를 넘는 경우 비율을 유지하며 축소
-    if original_w > MAX_IMAGE_SIZE or original_h > MAX_IMAGE_SIZE:
-        # 가로/세로 중 더 큰 쪽을 기준으로 1024로 축소
-        if original_w > original_h:
-            new_w = MAX_IMAGE_SIZE
-            new_h = int(original_h * (MAX_IMAGE_SIZE / original_w))
-        else:
-            new_h = MAX_IMAGE_SIZE
-            new_w = int(original_w * (MAX_IMAGE_SIZE / original_h))
+    # Upscale x4
+    control_image = input_image.resize((w * upscale_factor, h * upscale_factor))
 
-        # 16으로 나누어 떨어지도록 조정
-        new_w = (new_w // 16) * 16
-        new_h = (new_h // 16) * 16
-
-        # 이미지 리사이즈
-        input_image = input_image.resize((new_w, new_h))
-        print(f"입력 이미지 크기 조정: {original_w}x{original_h} -> {new_w}x{new_h}")
-    else:
-        # 1024 이하인 경우 16으로 나누어 떨어지도록만 조정
-        new_w = (original_w // 16) * 16
-        new_h = (original_h // 16) * 16
-
-        if new_w != original_w or new_h != original_h:
-            input_image = input_image.resize((new_w, new_h))
-            print(f"입력 이미지 크기 조정 (16의 배수): {original_w}x{original_h} -> {new_w}x{new_h}")
-        else:
-            new_w, new_h = original_w, original_h
-
-    # Upscale
-    control_image = input_image.resize((new_w * upscale_factor, new_h * upscale_factor))
+    # Seed 설정
+    generator = torch.Generator(device="cpu").manual_seed(seed) if seed != -1 else None
 
     try:
         image = pipe(
@@ -77,12 +57,13 @@ def upscale_image(
             guidance_scale=float(guidance_scale),
             height=control_image.height,
             width=control_image.width,
+            generator=generator,
         ).images[0]
 
-        filename = f"flux1-dev-controlnet-Upscaler04-{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.png"
+        filename = f"flux1-dev-controlnet-Upscaler05-{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.png"
         image.save(filename)
 
-        info = f"생성 완료!\n저장 파일: {filename}\n원본 크기: {original_w}x{original_h}\n처리된 입력 크기: {new_w}x{new_h}\n최종 크기: {control_image.width}x{control_image.height}\n가이던스 스케일: {guidance_scale}\n추론 스텝: {num_inference_steps}\n컨디셔닝 스케일: {controlnet_conditioning_scale}"
+        info = f"생성 완료!\n저장 파일: {filename}\n조정된 이미지 크기: {w}x{h}\n최종 크기: {control_image.width}x{control_image.height}\n가이던스 스케일: {guidance_scale}\n추론 스텝: {num_inference_steps}\n컨디셔닝 스케일: {controlnet_conditioning_scale}\nSeed: {seed if seed != -1 else '랜덤'}"
 
         return image, info
     except Exception as e:
@@ -105,7 +86,7 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
             prompt_input = gr.Textbox(
                 label="프롬프트 (선택)",
                 placeholder="이미지에 적용할 스타일이나 설명을 입력하세요...",
-                value="8k, high detail, realistic, high quality, masterpiece, best quality",
+                value="8k, ultra high detail, high quality, best quality, photo realistic, masterpiece, vibrant colors",
                 lines=2,
             )
             upscale_slider = gr.Slider(
@@ -119,7 +100,7 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
             guidance_slider = gr.Slider(
                 minimum=1.0,
                 maximum=10.0,
-                value=8.0,
+                value=6.5,
                 step=0.1,
                 label="가이던스 스케일",
                 info="프롬프트 준수 정도. 높을수록 프롬프트를 더 정확히 따름.",
@@ -140,6 +121,14 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
                 label="컨디셔닝 스케일",
                 info="ControlNet의 영향력. 높을수록 입력 이미지에 더 강하게 반영됨.",
             )
+            seed_input = gr.Slider(
+                minimum=-1,
+                maximum=2147483647,
+                value=100,
+                step=1,
+                label="시드",
+                info="이미지 생성을 위한 시드 값. -1일 경우 랜덤 시드 사용.",
+            )
             generate_btn = gr.Button(
                 "🖼️ 업스케일 이미지 생성", variant="primary", size="lg"
             )
@@ -157,6 +146,7 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
             guidance_slider,
             steps_slider,
             conditioning_slider,
+            seed_input,
         ],
         outputs=[output_image, info_output],
     )
