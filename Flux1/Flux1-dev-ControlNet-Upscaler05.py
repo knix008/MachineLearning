@@ -26,7 +26,7 @@ print("모델을 CPU로 로딩 완료!")
 # pipe.to("cuda")
 # print("모델을 GPU로 로딩 완료!")
 
-MAX_IMAGE_SIZE = 2028  # 최대 이미지 크기
+MAX_IMAGE_SIZE = 1024  # 최대 이미지 크기
 
 
 def upscale_image(
