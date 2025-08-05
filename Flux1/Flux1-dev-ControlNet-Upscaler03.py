@@ -56,7 +56,7 @@ def upscale_image(
             height=new_h,
             width=new_w,
         ).images[0]
-        filename = f"Flux1-Upscaled-{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.png"
+        filename = f"Flux1-Upscaled-Example03-{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.png"
         image.save(filename)
         info = f"생성 완료!\n저장 파일: {filename}\n입력 크기: {w}x{h}\n최종 크기: {new_w}x{new_h}\n가이던스 스케일: {guidance_scale}\n추론 스텝: {num_inference_steps}\n컨디셔닝 스케일: {controlnet_conditioning_scale}"
         return image, info
