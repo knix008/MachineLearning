@@ -21,7 +21,7 @@ pipe.enable_sequential_cpu_offload()
 pipe.enable_attention_slicing(1)
 print("모델 로딩 완료!")
 
-MAX_IMAGE_SIZE = 1024  # 최대 이미지 크기 (가로 또는 세로)
+MAX_IMAGE_SIZE = 2048  # 최대 이미지 크기 (가로 또는 세로)
 
 def upscale_image(
     input_image,
