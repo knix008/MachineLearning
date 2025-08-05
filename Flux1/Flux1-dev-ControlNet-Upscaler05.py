@@ -26,7 +26,7 @@ print("모델을 CPU로 로딩 완료!")
 # pipe.to("cuda")
 # print("모델을 GPU로 로딩 완료!")
 
-MAX_IMAGE_SIZE = 512  # 최대 이미지 크기
+MAX_IMAGE_SIZE = 2028  # 최대 이미지 크기
 
 
 def upscale_image(
@@ -41,12 +41,20 @@ def upscale_image(
     # 입력 이미지 크기
     w, h = input_image.size
 
-    # 최대 크기 512로 리사이즈 (비율 유지)
+    # 최대 크기 MAX_IMAGE_SIZE로 리사이즈 (비율 유지)
     max_dim = max(w, h)
     if max_dim > MAX_IMAGE_SIZE:
         scale = MAX_IMAGE_SIZE / max_dim
         w = int(w * scale)
         h = int(h * scale)
+        input_image = input_image.resize((w, h), Image.LANCZOS)
+
+    # 가로와 세로를 16으로 나누어지게 조정 (비율 유지하며)
+    w = (w // 16) * 16
+    h = (h // 16) * 16
+
+    # 크기가 조정되었다면 이미지 리사이즈
+    if (w, h) != input_image.size:
         input_image = input_image.resize((w, h), Image.LANCZOS)
 
     # 업스케일: 비율 유지 (w/h 비율 그대로)
@@ -95,7 +103,7 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
             prompt_input = gr.Textbox(
                 label="프롬프트 (선택)",
                 placeholder="이미지에 적용할 스타일이나 설명을 입력하세요...",
-                value="8k, high detail, realistic, high quality, masterpiece, best quality",
+                value="8k, high detail, high quality, photo realistic, masterpiece, best quality",
                 lines=2,
             )
             upscale_slider = gr.Slider(
@@ -133,7 +141,7 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
             seed_input = gr.Slider(
                 minimum=-1,
                 maximum=2147483647,
-                value=42,
+                value=100,
                 step=1,
                 label="시드",
                 info="이미지 생성을 위한 시드 값. -1일 경우 랜덤 시드 사용.",
