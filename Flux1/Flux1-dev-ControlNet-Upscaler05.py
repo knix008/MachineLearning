@@ -23,6 +23,7 @@ pipe.enable_sequential_cpu_offload()
 pipe.enable_attention_slicing(1)
 print("모델을 CPU로 로딩 완료!")
 
+MAX_IMAGE_SIZE = 512  # 최대 이미지 크기 (1024x1024)
 
 def upscale_image(
     input_image,
@@ -33,14 +34,15 @@ def upscale_image(
     controlnet_conditioning_scale,
     seed,
 ):
-    (w,h) = input_image.size
+    # 입력 이미지 크기
+    w, h = input_image.size
 
-    # 가로와 세로를 16으로 나누어지게 조정 (비율 유지하며)
-    w = (w // 16) * 16
-    h = (h // 16) * 16
-
-    # 크기가 조정되었다면 이미지 리사이즈
-    if (w, h) != input_image.size:
+    # 최대 크기 MAX_IMAGE_SIZE로 리사이즈 (비율 유지)
+    max_dim = max(w, h)
+    if max_dim > MAX_IMAGE_SIZE:
+        scale = MAX_IMAGE_SIZE / max_dim
+        w = int(w * scale)
+        h = int(h * scale)
         input_image = input_image.resize((w, h), Image.LANCZOS)
 
     # 업스케일: 비율 유지 (w/h 비율 그대로)
