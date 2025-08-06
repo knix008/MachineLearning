@@ -60,10 +60,10 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
 
     with gr.Row():
         with gr.Column():
-            image_input = gr.Image(type="pil", label="입력 이미지")
+            image_input = gr.Image(type="pil", label="입력 이미지", height=500, sources=["upload", "clipboard"])
             submit_button = gr.Button("이미지 확대 실행", variant="primary")
         with gr.Column():
-            image_output = gr.Image(type="pil", label="결과 이미지")
+            image_output = gr.Image(type="pil", label="결과 이미지", height=500)
             time_output = gr.Textbox(label="처리 시간")
 
     submit_button.click(
