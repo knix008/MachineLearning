@@ -27,12 +27,28 @@ MAX_IMAGE_SIZE = 512  # 최대 이미지 크기
 UPSCALE_FACTOR = 4  # 업스케일 배율
 
 def resize_image(image):
-    """이미지를 업스케일링하고 최대 크기를 유지합니다."""
+    """이미지의 비율을 유지하며 업스케일링하고 최대 크기를 유지합니다."""
     w, h = image.size
-    w = (w //16) * 16  # 16의 배수로 조정
-    h = (h //16) * 16  # 16의 배수로
-    new_w = min(w * UPSCALE_FACTOR, MAX_IMAGE_SIZE)
-    new_h = min(h * UPSCALE_FACTOR, MAX_IMAGE_SIZE)
+
+    # 16의 배수로 조정 (원본 비율 유지)
+    w = (w // 16) * 16
+    h = (h // 16) * 16
+
+    # 업스케일 후 크기 계산
+    target_w = w * UPSCALE_FACTOR
+    target_h = h * UPSCALE_FACTOR
+
+    # 최대 크기 제한을 위한 스케일 팩터 계산
+    scale_factor = min(MAX_IMAGE_SIZE / target_w, MAX_IMAGE_SIZE / target_h, 1.0)
+
+    # 최종 크기 계산 (비율 유지)
+    new_w = int(target_w * scale_factor)
+    new_h = int(target_h * scale_factor)
+
+    # 16의 배수로 다시 조정 (비율을 최대한 유지하면서)
+    new_w = (new_w // 16) * 16
+    new_h = (new_h // 16) * 16
+
     # 이미지 크기 조정
     image = image.resize((new_w, new_h), Image.LANCZOS)
     return image
@@ -51,6 +67,7 @@ def upscale_image(
 
     try:
         image = pipe(
+            prompt="",
             control_image=resized_image,
             controlnet_conditioning_scale=controlnet_conditioning_scale,
             num_inference_steps=int(num_inference_steps),
