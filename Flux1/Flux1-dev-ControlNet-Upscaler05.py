@@ -18,6 +18,7 @@ pipe.enable_sequential_cpu_offload()
 pipe.enable_attention_slicing(1)
 print("모델 로딩 완료!")
 
+MAX_IMAGE_SIZE = 512  # 최대 이미지 크기
 
 def resize_image(input_image, upscale_factor):
         # 입력 이미지 크기
@@ -25,8 +26,8 @@ def resize_image(input_image, upscale_factor):
 
     # 최대 크기 512로 리사이즈 (비율 유지)
     max_dim = max(w, h)
-    if max_dim > 512:
-        scale = 512 / max_dim
+    if max_dim > MAX_IMAGE_SIZE:
+        scale = MAX_IMAGE_SIZE / max_dim
         w = int(w * scale)
         h = int(h * scale)
         input_image = input_image.resize((w, h), Image.LANCZOS)
