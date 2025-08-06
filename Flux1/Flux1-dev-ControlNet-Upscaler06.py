@@ -38,6 +38,8 @@ def upscale_image(
 
     # 입력 이미지 크기
     w, h = input_image.size
+    w = (w // 8) * 8  # 8의 배수로 조정
+    h = (h // 8) * 8  # 8의 배수로 조정
 
     # 최대 크기 512로 리사이즈 (비율 유지)
     max_dim = max(w, h)
@@ -51,6 +53,8 @@ def upscale_image(
     new_w = int(w * upscale_factor)
     new_h = int(h * upscale_factor)
     resized_image = input_image.resize((new_w, new_h), Image.LANCZOS)
+
+    print(f"조정된 이미지 크기: {w}x{h}, 최종 크기: {new_w}x{new_h}")
 
     try:
         image = pipe(
