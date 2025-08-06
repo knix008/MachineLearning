@@ -28,10 +28,12 @@ MAX_IMAGE_SIZE = 512  # 최대 이미지 크기
 def upscale_image(
     input_image,
     prompt,
+    negative_prompt,
     upscale_factor,
     guidance_scale,
     num_inference_steps,
     controlnet_conditioning_scale,
+    seed,
 ):
     if input_image is None:
         return None, "이미지를 업로드하세요."
@@ -56,9 +58,16 @@ def upscale_image(
 
     print(f"조정된 이미지 크기: {w}x{h}, 최종 크기: {new_w}x{new_h}")
 
+    # 시드 설정
+    if seed != -1:
+        torch.manual_seed(seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed(seed)
+
     try:
         image = pipe(
             prompt=prompt,
+            negative_prompt=negative_prompt if negative_prompt.strip() else None,
             control_image=resized_image,
             controlnet_conditioning_scale=controlnet_conditioning_scale,
             num_inference_steps=int(num_inference_steps),
@@ -70,7 +79,7 @@ def upscale_image(
         filename = f"flux1-dev-controlnet-Upscaler05-{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.png"
         image.save(filename)
 
-        info = f"생성 완료!\n저장 파일: {filename}\n조정된 이미지 크기: {w}x{h}\n최종 크기: {new_w}x{new_h}\n가이던스 스케일: {guidance_scale}\n추론 스텝: {num_inference_steps}\n컨디셔닝 스케일: {controlnet_conditioning_scale}"
+        info = f"생성 완료!\n저장 파일: {filename}\n조정된 이미지 크기: {w}x{h}\n최종 크기: {new_w}x{new_h}\n가이던스 스케일: {guidance_scale}\n추론 스텝: {num_inference_steps}\n컨디셔닝 스케일: {controlnet_conditioning_scale}\n시드: {seed if seed != -1 else '랜덤'}"
 
         return image, info
     except Exception as e:
@@ -94,6 +103,12 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
                 label="프롬프트 (선택)",
                 placeholder="이미지에 적용할 스타일이나 설명을 입력하세요...",
                 value="8k, high detail, high quality, photo realistic, masterpiece, best quality",
+                lines=2,
+            )
+            negative_prompt_input = gr.Textbox(
+                label="네거티브 프롬프트 (선택)",
+                placeholder="피하고 싶은 요소들을 입력하세요 (예: blurry, low quality, artifacts)...",
+                value="blurring, low quality, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, normal quality, jpeg artifacts, signature, watermark, username",
                 lines=2,
             )
             upscale_slider = gr.Radio(
@@ -126,6 +141,12 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
                 label="컨디셔닝 스케일",
                 info="ControlNet의 영향력. 높을수록 입력 이미지에 더 강하게 반영됨.",
             )
+            seed_input = gr.Number(
+                label="시드 (Seed)",
+                value=42,
+                precision=0,
+                info="랜덤 시드 값. -1이면 랜덤, 고정값을 입력하면 동일한 결과를 재현할 수 있습니다.",
+            )
             generate_btn = gr.Button(
                 "🖼️ 업스케일 이미지 생성", variant="primary", size="lg"
             )
@@ -139,10 +160,12 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
         inputs=[
             input_image,
             prompt_input,
+            negative_prompt_input,
             upscale_slider,
             guidance_slider,
             steps_slider,
             conditioning_slider,
+            seed_input,
         ],
         outputs=[output_image, info_output],
     )
