@@ -7,9 +7,7 @@ pipe = FluxPipeline.from_pretrained("black-forest-labs/FLUX.1-Krea-dev", torch_d
 pipe.enable_model_cpu_offload() #save some VRAM by offloading the model to CPU.
 pipe.enable_sequential_cpu_offload() #save some VRAM by offloading the model to CPU sequentially.
 pipe.enable_attention_slicing() #save some VRAM by slicing the attention layers.
-pipe.enable_flash_attention_2() #save some VRAM by using flash attention 2.
-pipe.enable_xformers_memory_efficient_attention() #save some VRAM by using xformers memory efficient attention.
-pipe.enable_torch_compile() #enable torch compile for faster inference.
+
 
 prompt = "A frog holding a sign that says hello world"
 image = pipe(
