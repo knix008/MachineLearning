@@ -9,7 +9,8 @@ pipe.enable_sequential_cpu_offload() #save some VRAM by offloading the model to 
 pipe.enable_attention_slicing() #save some VRAM by slicing the attention layers.
 
 
-prompt = "A frog holding a sign that says hello world"
+prompt = "A woman wearing a red bikini, walking on a beach, looking at viewer, high quality, realistic, high detail, 8k, cinematic lighting"
+
 image = pipe(
     prompt,
     height=1024,
@@ -17,4 +18,4 @@ image = pipe(
     guidance_scale=4.5,
 ).images[0]
 
-image.save(f"flux-krea-dev-{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.png")
+image.save(f"flux1-krea-dev-example02-{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.png")
