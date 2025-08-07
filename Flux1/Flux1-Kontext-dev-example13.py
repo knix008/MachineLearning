@@ -19,10 +19,8 @@ def loading_model():
     print("모델 로딩 완료!")
     return pipe
 
-
+# 로딩된 모델을 전역 변수로 저장
 pipe = loading_model()
-
-MAX_IMAGE_SIZE = 1024  # 최대 이미지 크기
 
 
 def resize_image(input_image):
@@ -30,12 +28,31 @@ def resize_image(input_image):
     w, h = input_image.size
     print(f"원본 입력 이미지 크기: {w}x{h}")
 
-    # 16의 배수로 조정 (비율 유지)
-    new_w = (w // 16) * 16
-    new_h = (h // 16) * 16
+    # 원본 비율 계산
+    aspect_ratio = w / h
+
+    # 비율을 유지하면서 16의 배수로 조정
+    # 더 큰 차원을 기준으로 16의 배수로 맞춤
+    if w >= h:
+        # 가로가 더 크거나 같은 경우
+        new_w = (w // 16) * 16
+        new_h = int(new_w / aspect_ratio)
+        new_h = (new_h // 16) * 16
+        # 세로 조정으로 인해 비율이 틀어질 수 있으므로 가로를 재조정
+        new_w = int(new_h * aspect_ratio)
+        new_w = (new_w // 16) * 16
+    else:
+        # 세로가 더 큰 경우
+        new_h = (h // 16) * 16
+        new_w = int(new_h * aspect_ratio)
+        new_w = (new_w // 16) * 16
+        # 가로 조정으로 인해 비율이 틀어질 수 있으므로 세로를 재조정
+        new_h = int(new_w / aspect_ratio)
+        new_h = (new_h // 16) * 16
 
     resized_image = input_image.resize((new_w, new_h), Image.LANCZOS)
-    print(f"최종 크기 (16의 배수로 조정): {new_w}x{new_h}")
+    print(f"최종 크기 (16의 배수, 비율 유지): {new_w}x{new_h}")
+    print(f"원본 비율: {w/h:.3f}, 조정된 비율: {new_w/new_h:.3f}")
     return resized_image
 
 
@@ -55,8 +72,10 @@ def generate_image(
 
     input_image = resize_image(input_image)  # 이미지 크기 조정
     info = f"\n입력 이미지 크기: {input_image.size[0]}x{input_image.size[1]}"
-    # 시드 설정
-    generator = torch.Generator("cpu").manual_seed(-1 if seed == -1 else int(seed))
+    # Generator 설정
+    if seed == -1:
+        seed = torch.randint(0, 2**32 - 1, (1,)).item()
+    generator = torch.Generator("cpu").manual_seed(seed)
 
     try:
         image = pipe(
@@ -69,12 +88,13 @@ def generate_image(
             num_inference_steps=int(steps),
             max_sequence_length=int(seq_len),
             generator=generator,
-            output_type="pil",  # 고품질 출력
         ).images[0]
 
         # 고품질 저장 설정
         filename = f"flux1-kontext-dev-example13_{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}.png"
-        image.save(filename, format="PNG", compress_level=1, optimize=False)  # 최고 품질로 저장
+        image.save(
+            filename, format="PNG", compress_level=1, optimize=False
+        )  # 최고 품질로 저장
         info_text = (
             f"생성 완료! (이미지 투 이미지)\n시간: {time.time()-start:.2f}초\n시드: {seed}\n저장된 파일: {filename}"
             f"\n생성된 이미지 크기: {image.size[0]}x{image.size[1]}{info}"
@@ -86,7 +106,7 @@ def generate_image(
 
 # Gradio 인터페이스 생성
 with gr.Blocks(title="FLUX.1 Kontext Dev 이미지 생성기") as demo:
-    gr.Markdown("# 🎨 FLUX.1-dev 이미지 생성기")
+    gr.Markdown("# 🎨 FLUX.1 Kontext Dev이미지 생성기")
 
     with gr.Row():
         with gr.Column():
@@ -103,7 +123,7 @@ with gr.Blocks(title="FLUX.1 Kontext Dev 이미지 생성기") as demo:
             prompt_input = gr.Textbox(
                 label="프롬프트",
                 placeholder="생성하고 싶은 이미지를 설명해주세요...",
-                value="8k, high detail, high quality, photo realistic, masterpiece, best quality, dark blue bikini, skinny",
+                value="8k, high detail, high quality, realistic, masterpiece, best quality, dark blue bikini",
                 lines=4,
             )
 
@@ -116,17 +136,17 @@ with gr.Blocks(title="FLUX.1 Kontext Dev 이미지 생성기") as demo:
 
             guidance_slider = gr.Slider(
                 minimum=1.0,
-                maximum=15.0,  # 범위 확장
-                value=7.5,     # 더 높은 기본값
+                maximum=10.0,  # 범위 확장
+                value=6.5,  # 더 높은 기본값
                 step=0.1,
                 label="가이던스 스케일",
                 info="프롬프트 준수 정도. 높을수록 프롬프트를 더 정확히 따르지만 창의성이 줄어들 수 있습니다. (권장: 7.0-10.0)",
             )
 
             steps_slider = gr.Slider(
-                minimum=20,
-                maximum=100,   # 더 높은 최대값
-                value=50,      # 더 높은 기본값
+                minimum=10,
+                maximum=50,  # 더 높은 최대값
+                value=28,  # 더 높은 기본값
                 step=1,
                 label="추론 스텝 수",
                 info="이미지 생성 단계 수. 높을수록 품질이 향상되지만 생성 시간이 늘어납니다. (최고 품질: 50-80)",
@@ -135,7 +155,7 @@ with gr.Blocks(title="FLUX.1 Kontext Dev 이미지 생성기") as demo:
             sequence_slider = gr.Slider(
                 minimum=256,
                 maximum=1024,  # 더 높은 최대값
-                value=512,     # 더 높은 기본값
+                value=512,  # 더 높은 기본값
                 step=64,
                 label="최대 시퀀스 길이",
                 info="프롬프트 처리 길이. 긴 프롬프트에는 높은 값이 필요합니다. (최고 품질: 512-1024)",
