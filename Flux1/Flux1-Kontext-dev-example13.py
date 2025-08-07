@@ -28,31 +28,64 @@ def resize_image(input_image):
     w, h = input_image.size
     print(f"원본 입력 이미지 크기: {w}x{h}")
 
+    # 16으로 나누어떨어지도록 크기 조정
+    def round_to_multiple(value, multiple=16):
+        return ((value + multiple // 2) // multiple) * multiple
+
     # 원본 비율 계산
     aspect_ratio = w / h
+    
+    # 최대 크기 제한 (1360)
+    max_size = 1360
+    
+    # 더 큰 쪽이 1360을 넘는 경우 비율을 유지하며 축소
+    if max(w, h) > max_size:
+        if w >= h:
+            # 가로가 더 큰 경우
+            scale_factor = max_size / w
+            w = max_size
+            h = int(h * scale_factor)
+        else:
+            # 세로가 더 큰 경우
+            scale_factor = max_size / h
+            h = max_size
+            w = int(w * scale_factor)
+        print(f"최대 크기 제한 적용 후: {w}x{h}")
 
-    # 비율을 유지하면서 16의 배수로 조정
-    # 더 큰 차원을 기준으로 16의 배수로 맞춤
+    # 16으로 나누어떨어지도록 크기 조정
     if w >= h:
         # 가로가 더 크거나 같은 경우
-        new_w = (w // 16) * 16
-        new_h = int(new_w / aspect_ratio)
-        new_h = (new_h // 16) * 16
-        # 세로 조정으로 인해 비율이 틀어질 수 있으므로 가로를 재조정
-        new_w = int(new_h * aspect_ratio)
-        new_w = (new_w // 16) * 16
+        new_w = round_to_multiple(w)
+        new_h = round_to_multiple(int(new_w / aspect_ratio))
+        
+        # 새로운 크기가 제한을 넘는 경우 다시 조정
+        if new_w > max_size:
+            new_w = round_to_multiple(max_size - 16)  # 한 단계 작게
+            new_h = round_to_multiple(int(new_w / aspect_ratio))
     else:
         # 세로가 더 큰 경우
-        new_h = (h // 16) * 16
-        new_w = int(new_h * aspect_ratio)
-        new_w = (new_w // 16) * 16
-        # 가로 조정으로 인해 비율이 틀어질 수 있으므로 세로를 재조정
-        new_h = int(new_w / aspect_ratio)
-        new_h = (new_h // 16) * 16
+        new_h = round_to_multiple(h)
+        new_w = round_to_multiple(int(new_h * aspect_ratio))
+        
+        # 새로운 크기가 제한을 넘는 경우 다시 조정
+        if new_h > max_size:
+            new_h = round_to_multiple(max_size - 16)  # 한 단계 작게
+            new_w = round_to_multiple(int(new_h * aspect_ratio))
 
-    resized_image = input_image.resize((new_w, new_h), Image.LANCZOS)
-    print(f"최종 크기 (16의 배수, 비율 유지): {new_w}x{new_h}")
-    print(f"원본 비율: {w/h:.3f}, 조정된 비율: {new_w/new_h:.3f}")
+    # 비율이 많이 틀어지지 않도록 재조정
+    actual_ratio = new_w / new_h
+    if abs(actual_ratio - aspect_ratio) > 0.1:  # 비율 차이가 10% 이상인 경우
+        if aspect_ratio > actual_ratio:
+            new_w = min(round_to_multiple(int(new_h * aspect_ratio)), max_size)
+        else:
+            new_h = min(round_to_multiple(int(new_w / aspect_ratio)), max_size)
+
+    print(f"조정된 이미지 크기: {new_w}x{new_h}")
+    print(f"원본 비율: {aspect_ratio:.3f}, 조정된 비율: {new_w/new_h:.3f}")
+
+    # 이미지 리사이즈 (고품질 리샘플링 사용)
+    resized_image = input_image.resize((new_w, new_h), Image.Resampling.LANCZOS)
+
     return resized_image
 
 
