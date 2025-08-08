@@ -80,7 +80,7 @@ with gr.Blocks(title="FLUX.1-Krea-dev Image Generator", theme=gr.themes.Soft()) 
             prompt_input = gr.Textbox(
                 label="Prompt",
                 placeholder="Enter your image description...",
-                value="8k, high quality, realistic, high detail, cinematic lighting, a woman walking on a beaching, wearing a red bikini, sunset background, looking at viewer, full body, skinny",
+                value="8k, high quality, realistic, high detail, cinematic lighting, a woman walking on a beaching, wearing a red bikini, sunny, looking at viewer, full body, skinny",
                 lines=3,
                 info="텍스트 프롬프트: 생성하고자 하는 이미지에 대한 상세한 설명을 입력하세요. 구체적이고 명확한 설명일수록 더 나은 결과를 얻을 수 있습니다."
             )
