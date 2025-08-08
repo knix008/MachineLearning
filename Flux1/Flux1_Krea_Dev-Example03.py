@@ -42,7 +42,6 @@ def generate_image(
 
         # Text-to-image generation with negative prompt
         image = pipe(
-            image_url,
             prompt,
             negative_prompt=negative_prompt if negative_prompt.strip() else None,
             height=final_height,
