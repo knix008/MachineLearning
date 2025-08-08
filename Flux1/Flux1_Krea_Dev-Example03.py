@@ -103,7 +103,7 @@ with gr.Blocks(title="FLUX.1-Krea-dev Image Generator", theme=gr.themes.Soft()) 
             with gr.Row():
                 guidance_scale_input = gr.Slider(
                     minimum=1.0,
-                    maximum=20.0,
+                    maximum=10.0,
                     value=4.5,
                     step=0.1,
                     label="Guidance Scale",
@@ -111,7 +111,7 @@ with gr.Blocks(title="FLUX.1-Krea-dev Image Generator", theme=gr.themes.Soft()) 
                 )
                 num_inference_steps_input = gr.Slider(
                     minimum=1,
-                    maximum=100,
+                    maximum=50,
                     value=30,
                     step=1,
                     label="Inference Steps",
