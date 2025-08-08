@@ -22,7 +22,7 @@ pipe.enable_attention_slicing()  # save some VRAM by slicing the attention layer
 print("Model loaded successfully.")
 
 def generate_image(
-    prompt, negative_prompt, height, width, guidance_scale, num_inference_steps, seed
+	prompt, negative_prompt, height, width, guidance_scale, num_inference_steps, seed
 ):
     """Generate image using FLUX.1-Krea-dev model"""
     try:
@@ -42,6 +42,7 @@ def generate_image(
 
         # Text-to-image generation with negative prompt
         image = pipe(
+            image_url,
             prompt,
             negative_prompt=negative_prompt if negative_prompt.strip() else None,
             height=final_height,
@@ -67,10 +68,10 @@ with gr.Blocks(title="FLUX.1-Krea-dev Image Generator", theme=gr.themes.Soft()) 
     gr.Markdown(
         """
     **FLUX.1-Krea-dev 모델을 사용한 고품질 이미지 생성기**
-    
+
     📝 **Text-to-Image**: 텍스트 프롬프트로 고품질 이미지 생성
     � **Negative Prompt**: 원하지 않는 요소를 제외하여 더 나은 결과 생성
-    
+
     💡 **팁**: Positive prompt에는 원하는 것을, Negative prompt에는 원하지 않는 것을 구체적으로 작성하세요!
     """
     )
