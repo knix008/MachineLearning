@@ -22,7 +22,7 @@ pipe.enable_attention_slicing()  # save some VRAM by slicing the attention layer
 print("Model loaded successfully.")
 
 def generate_image(
-    prompt, height, width, guidance_scale, num_inference_steps, seed
+    prompt, negative_prompt, height, width, guidance_scale, num_inference_steps, seed
 ):
     """Generate image using FLUX.1-Krea-dev model"""
     try:
@@ -41,9 +41,10 @@ def generate_image(
         final_height = int(height)
         status_msg = f"Using specified dimensions: {final_width}x{final_height}"
 
-        # Text-to-image generation
+        # Text-to-image generation with negative prompt
         image = pipe(
             prompt,
+            negative_prompt=negative_prompt if negative_prompt.strip() else None,
             height=final_height,
             width=final_width,
             guidance_scale=guidance_scale,
@@ -67,8 +68,11 @@ with gr.Blocks(title="FLUX.1-Krea-dev Image Generator", theme=gr.themes.Soft()) 
     gr.Markdown(
         """
     **FLUX.1-Krea-dev 모델을 사용한 고품질 이미지 생성기**
+    
     📝 **Text-to-Image**: 텍스트 프롬프트로 고품질 이미지 생성
-    💡 **팁**: 더 나은 결과를 위해 구체적이고 상세한 프롬프트를 사용하세요!
+    � **Negative Prompt**: 원하지 않는 요소를 제외하여 더 나은 결과 생성
+    
+    💡 **팁**: Positive prompt에는 원하는 것을, Negative prompt에는 원하지 않는 것을 구체적으로 작성하세요!
     """
     )
 
@@ -77,9 +81,17 @@ with gr.Blocks(title="FLUX.1-Krea-dev Image Generator", theme=gr.themes.Soft()) 
             prompt_input = gr.Textbox(
                 label="Prompt",
                 placeholder="Enter your image description...",
-                value="8k, high quality, realistic, high detail, cinematic lighting, a woman walking on a beaching, wearing a red bikini, sunset background, looking at viewer",
+                value="8k, high quality, realistic, high detail, cinematic lighting, a woman walking on a beaching, wearing a red bikini, sunset background, looking at viewer, full body",
                 lines=3,
                 info="텍스트 프롬프트: 생성하고자 하는 이미지에 대한 상세한 설명을 입력하세요. 구체적이고 명확한 설명일수록 더 나은 결과를 얻을 수 있습니다."
+            )
+            
+            negative_prompt_input = gr.Textbox(
+                label="Negative Prompt (Optional)",
+                placeholder="Enter what you don't want in the image...",
+                value="blurry, low quality, distorted, deformed, bad anatomy, bad hands, extra fingers, missing fingers, watermark, text, signature",
+                lines=2,
+                info="네거티브 프롬프트: 이미지에 포함되지 않았으면 하는 요소들을 입력하세요. 품질 향상에 도움이 됩니다."
             )
 
             with gr.Row():
@@ -140,6 +152,7 @@ with gr.Blocks(title="FLUX.1-Krea-dev Image Generator", theme=gr.themes.Soft()) 
         fn=generate_image,
         inputs=[
             prompt_input,
+            negative_prompt_input,
             height_input,
             width_input,
             guidance_scale_input,
