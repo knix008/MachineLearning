@@ -1,6 +1,14 @@
 import torch
 from diffusers import FluxPipeline
 import datetime
+import os
+import warnings
+
+# Disable all user warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+
+# Disable Hugging Face symlinks warning on Windows
+os.environ['HF_HUB_DISABLE_SYMLINKS_WARNING'] = '1'
 
 pipe = FluxPipeline.from_pretrained("black-forest-labs/FLUX.1-Krea-dev", torch_dtype=torch.bfloat16)
 
