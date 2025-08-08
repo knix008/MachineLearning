@@ -30,7 +30,6 @@ def generate_image(
         if seed == -1:
             # Generate random seed
             import random
-
             actual_seed = random.randint(0, 2**32 - 1)
             torch.manual_seed(actual_seed)
         else:
@@ -132,7 +131,7 @@ with gr.Blocks(title="FLUX.1-Krea-dev Image Generator", theme=gr.themes.Soft()) 
 
             seed_input = gr.Number(
                 label="Seed (-1 for random)",
-                value=-1,
+                value=42,
                 precision=0,
                 info="시드 값: 이미지 생성의 랜덤성을 제어합니다. 같은 시드 값을 사용하면 동일한 이미지를 재생성할 수 있습니다. -1을 입력하면 랜덤 시드를 사용합니다.",
             )
