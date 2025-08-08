@@ -116,7 +116,7 @@ with gr.Blocks(title="FLUX.1-Krea-dev Image Generator", theme=gr.themes.Soft()) 
                 guidance_scale_input = gr.Slider(
                     minimum=1.0,
                     maximum=10.0,
-                    value=4.5,
+                    value=6.5,
                     step=0.1,
                     label="Guidance Scale",
                     info="가이던스 스케일: 프롬프트에 대한 모델의 충실도를 조절합니다. 높은 값은 프롬프트를 더 정확히 따르지만 창의성이 떨어질 수 있습니다. (권장: 3.5-7.5)",
