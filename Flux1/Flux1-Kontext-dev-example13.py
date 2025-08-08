@@ -34,10 +34,10 @@ def resize_image(input_image):
 
     # 원본 비율 계산
     aspect_ratio = w / h
-    
+
     # 최대 크기 제한 (1360)
     max_size = 1360
-    
+
     # 더 큰 쪽이 1360을 넘는 경우 비율을 유지하며 축소
     if max(w, h) > max_size:
         if w >= h:
@@ -57,7 +57,7 @@ def resize_image(input_image):
         # 가로가 더 크거나 같은 경우
         new_w = round_to_multiple(w)
         new_h = round_to_multiple(int(new_w / aspect_ratio))
-        
+
         # 새로운 크기가 제한을 넘는 경우 다시 조정
         if new_w > max_size:
             new_w = round_to_multiple(max_size - 16)  # 한 단계 작게
@@ -66,7 +66,7 @@ def resize_image(input_image):
         # 세로가 더 큰 경우
         new_h = round_to_multiple(h)
         new_w = round_to_multiple(int(new_h * aspect_ratio))
-        
+
         # 새로운 크기가 제한을 넘는 경우 다시 조정
         if new_h > max_size:
             new_h = round_to_multiple(max_size - 16)  # 한 단계 작게

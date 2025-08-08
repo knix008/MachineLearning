@@ -115,7 +115,7 @@ with gr.Blocks(title="FLUX.1-Krea-dev Image Generator", theme=gr.themes.Soft()) 
                 guidance_scale_input = gr.Slider(
                     minimum=1.0,
                     maximum=10.0,
-                    value=6.5,
+                    value=4.5,
                     step=0.1,
                     label="Guidance Scale",
                     info="가이던스 스케일: 프롬프트에 대한 모델의 충실도를 조절합니다. 높은 값은 프롬프트를 더 정확히 따르지만 창의성이 떨어질 수 있습니다. (권장: 3.5-7.5)",
@@ -123,7 +123,7 @@ with gr.Blocks(title="FLUX.1-Krea-dev Image Generator", theme=gr.themes.Soft()) 
                 num_inference_steps_input = gr.Slider(
                     minimum=1,
                     maximum=50,
-                    value=30,
+                    value=28,
                     step=1,
                     label="Inference Steps",
                     info="추론 단계: 이미지 생성을 위한 디노이징 단계 수입니다. 높은 값은 더 정교한 이미지를 생성하지만 처리 시간이 길어집니다. (권장: 20-50)",
@@ -131,7 +131,7 @@ with gr.Blocks(title="FLUX.1-Krea-dev Image Generator", theme=gr.themes.Soft()) 
 
             seed_input = gr.Number(
                 label="Seed (-1 for random)",
-                value=42,
+                value=-1,
                 precision=0,
                 info="시드 값: 이미지 생성의 랜덤성을 제어합니다. 같은 시드 값을 사용하면 동일한 이미지를 재생성할 수 있습니다. -1을 입력하면 랜덤 시드를 사용합니다.",
             )
