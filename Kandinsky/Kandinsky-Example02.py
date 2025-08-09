@@ -17,10 +17,19 @@ init_image = load_image(
     "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/diffusers/cat.png"
 )
 
+init_image.save("kandinsky-Example02-init.png")
+
 prompt = "cat wizard, gandalf, lord of the rings, detailed, fantasy, cute, adorable, Pixar, Disney, 8k"
-image = pipeline(prompt, image=init_image).images[0]
+
+
+def my_callback(pipe, step, timestep, callback_kwargs):
+    print(f"Step {step}, Timestep {timestep}")
+    return {}  # Always return a dict, even if empty
+
+
+image = pipeline(prompt, image=init_image, callback_on_step_end=my_callback).images[0]
 make_image_grid([init_image, image], rows=1, cols=2)
 
 image.save(
-    f"kandinsky-Example01-{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.png"
+    f"kandinsky-Example02-{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.png"
 )
