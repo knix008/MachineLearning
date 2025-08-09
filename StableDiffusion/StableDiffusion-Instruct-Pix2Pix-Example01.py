@@ -14,10 +14,10 @@ pipe = StableDiffusionInstructPix2PixPipeline.from_pretrained(
 pipe.to("cuda")
 pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(pipe.scheduler.config)
 
-prompt = "turn the photo into 8k, high detail, high quality, photo realistic, masterpiece, best quality, wearing dark blue bikini photo."
+prompt = "Turn the woman wearing a dark blue bikini into a 8k, high detail, high quality, photo realistic, masterpiece, best quality image."
 input_image = PIL.Image.open("default.jpg")
 image = pipe(
-    prompt, image=input_image, num_inference_steps=50, image_guidance_scale=1
+    prompt, image=input_image, num_inference_steps=50, image_guidance_scale=1.0
 ).images[0]
 
 image.save(
