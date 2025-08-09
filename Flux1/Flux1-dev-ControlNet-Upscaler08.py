@@ -23,6 +23,7 @@ upscale_pipe.enable_sequential_cpu_offload()
 upscale_pipe.enable_attention_slicing(1)
 print("모델을 CPU로 로딩 완료!")
 
+
 def upscale_image(
     input_image,
     prompt,
@@ -39,7 +40,9 @@ def upscale_image(
     w, h = input_image.size
 
     # Upscaler
-    control_image = input_image.resize((w * upscale_factor, h * upscale_factor), Image.LANCZOS)
+    control_image = input_image.resize(
+        (w * upscale_factor, h * upscale_factor), Image.LANCZOS
+    )
 
     # 시드 설정
     if seed != -1:
@@ -95,7 +98,7 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
             )
             upscale_slider = gr.Radio(
                 choices=[1, 2, 4],
-                value=4,
+                value=2,
                 label="업스케일 배율",
                 info="이미지를 몇 배로 확대할지 선택",
             )
