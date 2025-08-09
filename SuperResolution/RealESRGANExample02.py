@@ -25,6 +25,7 @@ def get_model():
     dni_weight = None  # 필요시 [1.0] 또는 [0.7, 0.3] 등으로 변경
     return model, model_path, 4, dni_weight
 
+
 def enhance_image(
     input_img,
     outscale,
@@ -75,35 +76,41 @@ with gr.Blocks() as demo:
                 value="default.jpg",  # 기본 이미지 경로 (예시용)
             )
             outscale = gr.Slider(
-                1, 4, value=4, step=0.1,
+                1,
+                4,
+                value=4,
+                step=0.1,
                 label="업스케일 배수",
-                info="이미지를 몇 배로 확대할지 설정합니다. (1~4)"
+                info="이미지를 몇 배로 확대할지 설정합니다. (1~4)",
             )
             tile = gr.Slider(
-                0, 512, value=64, step=16,
+                0,
+                512,
+                value=64,
+                step=16,
                 label="Tile 크기 (메모리 부족시 조정)",
-                info="이미지를 분할 처리할 타일 크기입니다. 메모리 부족 시 값을 줄이세요. 0은 전체 처리."
+                info="이미지를 분할 처리할 타일 크기입니다. 메모리 부족 시 값을 줄이세요. 0은 전체 처리.",
             )
             tile_pad = gr.Number(
                 value=10,
                 label="Tile padding",
-                info="타일 경계에 추가로 패딩을 줄 픽셀 수입니다."
+                info="타일 경계에 추가로 패딩을 줄 픽셀 수입니다.",
             )
             pre_pad = gr.Number(
                 value=0,
                 label="Pre padding",
-                info="입력 이미지 전체에 추가로 패딩을 줄 픽셀 수입니다."
+                info="입력 이미지 전체에 추가로 패딩을 줄 픽셀 수입니다.",
             )
             fp32 = gr.Checkbox(
                 label="FP32 모드 사용",
                 value=True,
-                info="체크 시 FP32(고정소수점) 연산을 사용합니다. (메모리 여유가 많을 때 권장)"
+                info="체크 시 FP32(고정소수점) 연산을 사용합니다. (메모리 여유가 많을 때 권장)",
             )
             ext = gr.Radio(
                 choices=["png", "jpg"],
                 value="png",
                 label="저장 확장자",
-                info="결과 이미지를 저장할 파일 형식입니다."
+                info="결과 이미지를 저장할 파일 형식입니다.",
             )
             btn = gr.Button("업스케일 실행")
         with gr.Column():
