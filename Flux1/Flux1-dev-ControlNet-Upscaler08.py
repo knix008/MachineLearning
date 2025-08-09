@@ -23,6 +23,7 @@ upscale_pipe.enable_sequential_cpu_offload()
 upscale_pipe.enable_attention_slicing(1)
 print("모델을 CPU로 로딩 완료!")
 
+MAX_IMAGE_SIZE = 1024
 
 def upscale_image(
     input_image,
@@ -38,10 +39,14 @@ def upscale_image(
         return None, "이미지를 업로드하세요."
 
     w, h = input_image.size
-
+    # MAX_IMAGE_SIZE 이하로, 가로세로 비율 유지하며 리사이즈
+    scale = min(MAX_IMAGE_SIZE / w, MAX_IMAGE_SIZE / h, 1.0)
+    resized_w = int(w * scale)
+    resized_h = int(h * scale)
+    input_image = input_image.resize((resized_w, resized_h), Image.LANCZOS)
     # Upscaler
     control_image = input_image.resize(
-        (w * upscale_factor, h * upscale_factor), Image.LANCZOS
+        (resized_w * upscale_factor, resized_h * upscale_factor), Image.LANCZOS
     )
 
     # 시드 설정
@@ -62,7 +67,7 @@ def upscale_image(
             width=control_image.width,
         ).images[0]
 
-        filename = f"flux1-dev-controlnet-Upscaler05-{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.png"
+        filename = f"flux1-dev-controlnet-Upscaler08-{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.png"
         image.save(filename)
 
         info = f"생성 완료!\n저장 파일: {filename}\n조정된 이미지 크기: {w}x{h}\n최종 크기: {control_image.width}x{control_image.height}\n가이던스 스케일: {guidance_scale}\n추론 스텝: {num_inference_steps}\n컨디셔닝 스케일: {controlnet_conditioning_scale}\n시드: {seed if seed != -1 else '랜덤'}"
@@ -98,7 +103,7 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
             )
             upscale_slider = gr.Radio(
                 choices=[1, 2, 4],
-                value=2,
+                value=4,
                 label="업스케일 배율",
                 info="이미지를 몇 배로 확대할지 선택",
             )
