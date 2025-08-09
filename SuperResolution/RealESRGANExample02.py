@@ -57,7 +57,7 @@ def enhance_image(
     output = Image.fromarray(output)
     # 확장자 처리: 항상 사용자가 선택한 ext 사용
     ext_to_use = ext
-    filename = f"RealESRGAN_x4plus_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.{ext_to_use}"
+    filename = f"RealESRGAN_Example02_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.{ext_to_use}"
     output.save(filename)
 
     elapsed = time.time() - start_time
@@ -75,12 +75,12 @@ with gr.Blocks() as demo:
                 value="default.jpg",  # 기본 이미지 경로 (예시용)
             )
             outscale = gr.Slider(
-                1, 4, value=2, step=0.1,
+                1, 4, value=4, step=0.1,
                 label="업스케일 배수",
                 info="이미지를 몇 배로 확대할지 설정합니다. (1~4)"
             )
             tile = gr.Slider(
-                0, 512, value=0, step=16,
+                0, 512, value=64, step=16,
                 label="Tile 크기 (메모리 부족시 조정)",
                 info="이미지를 분할 처리할 타일 크기입니다. 메모리 부족 시 값을 줄이세요. 0은 전체 처리."
             )
@@ -96,7 +96,7 @@ with gr.Blocks() as demo:
             )
             fp32 = gr.Checkbox(
                 label="FP32 모드 사용",
-                value=False,
+                value=True,
                 info="체크 시 FP32(고정소수점) 연산을 사용합니다. (메모리 여유가 많을 때 권장)"
             )
             ext = gr.Radio(
