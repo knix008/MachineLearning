@@ -10,8 +10,12 @@ pipe = FluxKontextPipeline.from_pretrained(
 )
 
 # --- 2. LoRA(로라) 모델 불러오기 및 적용 ---
-lora_path = "flux-kontext-make-person-real-lora.safetensors"
-pipe.load_lora_weights(lora_path, prefix=None)
+lora_path = "./models/flux-kontext-make-person-real-lora.safetensors"
+pipe.load_lora_weights(
+    "models/flux-kontext-make-person-real-lora.safetensors",
+    adapter_name="PersonReal",
+    prefix=None
+)
 
 pipe.enable_model_cpu_offload()
 pipe.enable_sequential_cpu_offload()
@@ -64,7 +68,7 @@ demo = gr.Interface(
         gr.Textbox(
             lines=2,
             label="Prompt",
-            value="8k UHD, high detail skin texture, detailed eyes, make this person look real",
+            value="8k, high detail, high quality, realistic, masterpiece, best quality, dark blue bikini",
             placeholder="Enter your prompt here...",
         ),
         gr.Slider(
