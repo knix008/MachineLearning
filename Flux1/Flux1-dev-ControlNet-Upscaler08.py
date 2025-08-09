@@ -45,9 +45,12 @@ def upscale_image(
     resized_h = int(h * scale)
     input_image = input_image.resize((resized_w, resized_h), Image.LANCZOS)
     # Upscaler
-    control_image = input_image.resize(
-        (resized_w * upscale_factor, resized_h * upscale_factor), Image.LANCZOS
-    )
+    upscaled_w = resized_w * upscale_factor
+    upscaled_h = resized_h * upscale_factor
+    # 16의 배수로 맞춤
+    new_w = (upscaled_w // 16) * 16 if upscaled_w % 16 == 0 else ((upscaled_w // 16) + 1) * 16
+    new_h = (upscaled_h // 16) * 16 if upscaled_h % 16 == 0 else ((upscaled_h // 16) + 1) * 16
+    control_image = input_image.resize((new_w, new_h), Image.LANCZOS)
 
     # 시드 설정
     if seed != -1:
