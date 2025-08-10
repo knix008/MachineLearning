@@ -21,8 +21,9 @@ pipe.enable_sequential_cpu_offload()  # save some VRAM by offloading the model t
 pipe.enable_attention_slicing()  # save some VRAM by slicing the attention layers.
 print("Model loaded successfully.")
 
+
 def generate_image(
-	prompt, negative_prompt, height, width, guidance_scale, num_inference_steps, seed
+    prompt, negative_prompt, height, width, guidance_scale, num_inference_steps, seed
 ):
     """Generate image using FLUX.1-Krea-dev model"""
     try:
@@ -30,6 +31,7 @@ def generate_image(
         if seed == -1:
             # Generate random seed
             import random
+
             actual_seed = random.randint(0, 2**32 - 1)
             torch.manual_seed(actual_seed)
         else:
@@ -80,17 +82,17 @@ with gr.Blocks(title="FLUX.1-Krea-dev Image Generator", theme=gr.themes.Soft()) 
             prompt_input = gr.Textbox(
                 label="Prompt",
                 placeholder="Enter your image description...",
-                value="a photo of a beautiful skinny woman walking on a beach in a red bikini, 8k, high detail, photo realistic, cinematic lighting, ultra realistic, high quality, sharp focus, depth of field, bokeh, golden hour",
-                lines=3,
-                info="텍스트 프롬프트: 생성하고자 하는 이미지에 대한 상세한 설명을 입력하세요. 구체적이고 명확한 설명일수록 더 나은 결과를 얻을 수 있습니다."
+                value="a beautiful skinny woman walking on a beach in a red bikini, 8k, high detail, photo realistic, cinematic lighting, ultra realistic, high quality, sharp focus, depth of field, bokeh, golden hour, looking at viewer",
+                lines=4,
+                info="텍스트 프롬프트: 생성하고자 하는 이미지에 대한 상세한 설명을 입력하세요. 구체적이고 명확한 설명일수록 더 나은 결과를 얻을 수 있습니다.",
             )
 
             negative_prompt_input = gr.Textbox(
                 label="Negative Prompt (Optional)",
                 placeholder="Enter what you don't want in the image...",
-                value="blurry, low quality, distorted, deformed, bad anatomy, bad hands, extra fingers, missing fingers, watermark, text, signature",
-                lines=2,
-                info="네거티브 프롬프트: 이미지에 포함되지 않았으면 하는 요소들을 입력하세요. 품질 향상에 도움이 됩니다."
+                value="blurring, low quality, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, normal quality, jpeg artifacts, signature, watermark, username",
+                lines=4,
+                info="네거티브 프롬프트: 이미지에 포함되지 않았으면 하는 요소들을 입력하세요. 품질 향상에 도움이 됩니다.",
             )
 
             with gr.Row():
