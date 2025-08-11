@@ -41,14 +41,14 @@ demo = gr.Interface(
             height=500,
         ),
         gr.Textbox(
-            value="8k, high quality, high detail, best quality, photo realistic",
+            value="8k uhd, high detail, high quality",
             label="Prompt",
             info="이미지 변환에 사용할 텍스트 프롬프트를 입력하세요. 예: '고화질, 사실적인 사진'",
         ),
         gr.Slider(
             10,
             50,
-            value=28,
+            value=20,
             step=1,
             label="Num Inference Steps",
             info="이미지 생성 과정의 반복 횟수 (클수록 품질이 높아지지만 느려집니다).",
@@ -56,13 +56,13 @@ demo = gr.Interface(
         gr.Slider(
             1,
             10,
-            value=1,
+            value=1.0,
             step=0.1,
             label="Image Guidance Scale",
             info="원본 이미지의 반영 정도 (높을수록 원본 이미지에 더 충실하게 변환됨).",
         ),
     ],
-    outputs=gr.Image(type="pil", label="Output Image"),
+    outputs=gr.Image(type="pil", label="Output Image", height=1000),
     title="Pix2Pix with Stable Diffusion",
     description="이미지 업로드, 프롬프트 입력, 파라미터 조정 후 변환 결과를 확인하세요.",
 )
