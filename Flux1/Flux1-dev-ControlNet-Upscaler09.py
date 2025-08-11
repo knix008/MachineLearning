@@ -23,7 +23,7 @@ upscale_pipe.enable_sequential_cpu_offload()
 upscale_pipe.enable_attention_slicing(1)
 print("모델을 CPU로 로딩 완료!")
 
-MAX_IMAGE_SIZE = 1024
+MAX_IMAGE_SIZE = 512
 
 def upscale_image(
     input_image,

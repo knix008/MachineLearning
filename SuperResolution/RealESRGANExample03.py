@@ -79,7 +79,7 @@ with gr.Blocks() as demo:
                 1,
                 4,
                 value=4,
-                step=0.1,
+                step=1,
                 label="업스케일 배수",
                 info="이미지를 몇 배로 확대할지 설정합니다. (1~4)",
             )
