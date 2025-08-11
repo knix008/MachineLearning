@@ -120,7 +120,7 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
             )
             steps_slider = gr.Slider(
                 minimum=10,
-                maximum=50,
+                maximum=100,
                 value=50,
                 step=1,
                 label="추론 스텝 수",
