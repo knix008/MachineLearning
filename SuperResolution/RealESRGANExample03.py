@@ -73,7 +73,7 @@ with gr.Blocks() as demo:
                 label="입력 이미지",
                 type="pil",
                 height=500,
-                value="image.webp",  # 기본 이미지 경로 (예시용)
+                value="default.jpg",  # 기본 이미지 경로 (예시용)
             )
             outscale = gr.Slider(
                 1,
