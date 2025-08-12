@@ -19,9 +19,16 @@ def loading_model():
     print("모델 로딩 완료!")
     return pipe
 
-
 # 로딩된 모델을 전역 변수로 저장
 pipe = loading_model()
+
+
+def resize_image(input_image):
+    w, h = input_image.size
+    w_new = (w // 16) * 16
+    h_new = (h // 16) * 16
+    resized_image = input_image.resize((w_new, h_new), Image.Resampling.LANCZOS)
+    return resized_image
 
 
 def generate_image(
@@ -38,16 +45,8 @@ def generate_image(
     if input_image is None:
         return None, "이미지-투-이미지만 지원합니다. 입력 이미지를 업로드하세요."
 
-    print("The input image size : ", input_image.width, "x", input_image.height)
-
+    input_image = resize_image(input_image)  # 이미지 크기 조정
     info = f"\n입력 이미지 크기: {input_image.size[0]}x{input_image.size[1]}"
-    # 입력 이미지의 가로, 세로가 16으로 나누어지도록 자동 리사이즈
-    w, h = input_image.size
-    new_w = (w // 16) * 16 if w % 16 == 0 else ((w // 16) + 1) * 16
-    new_h = (h // 16) * 16 if h % 16 == 0 else ((h // 16) + 1) * 16
-    if (w != new_w) or (h != new_h):
-        input_image = input_image.resize((new_w, new_h), Image.LANCZOS)
-        info += f"\n리사이즈됨: {new_w}x{new_h} (16의 배수)"
     # Generator 설정
     if seed == -1:
         seed = torch.randint(0, 2**32 - 1, (1,)).item()
@@ -99,7 +98,7 @@ with gr.Blocks(title="FLUX.1 Kontext Dev 이미지 생성기") as demo:
             prompt_input = gr.Textbox(
                 label="프롬프트",
                 placeholder="생성하고 싶은 이미지를 설명해주세요...",
-                value="8k, high detail, high quality, realistic, masterpiece, best quality, dark blue bikini",
+                value="8k, ultra high resolution, high detail, high quality, realistic, masterpiece, best quality, dark blue bikini",
                 lines=4,
             )
 
@@ -122,7 +121,7 @@ with gr.Blocks(title="FLUX.1 Kontext Dev 이미지 생성기") as demo:
             steps_slider = gr.Slider(
                 minimum=10,
                 maximum=50,  # 더 높은 최대값
-                value=35,  # 더 높은 기본값
+                value=50,  # 더 높은 기본값
                 step=1,
                 label="추론 스텝 수",
                 info="이미지 생성 단계 수. 높을수록 품질이 향상되지만 생성 시간이 늘어납니다. (최고 품질: 50-80)",
@@ -148,7 +147,7 @@ with gr.Blocks(title="FLUX.1 Kontext Dev 이미지 생성기") as demo:
 
         with gr.Column():
             # 출력 영역
-            output_image = gr.Image(label="생성된 이미지", type="pil", height=500)
+            output_image = gr.Image(label="생성된 이미지", type="pil")
             info_output = gr.Textbox(label="생성 정보", lines=4, interactive=False)
 
     # 이벤트 연결
