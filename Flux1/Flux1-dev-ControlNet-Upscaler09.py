@@ -23,7 +23,7 @@ upscale_pipe.enable_sequential_cpu_offload()
 upscale_pipe.enable_attention_slicing(1)
 print("모델을 CPU로 로딩 완료!")
 
-MAX_IMAGE_SIZE = 512
+MAX_IMAGE_SIZE = 1024 # 512 is also good.
 
 def upscale_image(
     input_image,
@@ -95,7 +95,7 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
             prompt_input = gr.Textbox(
                 label="프롬프트 (선택)",
                 placeholder="이미지에 적용할 스타일이나 설명을 입력하세요...",
-                value="8k, high detail, high quality, realistic, masterpiece, best quality",
+                value="8k, high detail, high quality, realistic, masterpiece, ultra high resolution, best quality",
                 lines=2,
             )
             negative_prompt_input = gr.Textbox(
