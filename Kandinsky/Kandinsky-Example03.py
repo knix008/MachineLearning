@@ -2,6 +2,9 @@ import torch
 from diffusers import AutoPipelineForImage2Image
 import gradio as gr
 import datetime
+import warnings
+
+warnings.filterwarnings("ignore", category=FutureWarning)
 
 # Load prior pipeline for embedding generation
 
@@ -64,7 +67,7 @@ with gr.Blocks() as demo:
             )
             negative_prompt = gr.Textbox(
                 label="Negative Prompt",
-                value="low resolution, bad anatomy, bad hands, text, error, cropped, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, out of frame, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, username, watermark, signature",
+                value="low resolution, bad anatomy, bad hands, text, error, cropped, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, out of frame, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad proportions, extra limbs, cloned face",
             )
             gr.Markdown("## 생성 설정")
             num_inference_steps = gr.Slider(
@@ -77,7 +80,7 @@ with gr.Blocks() as demo:
             generate_btn = gr.Button("Generate")
         with gr.Column():
             gr.Markdown("## 결과 이미지")
-            output_image = gr.Image(label="Generated Image", height=500)
+            output_image = gr.Image(label="Generated Image")
 
     generate_btn.click(
         fn=generate_image,
