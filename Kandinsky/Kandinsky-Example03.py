@@ -54,13 +54,13 @@ with gr.Blocks() as demo:
                 label="입력 이미지 (Upload or Clipboard)",
                 type="pil",
                 sources=["upload", "clipboard"],
-                value="default,jpg"
+                value="default.jpg",
                 height=500,
             )
             gr.Markdown("## 프롬프트 설정")
             prompt = gr.Textbox(
                 label="Prompt",
-                value="8k, high detail, high quality, photo realistic, masterpiece, best quality, dark blue bikini",
+                value="8k, high resolution, high detail, high quality, photo realistic, masterpiece, best quality, wearing dark blue bikini",
             )
             negative_prompt = gr.Textbox(
                 label="Negative Prompt",

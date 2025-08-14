@@ -23,8 +23,11 @@ upscale_pipe.enable_sequential_cpu_offload()
 upscale_pipe.enable_attention_slicing(1)
 print("모델을 CPU로 로딩 완료!")
 
-MAX_IMAGE_SIZE = 1024
-
+def resize_image(input_image):
+    w, h = input_image.size
+    w_new = (w // 16) * 16
+    h_new = (h // 16) * 16
+    return input_image.resize((w_new, h_new), Image.LANCZOS)
 
 def upscale_image(
     input_image,
@@ -39,28 +42,7 @@ def upscale_image(
     if input_image is None:
         return None, "이미지를 업로드하세요."
 
-    w, h = input_image.size
-    # MAX_IMAGE_SIZE 이하로, 가로세로 비율 유지하며 리사이즈
-    scale = min(MAX_IMAGE_SIZE / w, MAX_IMAGE_SIZE / h, 1.0)
-    resized_w = int(w * scale)
-    resized_h = int(h * scale)
-    input_image = input_image.resize((resized_w, resized_h), Image.LANCZOS)
-    #input_image.save("input_image_resized.png")
-    # Upscaler
-    upscaled_w = resized_w * upscale_factor
-    upscaled_h = resized_h * upscale_factor
-    # 16의 배수로 맞춤
-    new_w = (
-        (upscaled_w // 16) * 16
-        if upscaled_w % 16 == 0
-        else ((upscaled_w // 16) + 1) * 16
-    )
-    new_h = (
-        (upscaled_h // 16) * 16
-        if upscaled_h % 16 == 0
-        else ((upscaled_h // 16) + 1) * 16
-    )
-    control_image = input_image.resize((new_w, new_h), Image.LANCZOS)
+    control_image = resize_image(input_image)
 
     # 시드 설정
     if seed != -1:
