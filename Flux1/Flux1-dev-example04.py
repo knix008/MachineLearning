@@ -19,14 +19,14 @@ print("모델 로딩 완료!")
 
 
 def generate_image(
-    prompt,              # 생성할 이미지에 대한 프롬프트(설명)
-    negative_prompt,     # 이미지에서 제외하고 싶은 요소(네거티브 프롬프트)
-    width,               # 생성 이미지의 가로 픽셀 크기
-    height,              # 생성 이미지의 세로 픽셀 크기
-    guidance_scale,      # 프롬프트를 얼마나 강하게 반영할지(높을수록 프롬프트에 더 충실)
-    num_inference_steps, # 이미지 생성 과정의 스텝 수(높을수록 품질↑, 속도↓)
-    max_sequence_length, # 프롬프트 최대 시퀀스 길이(텍스트 길이)
-    seed,                # 난수 시드(같은 시드로 같은 결과, -1은 랜덤)
+    prompt,  # 생성할 이미지에 대한 프롬프트(설명)
+    negative_prompt,  # 이미지에서 제외하고 싶은 요소(네거티브 프롬프트)
+    width,  # 생성 이미지의 가로 픽셀 크기
+    height,  # 생성 이미지의 세로 픽셀 크기
+    guidance_scale,  # 프롬프트를 얼마나 강하게 반영할지(높을수록 프롬프트에 더 충실)
+    num_inference_steps,  # 이미지 생성 과정의 스텝 수(높을수록 품질↑, 속도↓)
+    max_sequence_length,  # 프롬프트 최대 시퀀스 길이(텍스트 길이)
+    seed,  # 난수 시드(같은 시드로 같은 결과, -1은 랜덤)
 ):
     start_time = time.time()
 
@@ -85,27 +85,42 @@ with gr.Blocks(title="FLUX.1-dev 이미지 생성기") as demo:
             )
             with gr.Row():
                 width_slider = gr.Slider(
-                    minimum=256, maximum=1024, value=1024, step=64, 
-                    label="너비 (생성 이미지의 가로 픽셀 크기)"
+                    minimum=256,
+                    maximum=1024,
+                    value=1024,
+                    step=64,
+                    label="너비 (생성 이미지의 가로 픽셀 크기)",
                 )
                 height_slider = gr.Slider(
-                    minimum=256, maximum=1024, value=1024, step=64, 
-                    label="높이 (생성 이미지의 세로 픽셀 크기)"
+                    minimum=256,
+                    maximum=1024,
+                    value=1024,
+                    step=64,
+                    label="높이 (생성 이미지의 세로 픽셀 크기)",
                 )
 
             guidance_slider = gr.Slider(
-                minimum=1.0, maximum=10.0, value=3.5, step=0.1, 
-                label="가이던스 스케일 (프롬프트 반영 강도, 높을수록 프롬프트에 더 충실)"
+                minimum=1.0,
+                maximum=10.0,
+                value=3.5,
+                step=0.1,
+                label="가이던스 스케일 (프롬프트 반영 강도, 높을수록 프롬프트에 더 충실)",
             )
 
             steps_slider = gr.Slider(
-                minimum=10, maximum=50, value=28, step=1, 
-                label="추론 스텝 수 (이미지 생성 단계 수, 높을수록 품질↑, 속도↓)"
+                minimum=10,
+                maximum=50,
+                value=28,
+                step=1,
+                label="추론 스텝 수 (이미지 생성 단계 수, 높을수록 품질↑, 속도↓)",
             )
 
             sequence_slider = gr.Slider(
-                minimum=128, maximum=512, value=256, step=32, 
-                label="최대 시퀀스 길이 (프롬프트 최대 텍스트 길이)"
+                minimum=128,
+                maximum=512,
+                value=256,
+                step=32,
+                label="최대 시퀀스 길이 (프롬프트 최대 텍스트 길이)",
             )
             seed_input = gr.Number(
                 label="시드 (-1은 랜덤, 같은 시드로 같은 결과)", value=-1, precision=0
