@@ -23,25 +23,12 @@ def loading_model():
 # 로딩된 모델을 전역 변수로 저장
 pipe = loading_model()
 
-MAX_IMAGE_SIZE = 1024
-
 
 def resize_image(input_image):
     w, h = input_image.size
-    # MAX_IMAGE_SIZE 이하로, 가로세로 비율 유지하며 리사이즈
-    scale = min(MAX_IMAGE_SIZE / w, MAX_IMAGE_SIZE / h, 1.0)
-    resized_w = int(w * scale)
-    resized_h = int(h * scale)
-    input_image = input_image.resize((resized_w, resized_h), Image.LANCZOS)
-    # 16의 배수로 맞춤
-    new_w = (
-        (resized_w // 16) * 16 if resized_w % 16 == 0 else ((resized_w // 16) + 1) * 16
-    )
-    new_h = (
-        (resized_h // 16) * 16 if resized_h % 16 == 0 else ((resized_h // 16) + 1) * 16
-    )
-    resized_image = input_image.resize((new_w, new_h), Image.LANCZOS)
-    resized_image.save(f"control_image.png")
+    w_new = (w // 16) * 16
+    h_new = (h // 16) * 16
+    resized_image = input_image.resize((w_new, h_new), Image.Resampling.LANCZOS)
     return resized_image
 
 
@@ -112,7 +99,7 @@ with gr.Blocks(title="FLUX.1 Kontext Dev 이미지 생성기") as demo:
             prompt_input = gr.Textbox(
                 label="프롬프트",
                 placeholder="생성하고 싶은 이미지를 설명해주세요...",
-                value="8k, high resolution, high detail, high quality, realistic, masterpiece, best quality, dark blue bikini",
+                value="8k, high detail, high quality, realistic, masterpiece, best quality, dark blue bikini",
                 lines=4,
             )
 
@@ -135,7 +122,7 @@ with gr.Blocks(title="FLUX.1 Kontext Dev 이미지 생성기") as demo:
             steps_slider = gr.Slider(
                 minimum=10,
                 maximum=50,  # 더 높은 최대값
-                value=30,  # 더 높은 기본값
+                value=35,  # 더 높은 기본값
                 step=1,
                 label="추론 스텝 수",
                 info="이미지 생성 단계 수. 높을수록 품질이 향상되지만 생성 시간이 늘어납니다. (최고 품질: 50-80)",
