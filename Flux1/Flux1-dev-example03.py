@@ -2,6 +2,7 @@ import torch
 import gradio as gr
 from diffusers import FluxPipeline
 import datetime
+import time
 
 # Load model with memory optimizations
 print("모델을 로딩 중입니다...")
