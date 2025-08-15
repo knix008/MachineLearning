@@ -67,7 +67,7 @@ with gr.Blocks(title="FLUX.1-dev 이미지 생성기") as demo:
             prompt_input = gr.Textbox(
                 label="프롬프트",
                 placeholder="생성하고 싶은 이미지를 설명해주세요...",
-                value="a beautiful healthy woman wearing a high legged blue bikini, walking on the sunny beach, photorealistic, 8k resolution, ultra detailed, vibrant colors, cinematic lighting, realistic shadows, high quality, masterpiece, best quality, solo, full body, looking at viewer, long hair, blue eyes, smiling, good fingers, good hands, good face, perfect anatomy",
+                value="a beautiful healthy skinny woman wearing a high legged dark blue bikini, walking on the sunny beach, photo realistic, 8k, ultra detailed, vibrant colors, cinematic lighting, realistic shadows, high quality, masterpiece, best quality, solo, full body, looking at viewer, long hair, blue eyes, smiling, good fingers, good hands, good face, perfect anatomy",
                 lines=4
             )
             
