@@ -23,8 +23,9 @@ upscale_pipe.enable_sequential_cpu_offload()
 upscale_pipe.enable_attention_slicing(1)
 print("모델을 CPU로 로딩 완료!")
 
-def resize_image(input_image):
+def resize_image(input_image, upscale_factor):
     w, h = input_image.size
+    w, h = w * upscale_factor, h * upscale_factor
     w_new = (w // 16) * 16
     h_new = (h // 16) * 16
     return input_image.resize((w_new, h_new), Image.LANCZOS)
@@ -42,7 +43,7 @@ def upscale_image(
     if input_image is None:
         return None, "이미지를 업로드하세요."
 
-    control_image = resize_image(input_image)
+    control_image = resize_image(input_image, upscale_factor)
 
     # 시드 설정
     if seed != -1:
