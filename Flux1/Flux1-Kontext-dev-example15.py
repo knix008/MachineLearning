@@ -67,7 +67,7 @@ def generate_image(
         ).images[0]
 
         # 고품질 저장 설정
-        filename = f"flux1-kontext-dev-example15_{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}.png"
+        filename = f"Flux1-Kontext-dev-example15_{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}.png"
         image.save(
             filename, format="PNG", compress_level=1, optimize=False
         )  # 최고 품질로 저장
@@ -99,7 +99,7 @@ with gr.Blocks(title="FLUX.1 Kontext Dev 이미지 생성기") as demo:
             prompt_input = gr.Textbox(
                 label="프롬프트",
                 placeholder="생성하고 싶은 이미지를 설명해주세요...",
-                value="8k, high detail, high quality, realistic, masterpiece, best quality, dark blue bikini",
+                value="8k, high detail, high quality, best quality, masterpiece, dark blue bikini",
                 lines=4,
             )
 
@@ -139,7 +139,7 @@ with gr.Blocks(title="FLUX.1 Kontext Dev 이미지 생성기") as demo:
 
             seed_input = gr.Number(
                 label="시드 (-1은 랜덤)",
-                value=100,
+                value=42,
                 precision=0,
                 info="생성 결과의 일관성을 위한 난수 시드. 같은 시드로 같은 설정이면 비슷한 결과가 나옵니다. -1은 무작위 시드 사용",
             )
