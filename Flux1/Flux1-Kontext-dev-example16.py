@@ -4,6 +4,7 @@ import time
 from diffusers import FluxKontextPipeline
 from PIL import Image
 import datetime
+import math
 
 
 def loading_model():
@@ -23,24 +24,31 @@ def loading_model():
 # 로딩된 모델을 전역 변수로 저장
 pipe = loading_model()
 
-MAX_IMAGE_SIZE = 1024
-def resize_image(input_image):
-    w, h = input_image.size
-    max_side = max(w, h)
-    if max_side > MAX_IMAGE_SIZE:
-        scale = MAX_IMAGE_SIZE / max_side
-        w_new = int(w * scale)
-        h_new = int(h * scale)
+def resize_to_multiple_of_16(img, max_size=None):
+    w, h = img.size
+    aspect = w / h
+
+    # 1. 먼저 원하는 최대 크기로 비율 유지하며 리사이즈 (옵션)
+    if max_size:
+        if w > h:
+            new_w = min(w, max_size)
+            new_h = int(new_w / aspect)
+        else:
+            new_h = min(h, max_size)
+            new_w = int(new_h * aspect)
     else:
-        w_new, h_new = w, h
-    # Make both dimensions multiples of 16
-    w_new = (w_new // 16) * 16
-    h_new = (h_new // 16) * 16
-    # Avoid zero size
-    w_new = max(w_new, 16)
-    h_new = max(h_new, 16)
-    resized_image = input_image.resize((w_new, h_new), Image.Resampling.LANCZOS)
-    return resized_image
+        new_w, new_h = w, h
+
+    # 2. 16의 배수로 내림
+    new_w = (new_w // 16) * 16
+    new_h = (new_h // 16) * 16
+
+    # 3. 최소 크기 보장
+    new_w = max(16, new_w)
+    new_h = max(16, new_h)
+
+    img_resized = img.resize((new_w, new_h), Image.LANCZOS)
+    return img_resized
 
 
 def generate_image(
@@ -57,7 +65,7 @@ def generate_image(
     if input_image is None:
         return None, "이미지-투-이미지만 지원합니다. 입력 이미지를 업로드하세요."
 
-    input_image = resize_image(input_image)  # 이미지 크기 조정
+    input_image = resize_to_multiple_of_16(input_image)  # 이미지 크기 조정
     print(f"The resized image size : {input_image.size[0]}x{input_image.size[1]}")
     info = f"\n입력 이미지 크기: {input_image.size[0]}x{input_image.size[1]}"
     # Generator 설정
