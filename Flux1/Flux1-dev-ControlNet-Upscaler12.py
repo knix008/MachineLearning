@@ -119,7 +119,7 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
             )
             upscale_slider = gr.Radio(
                 choices=[1, 2, 4],
-                value=2,
+                value=4,
                 label="업스케일 배율",
                 info="이미지를 몇 배로 확대할지 선택",
             )
