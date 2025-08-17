@@ -58,6 +58,7 @@ def generate_image(
         return None, "이미지-투-이미지만 지원합니다. 입력 이미지를 업로드하세요."
 
     input_image = resize_image(input_image)  # 이미지 크기 조정
+    print(f"The resized image size : {input_image.size[0]}x{input_image.size[1]}")
     info = f"\n입력 이미지 크기: {input_image.size[0]}x{input_image.size[1]}"
     # Generator 설정
     if seed == -1:
@@ -124,7 +125,7 @@ with gr.Blocks(title="FLUX.1 Kontext Dev 이미지 생성기") as demo:
             guidance_slider = gr.Slider(
                 minimum=1.0,
                 maximum=10.0,  # 범위 확장
-                value=3.5,  # 더 높은 기본값
+                value=6.5,  # 더 높은 기본값
                 step=0.1,
                 label="가이던스 스케일",
                 info="프롬프트 준수 정도. 높을수록 프롬프트를 더 정확히 따르지만 창의성이 줄어들 수 있습니다. (권장: 7.0-10.0)",
@@ -133,7 +134,7 @@ with gr.Blocks(title="FLUX.1 Kontext Dev 이미지 생성기") as demo:
             steps_slider = gr.Slider(
                 minimum=10,
                 maximum=50,  # 더 높은 최대값
-                value=35,  # 더 높은 기본값
+                value=50,  # 더 높은 기본값
                 step=1,
                 label="추론 스텝 수",
                 info="이미지 생성 단계 수. 높을수록 품질이 향상되지만 생성 시간이 늘어납니다. (최고 품질: 50-80)",
@@ -150,7 +151,7 @@ with gr.Blocks(title="FLUX.1 Kontext Dev 이미지 생성기") as demo:
 
             seed_input = gr.Number(
                 label="시드 (-1은 랜덤)",
-                value=42,
+                value=100,
                 precision=0,
                 info="생성 결과의 일관성을 위한 난수 시드. 같은 시드로 같은 설정이면 비슷한 결과가 나옵니다. -1은 무작위 시드 사용",
             )
