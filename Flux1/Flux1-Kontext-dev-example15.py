@@ -28,7 +28,7 @@ def resize_image(input_image):
     w, h = input_image.size
     w_new = (w // 16) * 16
     h_new = (h // 16) * 16
-    resized_image = input_image.resize((w_new, h_new), Image.Resampling.LANCZOS)
+    resized_image = input_image.resize((w_new, h_new), Image.LANCZOS)
     return resized_image
 
 
@@ -122,7 +122,7 @@ with gr.Blocks(title="FLUX.1 Kontext Dev 이미지 생성기") as demo:
             steps_slider = gr.Slider(
                 minimum=10,
                 maximum=50,  # 더 높은 최대값
-                value=35,  # 더 높은 기본값
+                value=28,  # 더 높은 기본값
                 step=1,
                 label="추론 스텝 수",
                 info="이미지 생성 단계 수. 높을수록 품질이 향상되지만 생성 시간이 늘어납니다. (최고 품질: 50-80)",
@@ -139,6 +139,7 @@ with gr.Blocks(title="FLUX.1 Kontext Dev 이미지 생성기") as demo:
 
             seed_input = gr.Number(
                 label="시드 (-1은 랜덤)",
+                value=42,
                 value=42,
                 precision=0,
                 info="생성 결과의 일관성을 위한 난수 시드. 같은 시드로 같은 설정이면 비슷한 결과가 나옵니다. -1은 무작위 시드 사용",
