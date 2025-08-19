@@ -35,12 +35,12 @@ def get_model():
     dni_weight = None
     # Set device for Apple Silicon
     device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
-    return model, model_path, 4, dni_weight, device
+    return model, model_path, dni_weight, device
 
 
 def enhance_image(
     input_img,   # 업스케일할 입력 이미지 (PIL.Image)
-    outscale,    # 업스케일 배수 (1~4)
+    upscale,    # 업스케일 배수 (1~4)
     tile,        # 타일 크기 (메모리 부족시 분할 처리)
     tile_pad,    # 타일 경계 패딩
     pre_pad,     # 전체 이미지 패딩
@@ -51,7 +51,7 @@ def enhance_image(
     입력 이미지를 업스케일하고, 결과 이미지를 반환합니다.
     Args:
         input_img (PIL.Image): 업스케일할 이미지
-        outscale (int): 업스케일 배수
+        upscale (int): 업스케일 배수
         tile (int): 타일 크기 (0은 전체 처리)
         tile_pad (int): 타일 경계 패딩
         pre_pad (int): 전체 이미지 패딩
@@ -62,10 +62,10 @@ def enhance_image(
     """
     start_time = time.time()
     img = cv2.cvtColor(np.array(input_img), cv2.COLOR_RGB2BGR)
-    model, model_path, netscale, dni_weight, device = get_model()
+    model, model_path, dni_weight, device = get_model()
     model = model.to(device)
     upsampler = RealESRGANer(
-        scale=netscale,
+        scale=4,
         model_path=model_path,
         dni_weight=dni_weight,
         model=model,
@@ -77,7 +77,7 @@ def enhance_image(
         device=device, # Pass device explicitly
     )
     try:
-        output, _ = upsampler.enhance(img, outscale=outscale)
+        output, _ = upsampler.enhance(img, outscale=upscale)
     except Exception as e:
         # 메모리 해제
         del img, model, upsampler
@@ -114,7 +114,7 @@ with gr.Blocks() as demo:
                 height=500,
                 value="default.png",
             )
-            outscale = gr.Slider(
+            upscale = gr.Slider(
                 minimum=1,
                 maximum=4,
                 value=4,
@@ -162,7 +162,7 @@ with gr.Blocks() as demo:
 
     btn.click(
         enhance_image,
-        inputs=[input_img, outscale, tile, tile_pad, pre_pad, fp32, ext],
+        inputs=[input_img, upscale, tile, tile_pad, pre_pad, fp32, ext],
         outputs=[output_img, status],
     )
 
