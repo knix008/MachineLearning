@@ -91,7 +91,7 @@ def enhance_image(
     output = cv2.cvtColor(output, cv2.COLOR_BGR2RGB)
     output = Image.fromarray(output)
     ext_to_use = ext
-    filename = f"RealESRGAN_Example02_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.{ext_to_use}"
+    filename = f"RealESRGAN_Example06_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.{ext_to_use}"
     output.save(filename)
     elapsed = time.time() - start_time
     print(f"The Elapsed Time : {elapsed:.2f} seconds")
