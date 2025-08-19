@@ -123,7 +123,7 @@ with gr.Blocks() as demo:
                 info="이미지를 몇 배로 확대할지 설정합니다. (1~4)",
             )
             tile = gr.Slider(
-                minimum=0,
+                minimum=4,
                 maximum=512,
                 value=8,  # 기본값을 더 작게 : 16에서 변경
                 step=4,
