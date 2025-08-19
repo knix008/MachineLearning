@@ -1,16 +1,19 @@
 import os
 from PIL import Image
 import torch
-
 from diffusers import QwenImageEditPipeline
+import datetime
 
 pipeline = QwenImageEditPipeline.from_pretrained("Qwen/Qwen-Image-Edit")
 print("pipeline loaded")
 pipeline.to(torch.bfloat16)
-pipeline.to("cuda")
+pipeline.enable_model_cpu_offload()
+pipeline.enable_sequential_cpu_offload()
+pipeline.enable_attention_slicing(1)
+
 pipeline.set_progress_bar_config(disable=None)
-image = Image.open("./input.png").convert("RGB")
-prompt = "Change the rabbit's color to purple, with a flash light background."
+image = Image.open("default.jpg").convert("RGB")
+prompt = "8k, high quality, high detail, dark blue bikini, masterpiece, realistic, good anatomy, good hands."
 inputs = {
     "image": image,
     "prompt": prompt,
@@ -23,5 +26,5 @@ inputs = {
 with torch.inference_mode():
     output = pipeline(**inputs)
     output_image = output.images[0]
-    output_image.save("output_image_edit.png")
-    print("image saved at", os.path.abspath("output_image_edit.png"))
+    output_image.save(f"Qwen-Example02_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.png")
+    print("image saved at", os.path.abspath(f"Qwen-Example02_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.png"))
