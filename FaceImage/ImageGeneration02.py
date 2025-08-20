@@ -17,10 +17,16 @@ def generate_images(network_pkl, output_dir, num_images, truncation_psi, noise_m
     # Automatically select device: CUDA > MPS > CPU
     if torch.cuda.is_available():
         device = torch.device("cuda")
+        z_dtype = np.float64
+        label_dtype = torch.float64
     elif torch.backends.mps.is_available():
         device = torch.device("mps")
+        z_dtype = np.float32
+        label_dtype = torch.float32
     else:
         device = torch.device("cpu")
+        z_dtype = np.float32
+        label_dtype = torch.float32
     os.makedirs(output_dir, exist_ok=True)
     # Load pre-trained network
     with open(network_pkl, "rb") as f:
@@ -29,8 +35,8 @@ def generate_images(network_pkl, output_dir, num_images, truncation_psi, noise_m
     image_paths = []
     start = time.time()
     for i in range(num_images):
-        z = torch.from_numpy(np.random.randn(1, G.z_dim)).to(device)
-        label = torch.zeros([1, G.c_dim], device=device)
+        z = torch.from_numpy(np.random.randn(1, G.z_dim).astype(z_dtype)).to(device)
+        label = torch.zeros([1, G.c_dim], device=device, dtype=label_dtype)
         img = G(z, label, truncation_psi=truncation_psi, noise_mode=noise_mode)
         img = (img * 127.5 + 128).clamp(0, 255).to(torch.uint8)
         img = img[0].permute(1, 2, 0).cpu().numpy()
