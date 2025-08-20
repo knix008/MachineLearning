@@ -5,10 +5,12 @@ from diffusers import QwenImageEditPipeline
 import datetime
 
 pipeline = QwenImageEditPipeline.from_pretrained("Qwen/Qwen-Image-Edit")
-print("pipeline loaded")
 pipeline.to(torch.bfloat16)
-pipeline.to("cuda")
+pipeline.enable_model_cpu_offload()
+pipeline.enable_sequential_cpu_offload()
+pipeline.enable_attention_slicing(1)
 pipeline.set_progress_bar_config(disable=None)
+print("pipeline loaded")
 
 image = Image.open("default.jpg").convert("RGB")
 
