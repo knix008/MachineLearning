@@ -8,6 +8,10 @@ import legacy
 import gradio as gr
 import time
 
+# $ git clone https://github.com/NVlabs/stylegan2-ada-pytorch.git
+# $ curl -L https://nvlabs-fi-cdn.nvidia.com/stylegan2-ada-pytorch/pretrained/ffhq.pkl -o stylegan2-ffhq-config-f.pkl
+
+
 sys.path.append("./stylegan2-ada-pytorch")  # Update this path
 
 
