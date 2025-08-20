@@ -13,10 +13,11 @@ sys.path.append("./stylegan2-ada-pytorch")  # Update this path
 import dnnlib
 import legacy
 
-def generate_images(network_pkl, output_dir, num_images, truncation_psi, noise_mode, device_type):
-    if device_type == "cuda" and torch.cuda.is_available():
+def generate_images(network_pkl, output_dir, num_images, truncation_psi, noise_mode):
+    # Automatically select device: CUDA > MPS > CPU
+    if torch.cuda.is_available():
         device = torch.device("cuda")
-    elif device_type == "mps" and torch.backends.mps.is_available():
+    elif torch.backends.mps.is_available():
         device = torch.device("mps")
     else:
         device = torch.device("cpu")
@@ -34,7 +35,7 @@ def generate_images(network_pkl, output_dir, num_images, truncation_psi, noise_m
         img = (img * 127.5 + 128).clamp(0, 255).to(torch.uint8)
         img = img[0].permute(1, 2, 0).cpu().numpy()
         img_path = os.path.join(output_dir, f"face_{i:05d}.png")
-        Image.fromarray(img).save(img_path)  # "RGB" 모드 인자 제거
+        Image.fromarray(img).save(img_path)
         image_paths.append(img_path)
         if (i + 1) % 100 == 0:
             print(f"Generated {i+1} images")
