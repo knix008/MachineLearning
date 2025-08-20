@@ -1,22 +1,25 @@
 import os
 import sys
+import torch
 import numpy as np
 from PIL import Image
-import torch
-import dnnlib # stylegan2-ada-pytorch directory
-import legacy
 import gradio as gr
 import time
 
 # $ git clone https://github.com/NVlabs/stylegan2-ada-pytorch.git
 # $ curl -L https://nvlabs-fi-cdn.nvidia.com/stylegan2-ada-pytorch/pretrained/ffhq.pkl -o stylegan2-ffhq-config-f.pkl
 
-
 sys.path.append("./stylegan2-ada-pytorch")  # Update this path
+import dnnlib
+import legacy
 
-
-def generate_images(network_pkl, output_dir, num_images, truncation_psi, noise_mode):
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+def generate_images(network_pkl, output_dir, num_images, truncation_psi, noise_mode, device_type):
+    if device_type == "cuda" and torch.cuda.is_available():
+        device = torch.device("cuda")
+    elif device_type == "mps" and torch.backends.mps.is_available():
+        device = torch.device("mps")
+    else:
+        device = torch.device("cpu")
     os.makedirs(output_dir, exist_ok=True)
     # Load pre-trained network
     with open(network_pkl, "rb") as f:
@@ -31,7 +34,7 @@ def generate_images(network_pkl, output_dir, num_images, truncation_psi, noise_m
         img = (img * 127.5 + 128).clamp(0, 255).to(torch.uint8)
         img = img[0].permute(1, 2, 0).cpu().numpy()
         img_path = os.path.join(output_dir, f"face_{i:05d}.png")
-        Image.fromarray(img, "RGB").save(img_path)
+        Image.fromarray(img).save(img_path)  # "RGB" 모드 인자 제거
         image_paths.append(img_path)
         if (i + 1) % 100 == 0:
             print(f"Generated {i+1} images")
