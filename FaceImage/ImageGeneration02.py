@@ -5,6 +5,10 @@ import numpy as np
 from PIL import Image
 import gradio as gr
 import time
+import warnings  # 추가
+
+# 모든 UserWarning 무시
+warnings.filterwarnings("ignore", category=UserWarning)
 
 # $ git clone https://github.com/NVlabs/stylegan2-ada-pytorch.git
 # $ curl -L https://nvlabs-fi-cdn.nvidia.com/stylegan2-ada-pytorch/pretrained/ffhq.pkl -o stylegan2-ffhq-config-f.pkl
