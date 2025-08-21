@@ -4,9 +4,6 @@ from diffusers import FluxPipeline
 import datetime
 import time
 
-from huggingface_hub import login
-access_token = "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"
-login(access_token)
 # Load model with memory optimizations
 print("모델을 로딩 중입니다...")
 pipe = FluxPipeline.from_pretrained(
