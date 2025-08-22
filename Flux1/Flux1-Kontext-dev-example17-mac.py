@@ -86,7 +86,7 @@ def generate_image(
         ).images[0]
 
         # 고품질 저장 설정
-        filename = f"Flux1-Kontext-dev-example16_{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}.png"
+        filename = f"Flux1-Kontext-dev-example17_{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}.png"
         image.save(
             filename, format="PNG", compress_level=1, optimize=False
         )  # 최고 품질로 저장
@@ -118,7 +118,7 @@ with gr.Blocks(title="FLUX.1 Kontext Dev 이미지 생성기") as demo:
             prompt_input = gr.Textbox(
                 label="프롬프트",
                 placeholder="생성하고 싶은 이미지를 설명해주세요...",
-                value="8k, high detail, high quality, best quality, realistic, masterpiece, yellow bikini",
+                value="8k, high detail, high quality, best quality, realistic, masterpiece, dark blue bikini",
                 lines=4,
             )
 
