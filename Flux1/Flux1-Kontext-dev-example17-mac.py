@@ -158,7 +158,7 @@ with gr.Blocks(title="FLUX.1 Kontext Dev 이미지 생성기") as demo:
 
             seed_input = gr.Number(
                 label="시드 (-1은 랜덤)",
-                value=100,
+                value=42,
                 precision=0,
                 info="생성 결과의 일관성을 위한 난수 시드. 같은 시드로 같은 설정이면 비슷한 결과가 나옵니다. -1은 무작위 시드 사용",
             )
