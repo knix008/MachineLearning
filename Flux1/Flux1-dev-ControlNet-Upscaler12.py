@@ -83,7 +83,7 @@ def upscale_image(
             width=control_image.width,
         ).images[0]
 
-        filename = f"flux1-dev-controlnet-Upscaler08-{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.png"
+        filename = f"flux1-dev-controlnet-Upscaler12-{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.png"
         image.save(filename)
 
         info = f"생성 완료!\n저장 파일: {filename}\n최종 크기: {control_image.width}x{control_image.height}\n가이던스 스케일: {guidance_scale}\n추론 스텝: {num_inference_steps}\n컨디셔닝 스케일: {controlnet_conditioning_scale}\n시드: {seed if seed != -1 else '랜덤'}"
@@ -119,7 +119,7 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
             )
             upscale_slider = gr.Radio(
                 choices=[1, 2, 4],
-                value=2,
+                value=4,
                 label="업스케일 배율",
                 info="이미지를 몇 배로 확대할지 선택",
             )

@@ -129,7 +129,7 @@ with gr.Blocks() as demo:
             tile = gr.Slider(
                 minimum=4,
                 maximum=512,
-                value=8,  # 기본값을 더 작게 : 16에서 변경
+                value=32,  # 기본값을 더 작게 : 16에서 변경
                 step=4,
                 label="Tile 크기 (메모리 부족시 분할 처리)",
                 info="이미지를 분할 처리할 타일 크기입니다. 메모리 부족 시 값을 줄이세요. 0은 전체 처리.",
