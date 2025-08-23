@@ -104,12 +104,6 @@ def enhance_image(
 
 with gr.Blocks() as demo:
     gr.Markdown("# Real-ESRGAN 업스케일러 (Gradio 데모)")
-    gr.Markdown("""
-    **사용법 안내**
-    1. 이미지를 업로드하거나 붙여넣으세요.
-    2. 업스케일 배수, 타일 크기 등 옵션을 조정하세요.
-    3. [업스케일 실행] 버튼을 누르면 결과 이미지를 확인할 수 있습니다.
-    """)
     with gr.Row():
         with gr.Column():
             input_img = gr.Image(

@@ -118,7 +118,7 @@ with gr.Blocks(title="FLUX.1 Kontext Dev 이미지 생성기") as demo:
             prompt_input = gr.Textbox(
                 label="프롬프트",
                 placeholder="생성하고 싶은 이미지를 설명해주세요...",
-                value="8k, high detail, high quality, best quality, realistic, masterpiece, dark blue bikini",
+                value="8k, high detail, high quality, best quality, masterpiece, dark blue bikini",
                 lines=4,
             )
 
@@ -132,7 +132,7 @@ with gr.Blocks(title="FLUX.1 Kontext Dev 이미지 생성기") as demo:
             guidance_slider = gr.Slider(
                 minimum=1.0,
                 maximum=10.0,  # 범위 확장
-                value=6.5,  # 더 높은 기본값
+                value=3.5,  # 더 높은 기본값
                 step=0.1,
                 label="가이던스 스케일",
                 info="프롬프트 준수 정도. 높을수록 프롬프트를 더 정확히 따르지만 창의성이 줄어들 수 있습니다. (권장: 7.0-10.0)",
