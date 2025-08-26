@@ -110,7 +110,7 @@ with gr.Blocks() as demo:
                 label="입력 이미지 (업스케일할 원본)",
                 type="pil",
                 height=500,
-                value="default.png",
+                value="default.jpg",
             )
             upscale = gr.Slider(
                 minimum=1,

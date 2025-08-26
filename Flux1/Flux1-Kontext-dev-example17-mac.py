@@ -111,7 +111,7 @@ with gr.Blocks(title="FLUX.1 Kontext Dev 이미지 생성기") as demo:
                 type="pil",
                 sources=["upload", "clipboard"],
                 height=500,
-                value="default16.jpg",
+                value="default.jpg",
             )
 
             # 입력 컨트롤들

@@ -103,7 +103,7 @@ with gr.Blocks(title="FLUX.1 ControlNet 업스케일러") as demo:
                 type="pil",
                 sources=["upload", "clipboard"],
                 height=500,
-                value="default.png",  # 기본 이미지 경로 (예시용)
+                value="default.jpg",  # 기본 이미지 경로 (예시용)
             )
             prompt_input = gr.Textbox(
                 label="프롬프트 (선택)",
