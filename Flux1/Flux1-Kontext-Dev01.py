@@ -27,12 +27,10 @@ def flux1_kontext_dev(
         num_inference_steps=num_inference_steps,
         guidance_scale=guidance,
         # Add more parameters if needed
-    )
-    result[0].save(
-        f"Flux-Kontext-Dev01_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
-    )
-    # result[0] is the output image
-    return result[0]
+    ).images[0]
+
+    result.save(f"Flux-Kontext-Dev01_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.png")
+    return result
 
 
 with gr.Blocks() as demo:
@@ -43,7 +41,7 @@ with gr.Blocks() as demo:
                 label="Prompt",
                 value="Change the car color to red, turn the headlights on",
             )
-            input_image = gr.Image(label="Input Image", type="pil", width=500)
+            input_image = gr.Image(label="Input Image", type="pil", height=500)
             guidance = gr.Slider(
                 label="Guidance Scale", minimum=1.0, maximum=10.0, value=2.5, step=0.1
             )
@@ -52,7 +50,7 @@ with gr.Blocks() as demo:
             )
             run_btn = gr.Button("Run")
         with gr.Column():
-            output_img = gr.Image(label="Output Image", width=500)
+            output_img = gr.Image(label="Output Image", height=500)
 
     def run_model(prompt, input_image, guidance, num_inference_steps):
         output_img = flux1_kontext_dev(
