@@ -34,7 +34,14 @@ def flux1_kontext_dev(
     result.save(
         f"Flux1-Kontext-Dev01_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
     )
-    return result
+    # 파라미터 정보 문자열 생성
+    param_info = f"""
+    **Prompt:** {prompt}\n
+    **Guidance Scale:** {guidance}\n
+    **Num Inference Steps:** {num_inference_steps}\n
+    **Input Image Size:** {input_image.width}x{input_image.height}
+    """
+    return result, param_info
 
 
 with gr.Blocks() as demo:
@@ -57,17 +64,18 @@ with gr.Blocks() as demo:
             run_btn = gr.Button("Run")
         with gr.Column():
             output_img = gr.Image(label="Output Image", height=500)
+            param_info_md = gr.Markdown(label="Parameter Info")
 
     def run_model(prompt, input_image, guidance, num_inference_steps):
-        output_img = flux1_kontext_dev(
+        output_img, param_info = flux1_kontext_dev(
             prompt, input_image, guidance, num_inference_steps
         )
-        return output_img
+        return output_img, param_info
 
     run_btn.click(
         run_model,
         inputs=[prompt, input_image, guidance, num_inference_steps],
-        outputs=output_img,
+        outputs=[output_img, param_info_md],
     )
 
 if __name__ == "__main__":
