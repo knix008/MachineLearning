@@ -32,7 +32,7 @@ def flux1_kontext_dev(
     ).images[0]
 
     result.save(
-        f"Flux1-Kontext-Dev01_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
+        f"Flux1-Kontext-Dev02_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
     )
     # 파라미터 정보 문자열 생성
     param_info = f"""
@@ -50,13 +50,13 @@ with gr.Blocks() as demo:
         with gr.Column():
             prompt = gr.Textbox(
                 label="Prompt",
-                value="change her face to turn to the front side and the swimsuit color into dark blue bikini",
+                value="turn her face to the camera",
             )
             input_image = gr.Image(
                 label="Input Image", value="default.jpg", type="pil", height=500
             )
             guidance = gr.Slider(
-                label="Guidance Scale", minimum=1.0, maximum=10.0, value=2.5, step=0.1
+                label="Guidance Scale", minimum=1.0, maximum=10.0, value=7.5, step=0.1
             )
             num_inference_steps = gr.Slider(
                 label="Num Inference Steps", minimum=1, maximum=50, value=30, step=1
