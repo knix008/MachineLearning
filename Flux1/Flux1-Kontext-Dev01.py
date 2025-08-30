@@ -24,22 +24,24 @@ def flux1_kontext_dev(
     result = pipe(
         prompt=prompt,
         image=input_image,
+        width=input_image.width,
+        height=input_image.height,
         num_inference_steps=num_inference_steps,
         guidance_scale=guidance,
         # Add more parameters if needed
     ).images[0]
 
-    result.save(f"Flux-Kontext-Dev01_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.png")
+    result.save(f"Flux1-Kontext-Dev01_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.png")
     return result
 
 
 with gr.Blocks() as demo:
-    gr.Markdown("# Flux-Kontext-Dev Pipeline Gradio Demo")
+    gr.Markdown("# Flux1-Kontext-Dev Pipeline Gradio Demo")
     with gr.Row():
         with gr.Column():
             prompt = gr.Textbox(
                 label="Prompt",
-                value="Change the car color to red, turn the headlights on",
+                value="change her face to turn to the front side and the swimsuit color into dark blue bikini",
             )
             input_image = gr.Image(label="Input Image", type="pil", height=500)
             guidance = gr.Slider(
