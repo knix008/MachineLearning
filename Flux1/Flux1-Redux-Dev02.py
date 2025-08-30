@@ -51,6 +51,7 @@ def flux1_redux_run(
     **Num Inference Steps:** {num_inference_steps}\n
     **Seed:** {seed}\n
     **Input Image Size:** {input_image.width}x{input_image.height}
+    **Output Image Size:** {result.width}x{result.height}
     """
     return result, param_info
 
