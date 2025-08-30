@@ -4,8 +4,6 @@ import time
 from diffusers import FluxKontextPipeline
 from PIL import Image
 import datetime
-import math
-
 
 def loading_model():
     model_id = "black-forest-labs/FLUX.1-Kontext-dev"
