@@ -9,6 +9,8 @@ import datetime
 pipe = FluxKontextPipeline.from_pretrained("black-forest-labs/FLUX.1-Kontext-dev")
 pipe.enable_model_cpu_offload()
 pipe.enable_sequential_cpu_offload()
+pipe.enable_attention_slicing(1)
+pipe.enable_vae_slicing()
 print("Loading Model is Complete!!!")
 
 
@@ -77,11 +79,15 @@ with gr.Blocks() as demo:
             output_img = gr.Image(label="Output Image", height=500)
             param_info_md = gr.Markdown(label="Parameter Info")
 
-    seed = gr.Textbox(label="Seed (default: -1, random)", value="-1", placeholder="-1 for random")
+    seed = gr.Textbox(
+        label="Seed (default: -1, random)", value="-1", placeholder="-1 for random"
+    )
     width = gr.Number(label="Width (optional)", value=None, precision=0)
     height = gr.Number(label="Height (optional)", value=None, precision=0)
 
-    def run_model(prompt, input_image, guidance, num_inference_steps, seed, width, height):
+    def run_model(
+        prompt, input_image, guidance, num_inference_steps, seed, width, height
+    ):
         output_img, param_info = flux1_kontext_dev(
             prompt, input_image, guidance, num_inference_steps, seed, width, height
         )
@@ -89,7 +95,15 @@ with gr.Blocks() as demo:
 
     run_btn.click(
         run_model,
-        inputs=[prompt, input_image, guidance, num_inference_steps, seed, width, height],
+        inputs=[
+            prompt,
+            input_image,
+            guidance,
+            num_inference_steps,
+            seed,
+            width,
+            height,
+        ],
         outputs=[output_img, param_info_md],
     )
 
