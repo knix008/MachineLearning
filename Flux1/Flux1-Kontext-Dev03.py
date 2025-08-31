@@ -43,12 +43,12 @@ def flux1_kontext_dev(
 
 
 with gr.Blocks() as demo:
-    gr.Markdown("# Flux1-Kontext-Dev Pipeline Gradio Demo")
+    gr.Markdown("# Flux1-Kontext-Dev")
     with gr.Row():
         with gr.Column():
             prompt = gr.Textbox(
                 label="Prompt",
-                value="turn her face to the camera",
+                value="change her face to see the camera",
             )
             input_image = gr.Image(
                 label="Input Image", value="default.jpg", type="pil", height=500
