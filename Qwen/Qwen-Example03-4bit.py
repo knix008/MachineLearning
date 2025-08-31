@@ -14,7 +14,7 @@ print("pipeline loaded")
 
 image = Image.open("default.jpg").convert("RGB")
 
-prompt = "change the image to 8k, high quality, high detail, wearing dark blue bikini, masterpiece, realistic, good anatomy, with good fingers."
+prompt = "change the image to 8k, high quality, high detail, wearing red bikini, masterpiece, and good anatomy, with good fingers, skinny."
 
 inputs = {
     "image": image,
