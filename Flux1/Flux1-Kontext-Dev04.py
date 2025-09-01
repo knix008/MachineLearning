@@ -63,7 +63,7 @@ with gr.Blocks() as demo:
         with gr.Column():
             prompt = gr.Textbox(
                 label="Prompt",
-                value="change her face to see the camera",
+                value="change her face to see the camera with high detail, high quality, 8k resolution",
             )
             input_image = gr.Image(
                 label="Input Image", value="default.jpg", type="pil", height=500
