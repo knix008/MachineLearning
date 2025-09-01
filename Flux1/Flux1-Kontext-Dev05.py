@@ -92,7 +92,7 @@ with gr.Blocks() as demo:
                 label="Input Image", value="default.jpg", type="pil", height=500
             )
             guidance = gr.Slider(
-                label="Guidance Scale", minimum=1.0, maximum=10.0, value=7.5, step=0.1
+                label="Guidance Scale", minimum=1.0, maximum=10.0, value=2.5, step=0.1
             )
             num_inference_steps = gr.Slider(
                 label="Num Inference Steps", minimum=1, maximum=50, value=30, step=1
