@@ -44,7 +44,7 @@ def flux1_kontext_dev(
     ).images[0]
 
     result.save(
-        f"Flux1-Kontext-Dev02_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
+        f"Flux1-Kontext-Dev04_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
     )
     # 파라미터 정보 문자열 생성
     param_info = f"""
@@ -80,7 +80,7 @@ with gr.Blocks() as demo:
             param_info_md = gr.Markdown(label="Parameter Info")
 
     seed = gr.Textbox(
-        label="Seed (default: -1, random)", value="42", placeholder="-1 for random"
+        label="Seed (default: -1, random)", value="100", placeholder="-1 for random"
     )
     width = gr.Number(label="Width (optional)", value=None, precision=0)
     height = gr.Number(label="Height (optional)", value=None, precision=0)
