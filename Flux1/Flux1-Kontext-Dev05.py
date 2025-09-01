@@ -16,24 +16,24 @@ print("Loading Model is Complete!!!")
 # Define maximum image size
 MAX_IMAGE_SIZE = 1024
 
-def resize_image_keep_ratio(image: Image.Image, max_size: int) -> Image.Image:
+def resize_image_keep_ratio(image: Image.Image) -> Image.Image:
     """
-    이미지의 가로, 세로 중 큰 쪽이 max_size를 넘지 않도록 비율을 유지하며 리사이즈합니다.
-    리사이즈 후 가로, 세로는 16의 배수로 맞춥니다.
+    입력 이미지의 비율을 유지하면서, 가로/세로가 16의 배수가 되도록 리사이즈합니다.
     """
     if image is None:
         return None
     w, h = image.size
-    scale = min(max_size / w, max_size / h, 1.0)
-    new_w = int(w * scale)
-    new_h = int(h * scale)
+
     # 16의 배수로 내림
-    new_w = (new_w // 16) * 16
-    new_h = (new_h // 16) * 16
-    # 최소 크기 보장
-    new_w = max(new_w, 16)
-    new_h = max(new_h, 16)
-    img = image.resize((new_w, new_h), Image.LANCZOS)
+    new_w = (w // 16) * 16
+    new_h = (h // 16) * 16
+
+    # 비율 유지하여 가장 큰 16의 배수 크기로 리사이즈
+    scale = min(new_w / w, new_h / h)
+    resized_w = max(int(w * scale) // 16 * 16, 16)
+    resized_h = max(int(h * scale) // 16 * 16, 16)
+
+    img = image.resize((resized_w, resized_h), Image.LANCZOS)
     print(f"The image size : {img.width}, {img.height}")
     return img
 
@@ -44,8 +44,8 @@ def flux1_kontext_dev(
     num_inference_steps=30,
     seed=-1,
 ):
-    # 입력 이미지 리사이즈 (비율 유지, 최대 크기 제한)
-    resized_image = resize_image_keep_ratio(input_image, MAX_IMAGE_SIZE)
+    # 입력 이미지 16의 배수로 리사이즈 (비율 유지 X, 크기 제한 X)
+    resized_image = resize_image_keep_ratio(input_image)
 
     # Seed generator
     generator = None
@@ -103,7 +103,7 @@ with gr.Blocks() as demo:
             param_info_md = gr.Markdown(label="Parameter Info")
 
     seed = gr.Textbox(
-        label="Seed (default: -1, random)", value="42", placeholder="-1 for random"
+        label="Seed (default: -1, random)", value="-1", placeholder="-1 for random"
     )
 
     def run_model(
