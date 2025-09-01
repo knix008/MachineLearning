@@ -30,7 +30,7 @@ def flux1_kontext_dev(
     ).images[0]
 
     result.save(
-        f"Flux1-Kontext-Dev02_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
+        f"Flux1-Kontext-Dev03_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
     )
     # 파라미터 정보 문자열 생성
     param_info = f"""
