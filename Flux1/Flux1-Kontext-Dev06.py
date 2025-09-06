@@ -13,6 +13,7 @@ pipe.enable_attention_slicing(1)
 pipe.enable_vae_slicing()
 print("Loading Model is Complete!!!")
 
+
 def flux1_kontext_dev(
     prompt,
     input_image: Image.Image,
@@ -56,7 +57,7 @@ with gr.Blocks() as demo:
         with gr.Column():
             prompt = gr.Textbox(
                 label="Prompt",
-                value="change her face to see the camera, change the bikini color to bright red",
+                value="Change her face to look at the camera.",
             )
             input_image = gr.Image(
                 label="Input Image", value="default.jpg", type="pil", height=500
@@ -67,18 +68,17 @@ with gr.Blocks() as demo:
             num_inference_steps = gr.Slider(
                 label="Num Inference Steps", minimum=1, maximum=50, value=30, step=1
             )
+            seed = gr.Textbox(
+                label="Seed (default: -1, random)",
+                value="42",
+                placeholder="-1 for random",
+            )
             run_btn = gr.Button("Run")
         with gr.Column():
             output_img = gr.Image(label="Output Image", height=500)
             param_info_md = gr.Markdown(label="Parameter Info")
 
-    seed = gr.Textbox(
-        label="Seed (default: -1, random)", value="-1", placeholder="-1 for random"
-    )
-
-    def run_model(
-        prompt, input_image, guidance, num_inference_steps, seed
-    ):
+    def run_model(prompt, input_image, guidance, num_inference_steps, seed):
         output_img, param_info = flux1_kontext_dev(
             prompt, input_image, guidance, num_inference_steps, seed
         )
