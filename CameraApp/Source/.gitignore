@@ -1,0 +1,105 @@
+# Build artifacts
+build/
+*.o
+*.a
+*.so
+*.exe
+webcam_app
+opencv/
+
+# OpenCV build directories (created during build_opencv.sh)
+opencv_build/
+opencv_src/
+
+# ONNX Runtime libraries (downloaded and installed by install_onnxruntime.sh)
+onnxruntime-linux-*/
+onnxruntime-linux-*
+onnxruntime-*/
+onnxruntime*.tgz
+onnxruntime*.tar.gz
+
+# CMake generated files
+CMakeCache.txt
+cmake_install.cmake
+CMakeFiles/
+Makefile
+*.cmake
+
+# Certificates and security files
+certs/
+*.pem
+*.key
+*.crt
+*.csr
+
+# Log files
+*.log
+*.tmp
+*.bak
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.cache
+
+# Downloaded source archives (these are downloaded during build)
+*.tar.gz
+*.tar.xz
+*.zip
+
+# Downloaded source directories (these are extracted during build)
+zlib-*/
+xz-*/
+ffmpeg-*/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Backup files
+*.backup
+*.old
+*.orig
+
+# Core dumps
+core
+core.*
+
+# IPC socket files
+/tmp/opencv_gui_socket
+*.socket
+
+# Database files (if any are created)
+*.db
+*.sqlite
+*.sqlite3
+e

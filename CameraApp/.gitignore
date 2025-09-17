@@ -1,0 +1,118 @@
+# Build artifacts
+build/
+*.o
+*.a
+*.so
+*.exe
+
+# CMake generated files
+CMakeCache.txt
+cmake_install.cmake
+CMakeFiles/
+Makefile
+*.cmake
+
+# Pre-built libraries (these are built from source)
+Source/lib/
+
+# Certificates and security files
+certs/
+*.pem
+*.key
+*.crt
+*.csr
+
+# Log files
+*.log
+*.tmp
+*.bak
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.cache
+
+# Downloaded source archives (these are downloaded during build)
+Source/*.tar.gz
+Source/*.tar.xz
+Source/*.zip
+
+# Downloaded source directories (these are extracted during build)
+Source/zlib-*/
+Source/xz-*/
+Source/ffmpeg-*/
+
+# ONNX Runtime files (these are downloaded separately)
+# Source/onnxruntime/
+
+# Audio/Video files (these can be large)
+Source/assets/*.mp4
+Source/assets/*.wav
+Source/assets/*.avi
+Source/assets/*.mov
+
+# Keep some essential assets
+!Source/assets/*.png
+!Source/assets/*.jpg
+!Source/assets/*.jpeg
+!Source/assets/*.gif
+!Source/assets/*.svg
+!Source/assets/*.ttf
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Node modules (if any web components are added)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Backup files
+*.backup
+*.old
+*.orig
+
+# Core dumps
+core
+core.*
+
+# IPC socket files
+/tmp/opencv_gui_socket
+*.socket
+
+# Database files (if any are created)
+*.db
+*.sqlite
+*.sqlite3
