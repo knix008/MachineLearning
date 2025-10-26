@@ -49,10 +49,14 @@ def upscale_image(input_img, prompt="high quality, detailed", guidance_scale=7.5
 		return "이미지를 업로드하세요."
 	try:
 		img = input_img.convert("RGB")
+		print("The image resolution : ", img.height, "x", img.width)
+		#exit()
 		# 원본 이미지를 그대로 pipe에 전달
 		result = pipe(
 			prompt=prompt,
 			image=img,
+			width=img.width,
+			height=img.height,
 			guidance_scale=guidance_scale,
 			num_inference_steps=num_inference_steps,
 			generator=torch.Generator(device="cpu").manual_seed(42)
