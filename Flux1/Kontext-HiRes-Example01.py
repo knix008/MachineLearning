@@ -49,7 +49,7 @@ def upscale_image(input_img, prompt="high quality, detailed", guidance_scale=7.5
 		return "이미지를 업로드하세요."
 	try:
 		img = input_img.convert("RGB")
-		img = resize_keep_ratio(img, max_dim=768)
+		# 원본 이미지를 그대로 pipe에 전달
 		result = pipe(
 			prompt=prompt,
 			image=img,
