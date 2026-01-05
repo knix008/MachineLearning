@@ -1,7 +1,7 @@
 import torch
 from diffusers import Flux2Pipeline
 
-# https://www.aitimes.com/news/articleView.html?idxno=205183 to get the access right. 
+# https://www.aitimes.com/news/articleView.html?idxno=205183 to get the access right.
 
 from huggingface_hub import login
 access_token = ""
