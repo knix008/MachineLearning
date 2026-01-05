@@ -44,7 +44,7 @@ def generate_images(network_pkl, output_dir, num_images, truncation_psi, noise_m
         img = G(z, label, truncation_psi=truncation_psi, noise_mode=noise_mode)
         img = (img * 127.5 + 128).clamp(0, 255).to(torch.uint8)
         img = img[0].permute(1, 2, 0).cpu().numpy()
-        img_path = os.path.join(output_dir, f"face_{i:05d}.png")
+        img_path = os.path.join(output_dir, f"10{i:05d}.jpg")
         Image.fromarray(img).save(img_path)
         image_paths.append(img_path)
         if (i + 1) % 100 == 0:

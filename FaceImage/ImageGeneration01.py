@@ -28,7 +28,7 @@ for i in range(num_images):
     img = G(z, label, truncation_psi=0.7, noise_mode='const')
     img = (img * 127.5 + 128).clamp(0, 255).to(torch.uint8)
     img = img[0].permute(1, 2, 0).cpu().numpy()
-    Image.fromarray(img, 'RGB').save(os.path.join(output_dir, f'face_{i:05d}.png'))
+    Image.fromarray(img, 'RGB').save(os.path.join(output_dir, f'10{i:05d}.jpg'))
     if (i+1) % 1000 == 0:
         print(f'Generated {i+1} images')
 
