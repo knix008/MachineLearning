@@ -75,7 +75,7 @@ with gr.Blocks() as demo:
 				default_img = None
 			input_img = gr.Image(type="pil", label="입력 이미지", value=default_img)
 			prompt = gr.Textbox(value="high quality, detailed", label="프롬프트")
-			guidance_scale = gr.Slider(1.0, 15.0, value=7.5, label="guidance_scale")
+			guidance_scale = gr.Slider(1.0, 15.0, value=2.5, label="guidance_scale")
 			num_inference_steps = gr.Slider(1, 50, value=25, step=1, label="num_inference_steps")
 			btn = gr.Button("업스케일 변환")
 		with gr.Column():
