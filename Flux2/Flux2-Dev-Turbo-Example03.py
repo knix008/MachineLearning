@@ -26,7 +26,7 @@ pipe.load_lora_weights(
     "fal/FLUX.2-dev-Turbo", weight_name="flux.2-turbo-lora.safetensors"
 )
 
-prompt = "a slim body woman with blond hair having beautiful smile on her face is walking on a beach, wearing a dark blue bikini, cinematic lighting, detailed, 8k"
+prompt = "a slim body woman with blond hair having beautiful smile on her face is walking on a beach, wearing a dark blue bikini, cinematic lighting, detailed, 8k, clean and bright skin, high resolution"
 
 image = pipe(
     prompt=prompt,
