@@ -26,7 +26,7 @@ pipe.load_lora_weights(
     "fal/FLUX.2-dev-Turbo", weight_name="flux.2-turbo-lora.safetensors"
 )
 
-prompt = "a beautiful healthy skinny woman wearing a dark blue bikini, walking on the sunny beach, crystal clear skin, photo realistic, 8k, ultra detailed, vibrant colors, cinematic lighting, realistic shadows, high quality, masterpiece, best quality, solo, full body, looking at viewer, long hair, blue eyes, good fingers, good hands, good face, perfect anatomy"
+prompt = "A highly realistic, high-quality photo of a beautiful Instagram-style girl on vacation. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. Her eyes are hazel, with a natural sparkle of happiness as she smiles. The image should capture her in a full-body shot, with perfect anatomy, including precise details in her eyes and teeth. Her skin should appear natural, with visible pores, avoiding an overly smooth or filtered look, to maintain a lifelike, 4K resolution quality. The overall atmosphere is bright and joyful, reflecting the sunny, relaxed vacation mood."
 
 image = pipe(
     prompt=prompt,
