@@ -24,6 +24,7 @@ pipe.enable_vae_slicing()
 # Enable VAE tiling for very large images (reduces memory for VAE)
 pipe.enable_vae_tiling()
 
+
 print("모델 로딩 완료!")
 print("CPU offloading enabled with the following optimizations:")
 print("  - Sequential CPU offload: layers move to GPU only when needed")
