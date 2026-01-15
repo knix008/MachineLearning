@@ -14,7 +14,7 @@ pipe = Flux2Pipeline.from_pretrained(
 # Enable sequential CPU offload - moves each layer to GPU only when needed
 # This is the most aggressive offloading, minimizing VRAM usage
 pipe.enable_sequential_cpu_offload()
-#pipe.enable_model_cpu_offload()
+#pipe.enable_model_cpu_offload() --> CUDA OOM in 16GP GPU RTX 4070 TI
 
 print("모델 로딩 완료!")
 print("CPU offloading enabled with sequential CPU offload")
