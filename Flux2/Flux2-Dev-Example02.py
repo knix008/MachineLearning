@@ -13,24 +13,11 @@ pipe = Flux2Pipeline.from_pretrained(
 
 # Enable sequential CPU offload - moves each layer to GPU only when needed
 # This is the most aggressive offloading, minimizing VRAM usage
-pipe.enable_sequential_cpu_offload()
-
-# Enable attention slicing to reduce memory during attention computation
-pipe.enable_attention_slicing(slice_size="auto")
-
-# Enable VAE slicing for lower memory VAE decoding
-pipe.enable_vae_slicing()
-
-# Enable VAE tiling for very large images (reduces memory for VAE)
-pipe.enable_vae_tiling()
-
+#pipe.enable_sequential_cpu_offload()
+pipe.enable_model_cpu_offload()
 
 print("모델 로딩 완료!")
-print("CPU offloading enabled with the following optimizations:")
-print("  - Sequential CPU offload: layers move to GPU only when needed")
-print("  - Attention slicing: reduces memory during attention computation")
-print("  - VAE slicing: processes VAE in slices to reduce peak memory")
-print("  - VAE tiling: enables tiled VAE decoding for lower memory usage")
+print("CPU offloading enabled with sequential CPU offload")
 
 
 prompt = "A highly realistic, high-quality photo of a beautiful Instagram-style girl on vacation. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. She is walking on a sunny beach and her eyes are hazel, with a natural sparkle of happiness as she smiles. The image should capture her in a full-body shot, with perfect anatomy, including precise details in her eyes and teeth. Her skin should appear natural, with visible pores, avoiding an overly smooth or filtered look, to maintain a lifelike, 4K resolution quality. The overall atmosphere is bright and joyful, reflecting the sunny, relaxed vacation mood."
