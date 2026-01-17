@@ -1,11 +1,11 @@
 import torch
-from diffusers import Flux2Pipeline
+from diffusers import Flux2KleinPipeline
 from datetime import datetime
 
-device = "cuda"
+device = "mps"
 dtype = torch.bfloat16
 
-pipe = Flux2Pipeline.from_pretrained(
+pipe = Flux2KleinPipeline.from_pretrained(
     "black-forest-labs/FLUX.2-klein-4B", torch_dtype=dtype
 )
 pipe.enable_model_cpu_offload()  # save some VRAM by offloading the model to CPU
