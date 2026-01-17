@@ -6,13 +6,12 @@ device = "mps"
 dtype = torch.bfloat16
 
 pipe = Flux2KleinPipeline.from_pretrained(
-    "black-forest-labs/FLUX.2-klein-4B", torch_dtype=dtype
+    "black-forest-labs/FLUX.2-klein-4B", torch_dtype=dtype, device_map="balanced"
 )
-pipe.enable_model_cpu_offload()  # save some VRAM by offloading the model to CPU
 
 prompt = "A cat holding a sign that says hello world"
 image = pipe(
-    prompt,
+    prompt=prompt,
     height=1024,
     width=1024,
     guidance_scale=1.0,
