@@ -13,7 +13,6 @@ pipe = pipe.to(device)
 pipe.enable_model_cpu_offload()  # save some VRAM by offloading the model to CPU
 pipe.enable_attention_slicing(1)  # reduce memory usage further
 pipe.enable_sequential_cpu_offload()
-pipe.enable_vae_slicing()
 print("모델 로딩 완료!")
 
 
