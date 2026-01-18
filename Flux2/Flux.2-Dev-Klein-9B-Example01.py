@@ -23,7 +23,7 @@ image = pipe(
     width=1024,
     guidance_scale=1.0,
     num_inference_steps=4,
-    generator=torch.Generator(device=device).manual_seed(100),
+    generator=torch.Generator(device=device).manual_seed(0),
 ).images[0]
 
 timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
