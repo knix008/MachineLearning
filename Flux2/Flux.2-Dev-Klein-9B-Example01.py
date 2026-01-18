@@ -6,7 +6,7 @@ device = "cpu"
 dtype = torch.float32
 
 pipe = Flux2KleinPipeline.from_pretrained(
-    "black-forest-labs/FLUX.2-klein-4B", torch_dtype=dtype
+    "black-forest-labs/FLUX.2-klein-9B", torch_dtype=dtype
 )
 pipe = pipe.to(device)
 
