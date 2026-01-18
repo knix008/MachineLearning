@@ -56,7 +56,9 @@ with gr.Blocks(title="FLUX.1 Image-to-Image") as demo:
 
     with gr.Row():
         with gr.Column():
-            input_image = gr.Image(type="pil", label="Input Image", value=DEFAULT_IMAGE_PATH)
+            input_image = gr.Image(
+                type="pil", label="Input Image", value=DEFAULT_IMAGE_PATH, height=500
+            )
             prompt = gr.Textbox(
                 label="Prompt",
                 value="8k resolution quality, high detail, high quality, best quality, realistic, masterpiece",
@@ -88,7 +90,7 @@ with gr.Blocks(title="FLUX.1 Image-to-Image") as demo:
             generate_btn = gr.Button("Generate", variant="primary")
 
         with gr.Column():
-            output_image = gr.Image(type="pil", label="Output Image")
+            output_image = gr.Image(type="pil", label="Output Image", height=500)
             status_text = gr.Textbox(label="Status", interactive=False)
 
     generate_btn.click(
