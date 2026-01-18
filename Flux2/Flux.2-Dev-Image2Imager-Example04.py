@@ -57,11 +57,11 @@ with gr.Blocks(title="FLUX.1 Image-to-Image") as demo:
     with gr.Row():
         with gr.Column():
             input_image = gr.Image(
-                type="pil", label="Input Image", value=DEFAULT_IMAGE_PATH, height=500
+                type="pil", label="Input Image", value=DEFAULT_IMAGE_PATH, height=700
             )
             prompt = gr.Textbox(
                 label="Prompt",
-                value="8k resolution quality, high detail, high quality, best quality, realistic, masterpiece",
+                value="8k resolution quality, high detail, high quality, best quality, realistic, masterpiece, cinematic lighting, wearing a dark blue bikini.",
                 lines=3,
             )
 
@@ -75,7 +75,7 @@ with gr.Blocks(title="FLUX.1 Image-to-Image") as demo:
                 )
                 guidance_scale = gr.Slider(
                     minimum=1.0,
-                    maximum=20.0,
+                    maximum=10.0,
                     value=3.5,
                     step=0.5,
                     label="Guidance Scale",
@@ -90,7 +90,7 @@ with gr.Blocks(title="FLUX.1 Image-to-Image") as demo:
             generate_btn = gr.Button("Generate", variant="primary")
 
         with gr.Column():
-            output_image = gr.Image(type="pil", label="Output Image", height=500)
+            output_image = gr.Image(type="pil", label="Output Image", height=700)
             status_text = gr.Textbox(label="Status", interactive=False)
 
     generate_btn.click(
