@@ -115,11 +115,16 @@ def create_ui():
         with gr.Row():
             with gr.Column():
                 input_image = gr.Image(
-                    label="Input Image", type="pil", sources=["upload", "clipboard"]
+                    label="Input Image",
+                    type="pil",
+                    sources=["upload", "clipboard"],
+                    value="default.jpg",
+                    height=700,
                 )
                 prompt = gr.Textbox(
                     label="Edit Prompt",
                     placeholder="Describe the changes you want (e.g., 'turn the sky into sunset colors', 'add snow to the landscape')",
+                    value="8k resolution quality, high detail, high quality, best quality, realistic, masterpiece, cinematic lighting, wearing a dark blue bikini.",
                     lines=3,
                 )
 
