@@ -31,10 +31,14 @@ class ImageEditor:
         self,
         input_image,
         prompt,
+        negative_prompt="",
         guidance_scale=3.5,
-        num_inference_steps=20,
-        seed=None,
+        num_inference_steps=4,
+        seed=100,
         use_random_seed=True,
+        use_input_dimensions=True,
+        custom_width=1024,
+        custom_height=1024,
     ):
         """
         Edit an image using Klein 4B model (for Gradio)
@@ -42,10 +46,14 @@ class ImageEditor:
         Args:
             input_image: PIL Image object from Gradio
             prompt: Text description of desired changes
+            negative_prompt: What to avoid in the image
             guidance_scale: How closely to follow the prompt (1.0-7.0)
             num_inference_steps: Quality vs speed (4-50)
             seed: Random seed for reproducibility
             use_random_seed: If True, ignore seed parameter
+            use_input_dimensions: Use input image dimensions
+            custom_width: Custom output width
+            custom_height: Custom output height
         """
         if input_image is None:
             return None, "⚠️ Please upload an image first!"
@@ -56,9 +64,13 @@ class ImageEditor:
         # Load model if not already loaded
         self.load_model()
 
-        # Use input image dimensions
-        width = input_image.width
-        height = input_image.height
+        # Determine output dimensions
+        if use_input_dimensions:
+            width = input_image.width
+            height = input_image.height
+        else:
+            width = custom_width
+            height = custom_height
 
         # Handle seed
         if use_random_seed:
@@ -68,20 +80,30 @@ class ImageEditor:
         if seed is not None:
             generator.manual_seed(seed)
 
-        status_msg = f"🎨 Editing image... (Size: {width}x{height}, Steps: {num_inference_steps}, Seed: {seed})"
+        status_msg = f"🎨 Editing image... (Size: {width}x{height}, Steps: {num_inference_steps}, Guidance: {guidance_scale}, Seed: {seed})"
         print(status_msg)
 
         try:
+            # Prepare pipe parameters
+            pipe_params = {
+                "prompt": prompt,
+                "image": input_image,
+                "height": height,
+                "width": width,
+                "guidance_scale": guidance_scale,
+                "num_inference_steps": num_inference_steps,
+                "generator": generator,
+            }
+
+            # Add negative prompt if provided
+            if negative_prompt and negative_prompt.strip():
+                pipe_params["negative_prompt"] = negative_prompt
+
+            # Note: Flux2KleinPipeline doesn't support 'strength' parameter
+            # The strength slider is kept in UI for potential future use
+
             # Generate
-            image = self.pipe(
-                prompt=prompt,
-                image=input_image,
-                height=height,
-                width=width,
-                guidance_scale=guidance_scale,
-                num_inference_steps=num_inference_steps,
-                generator=generator,
-            ).images[0]
+            image = self.pipe(**pipe_params).images[0]
 
             # Save
             timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -89,7 +111,7 @@ class ImageEditor:
             image.save(output_path)
 
             success_msg = f"✅ Image edited successfully! Saved as: {output_path}\n"
-            success_msg += f"📊 Settings - Guidance: {guidance_scale}, Steps: {num_inference_steps}, Seed: {seed}"
+            success_msg += f"📊 Settings - Size: {width}x{height}, Guidance: {guidance_scale}, Steps: {num_inference_steps}, Seed: {seed}"
             print(success_msg)
 
             return image, success_msg
@@ -128,28 +150,64 @@ def create_ui():
                     lines=3,
                 )
 
-                with gr.Accordion("⚙️ Advanced Settings", open=False):
+                negative_prompt = gr.Textbox(
+                    label="Negative Prompt (Optional)",
+                    placeholder="What to avoid (e.g., 'blurry, low quality, distorted')",
+                    value="",
+                    lines=2,
+                )
+
+                with gr.Accordion("⚙️ Generation Settings", open=True):
                     guidance_scale = gr.Slider(
                         minimum=1.0,
-                        maximum=7.0,
+                        maximum=10.0,
                         value=3.5,
-                        step=0.5,
-                        label="Guidance Scale (higher = closer to prompt)",
+                        step=0.1,
+                        label="Guidance Scale",
+                        info="How closely to follow the prompt (1.0=creative, 7.0=strict)",
                     )
+
                     num_steps = gr.Slider(
-                        minimum=4,
+                        minimum=1,
                         maximum=50,
-                        value=20,
+                        value=4,
                         step=1,
-                        label="Inference Steps (higher = better quality, slower)",
+                        label="Inference Steps",
+                        info="More steps = better quality but slower (4-8 recommended for Klein)",
+                    )
+
+                with gr.Accordion("🎲 Seed Settings", open=False):
+                    with gr.Row():
+                        use_random_seed = gr.Checkbox(
+                            label="Use Random Seed", value=False
+                        )
+                        seed = gr.Number(
+                            label="Seed (for reproducibility)", value=100, precision=0
+                        )
+
+                with gr.Accordion("📐 Dimension Settings", open=False):
+                    use_input_dimensions = gr.Checkbox(
+                        label="Use Input Image Dimensions",
+                        value=True,
+                        info="When checked, output will match input size",
                     )
 
                     with gr.Row():
-                        use_random_seed = gr.Checkbox(
-                            label="Use Random Seed", value=True
+                        custom_width = gr.Slider(
+                            minimum=256,
+                            maximum=2048,
+                            value=1024,
+                            step=64,
+                            label="Custom Width",
+                            info="Only used when 'Use Input Dimensions' is unchecked",
                         )
-                        seed = gr.Number(
-                            label="Seed (for reproducibility)", value=42, precision=0
+                        custom_height = gr.Slider(
+                            minimum=256,
+                            maximum=2048,
+                            value=1024,
+                            step=64,
+                            label="Custom Height",
+                            info="Only used when 'Use Input Dimensions' is unchecked",
                         )
 
                 edit_btn = gr.Button("🚀 Edit Image", variant="primary", size="lg")
@@ -179,10 +237,14 @@ def create_ui():
             inputs=[
                 input_image,
                 prompt,
+                negative_prompt,
                 guidance_scale,
                 num_steps,
                 seed,
                 use_random_seed,
+                use_input_dimensions,
+                custom_width,
+                custom_height,
             ],
             outputs=[output_image, status],
         )
@@ -190,11 +252,23 @@ def create_ui():
         gr.Markdown(
             """
             ---
-            **Tips:**
-            - The output image will automatically match the input image dimensions
-            - Higher guidance scale (5-7) follows the prompt more closely but may look less natural
-            - More inference steps (30-50) generally produce better quality but take longer
-            - Use a fixed seed for reproducible results
+            ### 💡 Tips & Guidelines
+
+            **Prompts:**
+            - Be descriptive and specific about what you want
+            - Use negative prompts to avoid unwanted elements
+
+            **Generation Settings:**
+            - **Guidance Scale**: 3.5 is balanced, 1.0 is creative/loose, 7.0+ is strict/literal
+            - **Inference Steps**: Klein works well with just 4-8 steps (unlike other models)
+
+            **Seed Settings:**
+            - Uncheck "Use Random Seed" and set a specific number for reproducible results
+            - Same seed + same settings = same output every time
+
+            **Dimensions:**
+            - By default, output matches input dimensions (recommended)
+            - Custom dimensions may affect aspect ratio and composition
             """
         )
 
