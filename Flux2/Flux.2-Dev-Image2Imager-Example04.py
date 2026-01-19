@@ -61,7 +61,7 @@ with gr.Blocks(title="FLUX.1 Image-to-Image") as demo:
             )
             prompt = gr.Textbox(
                 label="Prompt",
-                value="8k resolution quality, high detail, high quality, best quality, realistic, masterpiece, cinematic lighting, wearing a dark blue bikini.",
+                value="8k resolution quality, high detail, high quality, best quality, realistic, masterpiece, cinematic lighting, wearing a dark blue bikini, move her face to make her see the viewer.",
                 lines=3,
             )
 
