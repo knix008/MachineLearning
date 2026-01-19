@@ -106,4 +106,5 @@ with gr.Blocks(title="FLUX.1 Image-to-Image") as demo:
         outputs=[output_image, status_text],
     )
 
-demo.launch(inbrowser=True)
+if __name__ == "__main__":
+    demo.launch(inbrowser=True, theme=gr.themes.Soft())
