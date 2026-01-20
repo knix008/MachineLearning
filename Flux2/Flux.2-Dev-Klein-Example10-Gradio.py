@@ -79,7 +79,7 @@ class ImageEditor:
         print(f"편집된 이미지 저장됨: {output_path}")
         return image
 
-def process_image(image_input, prompt, height, width, guidance_scale, num_inference_steps, seed):
+def process_image(editor, image_input, prompt, height, width, guidance_scale, num_inference_steps, seed):
     """
     Process image using the editor
     """
@@ -92,13 +92,9 @@ def process_image(image_input, prompt, height, width, guidance_scale, num_infere
     try:
         # Save temporary input image
         temp_input_path = "temp_input.png"
-        if isinstance(image_input, Image.Image):
-            image_input.save(temp_input_path)
-        else:
-            image_input.save(temp_input_path)
+        image_input.save(temp_input_path)
         
         # Process image
-        editor = ImageEditor()
         result_image = editor.edit_image(
             input_image_path=temp_input_path,
             prompt=prompt,
@@ -122,6 +118,18 @@ def process_image(image_input, prompt, height, width, guidance_scale, num_infere
     except Exception as e:
         return None, f"오류: {str(e)}"
 
+def update_dimensions(image):
+    """
+    Update height and width sliders based on input image dimensions
+    """
+    if image is None:
+        return 0, 0
+    
+    if isinstance(image, Image.Image):
+        return image.height, image.width
+    
+    return 0, 0
+
 def main():
     editor = ImageEditor()
     
@@ -136,7 +144,7 @@ def main():
                 prompt_input = gr.Textbox(
                     label="편집 내용 설명 (영어)",
                     placeholder="예: make the sky blue",
-                    value="A woman wearing a dark blue bikini and looking at a viewer",
+                    value="Make her wearing a dark blue bikini and looking at a viewer. Her skin is crystal clear without any spot. The photo is 8k resolution, highly detailed, professional photography.",
                     lines=3
                 )
                 
@@ -187,10 +195,18 @@ def main():
                 image_output = gr.Image(label="출력 이미지", height=800)
                 status_output = gr.Textbox(label="상태", interactive=False)
         
+        # Update dimensions when image changes
+        image_input.change(
+            fn=update_dimensions,
+            inputs=image_input,
+            outputs=[height_input, width_input]
+        )
+        
         # Connect button to processing function
         submit_btn.click(
             fn=process_image,
             inputs=[
+                gr.State(editor),
                 image_input,
                 prompt_input,
                 height_input,
