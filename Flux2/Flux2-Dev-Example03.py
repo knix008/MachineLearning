@@ -24,12 +24,13 @@ prompt = "A highly realistic, high-quality photo of a beautiful Instagram-style 
 # Run the pipeline
 image = pipe(
     prompt=prompt,
-    width=512,
+    width=720,
     height=1024,
     guidance_scale=4.0,
     num_inference_steps=28,
     generator=torch.Generator(device=device).manual_seed(42),
 ).images[0]
+
 
 # Save with timestamp
 timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
