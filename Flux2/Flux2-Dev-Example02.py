@@ -5,13 +5,12 @@ from datetime import datetime
 import os
 
 repo_id = "black-forest-labs/FLUX.2-dev"  # Standard model
-device = "cpu"  # Use CPU for memory efficiency
-torch_dtype = torch.float32  # Use float16 for GPU efficiency
+torch_dtype = torch.float16  # Use float16 for GPU efficiency
 
 # Load model with CPU offloading for memory management
 pipe = Flux2Pipeline.from_pretrained(
     repo_id, torch_dtype=torch_dtype, low_cpu_mem_usage=True
-).to(device)
+)
 
 # Enable sequential CPU offload - moves each layer to GPU only when needed
 # This is the most aggressive offloading, minimizing VRAM usage
@@ -25,14 +24,14 @@ prompt = "A highly realistic, high-quality photo of a beautiful Instagram-style 
 
 # Use the pipe directly - it handles text encoding internally
 # Generator device should match where the model's first layer is
-device_for_generator = "cpu"
+device_for_generator = "cuda" if torch.cuda.is_available() else "cpu"
 image = pipe(
     prompt=prompt,
     width=512,
     height=1024,
     generator=torch.Generator(device=device_for_generator).manual_seed(42),
-    num_inference_steps=20,  # 20 steps can be a good trade-off
-    guidance_scale=4,
+    num_inference_steps=28,  # 8 steps can be a good trade-off
+    guidance_scale=4.0,
 ).images[0]
 
 # Save with timestamp
