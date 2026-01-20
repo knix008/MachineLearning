@@ -2,6 +2,7 @@ import torch
 from diffusers import Flux2Pipeline
 from diffusers.utils import load_image
 from datetime import datetime
+import os
 
 repo_id = "black-forest-labs/FLUX.2-dev"  # Standard model
 torch_dtype = torch.float16  # Use float16 for GPU efficiency
@@ -27,11 +28,16 @@ prompt = "A highly realistic, high-quality photo of a beautiful Instagram-style 
 device_for_generator = "cuda" if torch.cuda.is_available() else "cpu"
 image = pipe(
     prompt=prompt,
+    width=512,
+    height=1024,
     generator=torch.Generator(device=device_for_generator).manual_seed(42),
-    num_inference_steps=28,  # 28 steps can be a good trade-off
-    guidance_scale=4,
+    num_inference_steps=8,  # 8 steps can be a good trade-off
+    guidance_scale=2.5,
 ).images[0]
 
 # Save with timestamp
+script_name = os.path.splitext(os.path.basename(__file__))[0]
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-image.save(f"flux2_output_{timestamp}.png")
+output_filename = f"{script_name}_{timestamp}.png"
+image.save(output_filename)
+print(f"이미지가 저장되었습니다: {output_filename}")

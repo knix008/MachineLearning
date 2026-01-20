@@ -73,7 +73,7 @@ class ImageEditor:
         # Save
         if output_path is None:
             timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            output_path = f"Flux2-Dev-Klein-Example10-Gradio-Edited_{timestamp}.png"
+            output_path = f"Flux2-Dev-Klein-Example10-Gradio_{timestamp}.png"
 
         image.save(output_path)
         print(f"편집된 이미지 저장됨: {output_path}")
