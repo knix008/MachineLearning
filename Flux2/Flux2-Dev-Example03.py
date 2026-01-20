@@ -18,17 +18,17 @@ pipe.enable_attention_slicing(1)  # reduce memory usage further
 pipe.enable_sequential_cpu_offload()
 print("모델 로딩 완료!")
 
-# Set the prompt
-prompt = "A highly realistic, high-quality photo of a beautiful Instagram-style girl on vacation. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. Her eyes are hazel, with a natural sparkle of happiness as she smiles. The image should capture her in a full-body shot, with perfect anatomy, including precise details in her eyes and teeth. Her skin should appear natural, with visible pores, avoiding an overly smooth or filtered look, to maintain a lifelike, 4K resolution quality. The overall atmosphere is bright and joyful, reflecting the sunny, relaxed vacation mood."
+# Set the prompt. It should be less than 77 words for best results.
+prompt = "A highly realistic, high-quality photo of a beautiful Instagram-style girl on vacation. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Her skin should appear natural, with visible pores, avoiding an overly smooth or filtered look."
 
-# Run tie pipeline
+# Run the pipeline
 image = pipe(
     prompt=prompt,
     width=512,
     height=1024,
-    guidance_scale=3.5,
+    guidance_scale=2.5,
     num_inference_steps=28,
-    generator=torch.Generator(device=device).manual_seed(100),
+    generator=torch.Generator(device=device).manual_seed(42),
 ).images[0]
 
 # Save with timestamp
