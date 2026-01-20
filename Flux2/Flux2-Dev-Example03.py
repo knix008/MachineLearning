@@ -1,5 +1,5 @@
 import torch
-from diffusers import FluxImg2ImgPipeline
+from diffusers import FluxPipeline
 from datetime import datetime
 from PIL import Image
 
@@ -7,11 +7,10 @@ from PIL import Image
 device = "cpu"
 dtype = torch.float32
 
-# Load image-to-image pipeline (FLUX.1-dev supports img2img, FLUX.2-klein does not)
-pipe = FluxImg2ImgPipeline.from_pretrained(
+# Load text-to-image pipeline
+pipe = FluxPipeline.from_pretrained(
     "black-forest-labs/FLUX.1-dev", torch_dtype=dtype
-)
-pipe = pipe.to(device)
+).to(device)
 
 # Enable memory optimizations
 pipe.enable_model_cpu_offload()  # save some VRAM by offloading the model to CPU
