@@ -46,6 +46,7 @@ def generate_image(
             height=input_image.height,
             strength=strength,
             guidance_scale=guidance_scale,
+            num_inference_steps=8,
             sigmas=TURBO_SIGMAS,
             generator=generator,
         ).images[0]
@@ -72,6 +73,7 @@ def generate_image(
 
 with gr.Blocks(title="FLUX.1 Image-to-Image") as demo:
     gr.Markdown("# FLUX.1 Image-to-Image Generator")
+    gr.Markdown("**Turbo Mode**: Set Inference Steps to 8 to use optimized Turbo mode for faster generation. Other step values use standard inference.")
 
     with gr.Row():
         with gr.Column():
@@ -95,16 +97,16 @@ with gr.Blocks(title="FLUX.1 Image-to-Image") as demo:
                 guidance_scale = gr.Slider(
                     minimum=1.0,
                     maximum=10.0,
-                    value=3.5,
+                    value=6.5,
                     step=0.5,
                     label="Guidance Scale",
                 )
 
             with gr.Row():
                 num_inference_steps = gr.Slider(
-                    minimum=1, maximum=50, value=28, step=1, label="Inference Steps"
+                    minimum=1, maximum=50, value=20, step=1, label="Inference Steps"
                 )
-                seed = gr.Number(value=100, label="Seed", precision=0)
+                seed = gr.Number(value=42, label="Seed", precision=0)
 
             generate_btn = gr.Button("Generate", variant="primary")
 
