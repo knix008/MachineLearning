@@ -49,13 +49,13 @@ demo = gr.Interface(
     inputs=[
         gr.Textbox(
             label="프롬프트 (Prompt)",
-            value="A highly realistic, high-quality photo of a beautiful Instagram-style girl on vacation. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Her skin should appear natural, with visible pores, avoiding an overly smooth or filtered look.",
+            value="A highly realistic, high-quality photo of a beautiful Instagram-style girl. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing a red bikini. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Her skin should appear natural, with visible pores, avoiding an overly smooth or filtered look.",
             lines=5,
         ),
         gr.Slider(
             label="높이 (Height)", minimum=256, maximum=1024, step=64, value=1024
         ),
-        gr.Slider(label="너비 (Width)", minimum=256, maximum=1024, step=64, value=768),
+        gr.Slider(label="너비 (Width)", minimum=256, maximum=1024, step=64, value=512),
         gr.Slider(
             label="가이던스 스케일 (Guidance Scale)",
             minimum=0.0,
@@ -64,12 +64,12 @@ demo = gr.Interface(
             value=1.0,
         ),
         gr.Slider(
-            label="추론 스텝 (Inference Steps)", minimum=1, maximum=20, step=1, value=4
+            label="추론 스텝 (Inference Steps)", minimum=1, maximum=10, step=1, value=4
         ),
-        gr.Number(label="시드 (Seed)", value=42),
+        gr.Number(label="시드 (Seed)", value=400),
     ],
     outputs=[
-        gr.Image(label="생성된 이미지 (Generated Image)", type="pil"),
+        gr.Image(label="생성된 이미지 (Generated Image)", type="pil", height=800),
         gr.Textbox(label="상태 (Status)"),
     ],
     title="FLUX.2 Klein 4B 이미지 생성기 (Image Generator)",
