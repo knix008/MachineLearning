@@ -43,15 +43,25 @@ def generate_image(
         generator = torch.Generator(device=pipe._execution_device).manual_seed(
             int(seed)
         )
-        image = pipe(
-            prompt=prompt,
-            sigmas=TURBO_SIGMAS,
-            guidance_scale=guidance_scale,
-            height=height,
-            width=width,
-            num_inference_steps=int(num_inference_steps),
-            generator=generator,
-        ).images[0]
+        # Use TURBO_SIGMAS only for 8 steps, otherwise use num_inference_steps
+        if int(num_inference_steps) == 8:
+            image = pipe(
+                prompt=prompt,
+                sigmas=TURBO_SIGMAS,
+                guidance_scale=guidance_scale,
+                height=height,
+                width=width,
+                generator=generator,
+            ).images[0]
+        else:
+            image = pipe(
+                prompt=prompt,
+                guidance_scale=guidance_scale,
+                height=height,
+                width=width,
+                num_inference_steps=int(num_inference_steps),
+                generator=generator,
+            ).images[0]
         
         # Generate filename with script name, date and time
         script_name = os.path.splitext(os.path.basename(__file__))[0]
@@ -69,6 +79,7 @@ def generate_image(
 with gr.Blocks(title="FLUX.2-dev Turbo Image Generator") as demo:
     gr.Markdown("# FLUX.2-dev Turbo 이미지 생성기")
     gr.Markdown("프롬프트를 입력하면 AI가 이미지를 생성합니다.")
+    gr.Markdown("**Inference Steps**: 더 많은 스텝은 더 높은 품질을 제공하지만 생성 시간이 증가합니다. 8 스텝은 최적화된 Turbo 모드를 사용합니다.")
     
     default_prompt = "A highly realistic, high-quality photo of a beautiful Instagram-style girl on vacation. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. Her eyes are hazel, with a natural sparkle of happiness as she smiles. The image should capture her in a full-body shot, with perfect anatomy, including precise details in her eyes and teeth. Her skin should appear natural, with visible pores, avoiding an overly smooth or filtered look, to maintain a lifelike, 4K resolution quality. The overall atmosphere is bright and joyful, reflecting the sunny, relaxed vacation mood."
     
