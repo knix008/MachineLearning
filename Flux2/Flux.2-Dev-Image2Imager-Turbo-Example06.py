@@ -110,7 +110,7 @@ with gr.Blocks(title="FLUX.1 Image-to-Image") as demo:
                 strength = gr.Slider(
                     minimum=0.0,
                     maximum=1.0,
-                    value=0.85,
+                    value=0.25,
                     step=0.05,
                     label="Strength (how much to change the input image)",
                 )
