@@ -74,6 +74,7 @@ def generate_image(
 with gr.Blocks(title="FLUX.1 Image-to-Image") as demo:
     gr.Markdown("# FLUX.1 Image-to-Image Generator")
     gr.Markdown("**Turbo Mode**: Set Inference Steps to 8 to use optimized Turbo mode for faster generation. Other step values use standard inference.")
+    gr.Markdown("**Note**: Actual inference steps = Inference Steps × Strength. For example, 20 steps with 0.85 strength = 17 actual steps.")
 
     with gr.Row():
         with gr.Column():
@@ -104,7 +105,7 @@ with gr.Blocks(title="FLUX.1 Image-to-Image") as demo:
 
             with gr.Row():
                 num_inference_steps = gr.Slider(
-                    minimum=1, maximum=50, value=20, step=1, label="Inference Steps"
+                    minimum=1, maximum=50, value=28, step=1, label="Inference Steps"
                 )
                 seed = gr.Number(value=42, label="Seed", precision=0)
 
