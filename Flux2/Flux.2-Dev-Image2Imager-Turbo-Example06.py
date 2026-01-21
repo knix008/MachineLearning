@@ -14,8 +14,21 @@ DEFAULT_IMAGE_PATH = "default.jpg"
 # Pre-shifted custom sigmas for 8-step turbo inference
 TURBO_SIGMAS = [1.0, 0.6509, 0.4374, 0.2932, 0.1893, 0.1108, 0.0495, 0.00031]
 
-device = "cpu"
-dtype = torch.float32
+# Auto-detect device (Apple Silicon MPS or CPU)
+if torch.backends.mps.is_available():
+    device = "mps"
+    dtype = torch.bfloat16
+    print("🍎 Using Apple Silicon (MPS)")
+elif torch.cuda.is_available():
+    device = "cuda"
+    dtype = torch.bfloat16
+    print("🎮 Using CUDA GPU")
+else:
+    device = "cpu"
+    dtype = torch.float32  # CPU doesn't support bfloat16 well
+    print("💻 Using CPU (Intel/AMD)")
+
+print(f"Device: {device}, dtype: {dtype}")
 
 # Load image-to-image pipeline (FLUX.1-dev supports img2img, FLUX.2-klein does not)
 pipe = FluxImg2ImgPipeline.from_pretrained(
@@ -23,6 +36,7 @@ pipe = FluxImg2ImgPipeline.from_pretrained(
 )
 pipe = pipe.to(device)
 
+# Memory optimization
 pipe.enable_model_cpu_offload()
 pipe.enable_attention_slicing(1)
 pipe.enable_sequential_cpu_offload()
