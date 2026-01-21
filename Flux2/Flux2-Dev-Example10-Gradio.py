@@ -8,6 +8,8 @@ import gradio as gr
 
 # Suppress the add_prefix_spade warning
 warnings.filterwarnings("ignore", message=".*add_prefix_spade.*")
+warnings.filterwarnings("ignore", message=".*add_prefix_space.*")
+warnings.filterwarnings("ignore", message=".*slow tokenizers.*")
 
 # Set device and data type
 device = "cpu"
@@ -18,13 +20,24 @@ pipe = FluxPipeline.from_pretrained(
     "black-forest-labs/FLUX.1-dev", torch_dtype=dtype
 ).to(device)
 
+# Force fast tokenizer
+try:
+    from transformers import AutoTokenizer
+    if hasattr(pipe, 'tokenizer'):
+        pipe.tokenizer = AutoTokenizer.from_pretrained(
+            "black-forest-labs/FLUX.1-dev",
+            use_fast=True
+        )
+except Exception:
+    pass
+
 # Enable memory optimizations
 pipe.enable_model_cpu_offload()  # save some VRAM by offloading the model to CPU
 pipe.enable_attention_slicing(1)  # reduce memory usage further
 pipe.enable_sequential_cpu_offload()
 print("모델 로딩 완료!")
 
-prompt_input = "A beautiful Instagram-style girl has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. Her eyes are hazel, with a natural sparkle of happiness as she smiles.  In her full-body shot, with perfect anatomy, including precise details in her eyes and teeth, her skin should appear natural, with visible pores, avoiding an overly smooth or filtered look, to maintain a lifelike, 4K resolution quality."
+prompt_input = "A beautiful and highly realistic photo of a Instagram-style skinny girl on vacation. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. Her eyes are hazel, with a natural sparkle of happiness as she smiles. It shows perfect anatomy and has precise details in her eyes and teeth, with natural skin texture."
 
 def generate_image(prompt, width, height, guidance_scale, num_inference_steps, seed, strength):
     """
