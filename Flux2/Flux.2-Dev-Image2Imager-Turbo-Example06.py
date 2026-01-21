@@ -75,6 +75,11 @@ with gr.Blocks(title="FLUX.1 Image-to-Image") as demo:
     gr.Markdown("# FLUX.1 Image-to-Image Generator")
     gr.Markdown("**Turbo Mode**: Set Inference Steps to 8 to use optimized Turbo mode for faster generation. Other step values use standard inference.")
     gr.Markdown("**Note**: Actual inference steps = Inference Steps × Strength. For example, 20 steps with 0.85 strength = 17 actual steps.")
+    gr.Markdown("""
+    **Parameter Guide**:
+    - **Strength** (0.0-1.0): Controls how much to change the input image. Higher values = more changes, lower values = preserve more of the original.
+    - **Guidance Scale** (1.0-10.0): Controls how strictly the model follows your prompt. Higher values = stricter adherence to prompt (may cause artifacts), lower values = more creative freedom. Recommended: 3.5-7.0 for FLUX models.
+    """)
 
     with gr.Row():
         with gr.Column():
