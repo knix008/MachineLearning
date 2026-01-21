@@ -64,7 +64,7 @@ demo = gr.Interface(
             value=1.0,
         ),
         gr.Slider(
-            label="추론 스텝 (Inference Steps)", minimum=1, maximum=10, step=1, value=4
+            label="추론 스텝 (Inference Steps)", minimum=1, maximum=50, step=1, value=28
         ),
         gr.Number(label="시드 (Seed)", value=400),
     ],
