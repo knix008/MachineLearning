@@ -30,16 +30,27 @@ pipe.load_lora_weights(
 print("모델 로딩 완료!")
 
 
-def generate_image(prompt, guidance_scale=2.5, height=1024, width=1024):
+def generate_image(
+    prompt,
+    guidance_scale=2.5,
+    height=1024,
+    width=768,
+    seed=100,
+    num_inference_steps=8,
+):
     """Generate image from prompt using FLUX.2-dev Turbo model."""
     try:
+        generator = torch.Generator(device=pipe._execution_device).manual_seed(
+            int(seed)
+        )
         image = pipe(
             prompt=prompt,
             sigmas=TURBO_SIGMAS,
             guidance_scale=guidance_scale,
             height=height,
             width=width,
-            num_inference_steps=8,
+            num_inference_steps=int(num_inference_steps),
+            generator=generator,
         ).images[0]
         
         # Generate filename with script name, date and time
@@ -54,8 +65,6 @@ def generate_image(prompt, guidance_scale=2.5, height=1024, width=1024):
     except Exception as e:
         print(f"에러 발생: {str(e)}")
         return None
-
-
 # Create Gradio interface
 with gr.Blocks(title="FLUX.2-dev Turbo Image Generator") as demo:
     gr.Markdown("# FLUX.2-dev Turbo 이미지 생성기")
@@ -78,7 +87,7 @@ with gr.Blocks(title="FLUX.2-dev Turbo Image Generator") as demo:
                     minimum=1.0,
                     maximum=10.0,
                     step=0.5,
-                    value=2.5
+                    value=4.0
                 )
             
             with gr.Row():
@@ -96,6 +105,23 @@ with gr.Blocks(title="FLUX.2-dev Turbo Image Generator") as demo:
                     step=256,
                     value=768
                 )
+
+            with gr.Row():
+                num_steps = gr.Slider(
+                    label="Inference Steps",
+                    minimum=1,
+                    maximum=50,
+                    step=1,
+                    value=28,
+                )
+
+            with gr.Row():
+                seed_input = gr.Number(
+                    label="시드",
+                    value=42,
+                    precision=0,
+                    interactive=True,
+                )
             
             generate_btn = gr.Button("이미지 생성", variant="primary")
         
@@ -107,7 +133,7 @@ with gr.Blocks(title="FLUX.2-dev Turbo Image Generator") as demo:
     
     generate_btn.click(
         fn=generate_image,
-        inputs=[prompt_input, guidance_scale, height, width],
+        inputs=[prompt_input, guidance_scale, height, width, seed_input, num_steps],
         outputs=image_output
     )
     
