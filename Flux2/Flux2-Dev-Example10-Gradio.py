@@ -29,6 +29,7 @@ try:
             use_fast=True
         )
 except Exception:
+    print("빠른 토크나이저 로드 실패, 기본 토크나이저 사용 중...")
     pass
 
 # Enable memory optimizations
@@ -37,7 +38,7 @@ pipe.enable_attention_slicing(1)  # reduce memory usage further
 pipe.enable_sequential_cpu_offload()
 print("모델 로딩 완료!")
 
-prompt_input = "A beautiful and highly realistic photo of a Instagram-style skinny girl on vacation. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. Her eyes are hazel, with a natural sparkle of happiness as she smiles. It shows perfect anatomy and has precise details in her eyes and teeth, with natural skin texture."
+prompt_input = "A highly realistic, 4k resolution high-quality photo of a beautiful Instagram-style girl on a beach, having black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. Her eyes are hazel, with a natural sparkle of happiness as she smiles with precise details in her eyes and teeth and natural skin, with visible pores."
 
 def generate_image(prompt, width, height, guidance_scale, num_inference_steps, seed, strength):
     """
@@ -143,7 +144,7 @@ with gr.Blocks(title="Flux.1-dev Image Generator") as interface:
             with gr.Row():
                 seed = gr.Number(
                     label="시드",
-                    value=400,
+                    value=100,
                     precision=0,
                     info="난수 생성의 시작점입니다. 같은 시드를 사용하면 같은 결과를 얻습니다."
                 )
