@@ -20,30 +20,21 @@ pipe = FluxPipeline.from_pretrained(
     "black-forest-labs/FLUX.1-dev", torch_dtype=dtype
 ).to(device)
 
-# Force fast tokenizer
-try:
-    from transformers import AutoTokenizer
-    if hasattr(pipe, 'tokenizer'):
-        pipe.tokenizer = AutoTokenizer.from_pretrained(
-            "black-forest-labs/FLUX.1-dev",
-            use_fast=True
-        )
-except Exception:
-    print("빠른 토크나이저 로드 실패, 기본 토크나이저 사용 중...")
-    pass
-
 # Enable memory optimizations
 pipe.enable_model_cpu_offload()  # save some VRAM by offloading the model to CPU
 pipe.enable_attention_slicing(1)  # reduce memory usage further
 pipe.enable_sequential_cpu_offload()
 print("모델 로딩 완료!")
 
-prompt_input = "A highly realistic, 4k resolution, high-quality, high resolution, sharp focused, beautiful instagram-style full body photo. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. She has a sparkling-eye, wearing a red bikini, walking on a sunny beach. Her skin appears natural with visible pores."
+prompt_input = "Highly realistic, 4k resolution, high-quality, high resolution, beautiful instagram-style girl on vacation. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner wearing red bikini and walking on a sunny beach. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Her skin appears natural with visible pores."
 
-def generate_image(prompt, width, height, guidance_scale, num_inference_steps, seed, strength):
+
+def generate_image(
+    prompt, width, height, guidance_scale, num_inference_steps, seed, strength
+):
     """
     Generate an image based on the provided parameters
-    
+
     Parameters:
     -----------
     prompt : str
@@ -78,22 +69,23 @@ def generate_image(prompt, width, height, guidance_scale, num_inference_steps, s
             num_inference_steps=num_inference_steps,
             generator=torch.Generator(device=device).manual_seed(seed),
         ).images[0]
-        
+
         # Save with timestamp
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         script_name = os.path.splitext(os.path.basename(__file__))[0]
         filename = f"{script_name}_{timestamp}.png"
         image.save(filename)
-        
+
         return image, f"✓ 이미지가 저장되었습니다: {filename}"
     except Exception as e:
         return None, f"✗ 오류 발생: {str(e)}"
+
 
 # Create Gradio interface
 with gr.Blocks(title="Flux.1-dev Image Generator") as interface:
     gr.Markdown("# 🎨 Flux.1-dev Image Generator")
     gr.Markdown("AI를 사용하여 텍스트에서 이미지를 생성합니다.")
-    
+
     with gr.Row():
         with gr.Column(scale=1):
             # Input parameters
@@ -102,9 +94,9 @@ with gr.Blocks(title="Flux.1-dev Image Generator") as interface:
                 value=prompt_input,
                 lines=3,
                 placeholder="이미지에 대한 설명을 입력하세요 (77단어 이하 권장)",
-                info="생성하고 싶은 이미지에 대한 텍스트 설명입니다. 자세할수록 좋습니다. 예: '여자, 미소, 해변, 빨간 비키니'"
+                info="생성하고 싶은 이미지에 대한 텍스트 설명입니다. 자세할수록 좋습니다. 예: '여자, 미소, 해변, 빨간 비키니'",
             )
-            
+
             with gr.Row():
                 width = gr.Slider(
                     label="이미지 너비",
@@ -112,7 +104,7 @@ with gr.Blocks(title="Flux.1-dev Image Generator") as interface:
                     maximum=1024,
                     step=64,
                     value=768,
-                    info="생성할 이미지의 너비를 지정합니다 (픽셀). 64의 배수여야 합니다."
+                    info="생성할 이미지의 너비를 지정합니다 (픽셀). 64의 배수여야 합니다.",
                 )
                 height = gr.Slider(
                     label="이미지 높이",
@@ -120,9 +112,9 @@ with gr.Blocks(title="Flux.1-dev Image Generator") as interface:
                     maximum=1024,
                     step=64,
                     value=1024,
-                    info="생성할 이미지의 높이를 지정합니다 (픽셀). 64의 배수여야 합니다."
+                    info="생성할 이미지의 높이를 지정합니다 (픽셀). 64의 배수여야 합니다.",
                 )
-            
+
             with gr.Row():
                 guidance_scale = gr.Slider(
                     label="Guidance Scale (프롬프트 강도)",
@@ -130,7 +122,7 @@ with gr.Blocks(title="Flux.1-dev Image Generator") as interface:
                     maximum=20.0,
                     step=0.5,
                     value=4.0,
-                    info="모델이 프롬프트를 얼마나 따를지 제어합니다. 낮을수록 창의적, 높을수록 정확합니다. 권장: 4-15"
+                    info="모델이 프롬프트를 얼마나 따를지 제어합니다. 낮을수록 창의적, 높을수록 정확합니다. 권장: 4-15",
                 )
                 num_inference_steps = gr.Slider(
                     label="추론 스텝",
@@ -138,15 +130,15 @@ with gr.Blocks(title="Flux.1-dev Image Generator") as interface:
                     maximum=50,
                     step=1,
                     value=20,
-                    info="이미지 생성 과정의 단계 수입니다. 높을수록 품질이 좋지만 시간이 더 걸립니다. 권장: 20-28"
+                    info="이미지 생성 과정의 단계 수입니다. 높을수록 품질이 좋지만 시간이 더 걸립니다. 권장: 20-28",
                 )
-            
+
             with gr.Row():
                 seed = gr.Number(
                     label="시드",
-                    value=42,
+                    value=100,
                     precision=0,
-                    info="난수 생성의 시작점입니다. 같은 시드를 사용하면 같은 결과를 얻습니다."
+                    info="난수 생성의 시작점입니다. 같은 시드를 사용하면 같은 결과를 얻습니다.",
                 )
                 strength = gr.Slider(
                     label="강도",
@@ -154,25 +146,34 @@ with gr.Blocks(title="Flux.1-dev Image Generator") as interface:
                     maximum=1.0,
                     step=0.1,
                     value=0.8,
-                    info="생성 모델의 강도를 제어합니다. 낮을수록 다양한 결과, 높을수록 일관성 있는 결과입니다."
+                    info="생성 모델의 강도를 제어합니다. 낮을수록 다양한 결과, 높을수록 일관성 있는 결과입니다.",
                 )
-            
+
             generate_btn = gr.Button("🚀 이미지 생성", variant="primary", size="lg")
-        
+
         with gr.Column(scale=1):
             # Output
             output_image = gr.Image(label="생성된 이미지", height=800)
             output_message = gr.Textbox(label="상태", interactive=False)
-    
+
     # Connect the generate button to the function
     generate_btn.click(
         fn=generate_image,
-        inputs=[prompt, width, height, guidance_scale, num_inference_steps, seed, strength],
-        outputs=[output_image, output_message]
+        inputs=[
+            prompt,
+            width,
+            height,
+            guidance_scale,
+            num_inference_steps,
+            seed,
+            strength,
+        ],
+        outputs=[output_image, output_message],
     )
-    
+
     gr.Markdown("---")
-    gr.Markdown("""
+    gr.Markdown(
+        """
     ### 파라미터 설명:
     
     **프롬프트** (Prompt)
@@ -202,7 +203,8 @@ with gr.Blocks(title="Flux.1-dev Image Generator") as interface:
     - 생성 모델의 강도를 제어합니다
     - 낮을수록 다양한 결과, 높을수록 일관성 있는 결과
     - 범위: 0.1-1.0
-    """)
+    """
+    )
 
 # Launch the interface
 if __name__ == "__main__":
