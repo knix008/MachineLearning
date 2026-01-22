@@ -38,9 +38,7 @@ pipe.enable_attention_slicing(1)  # reduce memory usage further
 pipe.enable_sequential_cpu_offload()
 print("모델 로딩 완료!")
 
-prompt_input = "A highly realistic, 4k resolution high-quality photo of a beautiful Instagram-style girl on a beach, having black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. Her eyes are hazel, with a natural sparkle of happiness as she smiles with precise details in her eyes and teeth and natural skin, with visible pores."
-
-# prompt_input = "A sparkling-eyed young woman with a stylish beach bag,cute denim skirt,realistic crop top,beautiful detailed body and face,beautiful model young woman,gorgeous sundress model,photorealistic cartoon,beautiful anime woman,beautiful body,attractive pose,attractive face and body,beautiful anime woman --niji 5 --ar 9:16"
+prompt_input = "A sparkling-eyed young woman with a stylish beach bag,cute denim skirt,realistic crop top,beautiful detailed body and face,beautiful model young woman,gorgeous sundress model,photorealistic cartoon,beautiful anime woman,beautiful body,attractive pose,attractive face and body,beautiful anime woman --niji 5 --ar 9:16"
 
 def generate_image(prompt, width, height, guidance_scale, num_inference_steps, seed, strength):
     """
