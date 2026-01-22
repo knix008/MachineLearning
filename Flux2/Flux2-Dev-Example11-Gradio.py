@@ -38,7 +38,7 @@ pipe.enable_attention_slicing(1)  # reduce memory usage further
 pipe.enable_sequential_cpu_offload()
 print("모델 로딩 완료!")
 
-prompt_input = "Ultra detail, high resolution, hyper-realistic, 4k, sharp focus, professional lighting girl photo. She has a beautiful sparkling-eye, wearing a red bikini. Her eyes are hazel, with a natural sparkle of happiness as she smiles with precise details in her eyes and teeth and natural skin, with visible pores."
+prompt_input = "Ultra detail, high resolution, hyper-realistic, 4k, sharp focus, a beautiful instagram-style full body photo. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. She has a sparkling-eye, wearing a red bikini, walking on a sunny beach. Her skin appears natural with visible pores, avoiding overly smooth or filtered looks."
 
 def generate_image(prompt, width, height, guidance_scale, num_inference_steps, seed, strength):
     """
