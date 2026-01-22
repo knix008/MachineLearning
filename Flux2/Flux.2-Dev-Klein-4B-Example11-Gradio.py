@@ -149,7 +149,7 @@ def main():
                 prompt_input = gr.Textbox(
                     label="편집 내용 설명 (영어)",
                     placeholder="예: make the sky blue",
-                    value="Highly realistic, 4k, high-quality, high resolution, beautiful full body photo. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing red bikini, walking on a sunny beach. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Her skin appears natural with visible pores.",
+                    value="Make highly realistic, 8k, high-quality, high resolution, beautiful full body photo, wearing a red bikini, walking on a sunny beach. Her skin appears natural with visible pores. move her face to see the viewer",
                     lines=3
                 )
                 
