@@ -7,10 +7,12 @@ import gradio as gr
 device = "mps"
 dtype = torch.float16  # Use float16 instead of bfloat16 for MPS compatibility
 
+#prompt_input = "A highly realistic, 4k, high-quality vivid photo of a beautiful skinny girl. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. She is walking on a sunny beach and her eyes are hazel, wearing a red bikini, looking at the sea. The image should capture her in a full-body shot with perfect anatomy including precise details in her eyes and teeth. Her skin should appear natural, avoiding an overly smooth or filtered look, to maintain a lifelike. The overall atmosphere is bright and joyful, reflecting the sunny, relaxed vacation mood."
+
 # Initialize the pipeline
 pipe = Flux2KleinPipeline.from_pretrained("black-forest-labs/FLUX.2-klein-4B", torch_dtype=dtype)
 pipe = pipe.to(device)
-#pipe.enable_model_cpu_offload()  # save some VRAM by offloading the model to CPU
+pipe.enable_model_cpu_offload()  # save some VRAM by offloading the model to CPU
 
 def generate_image(prompt, height, width, num_inference_steps, seed):
     """Generate image based on user input parameters"""
