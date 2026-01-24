@@ -135,7 +135,7 @@ with gr.Blocks(title="Flux.1-dev Image Generator") as interface:
             with gr.Row():
                 seed = gr.Number(
                     label="시드",
-                    value=42,
+                    value=100,
                     precision=0,
                     info="난수 생성의 시작점입니다. 같은 시드를 사용하면 같은 결과를 얻습니다.",
                 )
