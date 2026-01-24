@@ -12,8 +12,8 @@ warnings.filterwarnings("ignore", message=".*add_prefix_space.*")
 warnings.filterwarnings("ignore", message=".*slow tokenizers.*")
 
 # Set device and data type
-device = "cpu"
-dtype = torch.float32
+device = "cuda"
+dtype = torch.bfloat16
 
 # Load text-to-image pipeline
 pipe = FluxPipeline.from_pretrained(
@@ -22,13 +22,11 @@ pipe = FluxPipeline.from_pretrained(
 
 # Enable memory optimizations
 pipe.enable_model_cpu_offload()  # save some VRAM by offloading the model to CPU
-pipe.enable_attention_slicing(1)  # reduce memory usage further
-pipe.enable_sequential_cpu_offload()
+#pipe.enable_attention_slicing(1)  # reduce memory usage further
+#pipe.enable_sequential_cpu_offload()
 print("모델 로딩 완료!")
 
-prompt_input = "Highly realistic, 4k, high-quality, high resolution, beautiful girl photo with black, medium-length hair tied back casually. She wears a red bikini with perfect anatomy and precise details and pose like a model. Her skin should appear natural with visible pores, avoiding overly smooth or filtered looks."
-
-# prompt_input = "Highly realistic, 4k body photo. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing red bikini, walking on a sunny beach. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Her skin appears natural with visible pores."
+prompt_input = "Highly realistic, 4k body photo. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing red bikini, walking on a sunny beach. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Her skin appears natural with visible pores."
 
 
 def generate_image(
