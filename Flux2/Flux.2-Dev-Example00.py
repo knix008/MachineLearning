@@ -1,5 +1,7 @@
 import torch
 from diffusers import Flux2Pipeline
+from datetime import datetime
+import os
 
 # 일반 FLUX.2-dev 모델 사용 (양자화 모델에 문제가 있음)
 repo_id = "black-forest-labs/FLUX.2-dev"
@@ -22,7 +24,7 @@ else:
     pipe = pipe.to(device)
 print("모델 로딩 완료!")
 
-prompt = "Realistic macro photograph of a hermit crab using a soda can as its shell, partially emerging from the can, captured with sharp detail and natural colors, on a sunlit beach with soft shadows and a shallow depth of field, with blurred ocean waves in the background. The can has the text `BFL Diffusers` on it and it has a color gradient that start with #FF5733 at the top and transitions to #33FF57 at the bottom."
+prompt = "Highly realistic, 4k, high-quality, high resolution, beautiful korean woman model photography. having black medium-length hair reaching her shoulders, tied back, wearing a red bikini, looking at the viewer. Perfect anatomy, solid orange backdrop, using a camera setup that mimics a large aperture f/1.4, ar 9:16, style raw.s"
 
 image = pipe(
     prompt=prompt,
@@ -31,4 +33,10 @@ image = pipe(
     guidance_scale=4,
 ).images[0]
 
-image.save("flux2_output.png")
+# Generate output filename with script name and timestamp
+script_name = os.path.splitext(os.path.basename(__file__))[0]
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+output_filename = f"{script_name}_{timestamp}.png"
+
+image.save(output_filename)
+print(f"Image saved as: {output_filename}")
