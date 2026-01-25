@@ -74,16 +74,16 @@ with gr.Blocks(title="FLUX.2-Dev Image Generator") as demo:
                 steps_slider = gr.Slider(
                     minimum=1,
                     maximum=50,
-                    value=10,
+                    value=28,
                     step=1,
-                    label="Inference Steps (Higher = Better Quality, Slower)"
+                    label="Inference Steps (Higher = Better Quality, Slower) : 28 recommended"
                 )
                 guidance_slider = gr.Slider(
                     minimum=1.0,
                     maximum=10.0,
                     value=4.0,
                     step=0.5,
-                    label="Guidance Scale"
+                    label="Guidance Scale (3-7 recommended)"
                 )
             
             with gr.Row():
@@ -92,7 +92,7 @@ with gr.Blocks(title="FLUX.2-Dev Image Generator") as demo:
                     maximum=2048,
                     value=512,
                     step=64,
-                    label="Width"
+                    label="Width (Multiples of 64 recommended)"
                 )
                 height_slider = gr.Slider(
                     minimum=256,
