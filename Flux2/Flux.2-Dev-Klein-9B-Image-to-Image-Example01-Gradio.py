@@ -16,7 +16,7 @@ class ImageEditor:
 
         print("모델 로딩 중...")
         self.pipe = Flux2KleinPipeline.from_pretrained(
-            "black-forest-labs/FLUX.2-klein-4B", torch_dtype=self.dtype
+            "black-forest-labs/FLUX.2-klein-9B", torch_dtype=self.dtype
         )
         self.pipe = self.pipe.to(self.device)
 
@@ -30,7 +30,7 @@ class ImageEditor:
                    height=None, width=None, guidance_scale=3.5,
                    num_inference_steps=20, seed=None):
         """
-        Edit an image using Klein 4B model
+        Edit an image using Klein 9B model
 
         Args:
             input_image_path: Path to input image
@@ -198,8 +198,8 @@ def main():
     editor = ImageEditor()
     
     # Create Gradio interface
-    with gr.Blocks(title="Flux Klein 4B 이미지 편집기") as demo:
-        gr.Markdown("# Flux Klein 4B Image-to-Image 편집기")
+    with gr.Blocks(title="Flux Klein 9B 이미지 편집기") as demo:
+        gr.Markdown("# Flux Klein 9B Image-to-Image 편집기")
         gr.Markdown("이미지를 업로드하고 편집하고 싶은 내용을 설명하세요.")
         
         # 시스템 정보 표시
