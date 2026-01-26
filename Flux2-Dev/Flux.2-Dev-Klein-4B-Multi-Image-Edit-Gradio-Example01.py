@@ -283,7 +283,7 @@ def main():
                     minimum=256,
                     maximum=1024,
                     step=64,
-                    value=1024
+                    value=512
                 )
 
             with gr.Row():
