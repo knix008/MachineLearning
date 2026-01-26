@@ -61,7 +61,6 @@ pipe = Flux2Pipeline.from_pretrained(
 #    print("GPU 미연결 - CPU 전용 최적화 사용")
 #    pipe.enable_attention_slicing(1)  # 어텐션 계산 메모리 절약
 
-torch.set_num_threads(torch.get_num_threads())  # CPU 스레드 최대 활용
 pipe.enable_model_cpu_offload()  # 모델 일부를 GPU VRAM에 저장하여 CPU RAM 절약
 pipe.enable_attention_slicing(1)  # 어텐션 계산 메모리 절약
 # pipe.enable_sequential_cpu_offload()  # 시퀀셜 오프로딩으로 메모리 절약(Don't use it with CPU offloading already enabled)
