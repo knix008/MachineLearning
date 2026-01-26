@@ -53,15 +53,18 @@ pipe = Flux2Pipeline.from_pretrained(
 ).to(device)
 
 # Enable memory optimizations - uses GPU VRAM when available
-if torch.cuda.is_available():
-    print("GPU VRAM 활용 최적화 활성화 중...")
-    pipe.enable_model_cpu_offload()  # 모델 일부를 GPU VRAM에 저장하여 CPU RAM 절약
-    print(f"  → CPU RAM 절약 & GPU VRAM 활용 모드")
-else:
-    print("GPU 미연결 - CPU 전용 최적화 사용")
-    pipe.enable_attention_slicing(1)  # 어텐션 계산 메모리 절약
+#if torch.cuda.is_available():
+#    print("GPU VRAM 활용 최적화 활성화 중...")
+#    pipe.enable_model_cpu_offload()  # 모델 일부를 GPU VRAM에 저장하여 CPU RAM 절약
+#    print(f"  → CPU RAM 절약 & GPU VRAM 활용 모드")
+#else:
+#    print("GPU 미연결 - CPU 전용 최적화 사용")
+#    pipe.enable_attention_slicing(1)  # 어텐션 계산 메모리 절약
 
 torch.set_num_threads(torch.get_num_threads())  # CPU 스레드 최대 활용
+pipe.enable_model_cpu_offload()  # 모델 일부를 GPU VRAM에 저장하여 CPU RAM 절약
+pipe.enable_attention_slicing(1)  # 어텐션 계산 메모리 절약
+# pipe.enable_sequential_cpu_offload()  # 시퀀셜 오프로딩으로 메모리 절약(Don't use it with CPU offloading already enabled)
 print("모델 로딩 완료!")
 
 prompt_input = "Highly realistic, 4k, high-quality, high resolution, beautiful korean woman model photography. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing a red bikini. Perfect anatomy. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Orange hue, solid orange backdrop, using a camera setup that mimics a large aperture,f/1.4 --ar 9:16 --style raw."
