@@ -1,5 +1,13 @@
 import torch
 import os
+import multiprocessing
+
+# Set multiprocessing start method before any other imports that might use it
+if __name__ == "__main__":
+    try:
+        multiprocessing.set_start_method('spawn', force=True)
+    except RuntimeError:
+        pass  # Already set
 
 # MPS 메모리 최적화 - 프로그램 시작 시 설정
 os.environ['PYTORCH_MPS_HIGH_WATERMARK_RATIO'] = '0.0'  # MPS 메모리 상한선 비활성화
@@ -7,7 +15,6 @@ os.environ['PYTORCH_MPS_HIGH_WATERMARK_RATIO'] = '0.0'  # MPS 메모리 상한�
 from diffusers import Flux2Pipeline
 from datetime import datetime
 from PIL import Image
-import warnings
 import gradio as gr
 import platform
 import psutil
@@ -60,7 +67,7 @@ pipe = Flux2Pipeline.from_pretrained(
 
 # Enable aggressive memory optimizations for macOS
 print("메모리 최적화 활성화 중...")
-pipe.enable_attention_slicing()  # 어텐션 메모리 절약
+pipe.enable_attention_slicing(1)  # 어텐션 메모리 절약
 pipe.enable_model_cpu_offload()  # CPU 오프로딩으로 MPS 메모리 절약
 
 print("✓ 모델 로딩 완료! (메모리 최적화 모드)")
@@ -243,4 +250,16 @@ with gr.Blocks(title="Flux.1-dev Image Generator") as interface:
 
 # Launch the interface
 if __name__ == "__main__":
-    interface.launch(inbrowser=True)
+    try:
+        interface.launch(
+            inbrowser=True,
+            show_error=False,
+            server_name="127.0.0.1",
+            prevent_thread_lock=False,
+            share=False
+        )
+    finally:
+        # 정리
+        interface.close()
+        torch.mps.empty_cache()
+        gc.collect()
