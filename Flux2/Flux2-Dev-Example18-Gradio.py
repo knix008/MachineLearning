@@ -13,16 +13,22 @@ warnings.filterwarnings("ignore", message=".*slow tokenizers.*")
 
 # Set device and data type
 device = "cpu"
-dtype = torch.float32
+# float16 사용으로 계산 속도 향상 (CPU 호환성 확인 후 사용)
+try:
+    dtype = torch.float16
+    test_tensor = torch.randn(1, dtype=dtype, device=device)
+except:
+    dtype = torch.float32
+    print("경고: float16 미지원, float32 사용")
 
 # Load text-to-image pipeline
 pipe = Flux2Pipeline.from_pretrained(
     "black-forest-labs/FLUX.2-dev", torch_dtype=dtype
 ).to(device)
 
-# Enable memory optimizations for CPU
-pipe.enable_attention_slicing(1)  # 어텐션 계산을 순차적으로 수행하여 메모리 절약
-pipe.enable_sequential_cpu_offload()  # CPU 메모리와 시스템 메모리 간 효율적 전환
+# Enable memory and speed optimizations for CPU
+pipe.enable_attention_slicing(1)  # 어텐션 계산 메모리 절약
+torch.set_num_threads(torch.get_num_threads())  # CPU 스레드 최대 활용
 print("모델 로딩 완료!")
 
 prompt_input = "Highly realistic, 4k, high-quality, high resolution, beautiful korean woman model photography. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing a red bikini. Perfect anatomy. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Orange hue, solid orange backdrop."
@@ -101,16 +107,16 @@ with gr.Blocks(title="Flux.1-dev Image Generator") as interface:
                     minimum=256,
                     maximum=1024,
                     step=64,
-                    value=512,
-                    info="생성할 이미지의 너비를 지정합니다 (픽셀). 64의 배수여야 합니다.",
+                    value=384,
+                    info="CPU 환경에서는 384x384 권장 (빠른 생성). 64의 배수여야 합니다.",
                 )
                 height = gr.Slider(
                     label="이미지 높이",
                     minimum=256,
                     maximum=1024,
                     step=64,
-                    value=1024,
-                    info="생성할 이미지의 높이를 지정합니다 (픽셀). 64의 배수여야 합니다.",
+                    value=384,
+                    info="CPU 환경에서는 384x384 권장 (빠른 생성). 64의 배수여야 합니다.",
                 )
 
             with gr.Row():
@@ -127,8 +133,8 @@ with gr.Blocks(title="Flux.1-dev Image Generator") as interface:
                     minimum=10,
                     maximum=50,
                     step=1,
-                    value=28,
-                    info="이미지 생성 과정의 단계 수입니다. 높을수록 품질이 좋지만 시간이 더 걸립니다. 권장: 20-28",
+                    value=16,
+                    info="이미지 생성 과정의 단계 수입니다. CPU는 10-16 권장 (빠른 생성), GPU는 20-28",
                 )
 
             with gr.Row():
