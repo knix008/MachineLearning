@@ -13,20 +13,19 @@ warnings.filterwarnings("ignore", message=".*slow tokenizers.*")
 
 # Set device and data type
 device = "cpu"
-dtype = torch.float16
+dtype = torch.float32
 
 # Load text-to-image pipeline
 pipe = Flux2Pipeline.from_pretrained(
     "black-forest-labs/FLUX.2-dev", torch_dtype=dtype
 ).to(device)
 
-# Enable memory optimizations
-pipe.enable_model_cpu_offload()  # save some VRAM by offloading the model to CPU
-#pipe.enable_attention_slicing(1)  # reduce memory usage further
-#pipe.enable_sequential_cpu_offload()
+# Enable memory optimizations for CPU
+pipe.enable_attention_slicing(1)  # 어텐션 계산을 순차적으로 수행하여 메모리 절약
+pipe.enable_sequential_cpu_offload()  # CPU 메모리와 시스템 메모리 간 효율적 전환
 print("모델 로딩 완료!")
 
-prompt_input = "Highly realistic, 4k, high-quality, high resolution, beautiful korean woman model photography. having black medium-length hair reaching her shoulders, tied back, wearing a red bikini, looking at the viewer. Perfect anatomy, solid orange backdrop, using a camera setup that mimics a large aperture f/1.4, ar 9:16, style raw."
+prompt_input = "Highly realistic, 4k, high-quality, high resolution, beautiful korean woman model photography. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing a red bikini. Perfect anatomy. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Orange hue, solid orange backdrop."
 
 def generate_image(
     prompt, width, height, guidance_scale, num_inference_steps, seed, strength
@@ -128,14 +127,14 @@ with gr.Blocks(title="Flux.1-dev Image Generator") as interface:
                     minimum=10,
                     maximum=50,
                     step=1,
-                    value=4,
+                    value=28,
                     info="이미지 생성 과정의 단계 수입니다. 높을수록 품질이 좋지만 시간이 더 걸립니다. 권장: 20-28",
                 )
 
             with gr.Row():
                 seed = gr.Number(
                     label="시드",
-                    value=100,
+                    value=42,
                     precision=0,
                     info="난수 생성의 시작점입니다. 같은 시드를 사용하면 같은 결과를 얻습니다.",
                 )
