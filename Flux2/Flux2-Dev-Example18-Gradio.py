@@ -5,11 +5,43 @@ from PIL import Image
 import os
 import warnings
 import gradio as gr
+import platform
+import psutil
 
-# Suppress the add_prefix_spade warning
-warnings.filterwarnings("ignore", message=".*add_prefix_spade.*")
-warnings.filterwarnings("ignore", message=".*add_prefix_space.*")
-warnings.filterwarnings("ignore", message=".*slow tokenizers.*")
+# ======================== 하드웨어 정보 출력 ========================
+print("\n" + "=" * 60)
+print("🖥️  시스템 정보")
+print("=" * 60)
+
+# CPU 정보
+cpu_count = psutil.cpu_count(logical=False)
+cpu_count_logical = psutil.cpu_count(logical=True)
+cpu_freq = psutil.cpu_freq().current if psutil.cpu_freq() else "정보 없음"
+print(f"CPU: {platform.processor()}")
+print(f"  - 코어: {cpu_count}개 (논리 코어: {cpu_count_logical}개)")
+print(f"  - 클럭: {cpu_freq} MHz")
+
+# RAM 정보
+ram = psutil.virtual_memory()
+print(f"\n메모리 (RAM):")
+print(f"  - 총 용량: {ram.total / (1024**3):.2f} GB")
+print(f"  - 사용 중: {ram.used / (1024**3):.2f} GB")
+print(f"  - 여유: {ram.available / (1024**3):.2f} GB")
+
+# GPU/CUDA 정보
+print(f"\n그래픽 카드 (GPU):")
+if torch.cuda.is_available():
+    print(f"  - GPU: {torch.cuda.get_device_name(0)}")
+    print(f"  - CUDA: 사용 가능 (버전: {torch.version.cuda})")
+    print(
+        f"  - VRAM: {torch.cuda.get_device_properties(0).total_memory / (1024**3):.2f} GB"
+    )
+else:
+    print(f"  - GPU: 미연결 (CUDA 미지원)")
+    print(f"  - VRAM: N/A")
+
+print(f"\n현재 실행: CPU 모드")
+print("=" * 60 + "\n")
 
 # Set device and data type
 device = "cpu"
@@ -31,38 +63,12 @@ pipe.enable_attention_slicing(1)  # 어텐션 계산 메모리 절약
 torch.set_num_threads(torch.get_num_threads())  # CPU 스레드 최대 활용
 print("모델 로딩 완료!")
 
-prompt_input = "Highly realistic, 4k, high-quality, high resolution, beautiful korean woman model photography. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing a red bikini. Perfect anatomy. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Orange hue, solid orange backdrop."
+prompt_input = "Highly realistic, 4k, high-quality, high resolution, beautiful korean woman model photography. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing a red bikini. Perfect anatomy. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Orange hue, solid orange backdrop, using a camera setup that mimics a large aperture,f/1.4 --ar 9:16 --style raw."
+
 
 def generate_image(
     prompt, width, height, guidance_scale, num_inference_steps, seed, strength
 ):
-    """
-    Generate an image based on the provided parameters
-
-    Parameters:
-    -----------
-    prompt : str
-        Text description of the image to generate (77 words or less recommended)
-    width : int
-        Image width in pixels (256-1024, must be divisible by 64)
-    height : int
-        Image height in pixels (256-1024, must be divisible by 64)
-    guidance_scale : float
-        Controls how much the model follows the prompt (1.0-20.0)
-        - Lower values = more creative, less accurate to prompt
-        - Higher values = more accurate to prompt, less creative
-        - Recommended: 4-15
-    num_inference_steps : int
-        Number of denoising steps (10-50)
-        - Higher values = better quality but slower (recommended: 20-28)
-    seed : int
-        Random seed for reproducibility
-        - Same seed produces same results with same parameters
-    strength : float
-        Model intensity/confidence in generation (0.1-1.0)
-        - Lower values = subtler, more varied outputs
-        - Higher values = more consistent, stronger adherence to prompt
-    """
     try:
         # Run the pipeline
         image = pipe(
