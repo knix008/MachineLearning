@@ -86,7 +86,7 @@ def main():
                     lines=5
                 )
                 
-                with gr.Accordion("고급 설정", open=False):
+                with gr.Accordion("고급 설정", open=True):
                     with gr.Row():
                         height_input = gr.Slider(
                             label="높이 (Height)",
@@ -129,7 +129,7 @@ def main():
                         minimum=-1,
                         maximum=1000,
                         step=1,
-                        value=200
+                        value=100
                     )
                 
                 submit_btn = gr.Button("이미지 생성", variant="primary", size="lg")
