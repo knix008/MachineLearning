@@ -186,16 +186,20 @@ class MultiImageEditor:
         print(f"생성된 이미지 저장됨: {output_path}")
         return result, combined_image
 
-def process_multiple_images(editor, img1, img2, img3, img4, prompt, combine_mode,
+def process_multiple_images(editor, uploaded_files, prompt, combine_mode,
                             height, width, guidance_scale, num_inference_steps, seed):
     """
     Process multiple images using the editor
     """
-    # Collect non-None images
+    # Load images from uploaded files
     images = []
-    for img in [img1, img2, img3, img4]:
-        if img is not None:
-            images.append(img)
+    if uploaded_files:
+        for file_path in uploaded_files:
+            try:
+                img = Image.open(file_path).convert("RGB")
+                images.append(img)
+            except Exception as e:
+                print(f"이미지 로드 실패: {file_path}, {e}")
 
     if len(images) == 0:
         return None, None, "오류: 최소 1개 이상의 이미지를 입력해주세요."
@@ -240,12 +244,13 @@ def main():
         gr.Markdown("여러 이미지를 업로드하고, 이를 기반으로 새로운 이미지를 생성합니다.")
 
         # 입력 이미지들
-        gr.Markdown("### 입력 이미지 (1~4개)")
-        with gr.Row():
-            image_input1 = gr.Image(label="이미지 1", type="pil", height=300)
-            image_input2 = gr.Image(label="이미지 2", type="pil", height=300)
-            image_input3 = gr.Image(label="이미지 3", type="pil", height=300)
-            image_input4 = gr.Image(label="이미지 4", type="pil", height=300)
+        gr.Markdown("### 입력 이미지 (여러 개 업로드 가능)")
+        image_input = gr.File(
+            label="이미지 파일들",
+            file_count="multiple",
+            file_types=["image"],
+            height=200
+        )
 
         # 결합 방식 선택
         with gr.Row():
@@ -326,10 +331,7 @@ def main():
             fn=process_multiple_images,
             inputs=[
                 gr.State(editor),
-                image_input1,
-                image_input2,
-                image_input3,
-                image_input4,
+                image_input,
                 prompt_input,
                 combine_mode,
                 height_input,
@@ -346,7 +348,7 @@ def main():
             gr.Markdown("""
 ## 사용 방법
 
-1. **이미지 업로드**: 1~4개의 이미지를 업로드합니다.
+1. **이미지 업로드**: 여러 개의 이미지를 업로드합니다.
 2. **결합 방식 선택**:
    - **그리드**: 이미지들을 격자 형태로 배치
    - **평균 블렌드**: 모든 이미지의 픽셀을 평균화
