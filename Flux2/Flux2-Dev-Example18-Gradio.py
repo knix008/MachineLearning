@@ -40,7 +40,7 @@ else:
     print(f"  - GPU: 미연결 (CUDA 미지원)")
     print(f"  - VRAM: N/A")
 
-print(f"\n현재 실행: CPU 모드")
+print(f"\n현재 실행: CPU 모드 (GPU VRAM 보조 사용)")
 print("=" * 60 + "\n")
 
 # Set device and data type
@@ -52,8 +52,15 @@ pipe = Flux2Pipeline.from_pretrained(
     "black-forest-labs/FLUX.2-dev", torch_dtype=dtype
 ).to(device)
 
-# Enable memory and speed optimizations for CPU
-pipe.enable_attention_slicing(1)  # 어텐션 계산 메모리 절약
+# Enable memory optimizations - uses GPU VRAM when available
+if torch.cuda.is_available():
+    print("GPU VRAM 활용 최적화 활성화 중...")
+    pipe.enable_model_cpu_offload()  # 모델 일부를 GPU VRAM에 저장하여 CPU RAM 절약
+    print(f"  → CPU RAM 절약 & GPU VRAM 활용 모드")
+else:
+    print("GPU 미연결 - CPU 전용 최적화 사용")
+    pipe.enable_attention_slicing(1)  # 어텐션 계산 메모리 절약
+
 torch.set_num_threads(torch.get_num_threads())  # CPU 스레드 최대 활용
 print("모델 로딩 완료!")
 
