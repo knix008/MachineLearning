@@ -1,12 +1,17 @@
 import torch
+import os
+
+# MPS 메모리 최적화 - 프로그램 시작 시 설정
+os.environ['PYTORCH_MPS_HIGH_WATERMARK_RATIO'] = '0.0'  # MPS 메모리 상한선 비활성화
+
 from diffusers import Flux2Pipeline
 from datetime import datetime
 from PIL import Image
-import os
 import warnings
 import gradio as gr
 import platform
 import psutil
+import gc
 
 # ======================== 하드웨어 정보 출력 ========================
 print("\n" + "=" * 60)
@@ -40,32 +45,35 @@ else:
     print(f"  - GPU: 미연결 (CUDA 미지원)")
     print(f"  - VRAM: N/A")
 
-print(f"\n현재 실행: CPU 모드 (GPU VRAM 보조 사용)")
 print("=" * 60 + "\n")
 
 # Set device and data type
 device = "mps"
-dtype = torch.bfloat16
+dtype = torch.float16  # bfloat16 대신 float16 사용으로 메모리 절약 (약 50%)
+
+# macOS MPS 메모리 최적화 설정
+if torch.backends.mps.is_available():
+    try:
+        torch.mps.set_per_process_memory_fraction(1.0)  # MPS 메모리 한계 설정
+    except:
+        pass
+
+print("모델 로딩 중... (메모리 최적화 모드)")
 
 # Load text-to-image pipeline
 pipe = Flux2Pipeline.from_pretrained(
     "black-forest-labs/FLUX.2-dev", torch_dtype=dtype
 ).to(device)
 
-# Enable memory optimizations - uses GPU VRAM when available
-#if torch.cuda.is_available():
-#    print("GPU VRAM 활용 최적화 활성화 중...")
-#    pipe.enable_model_cpu_offload()  # 모델 일부를 GPU VRAM에 저장하여 CPU RAM 절약
-#    print(f"  → CPU RAM 절약 & GPU VRAM 활용 모드")
-#else:
-#    print("GPU 미연결 - CPU 전용 최적화 사용")
-#    pipe.enable_attention_slicing(1)  # 어텐션 계산 메모리 절약
+# Enable aggressive memory optimizations for macOS
+print("메모리 최적화 활성화 중...")
+pipe.enable_attention_slicing()  # 어텐션 메모리 절약
+pipe.enable_model_cpu_offload()  # CPU 오프로딩으로 MPS 메모리 절약
 
 torch.set_num_threads(torch.get_num_threads())  # CPU 스레드 최대 활용
-#pipe.enable_model_cpu_offload()  # 모델 일부를 GPU VRAM에 저장하여 CPU RAM 절약
-#pipe.enable_attention_slicing(1)  # 어텐션 계산 메모리 절약
-# pipe.enable_sequential_cpu_offload()  # 시퀀셜 오프로딩으로 메모리 절약(Don't use it with CPU offloading already enabled)
-print("모델 로딩 완료!")
+print("✓ 모델 로딩 완료! (메모리 최적화 모드)")
+print(f"  Device: {device}")
+print(f"  Data Type: {dtype}")
 
 prompt_input = "Highly realistic, 4k, high-quality, high resolution, beautiful korean woman model photography. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing a red bikini. Perfect anatomy. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Orange hue, solid orange backdrop, using a camera setup that mimics a large aperture,f/1.4 --ar 9:16 --style raw."
 
@@ -74,6 +82,21 @@ def generate_image(
     prompt, width, height, guidance_scale, num_inference_steps, seed, strength
 ):
     try:
+        # MPS 메모리 정리
+        torch.mps.empty_cache()
+        gc.collect()
+        
+        # 이미지 크기 제한 (메모리 절약)
+        max_resolution = 512
+        if width > max_resolution or height > max_resolution:
+            scale_factor = max_resolution / max(width, height)
+            width = int(width * scale_factor / 64) * 64
+            height = int(height * scale_factor / 64) * 64
+            print(f"메모리 절약 모드: 이미지 크기 조정 → {width}x{height}")
+        
+        # 추론 스텝 제한 (메모리 절약)
+        num_inference_steps = min(num_inference_steps, 25)
+        
         # Run the pipeline
         image = pipe(
             prompt=prompt,
@@ -81,7 +104,7 @@ def generate_image(
             height=height,
             guidance_scale=guidance_scale,
             num_inference_steps=num_inference_steps,
-            generator=torch.Generator(device=device).manual_seed(seed),
+            generator=torch.Generator(device=device).manual_seed(int(seed)),
         ).images[0]
 
         # Save with timestamp
@@ -89,9 +112,15 @@ def generate_image(
         script_name = os.path.splitext(os.path.basename(__file__))[0]
         filename = f"{script_name}_{timestamp}.png"
         image.save(filename)
+        
+        # 메모리 정리
+        torch.mps.empty_cache()
+        gc.collect()
 
         return image, f"✓ 이미지가 저장되었습니다: {filename}"
     except Exception as e:
+        torch.mps.empty_cache()
+        gc.collect()
         return None, f"✗ 오류 발생: {str(e)}"
 
 
@@ -115,18 +144,18 @@ with gr.Blocks(title="Flux.1-dev Image Generator") as interface:
                 width = gr.Slider(
                     label="이미지 너비",
                     minimum=256,
-                    maximum=1024,
+                    maximum=512,
                     step=64,
                     value=384,
-                    info="CPU 환경에서는 384x384 권장 (빠른 생성). 64의 배수여야 합니다.",
+                    info="macOS MPS 메모리 절약: 512x512 이하 권장. 64의 배수여야 합니다.",
                 )
                 height = gr.Slider(
                     label="이미지 높이",
                     minimum=256,
-                    maximum=1024,
+                    maximum=512,
                     step=64,
                     value=384,
-                    info="CPU 환경에서는 384x384 권장 (빠른 생성). 64의 배수여야 합니다.",
+                    info="macOS MPS 메모리 절약: 512x512 이하 권장. 64의 배수여야 합니다.",
                 )
 
             with gr.Row():
@@ -141,10 +170,10 @@ with gr.Blocks(title="Flux.1-dev Image Generator") as interface:
                 num_inference_steps = gr.Slider(
                     label="추론 스텝",
                     minimum=10,
-                    maximum=50,
+                    maximum=25,
                     step=1,
                     value=16,
-                    info="이미지 생성 과정의 단계 수입니다. CPU는 10-16 권장 (빠른 생성), GPU는 20-28",
+                    info="macOS MPS: 10-25 권장 (메모리 절약). 높을수록 품질 향상",
                 )
 
             with gr.Row():
