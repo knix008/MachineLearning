@@ -18,7 +18,7 @@ pipe = pipe.to(device)
 #pipe.enable_sequential_cpu_offload()
 print("모델 로딩 완료!")
 
-prompt = "A highly realistic, high-quality photo of a beautiful skinny Instagram-style girl on vacation. She has blonde, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. She is walking on a sunny beach and her eyes are hazel, wearing a red bikini, with a natural sparkle of happiness as she smiles. The image should capture her in a full-body shot, with perfect anatomy, including precise details in her eyes and teeth. Her skin should appear natural, with visible pores, avoiding an overly smooth or filtered look, to maintain a lifelike, 4K resolution quality. The overall atmosphere is bright and joyful, reflecting the sunny, relaxed vacation mood."
+prompt = "Photography, orange hue, korean skinny cute girl model, wearing a red bikini, looking at the viewer with smile, facing her body to the right side, perfect anatomy, solid orange backdrop, using a camera setup that mimics a large aperture, f/1.4, --ar 9:16, --style raw."
 
 
 def generate_image(prompt, height, width, guidance_scale, num_inference_steps, seed):
