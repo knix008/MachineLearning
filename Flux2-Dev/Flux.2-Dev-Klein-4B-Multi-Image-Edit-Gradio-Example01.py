@@ -186,20 +186,24 @@ class MultiImageEditor:
         print(f"생성된 이미지 저장됨: {output_path}")
         return result, combined_image
 
-def process_multiple_images(editor, uploaded_files, prompt, combine_mode,
+def process_multiple_images(editor, gallery_images, prompt, combine_mode,
                             height, width, guidance_scale, num_inference_steps, seed):
     """
     Process multiple images using the editor
     """
-    # Load images from uploaded files
+    # Load images from gallery
     images = []
-    if uploaded_files:
-        for file_path in uploaded_files:
+    if gallery_images:
+        for item in gallery_images:
             try:
-                img = Image.open(file_path).convert("RGB")
+                if isinstance(item, tuple):
+                    img_path = item[0]
+                else:
+                    img_path = item
+                img = Image.open(img_path).convert("RGB")
                 images.append(img)
             except Exception as e:
-                print(f"이미지 로드 실패: {file_path}, {e}")
+                print(f"이미지 로드 실패: {e}")
 
     if len(images) == 0:
         return None, None, "오류: 최소 1개 이상의 이미지를 입력해주세요."
@@ -245,11 +249,12 @@ def main():
 
         # 입력 이미지들
         gr.Markdown("### 입력 이미지 (여러 개 업로드 가능)")
-        image_input = gr.File(
-            label="이미지 파일들",
-            file_count="multiple",
-            file_types=["image"],
-            height=200
+        image_input = gr.Gallery(
+            label="이미지를 여기에 드래그하거나 클릭하여 업로드",
+            columns=4,
+            height=300,
+            object_fit="contain",
+            interactive=True
         )
 
         # 결합 방식 선택
@@ -297,19 +302,19 @@ def main():
                     minimum=1.0,
                     maximum=5.0,
                     step=0.1,
-                    value=3.5
+                    value=1.0
                 )
                 steps_input = gr.Slider(
                     label="추론 스텝",
                     minimum=4,
-                    maximum=50,
+                    maximum=10,
                     step=1,
-                    value=20
+                    value=4
                 )
 
             seed_input = gr.Slider(
                 label="시드 (-1=랜덤)",
-                minimum=-1,
+                minimum=0,
                 maximum=10000,
                 step=1,
                 value=42
