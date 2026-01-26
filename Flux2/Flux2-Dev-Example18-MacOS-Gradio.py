@@ -51,13 +51,6 @@ print("=" * 60 + "\n")
 device = "mps"
 dtype = torch.float16  # bfloat16 대신 float16 사용으로 메모리 절약 (약 50%)
 
-# macOS MPS 메모리 최적화 설정
-if torch.backends.mps.is_available():
-    try:
-        torch.mps.set_per_process_memory_fraction(1.0)  # MPS 메모리 한계 설정
-    except:
-        pass
-
 print("모델 로딩 중... (메모리 최적화 모드)")
 
 # Load text-to-image pipeline
@@ -70,7 +63,6 @@ print("메모리 최적화 활성화 중...")
 pipe.enable_attention_slicing()  # 어텐션 메모리 절약
 pipe.enable_model_cpu_offload()  # CPU 오프로딩으로 MPS 메모리 절약
 
-torch.set_num_threads(torch.get_num_threads())  # CPU 스레드 최대 활용
 print("✓ 모델 로딩 완료! (메모리 최적화 모드)")
 print(f"  Device: {device}")
 print(f"  Data Type: {dtype}")
@@ -146,7 +138,7 @@ with gr.Blocks(title="Flux.1-dev Image Generator") as interface:
                     minimum=256,
                     maximum=512,
                     step=64,
-                    value=384,
+                    value=512,
                     info="macOS MPS 메모리 절약: 512x512 이하 권장. 64의 배수여야 합니다.",
                 )
                 height = gr.Slider(
@@ -154,7 +146,7 @@ with gr.Blocks(title="Flux.1-dev Image Generator") as interface:
                     minimum=256,
                     maximum=512,
                     step=64,
-                    value=384,
+                    value=1024,
                     info="macOS MPS 메모리 절약: 512x512 이하 권장. 64의 배수여야 합니다.",
                 )
 
