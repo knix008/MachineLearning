@@ -19,7 +19,7 @@ class MultiImageEditor:
             "black-forest-labs/FLUX.2-klein-4B", torch_dtype=self.dtype
         )
         self.pipe = self.pipe.to(self.device)
-        
+
         # Memory optimization
         self.pipe.enable_model_cpu_offload()
         self.pipe.enable_attention_slicing()
