@@ -45,13 +45,7 @@ print("=" * 60 + "\n")
 
 # Set device and data type
 device = "cpu"
-# float16 사용으로 계산 속도 향상 (CPU 호환성 확인 후 사용)
-try:
-    dtype = torch.float16
-    test_tensor = torch.randn(1, dtype=dtype, device=device)
-except:
-    dtype = torch.float32
-    print("경고: float16 미지원, float32 사용")
+dtype = torch.float32
 
 # Load text-to-image pipeline
 pipe = Flux2Pipeline.from_pretrained(
