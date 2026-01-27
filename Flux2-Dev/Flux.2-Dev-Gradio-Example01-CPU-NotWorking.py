@@ -18,7 +18,7 @@ pipe = Flux2Pipeline.from_pretrained(
 # Enable memory optimizations
 pipe.enable_model_cpu_offload()
 pipe.enable_attention_slicing()
-pipe.enable_sequential_cpu_offload()
+#pipe.enable_sequential_cpu_offload()
 print("모델 로딩 완료!")
 
 prompt_input = "A highly realistic, high-quality photo of a beautiful Instagram-style girl on vacation. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. Her eyes are hazel, with a natural sparkle of happiness as she smiles. She is wearing a red bikini and her skin should appear natural, with visible pores, avoiding an overly smooth or filtered look."
@@ -49,8 +49,8 @@ def generate_image(
 
 
 # Create Gradio interface
-with gr.Blocks(title="Flux.1-dev Image Generator") as interface:
-    gr.Markdown("# 🎨 Flux.1-dev Image Generator")
+with gr.Blocks(title="Flux.2-dev Image Generator") as interface:
+    gr.Markdown("# 🎨 Flux.2-dev Image Generator")
     gr.Markdown("AI를 사용하여 텍스트에서 이미지를 생성합니다.")
 
     with gr.Row():
