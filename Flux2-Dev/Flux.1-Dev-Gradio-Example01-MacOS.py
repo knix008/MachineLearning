@@ -35,7 +35,7 @@ def generate_image(
             guidance_scale=guidance_scale,
             num_inference_steps=num_inference_steps,
             generator=torch.Generator(device=device).manual_seed(seed),
-        ).image[0]
+        ).images[0]
         
         # Save with timestamp
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
