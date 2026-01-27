@@ -12,12 +12,12 @@ dtype = torch.float32
 
 # Load text-to-image pipeline
 pipe = FluxPipeline.from_pretrained(
-    "black-forest-labs/FLUX.1-dev", torch_dtype=dtype
+    "black-forest-labs/FLUX.2-dev", torch_dtype=dtype
 ).to(device)
 
 # Enable memory optimizations
-pipe.enable_model_cpu_offload()  
-pipe.enable_attention_slicing()  
+pipe.enable_model_cpu_offload()
+pipe.enable_attention_slicing()
 #pipe.enable_sequential_cpu_offload()
 print("모델 로딩 완료!")
 
