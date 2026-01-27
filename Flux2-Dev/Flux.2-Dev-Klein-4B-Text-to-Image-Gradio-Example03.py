@@ -118,7 +118,7 @@ def main():
                             minimum=0.0,
                             maximum=1.0,
                             step=0.1,
-                            value=0.5
+                            value=1.0
                         )
                         steps_input = gr.Slider(
                             label="추론 스텝 (Inference Steps)",
