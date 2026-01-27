@@ -1,5 +1,5 @@
 import torch
-from diffusers import FluxPipeline
+from diffusers import Flux2Pipeline
 from datetime import datetime
 from PIL import Image
 import os
@@ -11,17 +11,17 @@ device = "mps"
 dtype = torch.bfloat16
 
 # Load text-to-image pipeline
-pipe = FluxPipeline.from_pretrained(
-    "black-forest-labs/FLUX.1-dev", torch_dtype=dtype
+pipe = Flux2Pipeline.from_pretrained(
+    "black-forest-labs/FLUX.2-dev", torch_dtype=dtype
 ).to(device)
 
 # Enable memory optimizations
-#pipe.enable_model_cpu_offload()  
-#pipe.enable_attention_slicing()  
+#pipe.enable_model_cpu_offload()
+#pipe.enable_attention_slicing()
 #pipe.enable_sequential_cpu_offload()
 print("모델 로딩 완료!")
 
-prompt_input = "A highly realistic, high-quality photo of a beautiful Instagram-style girl on vacation. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. Her eyes are hazel, with a natural sparkle of happiness as she smiles. She is wearing a red bikini and her skin should appear natural, with visible pores, avoiding an overly smooth or filtered look."
+prompt_input = "Highly realistic, 4k, high-quality, high resolution, beautiful full body korean woman model photography. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing a red bikini. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Her skin appears natural with visible pores. Orange hue, solid orange backdrop, using a camera setup that mimics a large aperture, f/1.4 --ar 9:16 --style raw."
 
 def generate_image(
     prompt, width, height, guidance_scale, num_inference_steps, seed, strength
@@ -36,7 +36,7 @@ def generate_image(
             num_inference_steps=num_inference_steps,
             generator=torch.Generator(device=device).manual_seed(seed),
         ).images[0]
-
+        
         # Save with timestamp
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         script_name = os.path.splitext(os.path.basename(__file__))[0]

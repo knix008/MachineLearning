@@ -1,5 +1,5 @@
 import torch
-from diffusers import FluxPipeline
+from diffusers import Flux2Pipeline
 from datetime import datetime
 from PIL import Image
 import os
@@ -11,7 +11,7 @@ device = "cpu"
 dtype = torch.float32
 
 # Load text-to-image pipeline
-pipe = FluxPipeline.from_pretrained(
+pipe = Flux2Pipeline.from_pretrained(
     "black-forest-labs/FLUX.2-dev", torch_dtype=dtype
 ).to(device)
 
