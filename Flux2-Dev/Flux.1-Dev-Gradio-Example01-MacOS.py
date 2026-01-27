@@ -13,7 +13,7 @@ warnings.filterwarnings("ignore", message=".*slow tokenizers.*")
 
 # Set device and data type
 device = "mps"
-dtype = torch.float16
+dtype = torch.bfloat16
 
 # Load text-to-image pipeline
 pipe = FluxPipeline.from_pretrained(
@@ -33,14 +33,30 @@ def generate_image(
 ):
     try:
         # Run the pipeline
-        image = pipe(
+        result = pipe(
             prompt=prompt,
             width=width,
             height=height,
             guidance_scale=guidance_scale,
             num_inference_steps=num_inference_steps,
             generator=torch.Generator(device=device).manual_seed(seed),
-        ).images[0]
+        )
+        
+        image = result.images[0]
+        
+        # Convert PIL image to numpy array and ensure valid range
+        img_array = np.array(image)
+        
+        # Check for invalid values and clip to valid range
+        if np.isnan(img_array).any() or np.isinf(img_array).any():
+            # Replace NaN/inf with valid values
+            img_array = np.nan_to_num(img_array, nan=0.0, posinf=255.0, neginf=0.0)
+        
+        # Ensure values are in valid range [0, 255]
+        img_array = np.clip(img_array, 0, 255).astype(np.uint8)
+        
+        # Convert back to PIL Image
+        image = Image.fromarray(img_array)
 
         # Save with timestamp
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
