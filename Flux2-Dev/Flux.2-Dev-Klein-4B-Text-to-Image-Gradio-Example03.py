@@ -25,8 +25,8 @@ def load_model():
     
     # Memory optimization 
     pipe.enable_model_cpu_offload() # CUDA에서 CPU RAM을 일부 사용
-    pipe.enable_attention_slicing() # 안쓰면 Flux.1과 같이 "CLIP 77" 경고 발생, 엄청나게 느림.
-    pipe.enable_sequential_cpu_offload() # 안쓰면 "Guidance scale 4" 경고 발생
+    pipe.enable_attention_slicing() # 안쓰면 GPU 메모리를 더 사용함(속)
+    #pipe.enable_sequential_cpu_offload() # 안쓰면 CUDA에서 더 빠름(4 추론스텝에서 1초 단축)
     
     print("모델 로딩 완료!")
     return pipe
@@ -115,10 +115,10 @@ def main():
                         guidance_input = gr.Slider(
                             label="Guidance Scale",
                             info="프롬프트 충실도 (낮음: 창의적, 높음: 정확)",
-                            minimum=1.0,
-                            maximum=5.0,
+                            minimum=0.0,
+                            maximum=1.0,
                             step=0.1,
-                            value=4.0
+                            value=0.5
                         )
                         steps_input = gr.Slider(
                             label="추론 스텝 (Inference Steps)",
