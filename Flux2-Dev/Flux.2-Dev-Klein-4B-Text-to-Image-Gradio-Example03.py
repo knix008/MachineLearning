@@ -5,7 +5,7 @@ from PIL import Image
 import os
 import gradio as gr
 
-DEFAULT_PROMPT = "Highly realistic, 4k, high-quality, high resolution, beautiful skinny korean woman model instagram-style photography. having black medium-length hair reaching her shoulders, tied back, wearing a red bikini, looking at the viewer. Perfect anatomy, solid orange backdrop, using a camera setup that mimics a large aperture f/1.4, --ar 9:16, --style raw."
+DEFAULT_PROMPT = "Highly realistic, 4k, high-quality, high resolution, beautiful full body korean woman model photography. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing a red bikini. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Her skin appears natural with visible pores. Orange hue, solid orange backdrop, using a camera setup that mimics a large aperture, f/1.4 --ar 9:16 --style raw."
 
 # Global variables for model
 DEVICE = "cuda"
@@ -18,20 +18,20 @@ def load_model():
     
     print("모델 로딩 중...")
     pipe = Flux2KleinPipeline.from_pretrained(
-        "black-forest-labs/FLUX.2-klein-4B", 
+        "black-forest-labs/FLUX.2-klein-4B",
         torch_dtype=DTYPE
     )
     pipe = pipe.to(DEVICE)
     
-    # Memory optimization
-    pipe.enable_model_cpu_offload()
-    pipe.enable_attention_slicing()
-    pipe.enable_sequential_cpu_offload()
+    # Memory optimization 
+    pipe.enable_model_cpu_offload() # CUDA에서 CPU RAM을 일부 사용
+    pipe.enable_attention_slicing() # 안쓰면 Flux.1과 같이 "CLIP 77" 경고 발생, 엄청나게 느림.
+    pipe.enable_sequential_cpu_offload() # 안쓰면 "Guidance scale 4" 경고 발생
     
     print("모델 로딩 완료!")
     return pipe
 
-def generate_image(prompt, height, width, guidance_scale, num_inference_steps, seed):
+def generate_image(prompt, height, width, guidance_scale, strength, num_inference_steps, seed):
     """Generate image from text prompt and return for UI display."""
     global pipe
     
@@ -47,15 +47,21 @@ def generate_image(prompt, height, width, guidance_scale, num_inference_steps, s
             generator.manual_seed(seed)
 
         # Generate image
-        print(f"이미지 생성 중... (steps: {num_inference_steps})")
-        image = pipe(
-            prompt=prompt,
-            height=height,
-            width=width,
-            guidance_scale=guidance_scale,
-            num_inference_steps=num_inference_steps,
-            generator=generator,
-        ).images[0]
+        pipe_kwargs = {
+            "prompt": prompt,
+            "height": height,
+            "width": width,
+            "guidance_scale": guidance_scale,
+            "num_inference_steps": num_inference_steps,
+            "generator": generator,
+        }
+
+        # Strength is only passed if the pipeline supports it to avoid runtime errors.
+        if hasattr(pipe, "__call__") and "strength" in pipe.__call__.__code__.co_varnames:
+            pipe_kwargs["strength"] = strength
+
+        print(f"이미지 생성 중... (steps: {num_inference_steps}, strength: {strength})")
+        image = pipe(**pipe_kwargs).images[0]
 
         # Save with timestamp
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -118,18 +124,26 @@ def main():
                             label="추론 스텝 (Inference Steps)",
                             info="생성 품질 (높을수록 고품질, 느림)",
                             minimum=4,
-                            maximum=10,
+                            maximum=50,
                             step=1,
                             value=4
+                        )
+                        strength_input = gr.Slider(
+                            label="Strength",
+                            info="노이즈 비율 (0: 원본 유지, 1: 완전한 노이즈)",
+                            minimum=0.0,
+                            maximum=1.0,
+                            step=0.05,
+                            value=0.8
                         )
                     
                     seed_input = gr.Slider(
                         label="시드 (Seed)",
-                        info="재현성을 위한 난수 시드 (-1: 랜덤)",
+                        info="재현성을 위한 난수 시드 (0: 랜덤)",
                         minimum=-1,
                         maximum=1000,
                         step=1,
-                        value=42
+                        value=42    
                     )
                 
                 submit_btn = gr.Button("이미지 생성", variant="primary", size="lg")
@@ -146,6 +160,7 @@ def main():
                 height_input,
                 width_input,
                 guidance_input,
+                strength_input,
                 steps_input,
                 seed_input
             ],
