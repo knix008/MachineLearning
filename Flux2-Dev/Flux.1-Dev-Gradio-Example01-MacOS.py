@@ -5,6 +5,7 @@ from PIL import Image
 import os
 import warnings
 import gradio as gr
+import numpy as np
 
 # Suppress the add_prefix_spade warning
 warnings.filterwarnings("ignore", message=".*add_prefix_spade.*")
