@@ -3,13 +3,6 @@ from diffusers import Flux2Pipeline
 from datetime import datetime
 import os
 
-# https://www.aitimes.com/news/articleView.html?idxno=205183 to get the access right.
-
-# from huggingface_hub import login
-#
-# access_token = "hf_"
-# login(access_token)
-
 # Pre-shifted custom sigmas for 8-step turbo inference
 TURBO_SIGMAS = [1.0, 0.6509, 0.4374, 0.2932, 0.1893, 0.1108, 0.0495, 0.00031]
 
