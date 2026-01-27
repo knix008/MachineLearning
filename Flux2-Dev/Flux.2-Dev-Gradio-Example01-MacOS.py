@@ -10,6 +10,7 @@ import gradio as gr
 device = "mps"
 dtype = torch.bfloat16
 
+# Actually, more RAM is required to run this program. Not working in 32GB. More than 48GB RAM required.
 # Load text-to-image pipeline
 pipe = Flux2Pipeline.from_pretrained(
     "black-forest-labs/FLUX.2-dev", torch_dtype=dtype
