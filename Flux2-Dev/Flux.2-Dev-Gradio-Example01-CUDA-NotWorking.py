@@ -8,7 +8,7 @@ import gradio as gr
 
 # Set device and data type
 device = "cuda"
-dtype = torch.bfloat16
+dtype = torch.float16
 
 # Load text-to-image pipeline
 pipe = Flux2Pipeline.from_pretrained(
