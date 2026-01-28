@@ -5,7 +5,7 @@ from PIL import Image
 import os
 import gradio as gr
 
-DEFAULT_PROMPT = "A sparkling-eyed Instagram-style young korean woman wearing a cute red bikini, beautiful detailed body with perfect anatomy and face, beautiful model young woman, gorgeous model, photorealistic, 4k, high quality, high resolution, beautiful body, attractive pose, attractive face and body --niji 5 --ar 9:16"
+DEFAULT_PROMPT = "A highly realistic, high-quality photo of a beautiful Instagram-style korean girl on vacation. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. Her eyes are hazel, with a natural sparkle of happiness as she smiles, wearing a bikini. The image should capture her in a half-body shot, with perfect anatomy, including precise details in her eyes and teeth. Her skin should appear natural, with visible pores, avoiding an overly smooth or filtered look, to maintain a lifelike, 4K resolution quality. The overall atmosphere is bright and joyful, reflecting the sunny, relaxed vacation mood."
 
 # Global variables for model
 DEVICE = "mps"
