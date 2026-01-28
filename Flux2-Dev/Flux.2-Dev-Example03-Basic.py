@@ -22,15 +22,17 @@ print(
     "Sequential CPU offloading enabled - model layers will move between GPU and CPU as needed"
 )
 
-prompt = "A highly realistic, high-quality photo of a beautiful Instagram-style girl. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner.Her eyes are hazel with a natural sparkle of happiness as she smiles.The image should be perfect anatomy, including precise details in her eyes and teeth. Her skin should appear natural, with visible pores, avoiding an overly smooth or filtered look, to maintain a lifelike, 4K resolution quality. The overall atmosphere is bright and joyful, reflecting the sunny, relaxed vacation mood."
+prompt = "4k, high-quality, high resolution, full body, realistic, photography of a beautiful Instagram-style korean girl. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner.Her eyes are hazel with a natural sparkle of happiness as she smiles.The image should be perfect anatomy, including precise details in her eyes and teeth. Her skin should appear natural, with visible pores, avoiding an overly smooth or filtered look, to maintain a lifelike, 4K resolution quality. The overall atmosphere is bright and joyful, reflecting the sunny, relaxed vacation mood."
 
 # Use the pipe directly - it handles text encoding internally
 # Generator device should match where the model's first layer is
 device_for_generator = "cuda" if torch.cuda.is_available() else "cpu"
 image = pipe(
     prompt=prompt,
+    height=1024,
+    width=512,
     generator=torch.Generator(device=device_for_generator).manual_seed(42),
-    num_inference_steps=28,  # 28 steps can be a good trade-off
+    num_inference_steps=4,  # 28 steps can be a good trade-off
     guidance_scale=4,
 ).images[0]
 
