@@ -43,7 +43,7 @@ def generate_image(prompt, height, width, guidance_scale, num_steps, seed):
 
 
 # Default prompt
-default_prompt = "Highly realistic, 4k, high-quality, high resolution,  beautiful instagram-style skinny korean girl full body photography with perfect anatomy, facing her body to the right side. She is looking at the viewer. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing a red bikini. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Her skin appears natural with visible pores. Orange hue, solid orange backdrop, using a camera setup that mimics a large aperture, f/1.4 --ar 9:16 --style raw."
+default_prompt = "Highly realistic, 4k, high-quality, high resolution, beautiful instagram-style skinny korean girl model full-body photography with perfect anatomy, facing her body to the right side. She is looking at the viewer. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing a red bikini. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Her skin appears natural with visible pores. Orange hue, solid orange backdrop, using a camera setup that mimics a large aperture, f/1.4 --ar 9:16 --style raw."
 
 # Create Gradio interface
 with gr.Blocks(title="FLUX.2 Klein 9B Image Generator") as demo:
