@@ -5,7 +5,7 @@ from PIL import Image
 import os
 import gradio as gr
 
-DEFAULT_PROMPT = "4k, A highly realistic, high-quality photo of a beautiful Instagram-style skinny korean girl. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. Her eyes are hazel, with a natural sparkle of happiness as she smiles, wearing a cute red bikini. The image should capture her in a half-body shot, with perfect anatomy, including precise details in her eyes and teeth. Her skin should appear natural, with visible pores, avoiding an overly smooth or filtered look, to maintain a lifelike, The overall atmosphere is bright and joyful, reflecting the sunny, relaxed vacation mood."
+DEFAULT_PROMPT = "a glamorous red bikini swimsuit hot skinny korean model posing on a tropical beach at sunset, cinematic lighting, five fingers on each hands, 4k, ultra-detailed texture, with perfect anatomy, fashion vibe."
 
 # Global variables for model
 DEVICE = "cpu"
@@ -26,7 +26,7 @@ def load_model():
     # Memory optimization 
     pipe.enable_model_cpu_offload() # CUDA에서 CPU RAM을 일부 사용
     pipe.enable_attention_slicing() # 안쓰면 GPU 메모리를 더 사용함(속)
-    pipe.enable_sequential_cpu_offload() # 안쓰면 CUDA에서 더 빠름(4 추론스텝에서 1초 단축)
+    pipe.enable_sequential_cpu_offload() # 안쓰면 CUDA에서 더 빠름(4 추론스텝에서 1초 단축), CPU에서는 사용해야 함
     
     print("모델 로딩 완료!")
     return pipe
@@ -62,7 +62,7 @@ def generate_image(prompt, height, width, guidance_scale, num_inference_steps, s
         # Save with timestamp
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         base_name = os.path.splitext(os.path.basename(__file__))[0]
-        output_path = f"{base_name}_{timestamp}.png"
+        output_path = f"{base_name}_{timestamp}_seed{int(seed)}.png"
         image.save(output_path)
         print(f"이미지 저장됨: {output_path}")
         
