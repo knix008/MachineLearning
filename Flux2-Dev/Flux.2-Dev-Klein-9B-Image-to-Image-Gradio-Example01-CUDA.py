@@ -19,7 +19,7 @@ def load_model():
 
     print("모델 로딩 중...")
     pipe = Flux2KleinPipeline.from_pretrained(
-        "black-forest-labs/FLUX.2-dev",
+        "black-forest-labs/FLUX.2-klein-9B",
         torch_dtype=DTYPE
     )
     pipe = pipe.to(DEVICE)
@@ -27,12 +27,12 @@ def load_model():
     # Memory optimization
     pipe.enable_model_cpu_offload()
     pipe.enable_attention_slicing()
-    pipe.enable_sequential_cpu_offload() # 안쓰면 CUDA에서 더 빠름(4 추론스텝에서 1초 단축), CPU에서는 사용해야 함
+    pipe.enable_sequential_cpu_offload()
 
     print("모델 로딩 완료!")
     return pipe
 
-def generate_image(input_image, prompt, strength, guidance_scale, num_inference_steps, seed):
+def generate_image(input_image, prompt, guidance_scale, num_inference_steps, seed):
     """Generate image from input image and text prompt."""
     global pipe
 
@@ -52,13 +52,12 @@ def generate_image(input_image, prompt, strength, guidance_scale, num_inference_
         if seed is not None and seed >= 0:
             generator.manual_seed(int(seed))
 
-        print(f"이미지 편집 중... (steps: {num_inference_steps}, strength: {strength})")
+        print(f"이미지 편집 중... (steps: {num_inference_steps})")
 
         # Generate image
         image = pipe(
             prompt=prompt,
             image=input_image,
-            strength=strength,
             guidance_scale=guidance_scale,
             num_inference_steps=num_inference_steps,
             generator=generator,
@@ -102,15 +101,6 @@ def main():
                 )
 
                 with gr.Accordion("고급 설정", open=True):
-                    strength_input = gr.Slider(
-                        label="Strength (강도)",
-                        info="원본 이미지 변형 정도 (0: 원본 유지, 1: 완전히 새로 생성)",
-                        minimum=0.1,
-                        maximum=1.0,
-                        step=0.05,
-                        value=0.75
-                    )
-
                     with gr.Row():
                         guidance_input = gr.Slider(
                             label="Guidance Scale",
@@ -123,7 +113,7 @@ def main():
                         steps_input = gr.Slider(
                             label="추론 스텝 (Inference Steps)",
                             info="생성 품질 (높을수록 고품질, 느림)",
-                            minimum=10,
+                            minimum=1,
                             maximum=20,
                             step=1,
                             value=4
@@ -150,7 +140,6 @@ def main():
             inputs=[
                 input_image,
                 prompt_input,
-                strength_input,
                 guidance_input,
                 steps_input,
                 seed_input
