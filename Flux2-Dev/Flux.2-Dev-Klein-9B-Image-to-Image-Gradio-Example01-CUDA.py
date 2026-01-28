@@ -5,7 +5,7 @@ from PIL import Image
 import os
 import gradio as gr
 
-DEFAULT_PROMPT = "a glamorous red bikini swimsuit hot skinny korean model posing on a tropical beach at sunset, cinematic lighting, 4k, ultra-detailed texture, with perfect anatomy, fashion vibe."
+DEFAULT_PROMPT = "a glamorous red bikini swimsuit hot skinny korean model posing on a tropical sunny beach, cinematic lighting, 4k, ultra-detailed texture, with perfect anatomy, perfect arms and legs, fashion vibe."
 DEFAULT_IMAGE = "default.png"
 
 # Global variables for model
@@ -32,7 +32,7 @@ def load_model():
     print("모델 로딩 완료!")
     return pipe
 
-def generate_image(input_image, prompt, guidance_scale, num_inference_steps, seed):
+def generate_image(input_image, prompt, height, width, guidance_scale, num_inference_steps, seed):
     """Generate image from input image and text prompt."""
     global pipe
 
@@ -52,12 +52,16 @@ def generate_image(input_image, prompt, guidance_scale, num_inference_steps, see
         if seed is not None and seed >= 0:
             generator.manual_seed(int(seed))
 
-        print(f"이미지 편집 중... (steps: {num_inference_steps})")
+        print(f"출력 크기: {width}x{height}")
+        print(f"추론 스텝: {num_inference_steps}, 시드: {int(seed)}")
+        print(f"이미지 편집 중... (steps: {num_inference_steps}, seed: {int(seed)})")
 
         # Generate image
         image = pipe(
             prompt=prompt,
             image=input_image,
+            height=height,
+            width=width,
             guidance_scale=guidance_scale,
             num_inference_steps=num_inference_steps,
             generator=generator,
@@ -66,7 +70,7 @@ def generate_image(input_image, prompt, guidance_scale, num_inference_steps, see
         # Save with timestamp
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         base_name = os.path.splitext(os.path.basename(__file__))[0]
-        output_path = f"{base_name}_{timestamp}_seed{int(seed)}.png"
+        output_path = f"{base_name}_{timestamp}_step{num_inference_steps}_seed{int(seed)}.png"
         image.save(output_path)
         print(f"이미지 저장됨: {output_path}")
 
@@ -80,8 +84,8 @@ def main():
     load_model()
 
     # Create Gradio interface
-    with gr.Blocks(title="Flux.2 Dev Image-to-Image 편집기") as demo:
-        gr.Markdown("# Flux.2 Dev Image-to-Image 편집기")
+    with gr.Blocks(title="Flux.2 Dev 9B Image-to-Image 편집기") as demo:
+        gr.Markdown("# Flux.2 Dev 9B Image-to-Image 편집기")
         gr.Markdown("이미지를 업로드하고 프롬프트로 편집하세요.")
 
         with gr.Row():
@@ -101,6 +105,24 @@ def main():
                 )
 
                 with gr.Accordion("고급 설정", open=True):
+                    with gr.Row():
+                        height_input = gr.Slider(
+                            label="높이 (Height)",
+                            info="생성할 이미지의 높이 (픽셀)",
+                            minimum=256,
+                            maximum=1024,
+                            step=64,
+                            value=1024
+                        )
+                        width_input = gr.Slider(
+                            label="너비 (Width)",
+                            info="생성할 이미지의 너비 (픽셀)",
+                            minimum=256,
+                            maximum=1024,
+                            step=64,
+                            value=768
+                        )
+                    
                     with gr.Row():
                         guidance_input = gr.Slider(
                             label="Guidance Scale",
@@ -140,6 +162,8 @@ def main():
             inputs=[
                 input_image,
                 prompt_input,
+                height_input,
+                width_input,
                 guidance_input,
                 steps_input,
                 seed_input
