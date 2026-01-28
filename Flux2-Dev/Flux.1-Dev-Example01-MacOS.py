@@ -23,8 +23,8 @@ pipe = FluxPipeline.from_pretrained(
 ).to(device)
 
 # Enable memory optimizations
-pipe.enable_model_cpu_offload()
-pipe.enable_attention_slicing()
+#pipe.enable_model_cpu_offload()
+#pipe.enable_attention_slicing()
 #pipe.enable_sequential_cpu_offload() # More useful for very large models, more memory for GPU, less memory for CPU, Slower inference.
 print("Model loaded!")
 
