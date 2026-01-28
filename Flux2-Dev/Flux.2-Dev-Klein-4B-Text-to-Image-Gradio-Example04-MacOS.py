@@ -5,7 +5,7 @@ from PIL import Image
 import os
 import gradio as gr
 
-DEFAULT_PROMPT = "A highly realistic, high-quality photo of a beautiful Instagram-style korean girl on vacation. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. Her eyes are hazel, with a natural sparkle of happiness as she smiles, wearing a bikini. The image should capture her in a half-body shot, with perfect anatomy, including precise details in her eyes and teeth. Her skin should appear natural, with visible pores, avoiding an overly smooth or filtered look, to maintain a lifelike, 4K resolution quality. The overall atmosphere is bright and joyful, reflecting the sunny, relaxed vacation mood."
+DEFAULT_PROMPT = "4k, A highly realistic, high-quality photo of a beautiful Instagram-style skinny korean girl. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. Her eyes are hazel, with a natural sparkle of happiness as she smiles, wearing a cute red bikini. The image should capture her in a half-body shot, with perfect anatomy, including precise details in her eyes and teeth. Her skin should appear natural, with visible pores, avoiding an overly smooth or filtered look, to maintain a lifelike, The overall atmosphere is bright and joyful, reflecting the sunny, relaxed vacation mood."
 
 # Global variables for model
 DEVICE = "mps"
@@ -109,7 +109,7 @@ def main():
                             minimum=256,
                             maximum=1024,
                             step=64,
-                            value=768
+                            value=512
                         )
                     
                     with gr.Row():
@@ -127,7 +127,7 @@ def main():
                             minimum=4,
                             maximum=50,
                             step=1,
-                            value=10
+                            value=4
                         )
                         strength_input = gr.Slider(
                             label="Strength",
@@ -135,7 +135,7 @@ def main():
                             minimum=0.0,
                             maximum=1.0,
                             step=0.05,
-                            value=0.25
+                            value=0.5
                         )
                     
                     seed_input = gr.Slider(
