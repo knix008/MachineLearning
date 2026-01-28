@@ -26,12 +26,12 @@ def load_model():
     # Memory optimization 
     pipe.enable_model_cpu_offload() # CUDA에서 CPU RAM을 일부 사용
     pipe.enable_attention_slicing() # 안쓰면 GPU 메모리를 더 사용함(속)
-    #pipe.enable_sequential_cpu_offload() # 안쓰면 CUDA에서 더 빠름(4 추론스텝에서 1초 단축)
+    pipe.enable_sequential_cpu_offload() # 안쓰면 CUDA에서 더 빠름(4 추론스텝에서 1초 단축)
     
     print("모델 로딩 완료!")
     return pipe
 
-def generate_image(prompt, height, width, guidance_scale, strength, num_inference_steps, seed):
+def generate_image(prompt, height, width, guidance_scale, num_inference_steps, seed):
     """Generate image from text prompt and return for UI display."""
     global pipe
     
@@ -56,11 +56,7 @@ def generate_image(prompt, height, width, guidance_scale, strength, num_inferenc
             "generator": generator,
         }
 
-        # Strength is only passed if the pipeline supports it to avoid runtime errors.
-        if hasattr(pipe, "__call__") and "strength" in pipe.__call__.__code__.co_varnames:
-            pipe_kwargs["strength"] = strength
-
-        print(f"이미지 생성 중... (steps: {num_inference_steps}, strength: {strength})")
+        print(f"이미지 생성 중... (steps: {num_inference_steps})")
         image = pipe(**pipe_kwargs).images[0]
 
         # Save with timestamp
@@ -125,17 +121,9 @@ def main():
                             label="추론 스텝 (Inference Steps)",
                             info="생성 품질 (높을수록 고품질, 느림)",
                             minimum=4,
-                            maximum=50,
+                            maximum=20,
                             step=1,
-                            value=10
-                        )
-                        strength_input = gr.Slider(
-                            label="Strength",
-                            info="노이즈 비율 (0: 원본 유지, 1: 완전한 노이즈)",
-                            minimum=0.0,
-                            maximum=1.0,
-                            step=0.05,
-                            value=0.25
+                            value=4
                         )
                     
                     seed_input = gr.Slider(
@@ -161,7 +149,6 @@ def main():
                 height_input,
                 width_input,
                 guidance_input,
-                strength_input,
                 steps_input,
                 seed_input
             ],
