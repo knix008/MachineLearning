@@ -15,7 +15,7 @@ seed = 42
 
 # Set device and data type
 device = "mps"
-dtype = torch.bfloat16
+dtype = torch.float16
 
 print("Loading model...")
 pipe = FluxPipeline.from_pretrained(
