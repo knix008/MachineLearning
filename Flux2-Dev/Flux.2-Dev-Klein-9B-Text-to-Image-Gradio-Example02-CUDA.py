@@ -5,7 +5,7 @@ from PIL import Image
 import os
 import gradio as gr
 
-DEFAULT_PROMPT = "a glamorous hot skinny korean girl model, wearing a red bikini swimsuit, posing on a tropical beach at sunset, cinematic lighting, 4k, ultra-detailed texture, with perfect anatomy, fashion vibe."
+DEFAULT_PROMPT = "a glamorous hot skinny korean girl, wearing a red bikini, posing on a tropical beach at sunset, cinematic lighting, 4k, ultra-detailed texture, with perfect anatomy, beautiful body, fashion vibe."
 
 # Global variables for model
 DEVICE = "cuda"
@@ -40,6 +40,7 @@ def generate_image(prompt, height, width, guidance_scale, num_inference_steps, s
     
     try:
         print(f"출력 크기: {width}x{height}")
+        print(f"추론 스텝: {num_inference_steps}, 시드: {int(seed)}")
 
         # Setup generator
         generator = torch.Generator(device=DEVICE)
@@ -56,13 +57,13 @@ def generate_image(prompt, height, width, guidance_scale, num_inference_steps, s
             "generator": generator,
         }
 
-        print(f"이미지 생성 중... (steps: {num_inference_steps})")
+        print(f"이미지 생성 중... (steps: {num_inference_steps}, seed: {int(seed)})")
         image = pipe(**pipe_kwargs).images[0]
 
         # Save with timestamp
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         base_name = os.path.splitext(os.path.basename(__file__))[0]
-        output_path = f"{base_name}_{timestamp}_seed{int(seed)}.png"
+        output_path = f"{base_name}_{timestamp}_step{num_inference_steps}_seed{int(seed)}.png"
         image.save(output_path)
         print(f"이미지 저장됨: {output_path}")
         
@@ -76,8 +77,8 @@ def main():
     load_model()
     
     # Create Gradio interface
-    with gr.Blocks(title="Flux.2 Dev Klein 4B 이미지 생성기") as demo:
-        gr.Markdown("# Flux.2 Dev Klein 4B Text-to-Image 생성기")
+    with gr.Blocks(title="Flux.2 Dev Klein 9B 이미지 생성기") as demo:
+        gr.Markdown("# Flux.2 Dev Klein 9B Text-to-Image 생성기")
         gr.Markdown("텍스트 설명을 입력하여 이미지를 생성하세요.")
         
         with gr.Row():
@@ -129,7 +130,7 @@ def main():
                     seed_input = gr.Slider(
                         label="시드 (Seed)",
                         info="재현성을 위한 난수 시드 (0: 랜덤)",
-                        minimum=-1,
+                        minimum=0,
                         maximum=1000,
                         step=1,
                         value=42    
