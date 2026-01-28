@@ -5,7 +5,7 @@ from PIL import Image
 import os
 import gradio as gr
 
-DEFAULT_PROMPT = "a Instagram-style glamorous red bikini swimsuit hot skinny korean model posing on a tropical beach at sunset, cinematic lighting, 4k, ultra-detailed texture, with perfect anatomy, fashion vibe."
+DEFAULT_PROMPT = "a glamorous hot skinny korean girl model, wearing a red bikini swimsuit, posing on a tropical beach at sunset, cinematic lighting, 4k, ultra-detailed texture, with perfect anatomy, fashion vibe."
 
 # Global variables for model
 DEVICE = "cuda"

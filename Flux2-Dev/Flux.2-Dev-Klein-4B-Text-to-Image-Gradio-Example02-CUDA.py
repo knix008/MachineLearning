@@ -109,10 +109,10 @@ def main():
                         guidance_input = gr.Slider(
                             label="Guidance Scale",
                             info="프롬프트 충실도 (낮음: 창의적, 높음: 정확)",
-                            minimum=1.0,
-                            maximum=5.0,
+                            minimum=0.0,
+                            maximum=1.0,
                             step=0.1,
-                            value=4.0
+                            value=1.0
                         )
                         steps_input = gr.Slider(
                             label="추론 스텝 (Inference Steps)",
