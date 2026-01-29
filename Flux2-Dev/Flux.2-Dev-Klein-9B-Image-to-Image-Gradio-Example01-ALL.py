@@ -4,6 +4,8 @@ from diffusers import Flux2KleinPipeline
 from datetime import datetime
 from PIL import Image
 import os
+import signal
+import sys
 import gradio as gr
 
 DEFAULT_PROMPT = "Make her a glamorous bikini swimsuit hot skinny girl. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing a red bikini and walking on a tropical sunny beach. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Her skin appears natural with visible pores. vivid, cinematic lighting, 4k, ultra-detailed texture, with perfect anatomy, perfect arms and legs structure, fashion vibe."
@@ -34,6 +36,36 @@ def get_device_and_dtype():
 # Global variables for model
 DEVICE, DTYPE = get_device_and_dtype()
 pipe = None
+demo = None
+
+
+def cleanup():
+    """Clean up resources before exit."""
+    global pipe, demo
+    print("\n프로그램 종료 중...")
+
+    if demo is not None:
+        try:
+            demo.close()
+            print("Gradio 서버 종료됨")
+        except:
+            pass
+
+    if pipe is not None:
+        del pipe
+        print("모델 메모리 해제됨")
+
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        print("CUDA 캐시 정리됨")
+
+    print("종료 완료!")
+
+
+def signal_handler(sig, frame):
+    """Handle Ctrl+C signal."""
+    cleanup()
+    sys.exit(0)
 
 def load_model():
     """Load and initialize the Flux2 Img2Img model with optimizations."""
@@ -117,6 +149,11 @@ def generate_image(input_image, prompt, negative_prompt, height, width, guidance
         return None, f"오류: {str(e)}"
 
 def main():
+    global demo
+
+    # Register signal handler for Ctrl+C
+    signal.signal(signal.SIGINT, signal_handler)
+
     # Load model once at startup
     load_model()
 
@@ -221,4 +258,7 @@ def main():
     demo.launch(inbrowser=True)
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        cleanup()
