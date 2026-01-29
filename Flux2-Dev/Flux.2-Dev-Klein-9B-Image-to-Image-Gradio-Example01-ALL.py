@@ -6,8 +6,10 @@ from PIL import Image
 import os
 import gradio as gr
 
-DEFAULT_PROMPT = "Make her a glamorous bikini swimsuit hot skinny girl. She is wearing a red bikini, posing on a tropical sunny beach, wearing wide beach cap, vivid, cinematic lighting, 4k, ultra-detailed texture, with perfect anatomy, perfect arms and legs structure, fashion vibe."
-DEFAULT_IMAGE = "sample.jpg"
+DEFAULT_PROMPT = "Make her a glamorous bikini swimsuit hot skinny girl. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing a red bikini. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Her skin appears natural with visible pores. vivid, cinematic lighting, 4k, ultra-detailed texture, with perfect anatomy, perfect arms and legs structure, fashion vibe."
+
+#DEFAULT_IMAGE = "sample.jpg"
+DEFAULT_IMAGE = "default.png"
 
 
 def get_device_and_dtype():
@@ -59,7 +61,7 @@ def load_model():
     print(f"모델 로딩 완료! (Device: {DEVICE})")
     return pipe
 
-def generate_image(input_image, prompt, height, width, guidance_scale, num_inference_steps, seed):
+def generate_image(input_image, prompt, negative_prompt, height, width, guidance_scale, num_inference_steps, seed):
     """Generate image from input image and text prompt."""
     global pipe
 
@@ -84,16 +86,23 @@ def generate_image(input_image, prompt, height, width, guidance_scale, num_infer
         print(f"추론 스텝: {num_inference_steps}, 시드: {int(seed)}")
         print(f"이미지 편집 중... (steps: {num_inference_steps}, seed: {int(seed)})")
 
+        # Prepare arguments
+        pipe_kwargs = {
+            "prompt": prompt,
+            "image": input_image,
+            "height": height,
+            "width": width,
+            "guidance_scale": guidance_scale,
+            "num_inference_steps": num_inference_steps,
+            "generator": generator,
+        }
+
+        # Add negative prompt if supported by the pipeline
+        if negative_prompt and hasattr(pipe, "__call__") and "negative_prompt" in pipe.__call__.__code__.co_varnames:
+            pipe_kwargs["negative_prompt"] = negative_prompt
+
         # Generate image
-        image = pipe(
-            prompt=prompt,
-            image=input_image,
-            height=height,
-            width=width,
-            guidance_scale=guidance_scale,
-            num_inference_steps=num_inference_steps,
-            generator=generator,
-        ).images[0]
+        image = pipe(**pipe_kwargs).images[0]
 
         # Save with timestamp
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -129,6 +138,14 @@ def main():
                     info="편집할 내용을 설명하세요",
                     placeholder="예: change the background to a beach at sunset",
                     value=DEFAULT_PROMPT,
+                    lines=3
+                )
+                
+                negative_prompt_input = gr.Textbox(
+                    label="부정 프롬프트 (Negative Prompt)",
+                    info="이미지에 포함되지 않기를 원하는 요소 (모델이 지원하는 경우에만 적용됨)",
+                    placeholder="예: blurry, bad quality, distorted",
+                    value="blurry, low quality, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, ugly, disfigured, deformed",
                     lines=3
                 )
 
@@ -190,6 +207,7 @@ def main():
             inputs=[
                 input_image,
                 prompt_input,
+                negative_prompt_input,
                 height_input,
                 width_input,
                 guidance_input,
