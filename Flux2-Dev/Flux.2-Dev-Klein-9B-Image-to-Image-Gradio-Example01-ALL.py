@@ -6,7 +6,7 @@ from PIL import Image
 import os
 import gradio as gr
 
-DEFAULT_PROMPT = "a glamorous red bikini swimsuit hot skinny model posing on a tropical sunny beach, wearing beach cap and sun glasses, cinematic lighting, 4k, ultra-detailed texture, with perfect anatomy, perfect arms and legs structure, fashion vibe."
+DEFAULT_PROMPT = "a glamorous red bikini swimsuit hot skinny girl. She is posing on a tropical sunny beach, wearing wide beach cap, vivid, cinematic lighting, 4k, ultra-detailed texture, with perfect anatomy, perfect arms and legs structure, fashion vibe."
 DEFAULT_IMAGE = "sample.jpg"
 
 
