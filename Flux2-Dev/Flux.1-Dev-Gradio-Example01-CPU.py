@@ -23,7 +23,7 @@ pipe = FluxPipeline.from_pretrained(
 # Enable memory optimizations
 pipe.enable_model_cpu_offload()
 pipe.enable_attention_slicing()
-#pipe.enable_sequential_cpu_offload()
+pipe.enable_sequential_cpu_offload()
 print("모델 로딩 완료!")
 
 #prompt_input = "Highly realistic, 4k, high-quality, high resolution, beautiful full body korean woman model photography. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing a red bikini. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Her skin appears natural with visible pores. Orange hue, solid orange backdrop, using a camera setup that mimics a large aperture, f/1.4 --ar 9:16 --style raw."
