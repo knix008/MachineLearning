@@ -6,14 +6,17 @@ import os
 # Pre-shifted custom sigmas for 8-step turbo inference
 TURBO_SIGMAS = [1.0, 0.6509, 0.4374, 0.2932, 0.1893, 0.1108, 0.0495, 0.00031]
 
+device = "cpu"
+device_type = torch.float32
+
 pipe = Flux2Pipeline.from_pretrained(
-    "black-forest-labs/FLUX.2-dev", torch_dtype=torch.bfloat16
-)
+    "black-forest-labs/FLUX.2-dev", torch_dtype=device_type
+).to(device)
 
 # Enable multiple memory optimizations
 pipe.enable_model_cpu_offload()  # Offload model to CPU when not in use
-#pipe.enable_sequential_cpu_offload()  # More aggressive CPU offloading
-#pipe.enable_attention_slicing()  # Slice attention computation
+pipe.enable_sequential_cpu_offload()  # More aggressive CPU offloading
+pipe.enable_attention_slicing()  # Slice attention computation
 print("모델 로딩 완료!")
 
 pipe.load_lora_weights(
@@ -26,7 +29,7 @@ prompt = "A highly realistic, high-quality photo of a beautiful Instagram-style 
 image = pipe(
     prompt=prompt,
     sigmas=TURBO_SIGMAS,
-    guidance_scale=4.0,
+    guidance_scale=2.5,
     height=1024,
     width=1024,
     num_inference_steps=8,
