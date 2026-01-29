@@ -6,9 +6,10 @@ from PIL import Image
 import os
 import signal
 import sys
+import inspect
 import gradio as gr
 
-DEFAULT_PROMPT = "Make her wearing a red bikini and walking on a tropical sunny beach. cinematic lighting, 4k, ultra-detailed texture, with perfect anatomy, perfect arms and legs structure, fashion vibe."
+DEFAULT_PROMPT = "Make her walking on a tropical sunny beach. cinematic lighting, 4k, ultra-detailed texture, with perfect anatomy, perfect arms and legs structure, fashion vibe."
 
 DEFAULT_IMAGE = "default.png"
 
@@ -90,6 +91,23 @@ def load_model():
         pipe.enable_sequential_cpu_offload()
 
     print(f"모델 로딩 완료! (Device: {DEVICE})")
+
+    # Print all supported arguments
+    print("\n" + "="*60)
+    print("파이프라인 지원 인자 목록:")
+    print("="*60)
+    sig = inspect.signature(pipe.__call__)
+    for param_name, param in sig.parameters.items():
+        default = param.default
+        if default is inspect.Parameter.empty:
+            default_str = "(필수)"
+        elif default is None:
+            default_str = "= None"
+        else:
+            default_str = f"= {default}"
+        print(f"  - {param_name}: {default_str}")
+    print("="*60 + "\n")
+
     return pipe
 
 def generate_image(input_image, prompt, negative_prompt, height, width, guidance_scale, num_inference_steps, seed):
@@ -116,6 +134,8 @@ def generate_image(input_image, prompt, negative_prompt, height, width, guidance
         print(f"출력 크기: {width}x{height}")
         print(f"추론 스텝: {num_inference_steps}, 시드: {int(seed)}")
         print(f"이미지 편집 중... (steps: {num_inference_steps}, seed: {int(seed)})")
+        if negative_prompt:
+            print(f"부정 프롬프트: {negative_prompt[:50]}...")
 
         # Prepare arguments
         pipe_kwargs = {
@@ -128,12 +148,23 @@ def generate_image(input_image, prompt, negative_prompt, height, width, guidance
             "generator": generator,
         }
 
-        # Add negative prompt if supported by the pipeline
-        if negative_prompt and hasattr(pipe, "__call__") and "negative_prompt" in pipe.__call__.__code__.co_varnames:
-            pipe_kwargs["negative_prompt"] = negative_prompt
-
-        # Generate image
-        image = pipe(**pipe_kwargs).images[0]
+        # Try to add negative prompt - FLUX models may not support it
+        if negative_prompt:
+            try:
+                # First try with negative_prompt
+                test_kwargs = pipe_kwargs.copy()
+                test_kwargs["negative_prompt"] = negative_prompt
+                image = pipe(**test_kwargs).images[0]
+                print("부정 프롬프트가 적용되었습니다.")
+            except TypeError as e:
+                if "negative_prompt" in str(e):
+                    print("이 모델은 부정 프롬프트를 지원하지 않습니다. 부정 프롬프트 없이 생성합니다.")
+                    image = pipe(**pipe_kwargs).images[0]
+                else:
+                    raise e
+        else:
+            # Generate image without negative prompt
+            image = pipe(**pipe_kwargs).images[0]
 
         # Save with timestamp
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
