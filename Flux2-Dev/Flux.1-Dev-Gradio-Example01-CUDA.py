@@ -21,7 +21,9 @@ pipe.enable_attention_slicing()
 pipe.enable_sequential_cpu_offload() # CUDA 실행시 하지 않으면 느림, RAM도 많이 사용. GPU 사용은 늘지만, VRAM 사용은 줄어듦.
 print("모델 로딩 완료!")
 
-prompt_input = "Highly realistic, 4k, high-quality, high resolution, beautiful full body korean woman model photography. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing a red bikini. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Her skin appears natural with visible pores. Orange hue, solid orange backdrop, using a camera setup that mimics a large aperture, f/1.4 --ar 9:16 --style raw."
+prompt_input = "A highly realistic, high-quality photo of a beautiful Instagram-style korean girl on vacation. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. Her eyes are hazel, with a natural sparkle of happiness as she smiles. The image should capture her in a half-body shot, with perfect anatomy, including precise details in her eyes and teeth. Her skin should appear natural, with visible pores, avoiding an overly smooth or filtered look, to maintain a lifelike, 4K resolution quality. The overall atmosphere is bright and joyful, reflecting the sunny, relaxed vacation mood."
+
+#prompt_input = "Highly realistic, 4k, high-quality, high resolution, beautiful full body korean woman model photography. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing a red bikini. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Her skin appears natural with visible pores. Orange hue, solid orange backdrop, using a camera setup that mimics a large aperture, f/1.4 --ar 9:16 --style raw."
 
 def generate_image(
     prompt, width, height, guidance_scale, num_inference_steps, seed, strength
@@ -70,7 +72,7 @@ with gr.Blocks(title="Flux.1-dev Image Generator") as interface:
                     minimum=256,
                     maximum=1024,
                     step=64,
-                    value=512,
+                    value=768,
                     info="생성할 이미지의 너비를 지정합니다 (픽셀). 64의 배수여야 합니다.",
                 )
                 height = gr.Slider(
