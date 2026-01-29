@@ -9,7 +9,7 @@ import sys
 import inspect
 import gradio as gr
 
-DEFAULT_PROMPT = "Make her walking on a tropical sunny beach. cinematic lighting, 4k, ultra-detailed texture, with perfect anatomy, perfect arms and legs structure, fashion vibe."
+DEFAULT_PROMPT = "Make her walking on a tropical sunny beach. wearing a red bikini, cinematic lighting, 4k, ultra-detailed texture, with perfect anatomy, perfect arms and legs structure, fashion vibe."
 
 DEFAULT_IMAGE = "default.png"
 
