@@ -6,7 +6,7 @@ from PIL import Image
 import os
 import gradio as gr
 
-DEFAULT_PROMPT = "Make her a glamorous bikini swimsuit hot skinny girl. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing a red bikini. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Her skin appears natural with visible pores. vivid, cinematic lighting, 4k, ultra-detailed texture, with perfect anatomy, perfect arms and legs structure, fashion vibe."
+DEFAULT_PROMPT = "Make her a glamorous bikini swimsuit hot skinny girl. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing a red bikini and walking on a tropical sunny beach. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Her skin appears natural with visible pores. vivid, cinematic lighting, 4k, ultra-detailed texture, with perfect anatomy, perfect arms and legs structure, fashion vibe."
 
 #DEFAULT_IMAGE = "sample.jpg"
 DEFAULT_IMAGE = "default.png"
