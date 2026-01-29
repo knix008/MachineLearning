@@ -21,8 +21,8 @@ pipe = FluxPipeline.from_pretrained(
 ).to(device)
 
 # Enable memory optimizations
-pipe.enable_model_cpu_offload()  
-pipe.enable_attention_slicing()  
+pipe.enable_model_cpu_offload()
+pipe.enable_attention_slicing()
 pipe.enable_sequential_cpu_offload()
 print("모델 로딩 완료!")
 
