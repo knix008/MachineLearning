@@ -57,7 +57,7 @@ def get_device():
     else:
         return "cpu"
 
-prompt = "A beautiful woman wearing the bikini, the sunglasses, and the beach cap. Standing on a sunny tropical beach with turquoise ocean in the background. Natural relaxed smile, half-body shot, golden hour lighting, detailed face and skin texture, photorealistic, high quality, 8k, perfect anatomy, good hands and legs."
+prompt = "she is wearing the bikini, the beach wide sun cap, and  the sunglasses."
 
 class MultiImageEditor:
     def __init__(self):
@@ -69,7 +69,7 @@ class MultiImageEditor:
         print(f"\n사용할 디바이스: {self.device.upper()}")
         print("모델 로딩 중...")
         self.pipe = Flux2KleinPipeline.from_pretrained(
-            "black-forest-labs/FLUX.2-klein-4B", torch_dtype=self.dtype
+            "black-forest-labs/FLUX.2-klein-9B", torch_dtype=self.dtype
         )
         self.pipe = self.pipe.to(self.device)
 
