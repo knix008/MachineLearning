@@ -30,7 +30,7 @@ def get_model():
         num_grow_ch=32,
         scale=4,
     )
-    model_path = os.path.join("weights", "RealESRGAN_x4plus.pth")
+    model_path = os.path.join("model", "RealESRGAN_x4plus.pth")
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"모델 파일이 존재하지 않습니다: {model_path}")
     dni_weight = None
