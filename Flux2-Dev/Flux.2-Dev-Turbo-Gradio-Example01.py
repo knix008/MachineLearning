@@ -26,6 +26,10 @@ pipe.load_lora_weights(
 )
 print("모델 로딩 완료!")
 
+prompt = "A highly realistic, high-quality photo of a beautiful Instagram-style korean girl on vacation. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. Her eyes are hazel, with a natural sparkle of happiness as she smiles. The image should capture her in a half-body shot, with perfect anatomy, including precise details in her eyes and teeth. Her skin should appear natural, with visible pores, avoiding an overly smooth or filtered look, to maintain a lifelike, 4K resolution quality. The overall atmosphere is bright and joyful, reflecting the sunny, relaxed vacation mood."
+
+#prompt = "Highly realistic, 4k, high-quality, high resolution, beautiful full body korean woman model photography. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing a red bikini. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Her skin appears natural with visible pores. Orange hue, solid orange backdrop, using a camera setup that mimics a large aperture, f/1.4 --ar 9:16 --style raw."
+
 
 def clear_cuda_memory():
     """CUDA 메모리 정리 (파이프라인 유지)"""
@@ -59,6 +63,7 @@ def generate_image(prompt, guidance_scale, height, width, num_steps, seed):
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         output_filename = f"Flux.2-Dev-Turbo-Gradio-Example01_{timestamp}_steps{int(num_steps)}_seed{int(seed)}_guidance{guidance_scale}.jpg"
         image.save(output_filename)
+        print("이미지가 저장되었습니다:", output_filename)
 
         return image, f"저장됨: {output_filename}"
 
@@ -86,7 +91,7 @@ with gr.Blocks(title="FLUX.2-dev Turbo") as demo:
                 label="Prompt",
                 placeholder="Enter your prompt here...",
                 lines=4,
-                value="A highly realistic, high-quality photo of a beautiful Instagram-style korean girl on vacation. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. Her eyes are hazel, with a natural sparkle of happiness as she smiles. The image should capture her in a half-body shot, with perfect anatomy, including precise details in her eyes and teeth. Her skin should appear natural, with visible pores, avoiding an overly smooth or filtered look, to maintain a lifelike, 4K resolution quality. The overall atmosphere is bright and joyful, reflecting the sunny, relaxed vacation mood."
+                value=prompt
             )
 
             with gr.Row():
@@ -117,7 +122,7 @@ with gr.Blocks(title="FLUX.2-dev Turbo") as demo:
             generate_btn = gr.Button("Generate", variant="primary")
 
         with gr.Column():
-            output_image = gr.Image(label="Generated Image", type="pil")
+            output_image = gr.Image(label="Generated Image", type="pil", height=800)
             status = gr.Textbox(label="Status", interactive=False)
 
     generate_btn.click(
