@@ -55,9 +55,9 @@ def generate_image(prompt, guidance_scale, height, width, num_steps, seed):
             generator=generator,
         ).images[0]
 
-        # Save image with timestamp, steps, seed, and guidance scale
+        # Save image with script name, steps, user input seed, and guidance scale
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_filename = f"flux2_turbo_{timestamp}_steps{int(num_steps)}_seed{actual_seed}_guidance{guidance_scale}.jpg"
+        output_filename = f"Flux.2-Dev-Turbo-Gradio-Example01_{timestamp}_steps{int(num_steps)}_seed{int(seed)}_guidance{guidance_scale}.jpg"
         image.save(output_filename)
 
         return image, f"저장됨: {output_filename}"
