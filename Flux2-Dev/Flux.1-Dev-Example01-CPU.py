@@ -16,7 +16,7 @@ width = 768
 height = 1024
 guidance_scale = 4.0
 num_inference_steps = 28
-seed = 42
+seed = 400
 # ========================================
 
 # Set device and data type
@@ -55,7 +55,7 @@ image = pipe(
 # Save with program name and timestamp
 script_name = os.path.splitext(os.path.basename(__file__))[0]
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-filename = f"{script_name}_{timestamp}.png"
+filename = f"{script_name}_seed{seed}_steps{num_inference_steps}_guidance{guidance_scale}_{timestamp}.png"
 image.save(filename)
 
 print(f"Image saved: {filename}")
