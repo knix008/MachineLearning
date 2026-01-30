@@ -4,15 +4,14 @@ from datetime import datetime
 import os
 
 # ============== Parameters ==============
-prompt = "A highly realistic, high-quality photo of a beautiful Instagram-style cute korean girl on vacation. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. Her eyes are hazel, with a natural sparkle of happiness as she smiles. The image should capture her in a half-body shot, with perfect anatomy, including precise details in her eyes and teeth. Her skin should appear natural, with visible pores, avoiding an overly smooth or filtered look, to maintain a lifelike, 4K resolution quality. The overall atmosphere is bright and joyful, reflecting the sunny, relaxed vacation mood."
+prompt = "A highly realistic, high-quality photo of a beautiful Instagram-style cute and lovely korean girl on vacation. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. Her eyes are hazel, with a natural sparkle of happiness as she smiles. The image should capture her in a full-body shot, with perfect anatomy, including precise details in her eyes and teeth. Her skin should appear natural, with visible pores, avoiding an overly smooth or filtered look, to maintain a lifelike, 4K resolution quality. The overall atmosphere is bright and joyful, reflecting the sunny, relaxed vacation mood."
 
 width = 768
 height = 1024
 guidance_scale = 4.0
 num_inference_steps = 28
-seed = 42
+seed = 400
 # ========================================
-
 # Set device and data type
 device = "mps"
 dtype = torch.bfloat16
@@ -49,7 +48,7 @@ image = pipe(
 # Save with program name and timestamp
 script_name = os.path.splitext(os.path.basename(__file__))[0]
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-filename = f"{script_name}_{timestamp}.png"
+filename = f"{script_name}_{timestamp}_step{num_inference_steps}_seed{seed}.png"
 image.save(filename)
 
 print(f"Image saved: {filename}")
