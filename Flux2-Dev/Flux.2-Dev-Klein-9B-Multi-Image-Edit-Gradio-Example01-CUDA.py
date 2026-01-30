@@ -322,8 +322,8 @@ def main():
         editor = MultiImageEditor()
 
         # Create Gradio interface
-        with gr.Blocks(title="Flux Klein 4B 다중 이미지 생성기") as demo:
-            gr.Markdown("# Flux Klein 4B Multi-Image Generator")
+        with gr.Blocks(title="Flux Klein 9B 다중 이미지 생성기") as demo:
+            gr.Markdown("# Flux Klein 9B Multi-Image Generator")
             gr.Markdown("여러 이미지를 업로드하고, 이를 기반으로 새로운 이미지를 생성합니다.")
 
             # 입력 이미지들
