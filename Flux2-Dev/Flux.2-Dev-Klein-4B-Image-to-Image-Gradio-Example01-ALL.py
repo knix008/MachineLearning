@@ -11,7 +11,7 @@ import gradio as gr
 
 DEFAULT_PROMPT = "Make her walking on a tropical sunny beach. wearing a red bikini, cinematic lighting, 4k, ultra-detailed texture, with perfect anatomy, perfect arms and legs structure, fashion vibe."
 
-DEFAULT_IMAGE = "default.png"
+DEFAULT_IMAGE = "sample.jpg"
 
 
 def get_device_and_dtype():
@@ -81,14 +81,16 @@ def load_model():
     # Memory optimization based on device
     pipe.enable_attention_slicing()
 
-    if DEVICE == "cuda":
-        pipe.enable_model_cpu_offload()
-        pipe.enable_sequential_cpu_offload()
+    if DEVICE == "cuda" or DEVICE == "cpu":
+        pipe.enable_model_cpu_offload() # CUDA에서 CPU RAM을 일부 사용
+        pipe.enable_attention_slicing() # 안쓰면 GPU 메모리를 더 사용함(속)
+        pipe.enable_sequential_cpu_offload() # 안쓰면 CUDA에서 느림
     elif DEVICE == "mps":
         # MPS doesn't support cpu_offload well
         pass
-    else:  # CPU
-        pipe.enable_sequential_cpu_offload()
+    else:
+        print("No valid device found!!!")
+        exit(1)
 
     print(f"모델 로딩 완료! (Device: {DEVICE})")
 
