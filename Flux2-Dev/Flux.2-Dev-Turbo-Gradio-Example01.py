@@ -2,6 +2,9 @@ import torch
 import gradio as gr
 from diffusers import Flux2Pipeline
 from datetime import datetime
+import signal
+import sys
+import gc
 
 # Pre-shifted custom sigmas for 8-step turbo inference
 TURBO_SIGMAS = [1.0, 0.6509, 0.4374, 0.2932, 0.1893, 0.1108, 0.0495, 0.00031]
@@ -12,7 +15,7 @@ device_type = torch.bfloat16
 print("모델 로딩 중...")
 pipe = Flux2Pipeline.from_pretrained(
     "black-forest-labs/FLUX.2-dev", torch_dtype=device_type
-).to(device)
+)
 
 pipe.enable_model_cpu_offload()
 pipe.enable_sequential_cpu_offload()
@@ -24,6 +27,15 @@ pipe.load_lora_weights(
 print("모델 로딩 완료!")
 
 
+def clear_cuda_memory():
+    """CUDA 메모리 정리 (파이프라인 유지)"""
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.synchronize()
+    gc.collect()
+    print("CUDA 메모리 정리 완료")
+
+
 def generate_image(prompt, guidance_scale, height, width, num_steps, seed):
     if seed == -1:
         actual_seed = torch.randint(0, 2**32 - 1, (1,)).item()
@@ -32,22 +44,37 @@ def generate_image(prompt, guidance_scale, height, width, num_steps, seed):
 
     generator = torch.Generator(device="cpu").manual_seed(actual_seed)
 
-    image = pipe(
-        prompt=prompt,
-        sigmas=TURBO_SIGMAS[:num_steps] if num_steps <= len(TURBO_SIGMAS) else None,
-        guidance_scale=guidance_scale,
-        height=int(height),
-        width=int(width),
-        num_inference_steps=num_steps,
-        generator=generator,
-    ).images[0]
+    try:
+        image = pipe(
+            prompt=prompt,
+            sigmas=TURBO_SIGMAS[:num_steps] if num_steps <= len(TURBO_SIGMAS) else None,
+            guidance_scale=guidance_scale,
+            height=int(height),
+            width=int(width),
+            num_inference_steps=num_steps,
+            generator=generator,
+        ).images[0]
 
-    # Save image with timestamp, steps, seed, and guidance scale
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_filename = f"flux2_turbo_{timestamp}_steps{int(num_steps)}_seed{actual_seed}_guidance{guidance_scale}.jpg"
-    image.save(output_filename)
+        # Save image with timestamp, steps, seed, and guidance scale
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_filename = f"flux2_turbo_{timestamp}_steps{int(num_steps)}_seed{actual_seed}_guidance{guidance_scale}.jpg"
+        image.save(output_filename)
 
-    return image, f"저장됨: {output_filename}"
+        return image, f"저장됨: {output_filename}"
+
+    except torch.cuda.OutOfMemoryError:
+        print("CUDA OOM 오류 발생! VRAM 정리 중...")
+        clear_cuda_memory()
+        return None, "⚠️ CUDA OOM 오류: GPU 메모리 부족. 해상도를 낮추거나 스텝 수를 줄여주세요. (VRAM 정리 완료)"
+
+    except RuntimeError as e:
+        if "out of memory" in str(e).lower():
+            print("RuntimeError OOM 오류 발생! VRAM 정리 중...")
+            clear_cuda_memory()
+            return None, "⚠️ OOM 오류: GPU 메모리 부족. 해상도를 낮추거나 스텝 수를 줄여주세요. (VRAM 정리 완료)"
+        else:
+            clear_cuda_memory()
+            return None, f"⚠️ 오류 발생: {str(e)}"
 
 
 with gr.Blocks(title="FLUX.2-dev Turbo") as demo:
@@ -82,7 +109,10 @@ with gr.Blocks(title="FLUX.2-dev Turbo") as demo:
                     label="Height"
                 )
 
-            seed = gr.Number(label="Seed (-1 for random)", value=-1)
+            seed = gr.Slider(
+                minimum=-1, maximum=1000, value=0, step=1,
+                label="Seed (-1 for random)"
+            )
 
             generate_btn = gr.Button("Generate", variant="primary")
 
@@ -96,5 +126,54 @@ with gr.Blocks(title="FLUX.2-dev Turbo") as demo:
         outputs=[output_image, status]
     )
 
+def cleanup():
+    """리소스 정리 함수"""
+    print("\n리소스 정리 중...")
+
+    # Gradio 서버 종료
+    try:
+        demo.close()
+        print("Gradio 서버 종료 완료")
+    except Exception as e:
+        print(f"Gradio 종료 중 오류: {e}")
+
+    # 파이프라인 메모리 해제
+    global pipe
+    try:
+        del pipe
+        print("파이프라인 메모리 해제 완료")
+    except Exception as e:
+        print(f"파이프라인 해제 중 오류: {e}")
+
+    # CUDA 캐시 정리
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.synchronize()
+        print("CUDA 캐시 정리 완료")
+
+    # 가비지 컬렉션 실행
+    gc.collect()
+    print("가비지 컬렉션 완료")
+    print("모든 리소스 정리 완료!")
+
+
+def signal_handler(sig, frame):
+    """시그널 핸들러 (Ctrl+C)"""
+    print("\n\nKeyboard Interrupt 감지!")
+    cleanup()
+    sys.exit(0)
+
+
 if __name__ == "__main__":
-    demo.launch(share=False)
+    # 시그널 핸들러 등록
+    signal.signal(signal.SIGINT, signal_handler)
+
+    try:
+        demo.launch(share=False)
+    except KeyboardInterrupt:
+        cleanup()
+    except Exception as e:
+        print(f"오류 발생: {e}")
+        cleanup()
+    finally:
+        print("프로그램 종료")

@@ -11,7 +11,7 @@ device_type = torch.bfloat16
 
 pipe = Flux2Pipeline.from_pretrained(
     "black-forest-labs/FLUX.2-dev", torch_dtype=device_type
-).to(device)
+)
 
 # Enable multiple memory optimizations
 pipe.enable_model_cpu_offload()  # Offload model to CPU when not in use
