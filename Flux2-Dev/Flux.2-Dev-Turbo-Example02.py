@@ -6,8 +6,8 @@ import os
 # Pre-shifted custom sigmas for 8-step turbo inference
 TURBO_SIGMAS = [1.0, 0.6509, 0.4374, 0.2932, 0.1893, 0.1108, 0.0495, 0.00031]
 
-device = "cpu"
-device_type = torch.float32
+device = "cuda"
+device_type = torch.bfloat16
 
 pipe = Flux2Pipeline.from_pretrained(
     "black-forest-labs/FLUX.2-dev", torch_dtype=device_type
