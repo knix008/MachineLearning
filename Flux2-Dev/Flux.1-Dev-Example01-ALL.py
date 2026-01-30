@@ -12,22 +12,44 @@ guidance_scale = 4.0
 num_inference_steps = 28
 seed = 100
 # ========================================
-# Set device and data type
-device = "mps"
-dtype = torch.bfloat16
+# Set device and data type based on availability
+def get_device_and_dtype():
+    if torch.cuda.is_available():
+        return "cuda", torch.bfloat16
+    elif torch.backends.mps.is_available():
+        return "mps", torch.bfloat16
+    else:
+        return "cpu", torch.float32
+
+device, dtype = get_device_and_dtype()
+print(f"Using device: {device}, dtype: {dtype}")
 
 print("Loading model...")
 pipe = FluxPipeline.from_pretrained(
     "black-forest-labs/FLUX.1-dev", torch_dtype=dtype
-).to(device)
+)
 
-# Enable memory optimizations
-#pipe.enable_model_cpu_offload()
-#pipe.enable_attention_slicing()
-#pipe.enable_sequential_cpu_offload() # More useful for very large models, more memory for GPU, less memory for CPU, Slower inference.
+# Enable memory optimizations based on device
+if device == "cuda":
+    pipe = pipe.to(device)
+    pipe.enable_model_cpu_offload()
+    pipe.enable_attention_slicing()
+    pipe.enable_sequential_cpu_offload()
+    print("CUDA optimizations: model_cpu_offload, attention_slicing, sequential_cpu_offload")
+elif device == "mps":
+    pipe = pipe.to(device)
+    print("MPS optimizations: moved to MPS device")
+else:
+    pipe = pipe.to(device)
+    pipe.enable_model_cpu_offload()
+    pipe.enable_attention_slicing()
+    pipe.enable_sequential_cpu_offload()
+    print("CPU optimizations: model_cpu_offload, attention_slicing, sequential_cpu_offload")
+
 print("Model loaded!")
 
 print("\nGenerating image with:")
+print(f"  Device: {device.upper()}")
 print(f"  Prompt: {prompt[:50]}..." if len(prompt) > 50 else f"  Prompt: {prompt}")
 print(f"  Size: {width}x{height}")
 print(f"  Steps: {num_inference_steps}")
@@ -42,7 +64,7 @@ image = pipe(
     height=height,
     guidance_scale=guidance_scale,
     num_inference_steps=num_inference_steps,
-    generator=torch.Generator(device=device).manual_seed(seed),
+    generator=torch.Generator(device="cpu" if device in ["cpu", "mps"] else device).manual_seed(seed),
 ).images[0]
 
 # Save with program name and timestamp
