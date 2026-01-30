@@ -98,7 +98,7 @@ with gr.Blocks(title="Flux.1-dev Image Generator") as interface:
                     minimum=256,
                     maximum=1024,
                     step=64,
-                    value=512,
+                    value=768,
                     info="생성할 이미지의 너비를 지정합니다 (픽셀). 64의 배수여야 합니다.",
                 )
                 height = gr.Slider(
