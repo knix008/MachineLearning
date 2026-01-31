@@ -65,11 +65,12 @@ def generate_image(
             generator=torch.Generator(device="cpu" if device in ["cpu", "mps"] else device).manual_seed(seed),
         ).images[0]
 
-        # Save with timestamp
+        # Save with timestamp and parameters
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         script_name = os.path.splitext(os.path.basename(__file__))[0]
-        filename = f"{script_name}_{timestamp}.png"
+        filename = f"{script_name}_{timestamp}_w{width}_h{height}_g{guidance_scale}_s{num_inference_steps}_seed{int(seed)}_str{strength}.png"
         image.save(filename)
+        print("이미지 저장 완료:", filename)
 
         return image, f"✓ 이미지가 저장되었습니다: {filename}"
     except Exception as e:
