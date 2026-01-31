@@ -13,9 +13,7 @@ import platform
 
 model_id = "black-forest-labs/FLUX.2-klein-4B"
 
-DEFAULT_PROMPT = (
-    "she is wearing the bikini, the beach wide sun cap, and  the sunglasses."
-)
+DEFAULT_PROMPT = "she is wearing the bikini, the beach wide sun cap, and  the sunglasses. Show her in full-body."
 
 # Global variables for model
 pipe = None
@@ -80,10 +78,12 @@ def cleanup():
     global pipe, demo
     print("\n자원 해제 중...")
     try:
-        if pipe is not None:
+        if "pipe" in globals() and pipe is not None:
             del pipe
-        if demo is not None:
+        pipe = None
+        if "demo" in globals() and demo is not None:
             demo.close()
+        demo = None
         # Clear GPU cache based on device type
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
@@ -115,9 +115,7 @@ def load_model():
     print(f"데이터 타입: {DTYPE}")
     print("모델 로딩 중...")
 
-    pipe = Flux2KleinPipeline.from_pretrained(
-        model_id, torch_dtype=DTYPE
-    )
+    pipe = Flux2KleinPipeline.from_pretrained(model_id, torch_dtype=DTYPE)
 
     # Device-specific setup
     if DEVICE == "cuda" or DEVICE == "cpu":
@@ -353,7 +351,11 @@ def main():
             with gr.Accordion("고급 설정", open=False):
                 with gr.Row():
                     height_input = gr.Slider(
-                        label="출력 높이", minimum=256, maximum=1024, step=64, value=1024
+                        label="출력 높이",
+                        minimum=256,
+                        maximum=1024,
+                        step=64,
+                        value=1024,
                     )
                     width_input = gr.Slider(
                         label="출력 너비", minimum=256, maximum=1024, step=64, value=768

@@ -78,10 +78,12 @@ def cleanup():
     global pipe, demo
     print("\n자원 해제 중...")
     try:
-        if pipe is not None:
+        if "pipe" in globals() and pipe is not None:
             del pipe
-        if demo is not None:
+        pipe = None
+        if "demo" in globals() and demo is not None:
             demo.close()
+        demo = None
         # Clear GPU cache based on device type
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
