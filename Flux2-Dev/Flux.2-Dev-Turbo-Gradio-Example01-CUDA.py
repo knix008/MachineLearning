@@ -18,8 +18,8 @@ pipe = Flux2Pipeline.from_pretrained(
 )
 
 pipe.enable_model_cpu_offload()
-pipe.enable_sequential_cpu_offload()
 pipe.enable_attention_slicing()
+pipe.enable_sequential_cpu_offload()
 
 pipe.load_lora_weights(
     "fal/FLUX.2-dev-Turbo", weight_name="flux.2-turbo-lora.safetensors"

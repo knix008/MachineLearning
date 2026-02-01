@@ -31,7 +31,8 @@ pipe = FluxPipeline.from_pretrained(
 # Enable memory optimizations
 pipe.enable_model_cpu_offload()
 pipe.enable_attention_slicing()
-pipe.enable_sequential_cpu_offload() # More useful for very large models, memory for GPU, less memory for CPU, Slower inference.
+pipe.enable_sequential_cpu_offload()
+
 print("Model loaded!")
 
 print("\nGenerating image with:")
