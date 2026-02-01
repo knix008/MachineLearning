@@ -11,7 +11,7 @@ import gradio as gr
 
 DEFAULT_PROMPT = "A highly realistic, high-quality photo of a beautiful Instagram-style korean girl on vacation. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing a red bikini. Her eyes are hazel, with a natural sparkle of happiness as she smiles. The image should capture her in a full-body shot, with perfect anatomy, including precise details in her eyes and teeth. Her skin should appear natural, with visible pores, avoiding an overly smooth or filtered look, to maintain a lifelike, 4K resolution quality. The overall atmosphere is bright and joyful, reflecting the sunny, relaxed vacation mood."
 
-#prompt = "Highly realistic, 4k, high-quality, high resolution, beautiful full body korean woman model photography. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing a red bikini. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Her skin appears natural with visible pores. Orange hue, solid orange backdrop, using a camera setup that mimics a large aperture, f/1.4 --ar 9:16 --style raw."
+#prompt = "Highly realistic, 4k, high-quality, high resolution, beautiful skinny korean woman model full body photography. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing a red bikini. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Her skin appears natural with visible pores. Orange hue, solid orange backdrop, using a camera setup that mimics a large aperture, f/1.4 --ar 9:16 --style raw."
 
 
 def print_hardware_info():
@@ -152,7 +152,7 @@ def load_model():
     print(f"모델 로딩 완료! (Device: {DEVICE})")
     return pipe
 
-def generate_image(prompt, height, width, guidance_scale, num_inference_steps, seed):
+def generate_image(prompt, height, width, guidance_scale, num_inference_steps, seed, output_format):
     """Generate image from text prompt and return for UI display."""
     global pipe
 
@@ -185,8 +185,12 @@ def generate_image(prompt, height, width, guidance_scale, num_inference_steps, s
         # Save with timestamp
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         base_name = os.path.splitext(os.path.basename(__file__))[0]
-        output_path = f"{base_name}_{timestamp}_step{num_inference_steps}_seed{int(seed)}.png"
-        image.save(output_path)
+        ext = "jpg" if output_format == "JPG" else "png"
+        output_path = f"{base_name}_{timestamp}_step{num_inference_steps}_seed{int(seed)}.{ext}"
+        if ext == "jpg":
+            image.save(output_path, "JPEG", quality=95)
+        else:
+            image.save(output_path)
         print(f"이미지 저장됨: {output_path}")
 
         return image, f"✓ 이미지 생성 완료! 저장됨: {output_path}"
@@ -248,20 +252,27 @@ def main():
                         steps_input = gr.Slider(
                             label="추론 스텝 (Inference Steps)",
                             info="생성 품질 (높을수록 고품질, 느림)",
-                            minimum=4,
+                            minimum=1,
                             maximum=30,
                             step=1,
                             value=10
                         )
 
-                    seed_input = gr.Slider(
-                        label="시드 (Seed)",
-                        info="재현성을 위한 난수 시드 (0: 랜덤)",
-                        minimum=0,
-                        maximum=1000,
-                        step=1,
-                        value=42
-                    )
+                    with gr.Row():
+                        seed_input = gr.Slider(
+                            label="시드 (Seed)",
+                            info="재현성을 위한 난수 시드 (0: 랜덤)",
+                            minimum=0,
+                            maximum=1000,
+                            step=1,
+                            value=42
+                        )
+                        format_input = gr.Radio(
+                            label="출력 형식 (Output Format)",
+                            choices=["PNG", "JPG"],
+                            value="PNG",
+                            info="저장할 이미지 형식"
+                        )
 
                 submit_btn = gr.Button("이미지 생성", variant="primary", size="lg")
 
@@ -278,7 +289,8 @@ def main():
                 width_input,
                 guidance_input,
                 steps_input,
-                seed_input
+                seed_input,
+                format_input
             ],
             outputs=[image_output, status_output]
         )
