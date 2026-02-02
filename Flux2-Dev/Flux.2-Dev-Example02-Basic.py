@@ -16,9 +16,6 @@ pipe.enable_model_cpu_offload()
 pipe.enable_sequential_cpu_offload()
 pipe.enable_attention_slicing()
 print("모델 로딩 완료!")
-print(
-    "Sequential CPU offloading enabled - model layers will move between GPU and CPU as needed"
-)
 
 prompt = "A highly realistic, high-quality photo of a beautiful Instagram-style girl on vacation. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. Her eyes are hazel, with a natural sparkle of happiness as she smiles. She is wearing a red bikini and her skin should appear natural, with visible pores, avoiding an overly smooth or filtered look."
 

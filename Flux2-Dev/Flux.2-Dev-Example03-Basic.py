@@ -16,9 +16,6 @@ pipe.enable_model_cpu_offload()
 pipe.enable_sequential_cpu_offload()
 pipe.enable_attention_slicing()
 print("모델 로딩 완료!")
-print(
-    "Sequential CPU offloading enabled - model layers will move between GPU and CPU as needed"
-)
 
 prompt = "4k, high-quality, high resolution, full body, realistic, photography of a beautiful Instagram-style korean girl. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner.Her eyes are hazel with a natural sparkle of happiness as she smiles.The image should be perfect anatomy, including precise details in her eyes and teeth. Her skin should appear natural, with visible pores, avoiding an overly smooth or filtered look, to maintain a lifelike, 4K resolution quality. The overall atmosphere is bright and joyful, reflecting the sunny, relaxed vacation mood."
 
