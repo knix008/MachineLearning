@@ -5,12 +5,9 @@ import os
 import gradio as gr
 
 repo_id = "black-forest-labs/FLUX.2-dev"
-if torch.cuda.is_available():
-    device = "cuda"
-    torch_dtype = torch.float16
-else:
-    device = "cpu"
-    torch_dtype = torch.float32
+device = "cuda"
+torch_dtype = torch.float16
+
 
 # Load model
 pipe = Flux2Pipeline.from_pretrained(
