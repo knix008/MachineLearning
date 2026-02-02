@@ -5,10 +5,107 @@ from PIL import Image
 import os
 import warnings
 import gradio as gr
+import platform
+import shutil
+import signal
+import sys
+import gc
+import atexit
+
+try:
+    import psutil
+except Exception:
+    psutil = None
 
 # Set device and data type
-device = "mps"
-dtype = torch.float16
+if torch.cuda.is_available():
+    device = "cuda"
+    dtype = torch.bfloat16
+elif torch.backends.mps.is_available():
+    device = "mps"
+    dtype = torch.float16
+else:
+    device = "cpu"
+    dtype = torch.float32
+
+print(f"사용 디바이스: {device} | dtype: {dtype}")
+
+def _bytes_to_gb(value_bytes):
+    return f"{value_bytes / (1024 ** 3):.2f} GB"
+
+def print_system_resources():
+    print("=== 시스템 자원 정보 ===")
+    print(f"OS: {platform.system()} {platform.release()} ({platform.machine()})")
+    print(f"CPU 코어: {os.cpu_count()}")
+
+    if psutil is not None:
+        mem = psutil.virtual_memory()
+        print(f"RAM: {_bytes_to_gb(mem.available)} / {_bytes_to_gb(mem.total)} (사용 가능/전체)")
+    else:
+        try:
+            page_size = os.sysconf("SC_PAGE_SIZE")
+            phys_pages = os.sysconf("SC_PHYS_PAGES")
+            total_ram = page_size * phys_pages
+            print(f"RAM: {_bytes_to_gb(total_ram)} (전체)")
+        except Exception:
+            print("RAM: 정보를 가져올 수 없습니다.")
+
+    try:
+        disk = shutil.disk_usage(os.getcwd())
+        print(f"디스크: {_bytes_to_gb(disk.free)} / {_bytes_to_gb(disk.total)} (사용 가능/전체)")
+    except Exception:
+        print("디스크: 정보를 가져올 수 없습니다.")
+
+    if torch.cuda.is_available():
+        try:
+            props = torch.cuda.get_device_properties(0)
+            total_vram = _bytes_to_gb(props.total_memory)
+            allocated = _bytes_to_gb(torch.cuda.memory_allocated(0))
+            reserved = _bytes_to_gb(torch.cuda.memory_reserved(0))
+            print(f"CUDA GPU: {props.name} | VRAM: {allocated} (사용중) / {reserved} (예약) / {total_vram} (전체)")
+        except Exception:
+            print("CUDA GPU: 정보 확인 실패")
+    elif torch.backends.mps.is_available():
+        print("MPS: 사용 가능 (GPU 메모리 정보는 지원되지 않음)")
+
+print_system_resources()
+
+def cleanup_resources():
+    global pipe, interface
+    try:
+        print("\n[종료] 자원 해제 시작...")
+        if "interface" in globals() and interface is not None:
+            try:
+                interface.close()
+            except Exception:
+                pass
+        if "pipe" in globals() and pipe is not None:
+            try:
+                pipe.to("cpu")
+            except Exception:
+                pass
+            pipe = None
+        gc.collect()
+        if torch.cuda.is_available():
+            try:
+                torch.cuda.empty_cache()
+            except Exception:
+                pass
+        if hasattr(torch, "mps") and torch.backends.mps.is_available():
+            try:
+                torch.mps.empty_cache()
+            except Exception:
+                pass
+        print("[종료] 자원 해제 완료.")
+    except Exception:
+        print("[종료] 자원 해제 중 오류 발생.")
+
+def _handle_sigint(signum, frame):
+    cleanup_resources()
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, _handle_sigint)
+atexit.register(cleanup_resources)
 
 # Actually, more RAM is required to run this program. Not working in 32GB. More than 48GB RAM required.
 # Load text-to-image pipeline
@@ -16,11 +113,23 @@ pipe = Flux2Pipeline.from_pretrained(
     "black-forest-labs/FLUX.2-dev", torch_dtype=dtype, low_cpu_mem_usage=True
 )
 
-# Enable memory optimizations
-#pipe.enable_model_cpu_offload()
-#pipe.enable_attention_slicing()
-#pipe.enable_sequential_cpu_offload()
-print("모델 로딩 완료!")
+# Device-specific pipeline setup
+if device == "cuda" or device == "cpu":
+    print("Using CUDA or CPU device optimizations...")
+    pipe.to(device)
+    pipe.enable_model_cpu_offload() # CUDA에서 CPU RAM을 일부 사용
+    pipe.enable_attention_slicing() # 안쓰면 GPU 메모리를 더 사용함(속)
+    pipe.enable_sequential_cpu_offload() # 안쓰면 CUDA에서 느림
+elif device == "mps":
+    print("Using MPS device optimizations...")
+    pipe.enable_attention_slicing() # 안쓰면 GPU 메모리를 더 사용함(속)
+    pipe.enable_vae_slicing() # VAE도 메모리 절약
+    pipe.enable_vae_tiling() # VAE도 타일링
+    torch.mps.empty_cache()
+    # MPS doesn't support cpu_offload well
+else:
+    print("No valid device found!!!")
+    exit(1)
 
 prompt_input = "Highly realistic, 4k, high-quality, high resolution, beautiful full body korean woman model photography. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing a red bikini. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Her skin appears natural with visible pores. Orange hue, solid orange backdrop, using a camera setup that mimics a large aperture, f/1.4 --ar 9:16 --style raw."
 
