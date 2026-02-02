@@ -122,10 +122,7 @@ if device == "cuda" or device == "cpu":
     pipe.enable_sequential_cpu_offload() # 안쓰면 CUDA에서 느림
 elif device == "mps":
     print("Using MPS device optimizations...")
-    pipe.enable_attention_slicing() # 안쓰면 GPU 메모리를 더 사용함(속)
-    pipe.enable_vae_slicing() # VAE도 메모리 절약
-    pipe.enable_vae_tiling() # VAE도 타일링
-    torch.mps.empty_cache()
+    print("No memory optimizations applied.")
     # MPS doesn't support cpu_offload well
 else:
     print("No valid device found!!!")

@@ -8,7 +8,7 @@ import gradio as gr
 
 # Set device and data type
 device = "mps"
-dtype = torch.float16
+dtype = torch.bfloat16
 
 # Actually, more RAM is required to run this program. Not working in 32GB. More than 48GB RAM required.
 # Load text-to-image pipeline
@@ -16,10 +16,6 @@ pipe = Flux2Pipeline.from_pretrained(
     "black-forest-labs/FLUX.2-dev", torch_dtype=dtype, low_cpu_mem_usage=True
 )
 
-# Enable memory optimizations
-#pipe.enable_model_cpu_offload()
-#pipe.enable_attention_slicing()
-#pipe.enable_sequential_cpu_offload()
 print("모델 로딩 완료!")
 
 prompt_input = "Highly realistic, 4k, high-quality, high resolution, beautiful full body korean woman model photography. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing a red bikini. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Her skin appears natural with visible pores. Orange hue, solid orange backdrop, using a camera setup that mimics a large aperture, f/1.4 --ar 9:16 --style raw."

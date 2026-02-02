@@ -31,7 +31,7 @@ DEVICE, DTYPE = get_device_and_dtype()
 pipe = None
 interface = None
 
-DEFAULT_PROMPT = "Highly realistic, 4k, high-quality, high resolution. She is wearing a red bikini and working on a tropical sunny beach. Show her in full-body."
+DEFAULT_PROMPT = "Highly realistic, 4k, high-quality, high resolution. Making the her wearing a red bikini and smiling on the beach, sunny day, detailed background in full body."
 
 
 def print_hardware_info():
@@ -136,18 +136,21 @@ def load_model():
 
     print("모델 로딩 중...")
     pipe = FluxImg2ImgPipeline.from_pretrained(
-        "black-forest-labs/FLUX.1-dev", torch_dtype=DTYPE
+        "black-forest-labs/FLUX.1-dev", torch_dtype=DTYPE, low_cpu_mem_usage=True
     )
-    pipe.to(DEVICE)
 
     # Enable memory optimizations based on device
     if DEVICE == "cuda" or DEVICE == "cpu":
+        pipe.to(DEVICE)
         pipe.enable_model_cpu_offload()
         pipe.enable_attention_slicing()
         pipe.enable_sequential_cpu_offload()
     elif DEVICE == "mps":
         # MPS doesn't support cpu_offload well
-        pipe.enable_attention_slicing()
+        pass
+    else:
+        print("No valid device found!!!")
+        exit(1)
 
     print(f"모델 로딩 완료! (Device: {DEVICE})")
     return pipe
