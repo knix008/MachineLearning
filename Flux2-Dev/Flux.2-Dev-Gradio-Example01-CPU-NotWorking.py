@@ -18,7 +18,7 @@ pipe = Flux2Pipeline.from_pretrained(
 # Enable memory optimizations
 pipe.enable_model_cpu_offload()
 pipe.enable_attention_slicing()
-#pipe.enable_sequential_cpu_offload()
+pipe.enable_sequential_cpu_offload()
 print("모델 로딩 완료!")
 
 prompt_input = "A highly realistic, high-quality photo of a beautiful Instagram-style girl on vacation. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. Her eyes are hazel, with a natural sparkle of happiness as she smiles. She is wearing a red bikini and her skin should appear natural, with visible pores, avoiding an overly smooth or filtered look."

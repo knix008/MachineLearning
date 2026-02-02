@@ -16,6 +16,7 @@ else:
 pipe = Flux2Pipeline.from_pretrained(
     repo_id, torch_dtype=torch_dtype, low_cpu_mem_usage=True
 )
+pipe.enable_model_cpu_offload()
 pipe.enable_sequential_cpu_offload()
 pipe.enable_attention_slicing()
 print("Model loaded!")

@@ -12,11 +12,9 @@ pipe = Flux2Pipeline.from_pretrained(
     repo_id, torch_dtype=torch_dtype, low_cpu_mem_usage=True
 )
 
-# Enable sequential CPU offload - moves layers to GPU only when needed
-# This allows running large models by using GPU for compute and CPU for storage
+pipe.enable_model_cpu_offload()
 pipe.enable_sequential_cpu_offload()
-#pipe.enable_attention_slicing()
-#pipe.enable_sequential_cpu_offload()
+pipe.enable_attention_slicing()
 print("모델 로딩 완료!")
 print(
     "Sequential CPU offloading enabled - model layers will move between GPU and CPU as needed"
