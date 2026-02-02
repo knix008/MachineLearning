@@ -44,6 +44,7 @@ def generate_image(
         script_name = os.path.splitext(os.path.basename(__file__))[0]
         filename = f"{script_name}_{timestamp}.png"
         image.save(filename)
+        print("이미지 저장 완료:", filename)
 
         return image, f"✓ 이미지가 저장되었습니다: {filename}"
     except Exception as e:
