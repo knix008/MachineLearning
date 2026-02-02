@@ -39,10 +39,10 @@ def generate_image(
             generator=torch.Generator(device=device).manual_seed(seed),
         ).images[0]
 
-        # Save with timestamp
+        # Save with timestamp and parameters
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         script_name = os.path.splitext(os.path.basename(__file__))[0]
-        filename = f"{script_name}_{timestamp}.png"
+        filename = f"{script_name}_{timestamp}_steps{num_inference_steps}_cfg{guidance_scale}_seed{seed}.png"
         image.save(filename)
         print("이미지 저장 완료:", filename)
 
