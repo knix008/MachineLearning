@@ -12,8 +12,8 @@ dtype = torch.float32
 
 # Load text-to-image pipeline
 pipe = Flux2Pipeline.from_pretrained(
-    "black-forest-labs/FLUX.2-dev", torch_dtype=dtype
-).to(device)
+    "black-forest-labs/FLUX.2-dev", torch_dtype=dtype, low_cpu_mem_usage=True
+)
 
 # Enable memory optimizations
 pipe.enable_model_cpu_offload()
