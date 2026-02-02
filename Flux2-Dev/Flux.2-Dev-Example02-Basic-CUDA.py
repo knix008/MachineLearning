@@ -5,12 +5,13 @@ from datetime import datetime
 import os
 
 repo_id = "black-forest-labs/FLUX.2-dev"  # Standard model
-torch_dtype = torch.float16  # Use float16 for GPU efficiency
+device = "cuda"
+torch_dtype = torch.bfloat16  # Use float16 for GPU efficiency
 
 # Load model on GPU with CPU offloading for memory management
 pipe = Flux2Pipeline.from_pretrained(
-    repo_id, torch_dtype=torch_dtype, low_cpu_mem_usage=True
-)
+    repo_id, torch_dtype=torch_dtype
+).to(device)
 
 pipe.enable_model_cpu_offload()
 pipe.enable_sequential_cpu_offload()
