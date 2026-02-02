@@ -6,7 +6,7 @@ import os
 
 repo_id = "black-forest-labs/FLUX.2-dev"
 device="cuda"
-torch_dtype = torch.float16
+torch_dtype = torch.bfloat16
 
 # Load model
 pipe = Flux2Pipeline.from_pretrained(
@@ -17,7 +17,7 @@ pipe.enable_sequential_cpu_offload()
 pipe.enable_attention_slicing()
 print("Model loaded!")
 
-prompt = "A highly realistic, high-quality photo of a beautiful Instagram-style girl on vacation. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. Her eyes are hazel, with a natural sparkle of happiness as she smiles. She is wearing a red bikini and her skin should appear natural, with visible pores, avoiding an overly smooth or filtered look."
+prompt = "A highly realistic, high-quality photo of a beautiful Instagram-style cute korean girl on vacation. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. Her eyes are hazel, with a natural sparkle of happiness as she smiles. She is wearing a red bikini and her skin should appear natural, with visible pores, avoiding an overly smooth or filtered look."
 
 # Use the pipe directly - it handles text encoding internally
 # Generator device should match where the model's first layer is
