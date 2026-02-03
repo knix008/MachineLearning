@@ -3,10 +3,12 @@ from diffusers import FluxKontextPipeline
 from diffusers.utils import load_image
 from datetime import datetime
 import os
+import sys
+import gc
 
 # Define device type and data type
-device_type = "cuda"
-data_type = torch.bfloat16
+device_type = "cpu"
+data_type = torch.float32
 
 # Load input image using absolute path
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -29,7 +31,7 @@ print("Model loaded... ")
 
 
 def main():
-    global pipe
+    global pipe, input_image
     print("Generating image...")
     image = pipe(
         image=input_image,
@@ -37,7 +39,7 @@ def main():
         width=768,
         height=1024,
         guidance_scale=2.5,
-        num_inference_steps=28,
+        num_inference_steps=20,
         generator=torch.Generator(device=device_type).manual_seed(42),
     ).images[0]
 
@@ -51,11 +53,13 @@ def main():
     # Cleanup resources
     del image
     del pipe
+    del input_image
+    gc.collect()
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
         torch.cuda.synchronize()
     print("Resources released!")
-
+    return 0
 
 if __name__ == "__main__":
     main()
