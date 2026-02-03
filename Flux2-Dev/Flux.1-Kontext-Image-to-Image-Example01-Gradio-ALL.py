@@ -21,6 +21,7 @@ print(f"Python Version: {platform.python_version()}")
 print(f"PyTorch Version: {torch.__version__}")
 print("=" * 50)
 
+
 # Detect and set device type and data type
 def get_device_and_dtype():
     """Detect the best available device and appropriate data type."""
@@ -37,6 +38,7 @@ def get_device_and_dtype():
         dtype = torch.float32  # Use float32 for CPU (float16 not well supported)
         print("Using CPU device")
     return device, dtype
+
 
 device_type, data_type = get_device_and_dtype()
 print(f"Using device: {device_type}, dtype: {data_type}")
@@ -55,6 +57,8 @@ if device_type == "cuda" or device_type == "cpu":
     pipe.enable_model_cpu_offload()
     pipe.enable_sequential_cpu_offload()
     pipe.enable_attention_slicing()
+else:
+    print("No memory optimizations applied...")
 
 print("Model loaded!")
 
@@ -63,7 +67,8 @@ def cleanup():
     """Release all resources before exit."""
     global pipe
     print("Releasing resources...")
-    del pipe
+    if "pipe" in globals() and pipe is not None:
+        del pipe
     gc.collect()
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
@@ -84,6 +89,17 @@ def signal_handler(sig, frame):
 
 
 signal.signal(signal.SIGINT, signal_handler)
+
+
+def get_image_dimensions(image):
+    """Get image dimensions and round to nearest step of 64."""
+    if image is None:
+        return gr.update(), gr.update()
+    w, h = image.size
+    # Round to nearest 64 and clamp to slider range
+    w = max(256, min(1536, round(w / 64) * 64))
+    h = max(256, min(1536, round(h / 64) * 64))
+    return w, h
 
 
 def generate_image(
@@ -123,7 +139,7 @@ def generate_image(
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_path = os.path.join(
         script_dir,
-        f"{script_name}_{timestamp}_w{int(width)}_h{int(height)}_guidance{guidance_scale}_steps{int(num_inference_steps)}_seed{int(seed)}_seqlen{int(max_sequence_length)}.png",
+        f"{script_name}_{timestamp}_guidance{guidance_scale}_steps{int(num_inference_steps)}_seed{int(seed)}_seqlen{int(max_sequence_length)}.png",
     )
     image.save(output_path)
 
@@ -149,7 +165,7 @@ with gr.Blocks(title="Flux Kontext Image-to-Image") as demo:
             prompt = gr.Textbox(
                 label="Prompt",
                 placeholder="Describe the changes you want...",
-                value="Add a beach background with palm trees on the sunset beach. cinematic lighting, 4k quality, high detail.",
+                value="Add a beach background on the tropical sunset beach. cinematic lighting, 4k quality, high detail.",
                 info="Describe the modifications you want to apply to the input image",
             )
             negative_prompt = gr.Textbox(
@@ -230,6 +246,20 @@ with gr.Blocks(title="Flux Kontext Image-to-Image") as demo:
             max_sequence_length,
         ],
         outputs=[output_image, status],
+    )
+
+    # Update width/height sliders when input image changes
+    input_image.change(
+        fn=get_image_dimensions,
+        inputs=[input_image],
+        outputs=[width, height],
+    )
+
+    # Also update dimensions on initial app load for default image
+    demo.load(
+        fn=get_image_dimensions,
+        inputs=[input_image],
+        outputs=[width, height],
     )
 
 
