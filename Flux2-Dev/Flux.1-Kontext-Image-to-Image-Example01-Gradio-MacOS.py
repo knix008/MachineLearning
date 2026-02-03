@@ -33,7 +33,10 @@ def cleanup():
     """Release all resources before exit."""
     global pipe
     print("Releasing resources...")
-    del pipe
+    try:
+        del pipe
+    except NameError:
+        pass
     gc.collect()
     if torch.backends.mps.is_available():
         torch.mps.empty_cache()

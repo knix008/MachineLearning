@@ -31,7 +31,10 @@ def cleanup():
     """Release all resources before exit."""
     global pipe
     print("Releasing resources...")
-    del pipe
+    try:
+        del pipe
+    except NameError:
+        pass
     gc.collect()
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
