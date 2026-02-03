@@ -25,7 +25,7 @@ pipe.to(device_type)
 print("Applying optimizations...")
 pipe.enable_model_cpu_offload()
 pipe.enable_sequential_cpu_offload()
-pipe.enable_attention_slicing()
+#pipe.enable_attention_slicing()
 print("Model loaded!")
 
 
@@ -200,4 +200,6 @@ with gr.Blocks(title="Flux Kontext Image-to-Image") as demo:
 
 
 if __name__ == "__main__":
-    demo.launch(inbrowser=True)
+    # Set inbrowser=False to avoid MallocStackLogging warnings from osascript
+    # Open http://127.0.0.1:7860 manually in your browser
+    demo.launch(inbrowser=False)
