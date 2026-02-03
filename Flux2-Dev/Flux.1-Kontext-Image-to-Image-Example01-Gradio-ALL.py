@@ -34,7 +34,7 @@ def get_device_and_dtype():
         print(f"CUDA device detected: {torch.cuda.get_device_name(0)}")
     elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
         device = "mps"
-        dtype = torch.bfloat16  # Use float16 for MPS
+        dtype = torch.bfloat16  # Use bfloat16 for MPS
         print("MPS (Apple Silicon) device detected")
     else:
         device = "cpu"
