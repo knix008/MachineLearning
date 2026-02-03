@@ -3,6 +3,9 @@ from diffusers import FluxKontextPipeline
 from datetime import datetime
 import os
 import gc
+import atexit
+import signal
+import sys
 import gradio as gr
 
 # Define device type and data type
@@ -22,6 +25,31 @@ pipe.enable_model_cpu_offload()
 pipe.enable_sequential_cpu_offload()
 pipe.enable_attention_slicing()
 print("Model loaded!")
+
+
+def cleanup():
+    """Release all resources before exit."""
+    global pipe
+    print("Releasing resources...")
+    del pipe
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.synchronize()
+    print("Resources released!")
+
+
+atexit.register(cleanup)
+
+
+def signal_handler(sig, frame):
+    """Handle keyboard interrupt."""
+    print("\nKeyboard interrupt received...")
+    cleanup()
+    sys.exit(0)
+
+
+signal.signal(signal.SIGINT, signal_handler)
 
 
 def generate_image(
