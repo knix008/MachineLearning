@@ -1,7 +1,9 @@
+import os
+os.environ["MallocStackLogging"] = "0"
+
 import torch
 from diffusers import FluxKontextPipeline
 from datetime import datetime
-import os
 import gc
 import atexit
 import signal
