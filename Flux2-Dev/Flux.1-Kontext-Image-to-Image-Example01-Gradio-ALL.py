@@ -156,8 +156,8 @@ def generate_image(
     return image, f"Image saved: {output_path}"
 
 
-with gr.Blocks(title="Flux Kontext Image-to-Image") as demo:
-    gr.Markdown("# Flux Kontext Image-to-Image")
+with gr.Blocks(title="Flux.1 Kontext Image-to-Image") as demo:
+    gr.Markdown("# Flux.1 Kontext Image-to-Image")
     gr.Markdown("Upload an image and describe the changes you want to make.")
 
     with gr.Row():
