@@ -22,6 +22,8 @@ print(f"PyTorch Version: {torch.__version__}")
 print("=" * 50)
 
 DEFAULT_IMAGE = "default01.png"
+DEFAULT_PROMPT = "Add a beach background on the tropical sunset beach. cinematic lighting, 4k quality, high detail."
+DEFAULT_NEGATIVE_PROMPT = "blurry, low quality, distorted, deformed, ugly, bad anatomy, watermark, text"
 
 # Detect and set device type and data type
 def get_device_and_dtype():
@@ -166,13 +168,13 @@ with gr.Blocks(title="Flux Kontext Image-to-Image") as demo:
             prompt = gr.Textbox(
                 label="Prompt",
                 placeholder="Describe the changes you want...",
-                value="Add a beach background on the tropical sunset beach. cinematic lighting, 4k quality, high detail.",
+                value=DEFAULT_PROMPT,
                 info="Describe the modifications you want to apply to the input image",
             )
             negative_prompt = gr.Textbox(
                 label="Negative Prompt",
                 placeholder="What to avoid in the image...",
-                value="blurry, low quality, distorted, deformed, ugly, bad anatomy, watermark, text",
+                value=DEFAULT_NEGATIVE_PROMPT,
                 info="Describe what you don't want in the generated image",
             )
 
