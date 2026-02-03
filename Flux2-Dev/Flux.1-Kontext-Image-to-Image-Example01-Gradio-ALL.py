@@ -21,6 +21,7 @@ print(f"Python Version: {platform.python_version()}")
 print(f"PyTorch Version: {torch.__version__}")
 print("=" * 50)
 
+DEFAULT_IMAGE = "default01.png"
 
 # Detect and set device type and data type
 def get_device_and_dtype():
@@ -160,7 +161,7 @@ with gr.Blocks(title="Flux Kontext Image-to-Image") as demo:
     with gr.Row():
         with gr.Column():
             input_image = gr.Image(
-                label="Input Image", type="pil", value="default.png", height=600
+                label="Input Image", type="pil", value=DEFAULT_IMAGE, height=600
             )
             prompt = gr.Textbox(
                 label="Prompt",
