@@ -6,18 +6,31 @@ import gc
 import atexit
 import signal
 import sys
+import platform
 import gradio as gr
+
+# Print platform information
+print("=" * 50)
+print("Platform Information")
+print("=" * 50)
+print(f"OS: {platform.system()} {platform.release()}")
+print(f"OS Version: {platform.version()}")
+print(f"Machine: {platform.machine()}")
+print(f"Processor: {platform.processor()}")
+print(f"Python Version: {platform.python_version()}")
+print(f"PyTorch Version: {torch.__version__}")
+print("=" * 50)
 
 # Detect and set device type and data type
 def get_device_and_dtype():
     """Detect the best available device and appropriate data type."""
     if torch.cuda.is_available():
         device = "cuda"
-        dtype = torch.float16  # Use float16 for better performance on CUDA
+        dtype = torch.bfloat16  # Use float16 for better performance on CUDA
         print(f"CUDA device detected: {torch.cuda.get_device_name(0)}")
     elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
         device = "mps"
-        dtype = torch.float16  # Use float16 for MPS
+        dtype = torch.bfloat16  # Use float16 for MPS
         print("MPS (Apple Silicon) device detected")
     else:
         device = "cpu"
