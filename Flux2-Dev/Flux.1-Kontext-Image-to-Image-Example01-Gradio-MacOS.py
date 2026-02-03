@@ -1,7 +1,9 @@
+import os
+os.environ["MallocStackLogging"] = "0"
+
 import torch
 from diffusers import FluxKontextPipeline
 from datetime import datetime
-import os
 import gc
 import atexit
 import signal
@@ -19,11 +21,6 @@ pipe = FluxKontextPipeline.from_pretrained(
     "black-forest-labs/FLUX.1-Kontext-dev", torch_dtype=data_type
 )
 pipe.to(device_type)
-
-print("Applying optimizations...")
-pipe.enable_model_cpu_offload()
-pipe.enable_sequential_cpu_offload()
-pipe.enable_attention_slicing()
 print("Model loaded!")
 
 
@@ -31,7 +28,10 @@ def cleanup():
     """Release all resources before exit."""
     global pipe
     print("Releasing resources...")
-    del pipe
+    try:
+        del pipe
+    except NameError:
+        pass
     gc.collect()
     if torch.backends.mps.is_available():
         torch.mps.empty_cache()
@@ -195,4 +195,4 @@ with gr.Blocks(title="Flux Kontext Image-to-Image") as demo:
 
 
 if __name__ == "__main__":
-    demo.launch(inbrowser=True)
+    demo.launch(inbrowser=False)
