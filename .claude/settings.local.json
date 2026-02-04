@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(systeminfo:*)",
+      "Bash(findstr:*)",
+      "Bash(wmic cpu get:*)",
+      "Bash(wmic:*)",
+      "Bash(nvidia-smi:*)"
     ]
   }
 }

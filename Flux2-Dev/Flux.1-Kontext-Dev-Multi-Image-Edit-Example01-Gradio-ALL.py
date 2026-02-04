@@ -1,85 +1,140 @@
+import os
+
+os.environ["MallocStackLogging"] = "0"
+
 import torch
 from diffusers import FluxKontextPipeline
 from datetime import datetime
-import os
+from PIL import Image
 import gc
 import atexit
 import signal
 import sys
 import platform
+import subprocess
 import gradio as gr
 
-# Print platform information
-print("=" * 50)
-print("Platform Information")
-print("=" * 50)
-print(f"OS: {platform.system()} {platform.release()}")
-print(f"OS Version: {platform.version()}")
-print(f"Machine: {platform.machine()}")
-print(f"Processor: {platform.processor()}")
-print(f"Python Version: {platform.python_version()}")
-print(f"PyTorch Version: {torch.__version__}")
-print("=" * 50)
 
-DEFAULT_IMAGE_1 = "default01.png"
-DEFAULT_IMAGE_2 = None
-DEFAULT_IMAGE_3 = None
-DEFAULT_IMAGE_4 = None
-DEFAULT_PROMPT = "Combine the person from image 1 with the other images. Keep the person's pose and clothing. cinematic lighting, 4k quality, high detail, fashion model body shape."
-DEFAULT_NEGATIVE_PROMPT = "blurry, low quality, distorted, deformed, ugly, bad anatomy, watermark, text"
+def print_hardware_info():
+    """Print hardware information at startup."""
+    print("=" * 60)
+    print("HARDWARE INFORMATION")
+    print("=" * 60)
 
-# Detect and set device type and data type
-def get_device_and_dtype():
-    """Detect the best available device and appropriate data type."""
+    # System info
+    print(f"System: {platform.system()} {platform.release()}")
+    print(f"Machine: {platform.machine()}")
+    print(f"Processor: {platform.processor()}")
+    print(f"Python: {platform.python_version()}")
+
+    # CPU info (Windows-specific)
+    if platform.system() == "Windows":
+        try:
+            result = subprocess.run(
+                [
+                    "wmic",
+                    "cpu",
+                    "get",
+                    "name,numberofcores,numberoflogicalprocessors",
+                    "/format:list",
+                ],
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+            for line in result.stdout.strip().split("\n"):
+                if line.strip() and "=" in line:
+                    print(f"CPU {line.strip()}")
+        except Exception:
+            pass
+
+        # RAM info
+        try:
+            result = subprocess.run(
+                ["wmic", "memorychip", "get", "capacity", "/format:list"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+            total_ram = 0
+            for line in result.stdout.strip().split("\n"):
+                if line.strip().startswith("Capacity="):
+                    total_ram += int(line.split("=")[1])
+            if total_ram > 0:
+                print(f"RAM Total: {total_ram / (1024**3):.1f} GB")
+        except Exception:
+            pass
+
+    # GPU info via PyTorch
     if torch.cuda.is_available():
-        device = "cuda"
-        dtype = torch.bfloat16  # Use float16 for better performance on CUDA
-        print(f"CUDA device detected: {torch.cuda.get_device_name(0)}")
-    elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
-        device = "mps"
-        dtype = torch.bfloat16  # Use bfloat16 for MPS
-        print("MPS (Apple Silicon) device detected")
+        print(f"CUDA Available: Yes")
+        print(f"CUDA Version: {torch.version.cuda}")
+        for i in range(torch.cuda.device_count()):
+            props = torch.cuda.get_device_properties(i)
+            print(f"GPU {i}: {props.name}")
+            print(f"GPU {i} Memory: {props.total_memory / (1024**3):.1f} GB")
+    elif torch.backends.mps.is_available():
+        print("MPS (Apple Silicon): Available")
     else:
-        device = "cpu"
-        dtype = torch.float32  # Use float32 for CPU (float16 not well supported)
-        print("Using CPU device")
-    return device, dtype
+        print("GPU: Not available (CPU only)")
+
+    print("=" * 60)
 
 
-device_type, data_type = get_device_and_dtype()
-print(f"Using device: {device_type}, dtype: {data_type}")
+print_hardware_info()
+
+
+# Define device type and data type
+def get_device():
+    """Detect available device: CUDA > MPS > CPU"""
+    if torch.cuda.is_available():
+        return "cuda"
+    elif torch.backends.mps.is_available():
+        return "mps"
+    else:
+        return "cpu"
+
+
+device_type = get_device()
+data_type = torch.bfloat16 if device_type != "cpu" else torch.float32
+
+DEFAULT_PROMPT = "Make her wearing the beach sun cap, the sunglasses and the bikini. Keep the pose. cinematic lighting, 4k quality, high detail."
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
-print("Loading model...")
+print(f"Loading model on {device_type.upper()} (dtype: {data_type})...")
 pipe = FluxKontextPipeline.from_pretrained(
     "black-forest-labs/FLUX.1-Kontext-dev", torch_dtype=data_type
 )
-pipe.to(device_type)
 
+# Memory optimization settings
 if device_type == "cuda" or device_type == "cpu":
-    print("Applying optimizations...")
-    # CPU offload helps manage VRAM on CUDA devices
+    # CUDA-specific optimizations
+    pipe.to(device_type)
     pipe.enable_model_cpu_offload()
-    pipe.enable_sequential_cpu_offload()
     pipe.enable_attention_slicing()
+    pipe.enable_sequential_cpu_offload()
+    print("Enabled: model_cpu_offload")
 else:
-    print("No memory optimizations applied...")
+    # MPS-specific optimizations
+    print("MPS device detected, no memory optimization!!!")
 
-print("Model loaded!")
+
+print(f"Model loaded on {device_type.upper()}!")
 
 
 def cleanup():
     """Release all resources before exit."""
     global pipe
     print("Releasing resources...")
-    if "pipe" in globals() and pipe is not None:
+    try:
         del pipe
+    except NameError:
+        pass
     gc.collect()
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
-        torch.cuda.synchronize()
-    elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+    elif torch.backends.mps.is_available():
         torch.mps.empty_cache()
     print("Resources released!")
 
@@ -97,15 +152,42 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 
-def get_image_dimensions(image):
-    """Get image dimensions and round to nearest step of 64."""
-    if image is None:
-        return gr.update(), gr.update()
-    w, h = image.size
-    # Round to nearest 64 and clamp to slider range
-    w = max(256, min(1536, round(w / 64) * 64))
-    h = max(256, min(1536, round(h / 64) * 64))
-    return w, h
+def create_image_grid(images, tile_size=(512, 512)):
+    """Create a grid of images for multi-image conditioning.
+
+    For 2 images: side by side (1x2)
+    For 3-4 images: 2x2 grid
+    """
+    if len(images) == 0:
+        return None
+
+    # Resize all images to tile size
+    resized = [img.resize(tile_size, Image.Resampling.LANCZOS) for img in images]
+
+    if len(resized) == 1:
+        return resized[0]
+    elif len(resized) == 2:
+        # Side by side
+        grid_width = tile_size[0] * 2
+        grid_height = tile_size[1]
+        grid = Image.new("RGB", (grid_width, grid_height))
+        grid.paste(resized[0], (0, 0))
+        grid.paste(resized[1], (tile_size[0], 0))
+        return grid
+    else:
+        # 2x2 grid (fill empty slots with black if needed)
+        grid_width = tile_size[0] * 2
+        grid_height = tile_size[1] * 2
+        grid = Image.new("RGB", (grid_width, grid_height), (0, 0, 0))
+        positions = [
+            (0, 0),
+            (tile_size[0], 0),
+            (0, tile_size[1]),
+            (tile_size[0], tile_size[1]),
+        ]
+        for i, img in enumerate(resized[:4]):
+            grid.paste(img, positions[i])
+        return grid
 
 
 def generate_image(
@@ -134,19 +216,38 @@ def generate_image(
     if len(input_images) < 2:
         return None, "Please upload at least 2 images for composition."
 
-    print(f"Generating image with {len(input_images)} input images")
+    # Use width/height from sliders
+    output_width = int(width)
+    output_height = int(height)
+
+    # Create a composite grid image
+    # Use smaller tiles so the composite fits within reasonable dimensions
+    tile_w = min(512, output_width)
+    tile_h = min(512, output_height)
+    composite_image = create_image_grid(input_images, tile_size=(tile_w, tile_h))
+
+    composite_w, composite_h = composite_image.size
+    # Ensure dimensions are divisible by 64
+    composite_w = (composite_w // 64) * 64
+    composite_h = (composite_h // 64) * 64
+    composite_image = composite_image.resize(
+        (composite_w, composite_h), Image.Resampling.LANCZOS
+    )
+
+    print(
+        f"Created composite image grid: {composite_w}x{composite_h} from {len(input_images)} images"
+    )
+    print(f"Output dimensions: {output_width}x{output_height}")
     print(f"Prompt: {prompt}")
 
-    # Use "cpu" for generator on MPS as it's more stable
-    generator_device = "cpu" if device_type == "mps" else device_type
-    generator = torch.Generator(device=generator_device).manual_seed(int(seed))
+    generator = torch.Generator(device=device_type).manual_seed(int(seed))
 
     image = pipe(
-        image=input_images,
+        image=composite_image,
         prompt=prompt,
         negative_prompt=negative_prompt if negative_prompt else None,
-        width=int(width),
-        height=int(height),
+        width=output_width,
+        height=output_height,
         guidance_scale=guidance_scale,
         num_inference_steps=int(num_inference_steps),
         max_sequence_length=int(max_sequence_length),
@@ -158,7 +259,7 @@ def generate_image(
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_path = os.path.join(
         script_dir,
-        f"{script_name}_{timestamp}_guidance{guidance_scale}_steps{int(num_inference_steps)}_seed{int(seed)}_seqlen{int(max_sequence_length)}.png",
+        f"{script_name}_{timestamp}_w{output_width}_h{output_height}_guidance{guidance_scale}_steps{int(num_inference_steps)}_seed{int(seed)}_seqlen{int(max_sequence_length)}.png",
     )
     image.save(output_path)
 
@@ -166,17 +267,41 @@ def generate_image(
     gc.collect()
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
-    elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+    elif torch.backends.mps.is_available():
         torch.mps.empty_cache()
 
     return image, f"Image saved: {output_path}"
 
 
+def get_output_dimensions(image):
+    """Get output dimensions from first image (rounded to nearest 64)."""
+    if image is None:
+        return gr.update(), gr.update()
+    w, h = image.size
+    output_w = max(256, min(1536, round(w / 64) * 64))
+    output_h = max(256, min(1536, round(h / 64) * 64))
+    return output_w, output_h
+
+
+# Default image paths
+default_image_1 = "default01.png"
+default_image_1_path = os.path.join(script_dir, default_image_1)
+
+# Get initial output dimensions from default image
+try:
+    with Image.open(default_image_1_path) as img:
+        w, h = img.size
+        default_width = max(256, min(1536, round(w / 64) * 64))
+        default_height = max(256, min(1536, round(h / 64) * 64))
+except Exception:
+    default_width, default_height = 512, 1024
+
 with gr.Blocks(title="Flux.1 Kontext Dev Multi-Image Composition") as demo:
     gr.Markdown("# Flux.1 Kontext Dev Multi-Image Composition")
     gr.Markdown(
         "Upload multiple images and describe how to combine them. "
-        "Use 'image 1', 'image 2', etc. in your prompt to reference each image."
+        "For 2 images: use 'left image' and 'right image'. "
+        "For 3-4 images: use 'top-left', 'top-right', 'bottom-left', 'bottom-right'."
     )
 
     with gr.Row():
@@ -184,49 +309,60 @@ with gr.Blocks(title="Flux.1 Kontext Dev Multi-Image Composition") as demo:
             gr.Markdown("### Input Images (at least 2 required)")
             with gr.Row():
                 input_image_1 = gr.Image(
-                    label="Image 1 (Required)", type="pil", value=DEFAULT_IMAGE_1, height=280
+                    label="Image 1 (Required)",
+                    type="pil",
+                    height=280,
+                    value=default_image_1_path,
                 )
                 input_image_2 = gr.Image(
-                    label="Image 2 (Required)", type="pil", value=DEFAULT_IMAGE_2, height=280
+                    label="Image 2 (Required)",
+                    type="pil",
+                    height=280,
+                    value="beachsuncap.jpg",
                 )
             with gr.Row():
                 input_image_3 = gr.Image(
-                    label="Image 3 (Optional)", type="pil", value=DEFAULT_IMAGE_3, height=280
+                    label="Image 3 (Optional)",
+                    type="pil",
+                    height=280,
+                    value="sunglasses.jpg",
                 )
                 input_image_4 = gr.Image(
-                    label="Image 4 (Optional)", type="pil", value=DEFAULT_IMAGE_4, height=280
+                    label="Image 4 (Optional)",
+                    type="pil",
+                    height=280,
+                    value="bikini.jpg",
+                )
+            with gr.Row():
+                width = gr.Slider(
+                    256,
+                    1536,
+                    value=default_width,
+                    step=64,
+                    label="Output Width",
+                    info="Output image width (initialized from Image 1)",
+                )
+                height = gr.Slider(
+                    256,
+                    1536,
+                    value=default_height,
+                    step=64,
+                    label="Output Height",
+                    info="Output image height (initialized from Image 1)",
                 )
             prompt = gr.Textbox(
                 label="Prompt",
                 placeholder="Describe how to combine the images...",
                 value=DEFAULT_PROMPT,
-                info="Use 'image 1', 'image 2', etc. to reference each uploaded image",
+                info="Use 'left/right' for 2 images, or 'top-left/top-right/bottom-left/bottom-right' for 3-4 images",
                 lines=3,
             )
             negative_prompt = gr.Textbox(
                 label="Negative Prompt",
                 placeholder="What to avoid in the image...",
-                value=DEFAULT_NEGATIVE_PROMPT,
+                value="blurry, low quality, distorted, deformed, ugly, bad anatomy, watermark, text",
                 info="Describe what you don't want in the generated image",
             )
-
-            with gr.Row():
-                width = gr.Slider(
-                    256,
-                    1536,
-                    value=512,
-                    step=64,
-                    label="Width",
-                    info="Output image width in pixels",
-                )
-                height = gr.Slider(
-                    256,
-                    1536,
-                    value=1024,
-                    step=64,
-                    label="Height",
-                    info="Output image height in pixels",
-                )
 
             with gr.Row():
                 guidance_scale = gr.Slider(
@@ -286,16 +422,9 @@ with gr.Blocks(title="Flux.1 Kontext Dev Multi-Image Composition") as demo:
         outputs=[output_image, status],
     )
 
-    # Update width/height sliders when first input image changes
+    # Update width/height sliders when first image changes
     input_image_1.change(
-        fn=get_image_dimensions,
-        inputs=[input_image_1],
-        outputs=[width, height],
-    )
-
-    # Also update dimensions on initial app load for default image
-    demo.load(
-        fn=get_image_dimensions,
+        fn=get_output_dimensions,
         inputs=[input_image_1],
         outputs=[width, height],
     )
