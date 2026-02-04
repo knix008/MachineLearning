@@ -22,7 +22,7 @@ print(f"PyTorch Version: {torch.__version__}")
 print("=" * 50)
 
 DEFAULT_IMAGE = "default01.png"
-DEFAULT_PROMPT = "Change the background to the tropical sunny beach with cinematic lighting, 4k quality, high detail, wearing a white one-piece, skinny fashion model body shape."
+DEFAULT_PROMPT = "Change the background to the tropical sunny beach, wearing a white one-piece, skinny fashion model body shape and pose, cinematic lighting, 4k quality, high detail."
 DEFAULT_NEGATIVE_PROMPT = "blurry, low quality, distorted, deformed, ugly, bad anatomy, watermark, text"
 
 # Detect and set device type and data type
