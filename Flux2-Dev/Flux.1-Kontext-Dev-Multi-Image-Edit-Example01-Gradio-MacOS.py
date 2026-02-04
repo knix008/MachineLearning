@@ -4,6 +4,7 @@ os.environ["MallocStackLogging"] = "0"
 import torch
 from diffusers import FluxKontextPipeline
 from datetime import datetime
+from PIL import Image
 import gc
 import atexit
 import signal
@@ -76,11 +77,15 @@ def generate_image(
     seed,
     max_sequence_length,
 ):
-    # Collect all non-None images
+    # Collect all non-None images and resize to target dimensions
+    target_width = int(width)
+    target_height = int(height)
     input_images = []
     for img in [input_image_1, input_image_2, input_image_3, input_image_4]:
         if img is not None:
-            input_images.append(img)
+            # Resize image to target dimensions
+            resized_img = img.resize((target_width, target_height), Image.Resampling.LANCZOS)
+            input_images.append(resized_img)
 
     if len(input_images) == 0:
         return None, "Please upload at least one image."
@@ -89,6 +94,7 @@ def generate_image(
         return None, "Please upload at least 2 images for composition."
 
     print(f"Generating image with {len(input_images)} input images")
+    print(f"All images resized to {target_width}x{target_height}")
     print(f"Prompt: {prompt}")
 
     generator = torch.Generator(device=device_type).manual_seed(int(seed))
