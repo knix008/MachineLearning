@@ -21,8 +21,11 @@ print(f"Python Version: {platform.python_version()}")
 print(f"PyTorch Version: {torch.__version__}")
 print("=" * 50)
 
-DEFAULT_IMAGE = "default01.png"
-DEFAULT_PROMPT = "Change  the background to the tropical sunset beach with cinematic lighting, 4k quality, high detail, wearing a red one piece."
+DEFAULT_IMAGE_1 = "default01.png"
+DEFAULT_IMAGE_2 = None
+DEFAULT_IMAGE_3 = None
+DEFAULT_IMAGE_4 = None
+DEFAULT_PROMPT = "Combine the person from image 1 with the other images. Keep the person's pose and clothing. cinematic lighting, 4k quality, high detail."
 DEFAULT_NEGATIVE_PROMPT = "blurry, low quality, distorted, deformed, ugly, bad anatomy, watermark, text"
 
 # Detect and set device type and data type
@@ -106,7 +109,10 @@ def get_image_dimensions(image):
 
 
 def generate_image(
-    input_image,
+    input_image_1,
+    input_image_2,
+    input_image_3,
+    input_image_4,
     prompt,
     negative_prompt,
     width,
@@ -116,17 +122,27 @@ def generate_image(
     seed,
     max_sequence_length,
 ):
-    if input_image is None:
-        return None, "Please upload an input image."
+    # Collect all non-None images
+    input_images = []
+    for img in [input_image_1, input_image_2, input_image_3, input_image_4]:
+        if img is not None:
+            input_images.append(img)
 
-    print(f"Generating image with prompt: {prompt}")
+    if len(input_images) == 0:
+        return None, "Please upload at least one image."
+
+    if len(input_images) < 2:
+        return None, "Please upload at least 2 images for composition."
+
+    print(f"Generating image with {len(input_images)} input images")
+    print(f"Prompt: {prompt}")
 
     # Use "cpu" for generator on MPS as it's more stable
     generator_device = "cpu" if device_type == "mps" else device_type
     generator = torch.Generator(device=generator_device).manual_seed(int(seed))
 
     image = pipe(
-        image=input_image,
+        image=input_images,
         prompt=prompt,
         negative_prompt=negative_prompt if negative_prompt else None,
         width=int(width),
@@ -156,20 +172,36 @@ def generate_image(
     return image, f"Image saved: {output_path}"
 
 
-with gr.Blocks(title="Flux.1 Kontext Image-to-Image") as demo:
-    gr.Markdown("# Flux.1 Kontext Image-to-Image")
-    gr.Markdown("Upload an image and describe the changes you want to make.")
+with gr.Blocks(title="Flux.1 Kontext Dev Multi-Image Composition") as demo:
+    gr.Markdown("# Flux.1 Kontext Dev Multi-Image Composition")
+    gr.Markdown(
+        "Upload multiple images and describe how to combine them. "
+        "Use 'image 1', 'image 2', etc. in your prompt to reference each image."
+    )
 
     with gr.Row():
         with gr.Column():
-            input_image = gr.Image(
-                label="Input Image", type="pil", value=DEFAULT_IMAGE, height=600
-            )
+            gr.Markdown("### Input Images (at least 2 required)")
+            with gr.Row():
+                input_image_1 = gr.Image(
+                    label="Image 1 (Required)", type="pil", value=DEFAULT_IMAGE_1, height=280
+                )
+                input_image_2 = gr.Image(
+                    label="Image 2 (Required)", type="pil", value=DEFAULT_IMAGE_2, height=280
+                )
+            with gr.Row():
+                input_image_3 = gr.Image(
+                    label="Image 3 (Optional)", type="pil", value=DEFAULT_IMAGE_3, height=280
+                )
+                input_image_4 = gr.Image(
+                    label="Image 4 (Optional)", type="pil", value=DEFAULT_IMAGE_4, height=280
+                )
             prompt = gr.Textbox(
                 label="Prompt",
-                placeholder="Describe the changes you want...",
+                placeholder="Describe how to combine the images...",
                 value=DEFAULT_PROMPT,
-                info="Describe the modifications you want to apply to the input image",
+                info="Use 'image 1', 'image 2', etc. to reference each uploaded image",
+                lines=3,
             )
             negative_prompt = gr.Textbox(
                 label="Negative Prompt",
@@ -208,7 +240,7 @@ with gr.Blocks(title="Flux.1 Kontext Image-to-Image") as demo:
                 num_inference_steps = gr.Slider(
                     1,
                     50,
-                    value=25,
+                    value=28,
                     step=1,
                     label="Inference Steps",
                     info="Number of denoising steps. More steps = better quality but slower",
@@ -238,7 +270,10 @@ with gr.Blocks(title="Flux.1 Kontext Image-to-Image") as demo:
     generate_btn.click(
         fn=generate_image,
         inputs=[
-            input_image,
+            input_image_1,
+            input_image_2,
+            input_image_3,
+            input_image_4,
             prompt,
             negative_prompt,
             width,
@@ -251,17 +286,17 @@ with gr.Blocks(title="Flux.1 Kontext Image-to-Image") as demo:
         outputs=[output_image, status],
     )
 
-    # Update width/height sliders when input image changes
-    input_image.change(
+    # Update width/height sliders when first input image changes
+    input_image_1.change(
         fn=get_image_dimensions,
-        inputs=[input_image],
+        inputs=[input_image_1],
         outputs=[width, height],
     )
 
     # Also update dimensions on initial app load for default image
     demo.load(
         fn=get_image_dimensions,
-        inputs=[input_image],
+        inputs=[input_image_1],
         outputs=[width, height],
     )
 
