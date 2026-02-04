@@ -207,8 +207,8 @@ try:
 except Exception:
     default_w, default_h = 512, 1024
 
-with gr.Blocks(title="Flux Kontext Multi-Image Composition") as demo:
-    gr.Markdown("# Flux Kontext Multi-Image Composition")
+with gr.Blocks(title="Flux.1 Kontext Multi-Image Composition") as demo:
+    gr.Markdown("# Flux.1 Kontext Multi-Image Composition")
     gr.Markdown(
         "Upload multiple images and describe how to combine them. "
         "For 2 images: use 'left image' and 'right image'. "
