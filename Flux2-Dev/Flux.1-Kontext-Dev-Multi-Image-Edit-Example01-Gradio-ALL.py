@@ -25,7 +25,7 @@ DEFAULT_IMAGE_1 = "default01.png"
 DEFAULT_IMAGE_2 = None
 DEFAULT_IMAGE_3 = None
 DEFAULT_IMAGE_4 = None
-DEFAULT_PROMPT = "Combine the person from image 1 with the other images. Keep the person's pose and clothing. cinematic lighting, 4k quality, high detail."
+DEFAULT_PROMPT = "Combine the person from image 1 with the other images. Keep the person's pose and clothing. cinematic lighting, 4k quality, high detail, fashion model body shape."
 DEFAULT_NEGATIVE_PROMPT = "blurry, low quality, distorted, deformed, ugly, bad anatomy, watermark, text"
 
 # Detect and set device type and data type
