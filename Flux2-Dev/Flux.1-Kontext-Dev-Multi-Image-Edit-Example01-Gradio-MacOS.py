@@ -245,4 +245,4 @@ with gr.Blocks(title="Flux Kontext Multi-Image Composition") as demo:
 
 
 if __name__ == "__main__":
-    demo.launch(inbrowser=False)
+    demo.launch(inbrowser=True)
