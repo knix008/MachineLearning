@@ -51,8 +51,22 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 
+def get_image_dimensions(image):
+    """Get image dimensions and round to nearest step of 64."""
+    if image is None:
+        return gr.update(), gr.update()
+    w, h = image.size
+    # Round to nearest 64 and clamp to slider range
+    w = max(256, min(1536, round(w / 64) * 64))
+    h = max(256, min(1536, round(h / 64) * 64))
+    return w, h
+
+
 def generate_image(
-    input_image,
+    input_image_1,
+    input_image_2,
+    input_image_3,
+    input_image_4,
     prompt,
     negative_prompt,
     width,
@@ -62,15 +76,25 @@ def generate_image(
     seed,
     max_sequence_length,
 ):
-    if input_image is None:
-        return None, "Please upload an input image."
+    # Collect all non-None images
+    input_images = []
+    for img in [input_image_1, input_image_2, input_image_3, input_image_4]:
+        if img is not None:
+            input_images.append(img)
 
-    print(f"Generating image with prompt: {prompt}")
+    if len(input_images) == 0:
+        return None, "Please upload at least one image."
+
+    if len(input_images) < 2:
+        return None, "Please upload at least 2 images for composition."
+
+    print(f"Generating image with {len(input_images)} input images")
+    print(f"Prompt: {prompt}")
 
     generator = torch.Generator(device=device_type).manual_seed(int(seed))
 
     image = pipe(
-        image=input_image,
+        image=input_images,
         prompt=prompt,
         negative_prompt=negative_prompt if negative_prompt else None,
         width=int(width),
@@ -98,44 +122,36 @@ def generate_image(
     return image, f"Image saved: {output_path}"
 
 
-def select_image(evt: gr.SelectData, gallery):
-    """Handle image selection from gallery."""
-    if gallery is None or len(gallery) == 0:
-        return None
-    selected_idx = evt.index
-    if selected_idx < len(gallery):
-        img_data = gallery[selected_idx]
-        if isinstance(img_data, tuple):
-            return img_data[0]
-        return img_data
-    return None
-
-
-with gr.Blocks(title="Flux Kontext Multi-Image Editor") as demo:
-    gr.Markdown("# Flux Kontext Multi-Image Editor")
-    gr.Markdown("Upload multiple images to the gallery, click to select one, then edit with your prompt.")
+with gr.Blocks(title="Flux Kontext Multi-Image Composition") as demo:
+    gr.Markdown("# Flux Kontext Multi-Image Composition")
+    gr.Markdown(
+        "Upload multiple images and describe how to combine them. "
+        "Use 'image 1', 'image 2', etc. in your prompt to reference each image."
+    )
 
     with gr.Row():
         with gr.Column():
-            image_gallery = gr.Gallery(
-                label="Image Gallery (Click to select)",
-                columns=3,
-                rows=2,
-                height=300,
-                object_fit="contain",
-                allow_preview=False,
-            )
-            selected_image = gr.Image(
-                label="Selected Image (for editing)",
-                type="pil",
-                height=300,
-                interactive=True,
-            )
+            gr.Markdown("### Input Images (at least 2 required)")
+            with gr.Row():
+                input_image_1 = gr.Image(
+                    label="Image 1 (Required)", type="pil", height=280
+                )
+                input_image_2 = gr.Image(
+                    label="Image 2 (Required)", type="pil", height=280
+                )
+            with gr.Row():
+                input_image_3 = gr.Image(
+                    label="Image 3 (Optional)", type="pil", height=280
+                )
+                input_image_4 = gr.Image(
+                    label="Image 4 (Optional)", type="pil", height=280
+                )
             prompt = gr.Textbox(
                 label="Prompt",
-                placeholder="Describe the changes you want...",
-                value="Add a beach background with palm trees and a bright sunny sky, vivid colors, high detail",
-                info="Describe the modifications you want to apply to the selected image",
+                placeholder="Describe how to combine the images...",
+                value="Combine the person from image 1 with the other images. Keep the person's pose and clothing. cinematic lighting, 4k quality, high detail.",
+                info="Use 'image 1', 'image 2', etc. to reference each uploaded image",
+                lines=3,
             )
             negative_prompt = gr.Textbox(
                 label="Negative Prompt",
@@ -148,7 +164,7 @@ with gr.Blocks(title="Flux Kontext Multi-Image Editor") as demo:
                 width = gr.Slider(
                     256,
                     1536,
-                    value=768,
+                    value=512,
                     step=64,
                     label="Width",
                     info="Output image width in pixels",
@@ -201,16 +217,13 @@ with gr.Blocks(title="Flux Kontext Multi-Image Editor") as demo:
             output_image = gr.Image(label="Output Image", type="pil", height=600)
             status = gr.Textbox(label="Status", interactive=False)
 
-    image_gallery.select(
-        fn=select_image,
-        inputs=[image_gallery],
-        outputs=[selected_image],
-    )
-
     generate_btn.click(
         fn=generate_image,
         inputs=[
-            selected_image,
+            input_image_1,
+            input_image_2,
+            input_image_3,
+            input_image_4,
             prompt,
             negative_prompt,
             width,
@@ -221,6 +234,13 @@ with gr.Blocks(title="Flux Kontext Multi-Image Editor") as demo:
             max_sequence_length,
         ],
         outputs=[output_image, status],
+    )
+
+    # Update width/height sliders when first input image changes
+    input_image_1.change(
+        fn=get_image_dimensions,
+        inputs=[input_image_1],
+        outputs=[width, height],
     )
 
 
