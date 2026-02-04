@@ -63,6 +63,39 @@ def get_image_dimensions(image):
     return w, h
 
 
+def create_image_grid(images, tile_size=(512, 512)):
+    """Create a grid of images for multi-image conditioning.
+
+    For 2 images: side by side (1x2)
+    For 3-4 images: 2x2 grid
+    """
+    if len(images) == 0:
+        return None
+
+    # Resize all images to tile size
+    resized = [img.resize(tile_size, Image.Resampling.LANCZOS) for img in images]
+
+    if len(resized) == 1:
+        return resized[0]
+    elif len(resized) == 2:
+        # Side by side
+        grid_width = tile_size[0] * 2
+        grid_height = tile_size[1]
+        grid = Image.new("RGB", (grid_width, grid_height))
+        grid.paste(resized[0], (0, 0))
+        grid.paste(resized[1], (tile_size[0], 0))
+        return grid
+    else:
+        # 2x2 grid (fill empty slots with black if needed)
+        grid_width = tile_size[0] * 2
+        grid_height = tile_size[1] * 2
+        grid = Image.new("RGB", (grid_width, grid_height), (0, 0, 0))
+        positions = [(0, 0), (tile_size[0], 0), (0, tile_size[1]), (tile_size[0], tile_size[1])]
+        for i, img in enumerate(resized[:4]):
+            grid.paste(img, positions[i])
+        return grid
+
+
 def generate_image(
     input_image_1,
     input_image_2,
@@ -77,15 +110,11 @@ def generate_image(
     seed,
     max_sequence_length,
 ):
-    # Collect all non-None images and resize to target dimensions
-    target_width = int(width)
-    target_height = int(height)
+    # Collect all non-None images
     input_images = []
     for img in [input_image_1, input_image_2, input_image_3, input_image_4]:
         if img is not None:
-            # Resize image to target dimensions
-            resized_img = img.resize((target_width, target_height), Image.Resampling.LANCZOS)
-            input_images.append(resized_img)
+            input_images.append(img)
 
     if len(input_images) == 0:
         return None, "Please upload at least one image."
@@ -93,14 +122,25 @@ def generate_image(
     if len(input_images) < 2:
         return None, "Please upload at least 2 images for composition."
 
-    print(f"Generating image with {len(input_images)} input images")
-    print(f"All images resized to {target_width}x{target_height}")
+    # Create a composite grid image
+    # Use smaller tiles so the composite fits within reasonable dimensions
+    tile_w = min(512, int(width))
+    tile_h = min(512, int(height))
+    composite_image = create_image_grid(input_images, tile_size=(tile_w, tile_h))
+
+    composite_w, composite_h = composite_image.size
+    # Ensure dimensions are divisible by 64
+    composite_w = (composite_w // 64) * 64
+    composite_h = (composite_h // 64) * 64
+    composite_image = composite_image.resize((composite_w, composite_h), Image.Resampling.LANCZOS)
+
+    print(f"Created composite image grid: {composite_w}x{composite_h} from {len(input_images)} images")
     print(f"Prompt: {prompt}")
 
     generator = torch.Generator(device=device_type).manual_seed(int(seed))
 
     image = pipe(
-        image=input_images,
+        image=composite_image,
         prompt=prompt,
         negative_prompt=negative_prompt if negative_prompt else None,
         width=int(width),
@@ -132,7 +172,8 @@ with gr.Blocks(title="Flux Kontext Multi-Image Composition") as demo:
     gr.Markdown("# Flux Kontext Multi-Image Composition")
     gr.Markdown(
         "Upload multiple images and describe how to combine them. "
-        "Use 'image 1', 'image 2', etc. in your prompt to reference each image."
+        "For 2 images: use 'left image' and 'right image'. "
+        "For 3-4 images: use 'top-left', 'top-right', 'bottom-left', 'bottom-right'."
     )
 
     with gr.Row():
@@ -155,8 +196,8 @@ with gr.Blocks(title="Flux Kontext Multi-Image Composition") as demo:
             prompt = gr.Textbox(
                 label="Prompt",
                 placeholder="Describe how to combine the images...",
-                value="Combine the person from image 1 with the other images. Keep the person's pose and clothing. cinematic lighting, 4k quality, high detail.",
-                info="Use 'image 1', 'image 2', etc. to reference each uploaded image",
+                value="Take the person from the left image and place them in the scene from the right image. Keep the person's pose and clothing. cinematic lighting, 4k quality, high detail.",
+                info="Use 'left/right' for 2 images, or 'top-left/top-right/bottom-left/bottom-right' for 3-4 images",
                 lines=3,
             )
             negative_prompt = gr.Textbox(
