@@ -24,7 +24,7 @@ def get_device():
 device_type = get_device()
 data_type = torch.bfloat16 if device_type != "cpu" else torch.float32
 
-DEFAULT_PROMPT = "Make her wearing the beach sun cap, the sunglasses and the bikini. Keep the pose. cinematic lighting, 4k quality, high detail."
+DEFAULT_PROMPT = "Make her wearing the beach sun cap, the sunglasses and the bikini. Keep the pose. cinematic lighting, 4k quality, high detail. Show her full-body."
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
