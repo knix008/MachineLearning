@@ -11,7 +11,7 @@ import signal
 import sys
 import gradio as gr
 
-DEFAULT_PROMPT = "A sparkling-eyed Instagram-style young and sexy skinny korean woman. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing a red bikini. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Her skin appears natural and perfect. She is wearing a red bikini, sitting on a chair with parasol and having a cup of coffee, beautiful detailed body with perfect anatomy, perfect arms and legs structure, perfect fingers and toes, beautiful gorgeous model, photorealistic, 4k, high quality, high resolution, beautiful body, attractive pose, attractive face and body on the tropical sunset beach, cinematic lighting, fashion vibe, --niji 5 --ar 9:16"
+DEFAULT_PROMPT = "A sparkling-eyed Instagram-style young and cute skinny korean girl full-body photography. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Her skin appears natural and perfect. She is wearing a red bikini, beautiful detailed body with perfect anatomy and perfect face-body ratio, beautiful gorgeous model, photorealistic, 4k, high quality, high resolution, beautiful body, attractive pose, attractive face and body on the tropical sunset beach, dark tone cinematic lighting, fashion vibe."
 
 def print_hardware_info():
     """Print hardware information at startup."""
@@ -136,12 +136,12 @@ pipe = None
 
 
 def load_model():
-    """Load and initialize the Flux2Klein 9B model with optimizations."""
+    """Load and initialize the Flux2Klein 4B model with optimizations."""
     global pipe
 
     print(f"Loading model on {DEVICE.upper()} (dtype: {DTYPE})...")
     pipe = Flux2KleinPipeline.from_pretrained(
-        "black-forest-labs/FLUX.2-klein-9B", torch_dtype=DTYPE
+        "black-forest-labs/FLUX.2-klein-4B", torch_dtype=DTYPE
     )
 
     # Memory optimization settings based on device
@@ -206,8 +206,8 @@ def main():
     load_model()
 
     # Create Gradio interface
-    with gr.Blocks(title="Flux.2 Dev Klein 9B 이미지 생성기") as demo:
-        gr.Markdown("# Flux.2 Dev Klein 9B Text-to-Image 생성기")
+    with gr.Blocks(title="Flux.2 Dev Klein 4B 이미지 생성기") as demo:
+        gr.Markdown("# Flux.2 Dev Klein 4B Text-to-Image 생성기")
         gr.Markdown("텍스트 설명을 입력하여 이미지를 생성하세요.")
 
         with gr.Row():
