@@ -11,7 +11,8 @@ import signal
 import sys
 import gradio as gr
 
-DEFAULT_PROMPT = "A sparkling-eyed Instagram-style young and cute skinny korean girl full-body photography. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Her skin appears natural and perfect. She is wearing a red bikini, beautiful detailed body with perfect anatomy, beautiful gorgeous model, photorealistic, 4k, high quality, high resolution, beautiful body, attractive pose, attractive face and body on the tropical sunset beach, dark tone cinematic lighting, fashion vibe."
+DEFAULT_PROMPT = "A sparkling-eyed Instagram-style young and cute skinny korean girl full-body photography. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Her skin appears natural and perfect. She is wearing a red bikini, beautiful detailed body with perfect anatomy and perfect face-body ratio, beautiful gorgeous model, photorealistic, 4k, high quality, high resolution, beautiful body, attractive pose, attractive face and body on the tropical sunset beach, dark tone cinematic lighting, fashion vibe."
+
 
 def print_hardware_info():
     """Print hardware information at startup."""
@@ -109,6 +110,7 @@ def signal_handler(sig, frame):
 
 
 signal.signal(signal.SIGINT, signal_handler)
+
 
 # Define device type and data type
 def get_device():
