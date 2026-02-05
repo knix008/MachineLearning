@@ -22,7 +22,15 @@ def get_device():
         return "cpu"
 
 device_type = get_device()
-data_type = torch.bfloat16 if device_type != "cpu" else torch.float32
+if device_type == "cuda" or device_type == "mps":
+    print(f"{device_type.upper()} detected, using bfloat16 for efficiency.")
+    data_type = torch.bfloat16
+elif device_type == "cpu":
+    print("CPU detected, using float32 for better compatibility.")
+    data_type = torch.float32
+else:
+    print("Unknown device, defaulting to float32.")
+    data_type = torch.float32
 
 DEFAULT_PROMPT = "Make her wearing the beach sun cap, the sunglasses and the bikini. Keep the pose. cinematic lighting, 4k quality, high detail. Show her full-body."
 
