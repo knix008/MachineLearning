@@ -11,7 +11,7 @@ import signal
 import sys
 import gradio as gr
 
-DEFAULT_PROMPT = "A sparkling-eyed Instagram-style young and cute skinny korean woman wearing a red bikini, having black hair, beautiful detailed body with perfect anatomy, perfect arms and legs structure, perfect fingers and toes, beautiful gorgeous model, photorealistic, 4k, high quality, high resolution, beautiful body, attractive pose, attractive face and body on the tropical sunset beach, cinematic lighting, fashion vibe, --niji 5 --ar 9:16"
+DEFAULT_PROMPT = "A sparkling-eyed Instagram-style young and sexy skinny korean woman. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing a red bikini. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Her skin appears natural with visible pores. She is wearing a red bikini, walking, beautiful detailed body with perfect anatomy, perfect arms and legs structure, perfect fingers and toes, beautiful gorgeous model, photorealistic, 4k, high quality, high resolution, beautiful body, attractive pose, attractive face and body on the tropical sunset beach, cinematic lighting, fashion vibe, --niji 5 --ar 9:16"
 
 def print_hardware_info():
     """Print hardware information at startup."""
