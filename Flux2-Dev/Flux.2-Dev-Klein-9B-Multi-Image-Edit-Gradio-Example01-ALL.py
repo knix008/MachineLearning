@@ -12,7 +12,7 @@ import sys
 import platform
 
 DEFAULT_PROMPT = (
-    "she is wearing the bikini, the beach wide sun cap, and  the sunglasses."
+    "she is wearing the bikini, the beach wide sun cap, and the sunglasses."
 )
 
 # Global variables for model
