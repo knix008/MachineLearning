@@ -6,7 +6,8 @@
       "Bash(findstr:*)",
       "Bash(wmic cpu get:*)",
       "Bash(wmic:*)",
-      "Bash(nvidia-smi:*)"
+      "Bash(nvidia-smi:*)",
+      "WebFetch(domain:github.com)"
     ]
   }
 }
