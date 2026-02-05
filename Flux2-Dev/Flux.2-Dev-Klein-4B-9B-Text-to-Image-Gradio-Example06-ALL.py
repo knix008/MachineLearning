@@ -261,12 +261,12 @@ def main():
                             label="모델 크기",
                             info="4B: 빠르고 가벼움 | 9B: 높은 품질",
                         )
-                        load_btn = gr.Button("모델 로드", variant="primary")
-                    model_status = gr.Textbox(
-                        label="모델 상태",
-                        value="모델이 로드되지 않았습니다. 모델을 선택하고 로드해주세요.",
-                        interactive=False,
-                    )
+                        model_status = gr.Textbox(
+                            label="모델 상태",
+                            value="모델이 로드되지 않았습니다.",
+                            interactive=False,
+                        )
+                    load_btn = gr.Button("모델 로드", variant="primary")
 
                 prompt_input = gr.Textbox(
                     label="이미지 설명 (영어)",
