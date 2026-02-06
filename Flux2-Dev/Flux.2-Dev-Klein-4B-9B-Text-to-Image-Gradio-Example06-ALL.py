@@ -11,7 +11,7 @@ import signal
 import sys
 import gradio as gr
 
-DEFAULT_PROMPT = "A sparkling-eyed Instagram-style young and cute skinny korean woman around from 35 to 39 year old, full-body photography. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner and she is posing like a model. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Her skin appears natural and perfect. She is wearing a red bikini, waving her right hand, beautiful detailed body with perfect anatomy and perfect face-body ratio, beautiful gorgeous model, photorealistic, 4k, high quality, high resolution, beautiful body shape with perfect 5 fingers and 5 toes, perfect arms and legs structure, attractive model pose, attractive face and body on the tropical sunny beach, cinematic and natural lighting, fashion vibe."
+DEFAULT_PROMPT = "A sparkling-eyed Instagram-style young and cute skinny korean woman around from 35 to 39 year old, full-body photography. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner and she is posing like a model. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Her skin appears natural and perfect. She is wearing a red bikini,  beautiful detailed body with perfect anatomy and perfect face-body ratio, beautiful gorgeous model, photorealistic, 4k, high quality, high resolution, beautiful body shape with perfect fingers and toes, perfect arms and legs structure, model pose, attractive face and body on the tropical sunny beach, cinematic and natural lighting, fashion vibe."
 
 
 def print_hardware_info():
