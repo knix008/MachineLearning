@@ -32,7 +32,7 @@ else:
     print("Unknown device, defaulting to float32.")
     data_type = torch.float32
 
-DEFAULT_PROMPT = "Make her wearing the beach sun cap, the sunglasses and the bikini. Keep the pose. cinematic lighting, 4k quality, high detail. Show her full-body."
+DEFAULT_PROMPT = "A sparkling-eyed Instagram-style young  and cute  korean woman wearing a red bikini, beautiful detailed body with perfect anatomy and perfect arms and legs structure, perfect fingers and toes, beautiful gorgeous model, photorealistic, 4k, high quality, high resolution, beautiful body, attractive pose, attractive face and body --niji 5 --ar 9:16"
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
