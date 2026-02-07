@@ -12,6 +12,8 @@ import cv2
 import numpy as np
 import os
 import sys
+import signal
+import atexit
 from PIL import Image
 import time
 import datetime
@@ -20,6 +22,31 @@ import torch
 
 from basicsr.archs.rrdbnet_arch import RRDBNet
 from realesrgan import RealESRGANer
+
+
+def cleanup():
+    """Release all resources before exit."""
+    print("Releasing resources...")
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+        torch.mps.empty_cache()
+    print("Resources released!")
+
+
+atexit.register(cleanup)
+
+
+def signal_handler(sig, frame):
+    """Handle keyboard interrupt."""
+    print("\nKeyboard interrupt received...")
+    cleanup()
+    sys.exit(0)
+
+
+signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGTERM, signal_handler)
 
 
 def get_model():
@@ -137,7 +164,7 @@ with gr.Blocks() as demo:
             input_img = gr.Image(
                 label="입력 이미지 (업스케일할 원본)",
                 type="pil",
-                height=500,
+                height=800,
                 value="sample.png",
             )
             upscale = gr.Slider(
@@ -183,7 +210,7 @@ with gr.Blocks() as demo:
             )
             btn = gr.Button("업스케일 실행")
         with gr.Column():
-            output_img = gr.Image(label="결과 이미지 (업스케일 결과)")
+            output_img = gr.Image(label="결과 이미지 (업스케일 결과)", height=800)
             status = gr.Textbox(label="상태 메시지")
 
     btn.click(
@@ -193,4 +220,10 @@ with gr.Blocks() as demo:
     )
 
 if __name__ == "__main__":
-    demo.launch(share=False, inbrowser=True)
+    try:
+        demo.launch(share=False, inbrowser=True)
+    except KeyboardInterrupt:
+        print("\nKeyboard interrupt received...")
+    finally:
+        cleanup()
+        sys.exit(0)
