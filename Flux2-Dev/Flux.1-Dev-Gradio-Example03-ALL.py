@@ -31,8 +31,11 @@ DEVICE, DTYPE = get_device_and_dtype()
 pipe = None
 interface = None
 
-DEFAULT_PROMPT = "Highly realistic, 4k, high-quality, high resolution, beautiful cute korean woman model full body photography. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing a red bikini. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Her skin appears natural with visible pores, She is on the tropical sunny beach. Using a camera setup that mimics a large aperture, f/1.4 --ar 9:16 --style raw."
+DEFAULT_PROMPT = "A sparkling-eyed Instagram-style young and cute korean woman wearing a red bikini photography, posing on a tropical sunny beach, beautiful detailed body with perfect anatomy and perfect arms and legs structure, beautiful gorgeous model, photorealistic, 4k, high quality, high resolution, beautiful body, attractive pose, attractive face and body."
 
+# DEFAULT_PROMPT ="A sparkling-eyed Instagram-style beautiful young and cute korean woman model wearing a red bikini photography, on a tropical sunny beach, beautiful detailed body with perfect anatomy and perfect arms and legs structure, photorealistic, 4k, high quality, high resolution."
+
+# DEFAULT_PROMPT ="A sparkling-eyed Instagram-style beautiful young and cute korean woman model full-body photography, wearing a red bikini, on a tropical sunny beach, beautiful detailed body with perfect anatomy and perfect arms and legs structure, photorealistic, 4k, high quality, high resolution."
 
 def print_hardware_info():
     """Print detailed hardware specifications."""
@@ -141,10 +144,20 @@ def load_model():
     pipe.to(DEVICE)
 
     # Enable memory optimizations based on device
-    if DEVICE == "cuda" or DEVICE == "cpu":
+    if DEVICE == "cuda":
         pipe.enable_model_cpu_offload()
         pipe.enable_attention_slicing()
         pipe.enable_sequential_cpu_offload()
+        print(
+            "메모리 최적화 적용: sequential CPU offload, model CPU offload, attention slicing (CUDA)"
+        )
+    elif DEVICE == "cpu":
+        pipe.enable_model_cpu_offload()
+        pipe.enable_attention_slicing()
+        pipe.enable_sequential_cpu_offload()
+        print(
+            "메모리 최적화 적용: sequential CPU offload, model CPU offload, attention slicing (CPU)"
+        )
     elif DEVICE == "mps":
         # MPS doesn't support cpu_offload well
         print("No memory optimizations applied for MPS device.")
@@ -179,7 +192,7 @@ def generate_image(
         # Save with timestamp
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         script_name = os.path.splitext(os.path.basename(__file__))[0]
-        filename = f"{script_name}_{timestamp}.png"
+        filename = f"{script_name}_{timestamp}_{width}x{height}_gs{guidance_scale}_step{num_inference_steps}_seed{int(seed)}_str{strength}.png"
         image.save(filename)
 
         return image, f"✓ 이미지가 저장되었습니다: {filename}"
@@ -197,8 +210,8 @@ def main():
     load_model()
 
     # Create Gradio interface
-    with gr.Blocks(title="Flux.1-dev Image Generator") as interface:
-        gr.Markdown("# Flux.1-dev Image Generator")
+    with gr.Blocks(title="Flux.1-dev Text-to-Image Generator") as interface:
+        gr.Markdown("# Flux.1-dev Text-to-Image Generator")
         gr.Markdown(
             f"AI를 사용하여 텍스트에서 이미지를 생성합니다. (Device: **{DEVICE.upper()}**)"
         )
@@ -218,17 +231,17 @@ def main():
                     width = gr.Slider(
                         label="이미지 너비",
                         minimum=256,
-                        maximum=1024,
+                        maximum=2048,
                         step=64,
-                        value=512,
+                        value=768,
                         info="생성할 이미지의 너비를 지정합니다 (픽셀). 64의 배수여야 합니다.",
                     )
                     height = gr.Slider(
                         label="이미지 높이",
                         minimum=256,
-                        maximum=1024,
+                        maximum=2048,
                         step=64,
-                        value=1024,
+                        value=1536,
                         info="생성할 이미지의 높이를 지정합니다 (픽셀). 64의 배수여야 합니다.",
                     )
 
@@ -286,41 +299,6 @@ def main():
                 strength,
             ],
             outputs=[output_image, output_message],
-        )
-
-        gr.Markdown("---")
-        gr.Markdown(
-            """
-        ### 파라미터 설명:
-
-        **프롬프트** (Prompt)
-        - 생성하고 싶은 이미지에 대한 텍스트 설명입니다
-        - 자세할수록 좋습니다. 예: "여자, 미소, 해변, 빨간 비키니"
-        - 77단어 이하 권장
-
-        **이미지 크기** (Width/Height)
-        - 생성할 이미지의 너비와 높이를 지정합니다
-        - 256-1024px 범위에서 64의 배수로 설정
-
-        **Guidance Scale (프롬프트 강도)**
-        - 모델이 프롬프트를 얼마나 따를지 제어합니다
-        - 낮을수록 창의적, 높을수록 프롬프트에 정확합니다
-        - 권장값: 4-15
-
-        **추론 스텝** (Number of Inference Steps)
-        - 이미지 생성 과정의 단계 수입니다
-        - 높을수록 품질이 좋지만 시간이 더 걸립니다
-        - 권장값: 20-28
-
-        **시드** (Seed)
-        - 난수 생성의 시작점입니다
-        - 같은 시드를 사용하면 같은 결과를 얻습니다
-
-        **강도** (Strength)
-        - 생성 모델의 강도를 제어합니다
-        - 낮을수록 다양한 결과, 높을수록 일관성 있는 결과
-        - 범위: 0.1-1.0
-        """
         )
 
     # Launch the interface
