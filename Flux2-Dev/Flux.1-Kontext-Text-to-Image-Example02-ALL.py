@@ -1,6 +1,7 @@
 import os
 
-os.environ["MallocStackLogging"] = "0"
+os.environ.pop("MallocStackLogging", None)
+os.environ.pop("MallocStackLoggingDirectory", None)
 
 import torch
 from diffusers import FluxPipeline
@@ -13,7 +14,7 @@ import platform
 import subprocess
 import gradio as gr
 
-prompt = "A sparkling-eyed Instagram-style young  and cute  korean woman wearing a red bikini, beautiful detailed body with perfect anatomy and perfect arms and legs structure, perfect fingers and toes, beautiful gorgeous model, photorealistic, 4k, high quality, high resolution, beautiful body, attractive pose, attractive face and body --niji 5 --ar 9:16"
+prompt = "A sparkling-eyed Instagram-style young and cute korean woman wearing a red bikini, beautiful detailed body with perfect anatomy and perfect arms and legs structure, perfect fingers and toes, beautiful gorgeous model, photorealistic, 4k, high quality, high resolution, beautiful body, attractive pose, attractive face and body --niji 5 --ar 9:16"
 
 
 def detect_device():
