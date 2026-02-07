@@ -164,7 +164,7 @@ with gr.Blocks() as demo:
             input_img = gr.Image(
                 label="입력 이미지 (업스케일할 원본)",
                 type="pil",
-                height=800,
+                height=500,
                 value="sample.png",
             )
             upscale = gr.Slider(
