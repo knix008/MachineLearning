@@ -178,7 +178,7 @@ def generate_image(input_image, prompt, height, width, guidance_scale, num_infer
         # Save with timestamp
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         base_name = os.path.splitext(os.path.basename(__file__))[0]
-        output_path = f"{base_name}_{timestamp}_step{num_inference_steps}_seed{int(seed)}.png"
+        output_path = f"{base_name}_{current_model_name}_{timestamp}_step{num_inference_steps}_seed{int(seed)}.png"
         image.save(output_path)
         print(f"이미지 저장됨: {output_path}")
 
