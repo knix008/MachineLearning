@@ -9,7 +9,7 @@ import sys
 import inspect
 import gradio as gr
 
-DEFAULT_PROMPT = "Change her walking on the sunny beach."
+DEFAULT_PROMPT = "Make the korean cute girl  image 4k, high resolution, detailed, and professional quality, cinematic lighting, enhanced colors and sharpness. Change her face to see the left side, show her toes on the beach send, change the background a tropical sunny beach.."
 
 DEFAULT_IMAGE = "sample02.png"
 
@@ -140,7 +140,7 @@ def switch_model(model_name):
     load_model(model_name)
     return f"모델 변경 완료: {model_name}"
 
-def generate_image(input_image, prompt, negative_prompt, height, width, guidance_scale, num_inference_steps, seed):
+def generate_image(input_image, prompt, height, width, guidance_scale, num_inference_steps, seed):
     """Generate image from input image and text prompt."""
     global pipe
 
@@ -164,37 +164,16 @@ def generate_image(input_image, prompt, negative_prompt, height, width, guidance
         print(f"출력 크기: {width}x{height}")
         print(f"추론 스텝: {num_inference_steps}, 시드: {int(seed)}")
         print(f"이미지 편집 중... (steps: {num_inference_steps}, seed: {int(seed)})")
-        if negative_prompt:
-            print(f"부정 프롬프트: {negative_prompt[:50]}...")
 
-        # Prepare arguments
-        pipe_kwargs = {
-            "prompt": prompt,
-            "image": input_image,
-            "height": height,
-            "width": width,
-            "guidance_scale": guidance_scale,
-            "num_inference_steps": num_inference_steps,
-            "generator": generator,
-        }
-
-        # Try to add negative prompt - FLUX models may not support it
-        if negative_prompt:
-            try:
-                # First try with negative_prompt
-                test_kwargs = pipe_kwargs.copy()
-                test_kwargs["negative_prompt"] = negative_prompt
-                image = pipe(**test_kwargs).images[0]
-                print("부정 프롬프트가 적용되었습니다.")
-            except TypeError as e:
-                if "negative_prompt" in str(e):
-                    print("이 모델은 부정 프롬프트를 지원하지 않습니다. 부정 프롬프트 없이 생성합니다.")
-                    image = pipe(**pipe_kwargs).images[0]
-                else:
-                    raise e
-        else:
-            # Generate image without negative prompt
-            image = pipe(**pipe_kwargs).images[0]
+        image = pipe(
+            prompt=prompt,
+            image=input_image,
+            height=height,
+            width=width,
+            guidance_scale=guidance_scale,
+            num_inference_steps=num_inference_steps,
+            generator=generator,
+        ).images[0]
 
         # Save with timestamp
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -224,12 +203,13 @@ def main():
 
         with gr.Row():
             with gr.Column():
-                model_selector = gr.Dropdown(
+                model_selector = gr.Radio(
                     label="모델 선택",
                     choices=list(MODEL_OPTIONS.keys()),
                     value=DEFAULT_MODEL,
                     info="4B: 빠르고 가벼움 / 9B: 고품질, 더 많은 메모리 필요",
                 )
+                load_model_btn = gr.Button("모델 로드", variant="secondary")
                 model_status = gr.Textbox(
                     label="모델 상태",
                     value=f"현재 모델: {DEFAULT_MODEL}",
@@ -249,14 +229,6 @@ def main():
                     lines=3
                 )
                 
-                negative_prompt_input = gr.Textbox(
-                    label="부정 프롬프트 (Negative Prompt)",
-                    info="이미지에 포함되지 않기를 원하는 요소 (모델이 지원하는 경우에만 적용됨)",
-                    placeholder="예: blurry, bad quality, distorted",
-                    value="blurry, low quality, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, ugly, disfigured, deformed",
-                    lines=3
-                )
-
                 with gr.Accordion("고급 설정", open=True):
                     with gr.Row():
                         height_input = gr.Slider(
@@ -306,11 +278,11 @@ def main():
                 submit_btn = gr.Button("이미지 편집", variant="primary", size="lg")
 
             with gr.Column():
-                image_output = gr.Image(label="출력 이미지", height=800)
+                image_output = gr.Image(label="출력 이미지", height=1200)
                 status_output = gr.Textbox(label="상태", interactive=False)
 
-        # Switch model when dropdown changes
-        model_selector.change(
+        # Load model when button is clicked
+        load_model_btn.click(
             fn=switch_model,
             inputs=[model_selector],
             outputs=[model_status],
@@ -322,7 +294,6 @@ def main():
             inputs=[
                 input_image,
                 prompt_input,
-                negative_prompt_input,
                 height_input,
                 width_input,
                 guidance_input,
