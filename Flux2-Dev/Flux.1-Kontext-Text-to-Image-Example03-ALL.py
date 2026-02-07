@@ -14,7 +14,7 @@ import platform
 import subprocess
 import gradio as gr
 
-prompt = "A sparkling-eyed Instagram-style young and cute korean woman wearing a red bikini full-body shot photography, beautiful detailed body with perfect anatomy and perfect arms and legs structure, perfect fingers and toes, beautiful gorgeous model, photorealistic, 4k, high quality, high resolution, beautiful body, attractive pose, attractive face and body --niji 5 --ar 9:16"
+prompt = "A sparkling-eyed Instagram-style young and cute korean woman wearing a red bikini full-body photography, walking on a tropical sunny beach, beautiful detailed body with perfect anatomy and perfect arms and legs structure, perfect fingers and toes, beautiful gorgeous model, photorealistic, 4k, high quality, high resolution, beautiful body, attractive pose, attractive face and body."
 
 
 def detect_device():
@@ -54,7 +54,7 @@ def print_hardware_info(device, dtype):
 
     if device == "cuda":
         print(f"CUDA Device: {torch.cuda.get_device_name(0)}")
-        vram = torch.cuda.get_device_properties(0).total_mem
+        vram = torch.cuda.get_device_properties(0).total_memory
         print(f"VRAM: {vram / (1024 ** 3):.1f} GB")
         print(f"CUDA Version: {torch.version.cuda}")
         print(f"GPU count: {torch.cuda.device_count()}")
@@ -83,9 +83,10 @@ pipe = FluxPipeline.from_pretrained(
 
 # Apply memory optimizations based on device
 if device_type == "cuda":
-    pipe.enable_sequential_cpu_offload()
+    pipe.to(device_type)
     pipe.enable_model_cpu_offload()
     pipe.enable_attention_slicing()
+    pipe.enable_sequential_cpu_offload()
     print(
         "Memory optimization: sequential CPU offload, model CPU offload, attention slicing (CUDA)"
     )
@@ -93,9 +94,10 @@ elif device_type == "mps":
     pipe.to(device_type)
     print("Memory optimization: none (MPS)")
 else:
-    pipe.enable_sequential_cpu_offload()
+    pipe.to(device_type)
     pipe.enable_model_cpu_offload()
     pipe.enable_attention_slicing()
+    pipe.enable_sequential_cpu_offload()
     print(
         "Memory optimization: sequential CPU offload, model CPU offload, attention slicing (CPU)"
     )
@@ -182,8 +184,8 @@ def generate_image(
     return image, f"Image saved: {output_path}"
 
 
-with gr.Blocks(title="Flux.1 Text-to-Image") as demo:
-    gr.Markdown("# Flux.1 Text-to-Image")
+with gr.Blocks(title="Flux.1 Kontext Text-to-Image") as demo:
+    gr.Markdown("# Flux.1 Kontext Text-to-Image")
     gr.Markdown(
         f"Enter a prompt to generate an image from text. Device: **{device_type.upper()}**"
     )
@@ -199,7 +201,7 @@ with gr.Blocks(title="Flux.1 Text-to-Image") as demo:
             negative_prompt = gr.Textbox(
                 label="Negative Prompt",
                 placeholder="What to avoid in the image...",
-                value="blurry, low quality, distorted, deformed, ugly, bad anatomy, watermark, text",
+                value="blurry, low quality, distorted, deformed, ugly, bad anatomy, bad fingers, bad toes, watermark, text",
                 info="Describe what you don't want in the generated image",
             )
 
@@ -215,7 +217,7 @@ with gr.Blocks(title="Flux.1 Text-to-Image") as demo:
                 height = gr.Slider(
                     256,
                     1536,
-                    value=1024,
+                    value=1536,
                     step=64,
                     label="Height",
                     info="Output image height in pixels",
