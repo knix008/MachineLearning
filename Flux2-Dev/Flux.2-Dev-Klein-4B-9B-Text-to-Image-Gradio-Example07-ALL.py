@@ -19,7 +19,7 @@ import gradio as gr
 
 #DEFAULT_PROMPT= "Highly realistic, 4k, high-quality, high resolution, beautiful full-body gorgeous korean girl model photography. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing a red bikini,  turning her body to the right side, looking at the viewer. Her eyes are hazel, Her skin appears natural and clean. Orange hue, solid orange backdrop, using a camera setup that mimics a large aperture, f/1.4 --ar 9:16 --style raw."
 
-DEFAULT_PROMPT= "Highly realistic, 4k, high-quality, high resolution, beautiful full body korean woman model photography. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing a red bikini. Her eyes are hazel, with a natural sparkle of happiness as she smiles. Her skin appears natural with visible pores. Orange hue, solid orange backdrop, using a camera setup that mimics a large aperture, f/1.4 --ar 9:16 --style raw."
+DEFAULT_PROMPT= "Highly realistic, 4k, high-quality, high resolution, beautiful skinny korean woman model full-body photography. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner, wearing a red bikini. Her eyes are hazel. Her skin appears natural and clean. Orange hue, solid orange backdrop, using a camera setup that mimics a large aperture, f/1.4 --ar 9:16 --style raw."
 
 def print_hardware_info():
     """Print hardware information at startup."""

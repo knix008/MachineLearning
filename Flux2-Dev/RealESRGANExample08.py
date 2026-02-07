@@ -1,7 +1,17 @@
+import logging
+import warnings
+
+# Suppress verbose logging from libraries before importing them
+logging.getLogger("basicsr").setLevel(logging.WARNING)
+logging.getLogger("realesrgan").setLevel(logging.WARNING)
+logging.getLogger("torch").setLevel(logging.WARNING)
+warnings.filterwarnings("ignore", category=UserWarning)
+
 import gradio as gr
 import cv2
 import numpy as np
 import os
+import sys
 from PIL import Image
 import time
 import datetime
@@ -49,7 +59,8 @@ def get_model():
 
 
 def enhance_image(
-    input_img, upscale, tile, tile_pad, pre_pad, fp32, ext
+    input_img, upscale, tile, tile_pad, pre_pad, fp32, ext,
+    progress=gr.Progress(track_tqdm=True),
 ):
     """
     입력 이미지를 업스케일하고, 결과 이미지를 반환합니다.
@@ -61,11 +72,16 @@ def enhance_image(
         pre_pad (int): 전체 이미지 패딩
         fp32 (bool): FP32 연산 사용 여부
         ext (str): 저장 확장자
+        progress: Gradio progress tracker
     Returns:
         PIL.Image, str: 업스케일된 이미지와 상태 메시지
     """
     start_time = time.time()
+
+    progress(0.0, desc="이미지 전처리 중...")
     img = cv2.cvtColor(np.array(input_img), cv2.COLOR_RGB2BGR)
+
+    progress(0.1, desc="모델 로딩 중...")
     model, model_path, dni_weight, device = get_model()
     model = model.to(device)
     upsampler = RealESRGANer(
@@ -80,25 +96,37 @@ def enhance_image(
         gpu_id=None,
         device=device,
     )
+
+    progress(0.3, desc="업스케일 처리 중...")
     try:
-        output, _ = upsampler.enhance(img, outscale=upscale)
+        # Suppress "Tile X/Y" print output from RealESRGAN
+        original_stdout = sys.stdout
+        sys.stdout = open(os.devnull, "w")
+        try:
+            output, _ = upsampler.enhance(img, outscale=upscale)
+        finally:
+            sys.stdout.close()
+            sys.stdout = original_stdout
     except Exception as e:
-        # 메모리 해제
         del img, model, upsampler
         gc.collect()
         return None, f"Error: {str(e)}"
 
-    # 메모리 해제
+    progress(0.8, desc="후처리 중...")
     del img, model, upsampler
     gc.collect()
 
     output = cv2.cvtColor(output, cv2.COLOR_BGR2RGB)
     output = Image.fromarray(output)
+
+    progress(0.9, desc="저장 중...")
     ext_to_use = ext
     filename = f"RealESRGAN_Example06_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.{ext_to_use}"
     output.save(filename)
+
     elapsed = time.time() - start_time
-    print(f"The Elapsed Time : {elapsed:.2f} seconds")
+    progress(1.0, desc="완료!")
+    print(f"완료! 처리 시간: {elapsed:.2f}초")
     return output, f"완료! 처리 시간: {elapsed:.2f}초"
 
 
