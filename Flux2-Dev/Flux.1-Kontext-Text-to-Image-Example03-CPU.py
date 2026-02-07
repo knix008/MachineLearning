@@ -173,6 +173,7 @@ def generate_image(
         script_dir,
         f"{script_name}_{timestamp}_w{int(width)}_h{int(height)}_guidance{guidance_scale}_steps{int(num_inference_steps)}_seed{int(seed)}_seqlen{int(max_sequence_length)}.png",
     )
+    print("Saving image to:", output_path)
     image.save(output_path)
 
     # Cleanup
