@@ -36,6 +36,7 @@ DEVICE, DTYPE = get_device_and_dtype()
 pipe = None
 interface = None
 supports_negative_prompt = False
+supports_width_height = False
 
 
 def print_hardware_info():
@@ -136,7 +137,7 @@ signal.signal(signal.SIGINT, signal_handler)
 
 def load_model():
     """Load and initialize the Flux model with optimizations."""
-    global pipe, supports_negative_prompt
+    global pipe, supports_negative_prompt, supports_width_height
 
     print("모델 로딩 중...")
     pipe = FluxImg2ImgPipeline.from_pretrained(
@@ -159,12 +160,18 @@ def load_model():
     # Check negative prompt support
     pipe_params = inspect.signature(pipe.__call__).parameters
     supports_negative_prompt = "negative_prompt" in pipe_params
+    supports_width_height = "width" in pipe_params and "height" in pipe_params
     if supports_negative_prompt:
         print("네거티브 프롬프트: 지원됨 ✓")
     else:
         print(
             "네거티브 프롬프트: 지원되지 않음 (이 파이프라인은 negative_prompt 파라미터를 지원하지 않습니다. 입력값이 무시됩니다.)"
         )
+
+    if supports_width_height:
+        print("출력 해상도 제어: 지원됨 ✓")
+    else:
+        print("출력 해상도 제어: 지원되지 않음 (기본 해상도가 사용됩니다)")
 
     print(f"모델 로딩 완료! (Device: {DEVICE})")
     return pipe
@@ -195,9 +202,9 @@ def generate_image(
             input_image = Image.fromarray(input_image)
 
         input_image = input_image.convert("RGB")
-
-        if width and height:
-            input_image = input_image.resize((int(width), int(height)))
+        input_w, input_h = input_image.size
+        target_w = int(width) if width else input_w
+        target_h = int(height) if height else input_h
 
         # Setup generator (MPS doesn't support Generator directly, use CPU)
         generator_device = "cpu" if DEVICE == "mps" else DEVICE
@@ -213,6 +220,9 @@ def generate_image(
             "generator": generator,
             "max_sequence_length": int(max_sequence_length),
         }
+        if supports_width_height:
+            pipe_kwargs["width"] = target_w
+            pipe_kwargs["height"] = target_h
         neg_prompt_msg = ""
         if negative_prompt:
             if supports_negative_prompt:
@@ -228,7 +238,7 @@ def generate_image(
         # Save with timestamp and parameters
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         script_name = os.path.splitext(os.path.basename(__file__))[0]
-        params = f"w{int(width)}_h{int(height)}_gs{guidance_scale}_steps{int(num_inference_steps)}_seed{int(seed)}_str{strength}_msl{int(max_sequence_length)}"
+        params = f"w{int(target_w)}_h{int(target_h)}_gs{guidance_scale}_steps{int(num_inference_steps)}_seed{int(seed)}_str{strength}_msl{int(max_sequence_length)}"
         filename = f"{script_name}_{timestamp}_{params}.png"
         image.save(filename)
 
@@ -236,19 +246,6 @@ def generate_image(
         return image, f"✓ 이미지가 저장되었습니다: {filename}{neg_prompt_msg}"
     except Exception as e:
         return None, f"✗ 오류 발생: {str(e)}"
-
-
-def update_size_from_image(image):
-    """Update width and height sliders based on input image dimensions."""
-    if image is None:
-        return gr.update(), gr.update()
-    if not isinstance(image, Image.Image):
-        image = Image.fromarray(image)
-    w, h = image.size
-    # Round to nearest 64 and clamp to slider range [256, 2048]
-    w = max(256, min(2048, round(w / 64) * 64))
-    h = max(256, min(2048, round(h / 64) * 64))
-    return gr.update(value=w), gr.update(value=h)
 
 
 def main():
@@ -294,7 +291,7 @@ def main():
                     width = gr.Slider(
                         label="이미지 너비",
                         minimum=256,
-                        maximum=2048,
+                        maximum=1536,
                         step=64,
                         value=512,
                         info="생성할 이미지의 너비를 지정합니다 (픽셀). 64의 배수여야 합니다.",
@@ -302,7 +299,7 @@ def main():
                     height = gr.Slider(
                         label="이미지 높이",
                         minimum=256,
-                        maximum=2048,
+                        maximum=1536,
                         step=64,
                         value=1024,
                         info="생성할 이미지의 높이를 지정합니다 (픽셀). 64의 배수여야 합니다.",
@@ -358,13 +355,6 @@ def main():
                 # Output
                 output_image = gr.Image(label="생성된 이미지", height=800)
                 output_message = gr.Textbox(label="상태", interactive=False)
-
-        # Update width/height sliders when input image changes
-        input_image.change(
-            fn=update_size_from_image,
-            inputs=[input_image],
-            outputs=[width, height],
-        )
 
         # Connect the generate button to the function
         generate_btn.click(
