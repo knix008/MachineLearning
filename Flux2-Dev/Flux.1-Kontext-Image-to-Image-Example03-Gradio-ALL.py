@@ -273,4 +273,10 @@ with gr.Blocks(title="Flux.1 Kontext Image-to-Image") as demo:
 
 
 if __name__ == "__main__":
-    demo.launch(inbrowser=True)
+    try:
+        demo.launch(inbrowser=True)
+    except KeyboardInterrupt:
+        print("\nKeyboard interrupt received...")
+    finally:
+        cleanup()
+        sys.exit(0)
