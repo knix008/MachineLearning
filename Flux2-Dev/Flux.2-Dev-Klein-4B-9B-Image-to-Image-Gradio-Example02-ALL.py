@@ -9,7 +9,7 @@ import sys
 import inspect
 import gradio as gr
 
-DEFAULT_PROMPT = "Turn her body to the front side. Change her hair to black  color with cinematic lighting. Perfect anatomy and proportions, detailed face, intricate details, high quality, 8k."
+DEFAULT_PROMPT = "Change her body to the the viewer side. Change her hair to black  color. Perfect anatomy and proportions, detailed face, intricate details, high quality, 8k."
 
 DEFAULT_IMAGE = "sample02.png"
 
