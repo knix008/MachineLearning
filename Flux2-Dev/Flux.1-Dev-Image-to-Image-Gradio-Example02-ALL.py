@@ -222,6 +222,7 @@ def generate_image(
                 print(
                     "경고: 네거티브 프롬프트가 무시됨 - 이 파이프라인은 negative_prompt를 지원하지 않습니다."
                 )
+        print("Generating image with the prompt :", pipe_kwargs["prompt"])
         image = pipe(**pipe_kwargs).images[0]
 
         # Save with timestamp and parameters
