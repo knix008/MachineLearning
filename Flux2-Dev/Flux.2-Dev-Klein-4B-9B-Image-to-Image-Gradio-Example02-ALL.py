@@ -175,8 +175,14 @@ def generate_image(input_image, prompt, negative_prompt, height, width, guidance
             "num_inference_steps": num_inference_steps,
             "generator": generator,
         }
+
+        # Add negative_prompt only if the pipeline supports it
         if negative_prompt:
-            pipe_kwargs["negative_prompt"] = negative_prompt
+            sig = inspect.signature(pipe.__call__)
+            if "negative_prompt" in sig.parameters:
+                pipe_kwargs["negative_prompt"] = negative_prompt
+            else:
+                print(f"경고: 현재 모델({current_model_name})은 negative_prompt를 지원하지 않습니다. 무시됩니다.")
 
         image = pipe(**pipe_kwargs).images[0]
 
