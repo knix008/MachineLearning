@@ -23,7 +23,7 @@ print("=" * 50)
 
 DEFAULT_IMAGE = "default01.png"
 
-DEFAULT_PROMPT = "Change her body to the the viewer side. Change her hair to black  color. Perfect anatomy and proportions, detailed face, intricate details, high quality, 8k."
+DEFAULT_PROMPT = "Change her body to face the the viewer side. Change her hair to black  color. Perfect anatomy and proportions, detailed face, intricate details, high quality, 8k."
 
 DEFAULT_NEGATIVE_PROMPT = (
     "blurry, low quality, distorted, deformed, ugly, bad anatomy, watermark, text"
@@ -214,7 +214,7 @@ with gr.Blocks(title="Flux.1 Kontext Image-to-Image") as demo:
                 num_inference_steps = gr.Slider(
                     1,
                     50,
-                    value=25,
+                    value=28,
                     step=1,
                     label="Inference Steps",
                     info="Number of denoising steps. More steps = better quality but slower",
