@@ -10,7 +10,7 @@ import sys
 import psutil
 import gradio as gr
 
-DEFAULT_PROMPT = "Change her body to face the the viewer. Change her hair to black  color. Perfect anatomy and proportions, detailed face, intricate details, high quality, 8k."
+DEFAULT_PROMPT = "Change her body to the the viewer. Change her hair to black  color. Perfect anatomy and proportions, detailed face, intricate details, high quality, 8k."
 
 
 def get_device_and_dtype():
@@ -208,6 +208,19 @@ def generate_image(
         return None, f"✗ 오류 발생: {str(e)}"
 
 
+def update_size_from_image(image):
+    """Update width and height sliders based on input image dimensions."""
+    if image is None:
+        return gr.update(), gr.update()
+    if not isinstance(image, Image.Image):
+        image = Image.fromarray(image)
+    w, h = image.size
+    # Round to nearest 64 and clamp to slider range [256, 1024]
+    w = max(256, min(1024, round(w / 64) * 64))
+    h = max(256, min(1024, round(h / 64) * 64))
+    return gr.update(value=w), gr.update(value=h)
+
+
 def main():
     global interface
 
@@ -218,8 +231,8 @@ def main():
     load_model()
 
     # Create Gradio interface
-    with gr.Blocks(title="Flux.1-dev Image Generator") as interface:
-        gr.Markdown("# Flux.1-dev Image-to-Image Editor")
+    with gr.Blocks(title="Flux.1 Dev Image Generator") as interface:
+        gr.Markdown("# Flux.1 Dev Image-to-Image Editor")
         gr.Markdown(
             f"AI를 사용하여 입력 이미지를 프롬프트로 편집합니다. (Device: **{DEVICE.upper()}**)"
         )
@@ -297,6 +310,13 @@ def main():
                 # Output
                 output_image = gr.Image(label="생성된 이미지", height=800)
                 output_message = gr.Textbox(label="상태", interactive=False)
+
+        # Update width/height sliders when input image changes
+        input_image.change(
+            fn=update_size_from_image,
+            inputs=[input_image],
+            outputs=[width, height],
+        )
 
         # Connect the generate button to the function
         generate_btn.click(
