@@ -9,8 +9,11 @@ import signal
 import sys
 import psutil
 import gradio as gr
+import inspect
 
-DEFAULT_PROMPT = "Change her body to the the viewer. Change her hair to black  color. Perfect anatomy and proportions, detailed face, intricate details, high quality, 8k."
+DEFAULT_PROMPT = "Change her body to the the viewer. Change her hair to black color. Perfect anatomy and proportions, detailed face, intricate details, high quality, 4k."
+
+DEFAULT_NEGATIVE_PROMPT = "low quality, blurry, deformed hands, extra fingers, bad anatomy, disfigured, poorly drawn face, mutation, mutated, ugly, watermark, text, signature"
 
 
 def get_device_and_dtype():
@@ -32,6 +35,7 @@ def get_device_and_dtype():
 DEVICE, DTYPE = get_device_and_dtype()
 pipe = None
 interface = None
+supports_negative_prompt = False
 
 
 def print_hardware_info():
@@ -132,7 +136,7 @@ signal.signal(signal.SIGINT, signal_handler)
 
 def load_model():
     """Load and initialize the Flux model with optimizations."""
-    global pipe
+    global pipe, supports_negative_prompt
 
     print("모델 로딩 중...")
     pipe = FluxImg2ImgPipeline.from_pretrained(
@@ -152,6 +156,14 @@ def load_model():
         print("No valid device found!!!")
         exit(1)
 
+    # Check negative prompt support
+    pipe_params = inspect.signature(pipe.__call__).parameters
+    supports_negative_prompt = "negative_prompt" in pipe_params
+    if supports_negative_prompt:
+        print("네거티브 프롬프트: 지원됨 ✓")
+    else:
+        print("네거티브 프롬프트: 지원되지 않음 (이 파이프라인은 negative_prompt 파라미터를 지원하지 않습니다. 입력값이 무시됩니다.)")
+
     print(f"모델 로딩 완료! (Device: {DEVICE})")
     return pipe
 
@@ -159,12 +171,14 @@ def load_model():
 def generate_image(
     input_image,
     prompt,
+    negative_prompt,
     width,
     height,
     guidance_scale,
     num_inference_steps,
     seed,
     strength,
+    max_sequence_length,
 ):
     global pipe
 
@@ -188,22 +202,33 @@ def generate_image(
         generator = torch.Generator(device=generator_device).manual_seed(int(seed))
 
         # Run the pipeline
-        image = pipe(
-            prompt=prompt,
-            image=input_image,
-            strength=strength,
-            guidance_scale=guidance_scale,
-            num_inference_steps=num_inference_steps,
-            generator=generator,
-        ).images[0]
+        pipe_kwargs = {
+            "prompt": prompt,
+            "image": input_image,
+            "strength": strength,
+            "guidance_scale": guidance_scale,
+            "num_inference_steps": num_inference_steps,
+            "generator": generator,
+            "max_sequence_length": int(max_sequence_length),
+        }
+        neg_prompt_msg = ""
+        if negative_prompt:
+            if supports_negative_prompt:
+                pipe_kwargs["negative_prompt"] = negative_prompt
+            else:
+                neg_prompt_msg = " (⚠ 네거티브 프롬프트는 이 파이프라인에서 지원되지 않아 무시되었습니다)"
+                print("경고: 네거티브 프롬프트가 무시됨 - 이 파이프라인은 negative_prompt를 지원하지 않습니다.")
+        image = pipe(**pipe_kwargs).images[0]
 
-        # Save with timestamp
+        # Save with timestamp and parameters
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         script_name = os.path.splitext(os.path.basename(__file__))[0]
-        filename = f"{script_name}_{timestamp}.png"
+        params = f"w{int(width)}_h{int(height)}_gs{guidance_scale}_steps{int(num_inference_steps)}_seed{int(seed)}_str{strength}_msl{int(max_sequence_length)}"
+        filename = f"{script_name}_{timestamp}_{params}.png"
         image.save(filename)
-
-        return image, f"✓ 이미지가 저장되었습니다: {filename}"
+        
+        print(f"이미지 저장됨: {filename}")
+        return image, f"✓ 이미지가 저장되었습니다: {filename}{neg_prompt_msg}"
     except Exception as e:
         return None, f"✗ 오류 발생: {str(e)}"
 
@@ -252,6 +277,14 @@ def main():
                     info="생성하고 싶은 이미지에 대한 텍스트 설명입니다. 자세할수록 좋습니다. 예: '여자, 미소, 해변, 빨간 비키니'",
                 )
 
+                negative_prompt = gr.Textbox(
+                    label="네거티브 프롬프트",
+                    value=DEFAULT_NEGATIVE_PROMPT,
+                    lines=2,
+                    placeholder="원하지 않는 요소를 입력하세요",
+                    info="생성된 이미지에서 제외하고 싶은 요소를 설명합니다. 예: 'low quality, blurry, deformed hands, extra fingers'",
+                )
+
                 with gr.Row():
                     width = gr.Slider(
                         label="이미지 너비",
@@ -276,7 +309,7 @@ def main():
                         minimum=1.0,
                         maximum=20.0,
                         step=0.5,
-                        value=4.0,
+                        value=3.5,
                         info="모델이 프롬프트를 얼마나 따를지 제어합니다. 낮을수록 창의적, 높을수록 정확합니다. 권장: 4-15",
                     )
                     num_inference_steps = gr.Slider(
@@ -284,7 +317,7 @@ def main():
                         minimum=10,
                         maximum=50,
                         step=1,
-                        value=28,
+                        value=50,
                         info="이미지 생성 과정의 단계 수입니다. 높을수록 품질이 좋지만 시간이 더 걸립니다. 권장: 20-28",
                     )
 
@@ -300,8 +333,18 @@ def main():
                         minimum=0.1,
                         maximum=1.0,
                         step=0.1,
-                        value=0.8,
+                        value=1.0,
                         info="생성 모델의 강도를 제어합니다. 낮을수록 다양한 결과, 높을수록 일관성 있는 결과입니다.",
+                    )
+
+                with gr.Row():
+                    max_sequence_length = gr.Slider(
+                        label="Max Sequence Length",
+                        minimum=128,
+                        maximum=512,
+                        step=128,
+                        value=512,
+                        info="텍스트 인코더의 최대 토큰 시퀀스 길이입니다. 낮을수록 메모리를 절약하지만 긴 프롬프트가 잘릴 수 있습니다.",
                     )
 
                 generate_btn = gr.Button("이미지 생성", variant="primary", size="lg")
@@ -324,53 +367,16 @@ def main():
             inputs=[
                 input_image,
                 prompt,
+                negative_prompt,
                 width,
                 height,
                 guidance_scale,
                 num_inference_steps,
                 seed,
                 strength,
+                max_sequence_length,
             ],
             outputs=[output_image, output_message],
-        )
-
-        gr.Markdown("---")
-        gr.Markdown(
-            """
-        ### 파라미터 설명:
-
-        **입력 이미지**
-        - 편집할 원본 이미지를 업로드합니다
-        - 아래 프롬프트와 강도에 따라 이미지가 수정됩니다
-
-        **프롬프트** (Prompt)
-        - 생성하고 싶은 이미지에 대한 텍스트 설명입니다
-        - 자세할수록 좋습니다. 예: "여자, 미소, 해변, 빨간 비키니"
-        - 77단어 이하 권장
-
-        **이미지 크기** (Width/Height)
-        - 생성할 이미지의 너비와 높이를 지정합니다
-        - 256-1024px 범위에서 64의 배수로 설정
-
-        **Guidance Scale (프롬프트 강도)**
-        - 모델이 프롬프트를 얼마나 따를지 제어합니다
-        - 낮을수록 창의적, 높을수록 프롬프트에 정확합니다
-        - 권장값: 4-15
-
-        **추론 스텝** (Number of Inference Steps)
-        - 이미지 생성 과정의 단계 수입니다
-        - 높을수록 품질이 좋지만 시간이 더 걸립니다
-        - 권장값: 20-28
-
-        **시드** (Seed)
-        - 난수 생성의 시작점입니다
-        - 같은 시드를 사용하면 같은 결과를 얻습니다
-
-        **강도** (Strength)
-        - 생성 모델의 강도를 제어합니다
-        - 낮을수록 다양한 결과, 높을수록 일관성 있는 결과
-        - 범위: 0.1-1.0
-        """
         )
 
     # Launch the interface
