@@ -11,7 +11,7 @@ import psutil
 import gradio as gr
 import inspect
 
-DEFAULT_PROMPT = "Change her body to the the viewer. Change her hair to black color. Perfect anatomy and proportions, detailed face, intricate details, high quality, 4k."
+DEFAULT_PROMPT = "Change her body to face the viewer side. Change her hair to black color. Perfect anatomy and proportions, detailed face, intricate details, high quality, 4k."
 
 DEFAULT_NEGATIVE_PROMPT = "low quality, blurry, deformed hands, extra fingers, bad anatomy, disfigured, poorly drawn face, mutation, mutated, ugly, watermark, text, signature"
 
@@ -309,9 +309,9 @@ def main():
                     guidance_scale = gr.Slider(
                         label="Guidance Scale (프롬프트 강도)",
                         minimum=1.0,
-                        maximum=20.0,
+                        maximum=10.0,
                         step=0.5,
-                        value=3.5,
+                        value=7.5,
                         info="모델이 프롬프트를 얼마나 따를지 제어합니다. 낮을수록 창의적, 높을수록 정확합니다. 권장: 4-15",
                     )
                     num_inference_steps = gr.Slider(
@@ -335,7 +335,7 @@ def main():
                         minimum=0.1,
                         maximum=1.0,
                         step=0.1,
-                        value=0.5,
+                        value=0.7,
                         info="진정한 편집 효과를 원한다면 0.3~0.7 정도로 낮추는 것이 좋습니다. strength가 낮을수록 원본 이미지의 구조를 더 많이 유지합니다.",
                     )
 

@@ -9,7 +9,7 @@ import sys
 import inspect
 import gradio as gr
 
-DEFAULT_PROMPT = "Change her body to the the viewer side. Change her hair to black  color. Perfect anatomy and proportions, detailed face, intricate details, high quality, 8k."
+DEFAULT_PROMPT = "Change her body direction to the front side and change the background to a tropical sunny beach. Perfect anatomy, perfect  fingers, perfect toes, walking on the beach, skinny beautiful woman model, 4k, ultra detail, high resolution."
 
 DEFAULT_IMAGE = "sample02.png"
 
@@ -298,7 +298,7 @@ def main():
                             label="추론 스텝 (Inference Steps)",
                             info="생성 품질 (높을수록 고품질, 느림)",
                             minimum=1,
-                            maximum=20,
+                            maximum=10,
                             step=1,
                             value=4
                         )
