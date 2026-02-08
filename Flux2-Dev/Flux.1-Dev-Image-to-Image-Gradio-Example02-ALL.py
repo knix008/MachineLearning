@@ -322,7 +322,7 @@ def main():
                         minimum=10,
                         maximum=50,
                         step=1,
-                        value=50,
+                        value=28,
                         info="이미지 생성 과정의 단계 수입니다. 높을수록 품질이 좋지만 시간이 더 걸립니다. 권장: 20-28",
                     )
 
