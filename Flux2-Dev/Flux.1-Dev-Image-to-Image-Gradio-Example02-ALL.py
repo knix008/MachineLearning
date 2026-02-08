@@ -162,7 +162,9 @@ def load_model():
     if supports_negative_prompt:
         print("네거티브 프롬프트: 지원됨 ✓")
     else:
-        print("네거티브 프롬프트: 지원되지 않음 (이 파이프라인은 negative_prompt 파라미터를 지원하지 않습니다. 입력값이 무시됩니다.)")
+        print(
+            "네거티브 프롬프트: 지원되지 않음 (이 파이프라인은 negative_prompt 파라미터를 지원하지 않습니다. 입력값이 무시됩니다.)"
+        )
 
     print(f"모델 로딩 완료! (Device: {DEVICE})")
     return pipe
@@ -217,7 +219,9 @@ def generate_image(
                 pipe_kwargs["negative_prompt"] = negative_prompt
             else:
                 neg_prompt_msg = " (⚠ 네거티브 프롬프트는 이 파이프라인에서 지원되지 않아 무시되었습니다)"
-                print("경고: 네거티브 프롬프트가 무시됨 - 이 파이프라인은 negative_prompt를 지원하지 않습니다.")
+                print(
+                    "경고: 네거티브 프롬프트가 무시됨 - 이 파이프라인은 negative_prompt를 지원하지 않습니다."
+                )
         image = pipe(**pipe_kwargs).images[0]
 
         # Save with timestamp and parameters
@@ -226,7 +230,7 @@ def generate_image(
         params = f"w{int(width)}_h{int(height)}_gs{guidance_scale}_steps{int(num_inference_steps)}_seed{int(seed)}_str{strength}_msl{int(max_sequence_length)}"
         filename = f"{script_name}_{timestamp}_{params}.png"
         image.save(filename)
-        
+
         print(f"이미지 저장됨: {filename}")
         return image, f"✓ 이미지가 저장되었습니다: {filename}{neg_prompt_msg}"
     except Exception as e:
