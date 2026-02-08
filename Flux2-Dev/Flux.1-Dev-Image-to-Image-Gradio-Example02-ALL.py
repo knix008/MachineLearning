@@ -245,9 +245,9 @@ def update_size_from_image(image):
     if not isinstance(image, Image.Image):
         image = Image.fromarray(image)
     w, h = image.size
-    # Round to nearest 64 and clamp to slider range [256, 1024]
-    w = max(256, min(1024, round(w / 64) * 64))
-    h = max(256, min(1024, round(h / 64) * 64))
+    # Round to nearest 64 and clamp to slider range [256, 2048]
+    w = max(256, min(2048, round(w / 64) * 64))
+    h = max(256, min(2048, round(h / 64) * 64))
     return gr.update(value=w), gr.update(value=h)
 
 
@@ -294,7 +294,7 @@ def main():
                     width = gr.Slider(
                         label="이미지 너비",
                         minimum=256,
-                        maximum=1024,
+                        maximum=2048,
                         step=64,
                         value=512,
                         info="생성할 이미지의 너비를 지정합니다 (픽셀). 64의 배수여야 합니다.",
@@ -302,7 +302,7 @@ def main():
                     height = gr.Slider(
                         label="이미지 높이",
                         minimum=256,
-                        maximum=1024,
+                        maximum=2048,
                         step=64,
                         value=1024,
                         info="생성할 이미지의 높이를 지정합니다 (픽셀). 64의 배수여야 합니다.",
@@ -338,8 +338,8 @@ def main():
                         minimum=0.1,
                         maximum=1.0,
                         step=0.1,
-                        value=1.0,
-                        info="생성 모델의 강도를 제어합니다. 낮을수록 다양한 결과, 높을수록 일관성 있는 결과입니다.",
+                        value=0.5,
+                        info="진정한 편집 효과를 원한다면 0.3~0.7 정도로 낮추는 것이 좋습니다. strength가 낮을수록 원본 이미지의 구조를 더 많이 유지합니다.",
                     )
 
                 with gr.Row():
