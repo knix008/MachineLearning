@@ -46,6 +46,16 @@ pipe = None
 demo = None
 
 
+def get_image_dimensions(image):
+    """Get image dimensions and round to nearest step of 64."""
+    if image is None:
+        return gr.update(), gr.update()
+    w, h = image.size
+    w = max(256, min(2048, round(w / 64) * 64))
+    h = max(256, min(2048, round(h / 64) * 64))
+    return h, w
+
+
 def cleanup():
     """Clean up resources before exit."""
     global pipe, demo
@@ -207,6 +217,15 @@ def main():
     # Load model once at startup
     load_model()
 
+    # Get default image dimensions for initial slider values
+    try:
+        with Image.open(DEFAULT_IMAGE) as img:
+            default_w, default_h = img.size
+            default_w = max(256, min(2048, round(default_w / 64) * 64))
+            default_h = max(256, min(2048, round(default_h / 64) * 64))
+    except Exception:
+        default_w, default_h = 768, 1024
+
     # Create Gradio interface
     with gr.Blocks(title="Flux.2 Dev Klein 4B/9B Image-to-Image 편집기") as demo:
         gr.Markdown("# Flux.2 Dev Klein 4B/9B Image-to-Image 편집기")
@@ -255,7 +274,7 @@ def main():
                             minimum=256,
                             maximum=2048,
                             step=64,
-                            value=1024
+                            value=default_h
                         )
                         width_input = gr.Slider(
                             label="너비 (Width)",
@@ -263,7 +282,7 @@ def main():
                             minimum=256,
                             maximum=2048,
                             step=64,
-                            value=768
+                            value=default_w
                         )
                     
                     with gr.Row():
@@ -304,6 +323,13 @@ def main():
             fn=switch_model,
             inputs=[model_selector],
             outputs=[model_status],
+        )
+
+        # Update width/height sliders when input image changes
+        input_image.change(
+            fn=get_image_dimensions,
+            inputs=[input_image],
+            outputs=[height_input, width_input],
         )
 
         # Connect button to generation function
