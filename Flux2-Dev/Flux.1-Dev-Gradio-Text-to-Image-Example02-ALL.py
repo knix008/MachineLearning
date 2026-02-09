@@ -212,6 +212,9 @@ def generate_image(
 ):
     global pipe
 
+    if pipe is None:
+        return None, "오류: 모델이 로드되지 않았습니다. '모델 로드' 버튼을 먼저 눌러주세요."
+
     if not prompt:
         return None, "오류: 프롬프트를 입력해주세요."
 
