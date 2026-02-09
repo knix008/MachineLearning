@@ -1,6 +1,6 @@
 import torch
 from diffusers import Flux2Pipeline
-from diffusers.quantizers import PipelineQuantizationConfig
+from transformers import Mistral3ForConditionalGeneration, BitsAndBytesConfig
 from datetime import datetime
 from PIL import Image
 import os
@@ -12,6 +12,13 @@ import signal
 import sys
 import gc
 import atexit
+
+
+# Requirements :
+# diffusers: 0.37.0.dev0 (latest git — has Flux2Pipeline)
+# transformers: 4.53.2 (has HybridCache)
+# bitsandbytes: 0.49.1 (upgraded from 0.46.1 — may fix the original metadata error)
+
 
 try:
     import psutil
@@ -124,36 +131,39 @@ signal.signal(signal.SIGINT, _handle_sigint)
 atexit.register(cleanup_resources)
 
 # Actually, more RAM is required to run this program. Not working in 32GB. More than 48GB RAM required.
-# Load text-to-image pipeline with on-the-fly 4-bit quantization
-repo_id = "black-forest-labs/FLUX.2-dev"
-quantization_config = PipelineQuantizationConfig(
-    quant_backend="bitsandbytes_4bit",
-    quant_kwargs={
-        "load_in_4bit": True,
-        "bnb_4bit_quant_type": "nf4",
-        "bnb_4bit_compute_dtype": dtype,
-    },
+# Load text encoder separately with on-the-fly 4-bit quantization
+# (the pre-quantized repo has incompatible bnb metadata for the T5 text encoder)
+bnb_config = BitsAndBytesConfig(
+    load_in_4bit=True,
+    bnb_4bit_quant_type="nf4",
+    bnb_4bit_compute_dtype=dtype,
 )
+text_encoder = Mistral3ForConditionalGeneration.from_pretrained(
+    "black-forest-labs/FLUX.2-dev",
+    subfolder="text_encoder",
+    quantization_config=bnb_config,
+    torch_dtype=dtype,
+)
+
+# Load pipeline from pre-quantized repo, overriding the text encoder
+repo_id = "diffusers/FLUX.2-dev-bnb-4bit"
 pipe = Flux2Pipeline.from_pretrained(
     repo_id,
+    text_encoder=text_encoder,
     torch_dtype=dtype,
-    quantization_config=quantization_config,
     low_cpu_mem_usage=True,
 )
 
-# Device-specific pipeline setup
 if device == "cuda":
     print("Using CUDA device optimizations...")
-    pipe.enable_attention_slicing()  # 안쓰면 GPU 메모리를 더 사용함
+    pipe.enable_attention_slicing()
 elif device == "mps":
     print("Using MPS device optimizations...")
     print("No memory optimizations applied.")
-    # MPS doesn't support cpu_offload well
 else:
     print("Using CPU device optimizations...")
-    #pipe.enable_model_cpu_offload()  # CUDA에서 CPU RAM을 일부 사용
-    #pipe.enable_attention_slicing()  # 안쓰면 GPU 메모리를 더 사용함(속)
-    pipe.enable_sequential_cpu_offload()  # 안쓰면 CUDA에서 느림
+    pipe.enable_attention_slicing()
+
 
 print("모델 로딩 완료!")
 
