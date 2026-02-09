@@ -130,6 +130,16 @@ def _handle_sigint(signum, frame):
 signal.signal(signal.SIGINT, _handle_sigint)
 atexit.register(cleanup_resources)
 
+# Clear memory before loading models
+print("[초기화] 모델 로딩 전 메모리 정리 중...")
+gc.collect()
+if torch.cuda.is_available():
+    torch.cuda.empty_cache()
+    torch.cuda.reset_peak_memory_stats()
+if hasattr(torch, "mps") and torch.backends.mps.is_available():
+    torch.mps.empty_cache()
+print("[초기화] 메모리 정리 완료.")
+
 # Actually, more RAM is required to run this program. Not working in 32GB. More than 48GB RAM required.
 # Load text encoder separately with on-the-fly 4-bit quantization
 # (the pre-quantized repo has incompatible bnb metadata for the T5 text encoder)
@@ -156,12 +166,14 @@ pipe = Flux2Pipeline.from_pretrained(
 
 if device == "cuda":
     print("Using CUDA device optimizations...")
+    pipe.enable_attention_slicing()
     pipe.enable_model_cpu_offload()
 elif device == "mps":
     print("Using MPS device optimizations...")
     print("No memory optimizations applied.")
 else:
     print("Using CPU device optimizations...")
+    pipe.enable_attention_slicing()
     pipe.enable_model_cpu_offload()
 
 
