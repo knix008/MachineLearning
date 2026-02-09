@@ -131,7 +131,7 @@ pipe = Flux2Pipeline.from_pretrained(
 # Device-specific pipeline setup
 if device == "cuda":
     print("Using CUDA device optimizations...")
-    #pipe.enable_attention_slicing()  # 안쓰면 GPU 메모리를 더 사용함(속)
+    pipe.enable_attention_slicing()  # 안쓰면 GPU 메모리를 더 사용함(속)
     pipe.enable_model_cpu_offload()  # CUDA에서 CPU RAM을 일부 사용
     pipe.enable_sequential_cpu_offload()  # 안쓰면 CUDA에서 느림
 elif device == "mps":
