@@ -9,7 +9,11 @@ import sys
 import inspect
 import gradio as gr
 
+<<<<<<< HEAD
 DEFAULT_PROMPT = "Change her body direction to the front side and change the background to a tropical sunny beach. Perfect anatomy, perfect  fingers, perfect toes, walking on the beach, skinny beautiful woman model, 4k, ultra detail, high resolution."
+=======
+DEFAULT_PROMPT = "Change her body to face the viewer. Change her hair to black color. perfect anatomy."
+>>>>>>> ee532b8 (Add changes.)
 
 DEFAULT_IMAGE = "sample02.png"
 
@@ -84,6 +88,7 @@ def signal_handler(sig, frame):
     cleanup()
     sys.exit(0)
 
+
 def load_model(model_name=DEFAULT_MODEL):
     """Load and initialize the Flux2 Img2Img model with optimizations."""
     global pipe, current_model_name
@@ -107,10 +112,7 @@ def load_model(model_name=DEFAULT_MODEL):
 
     model_path = MODEL_OPTIONS[model_name]
     print(f"모델 로딩 중: {model_name} ({model_path})...")
-    pipe = Flux2KleinPipeline.from_pretrained(
-        model_path,
-        torch_dtype=DTYPE
-    )
+    pipe = Flux2KleinPipeline.from_pretrained(model_path, torch_dtype=DTYPE)
     pipe = pipe.to(DEVICE)
 
     if DEVICE == "cuda" or DEVICE == "cpu":
@@ -127,9 +129,9 @@ def load_model(model_name=DEFAULT_MODEL):
     print(f"모델 로딩 완료: {model_name} (Device: {DEVICE})")
 
     # Print all supported arguments
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("파이프라인 지원 인자 목록:")
-    print("="*60)
+    print("=" * 60)
     sig = inspect.signature(pipe.__call__)
     for param_name, param in sig.parameters.items():
         default = param.default
@@ -140,7 +142,7 @@ def load_model(model_name=DEFAULT_MODEL):
         else:
             default_str = f"= {default}"
         print(f"  - {param_name}: {default_str}")
-    print("="*60 + "\n")
+    print("=" * 60 + "\n")
 
     return pipe
 
@@ -150,7 +152,17 @@ def switch_model(model_name):
     load_model(model_name)
     return f"모델 변경 완료: {model_name}"
 
-def generate_image(input_image, prompt, negative_prompt, height, width, guidance_scale, num_inference_steps, seed):
+
+def generate_image(
+    input_image,
+    prompt,
+    negative_prompt,
+    height,
+    width,
+    guidance_scale,
+    num_inference_steps,
+    seed,
+):
     """Generate image from input image and text prompt."""
     global pipe
 
@@ -192,7 +204,9 @@ def generate_image(input_image, prompt, negative_prompt, height, width, guidance
             if "negative_prompt" in sig.parameters:
                 pipe_kwargs["negative_prompt"] = negative_prompt
             else:
-                print(f"경고: 현재 모델({current_model_name})은 negative_prompt를 지원하지 않습니다. 무시됩니다.")
+                print(
+                    f"경고: 현재 모델({current_model_name})은 negative_prompt를 지원하지 않습니다. 무시됩니다."
+                )
 
         image = pipe(**pipe_kwargs).images[0]
 
@@ -207,6 +221,7 @@ def generate_image(input_image, prompt, negative_prompt, height, width, guidance
 
     except Exception as e:
         return None, f"오류: {str(e)}"
+
 
 def main():
     global demo
@@ -229,7 +244,9 @@ def main():
     # Create Gradio interface
     with gr.Blocks(title="Flux.2 Dev Klein 4B/9B Image-to-Image 편집기") as demo:
         gr.Markdown("# Flux.2 Dev Klein 4B/9B Image-to-Image 편집기")
-        gr.Markdown(f"이미지를 업로드하고 프롬프트로 편집하세요. (Device: **{DEVICE.upper()}**)")
+        gr.Markdown(
+            f"이미지를 업로드하고 프롬프트로 편집하세요. (Device: **{DEVICE.upper()}**)"
+        )
 
         with gr.Row():
             with gr.Column():
@@ -246,24 +263,21 @@ def main():
                     interactive=False,
                 )
                 input_image = gr.Image(
-                    label="입력 이미지",
-                    type="pil",
-                    value=DEFAULT_IMAGE,
-                    height=800
+                    label="입력 이미지", type="pil", value=DEFAULT_IMAGE, height=800
                 )
                 prompt_input = gr.Textbox(
                     label="프롬프트 (영어)",
                     info="편집할 내용을 설명하세요",
                     placeholder="예: change the background to a beach at sunset",
                     value=DEFAULT_PROMPT,
-                    lines=3
+                    lines=3,
                 )
                 negative_prompt_input = gr.Textbox(
                     label="네거티브 프롬프트 (영어)",
                     info="생성하지 않을 내용을 설명하세요",
                     placeholder="예: blurry, low quality, distorted, deformed, ugly, bad anatomy, watermark, text",
                     value="blurry, low quality, distorted, deformed, ugly, bad anatomy, watermark, text",
-                    lines=2
+                    lines=2,
                 )
 
                 with gr.Accordion("고급 설정", open=True):
@@ -274,7 +288,7 @@ def main():
                             minimum=256,
                             maximum=2048,
                             step=64,
-                            value=default_h
+                            value=default_h,
                         )
                         width_input = gr.Slider(
                             label="너비 (Width)",
@@ -282,9 +296,9 @@ def main():
                             minimum=256,
                             maximum=2048,
                             step=64,
-                            value=default_w
+                            value=default_w,
                         )
-                    
+
                     with gr.Row():
                         guidance_input = gr.Slider(
                             label="Guidance Scale",
@@ -292,7 +306,7 @@ def main():
                             minimum=0.0,
                             maximum=1.0,
                             step=0.05,
-                            value=1.0
+                            value=1.0,
                         )
                         steps_input = gr.Slider(
                             label="추론 스텝 (Inference Steps)",
@@ -300,7 +314,7 @@ def main():
                             minimum=1,
                             maximum=10,
                             step=1,
-                            value=4
+                            value=4,
                         )
 
                     seed_input = gr.Slider(
@@ -309,7 +323,7 @@ def main():
                         minimum=-1,
                         maximum=1000,
                         step=1,
-                        value=42
+                        value=42,
                     )
 
                 submit_btn = gr.Button("이미지 편집", variant="primary", size="lg")
@@ -343,13 +357,14 @@ def main():
                 width_input,
                 guidance_input,
                 steps_input,
-                seed_input
+                seed_input,
             ],
-            outputs=[image_output, status_output]
+            outputs=[image_output, status_output],
         )
 
     # Launch the interface
     demo.launch(inbrowser=True)
+
 
 if __name__ == "__main__":
     try:
