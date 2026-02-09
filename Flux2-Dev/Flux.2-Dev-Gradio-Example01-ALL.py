@@ -156,8 +156,8 @@ def generate_image(
 
 
 # Create Gradio interface
-with gr.Blocks(title="Flux.1-dev Image Generator") as interface:
-    gr.Markdown("# 🎨 Flux.1-dev Image Generator")
+with gr.Blocks(title="Flux.2-dev Image Generator") as interface:
+    gr.Markdown("# 🎨 Flux.2-dev Image Generator")
     gr.Markdown("AI를 사용하여 텍스트에서 이미지를 생성합니다.")
 
     with gr.Row():

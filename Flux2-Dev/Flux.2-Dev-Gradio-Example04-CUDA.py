@@ -137,8 +137,9 @@ pipe = Flux2Pipeline.from_pretrained(
 # Device-specific pipeline setup
 if device == "cuda":
     print("Using CUDA device optimizations...")
-    pipe.enable_attention_slicing()  # 안쓰면 GPU 메모리를 더 사용함(속)
-    pipe.enable_model_cpu_offload()  # CUDA에서 CPU RAM을 일부 사용
+    # model_cpu_offload: 모델 단위로 GPU↔CPU 이동 (sequential보다 훨씬 빠름)
+    pipe.enable_model_cpu_offload()
+    pipe.enable_attention_slicing()
     pipe.enable_sequential_cpu_offload()  # 안쓰면 CUDA에서 느림
 elif device == "mps":
     print("Using MPS device optimizations...")
@@ -146,8 +147,8 @@ elif device == "mps":
     # MPS doesn't support cpu_offload well
 else:
     print("Using CPU device optimizations...")
-    pipe.enable_attention_slicing()  # 안쓰면 GPU 메모리를 더 사용함(속)
     pipe.enable_model_cpu_offload()  # CUDA에서 CPU RAM을 일부 사용
+    pipe.enable_attention_slicing()
     pipe.enable_sequential_cpu_offload()  # 안쓰면 CUDA에서 느림
 
 print("모델 로딩 완료!")
@@ -191,7 +192,7 @@ def generate_image(
             height=height,
             guidance_scale=guidance_scale,
             num_inference_steps=num_inference_steps,
-            generator=torch.Generator(device=device).manual_seed(seed),
+            generator=torch.Generator(device="cpu").manual_seed(seed),
         )
 
         # Add negative prompt when provided and true_cfg_scale > 1
@@ -199,8 +200,14 @@ def generate_image(
             pipe_kwargs["negative_prompt"] = negative_prompt.strip()
             pipe_kwargs["true_cfg_scale"] = true_cfg_scale
 
-        # Run the pipeline
-        image = pipe(**pipe_kwargs).images[0]
+        # torch.inference_mode: no_grad보다 빠른 추론 모드 (autograd 오버헤드 제거)
+        with torch.inference_mode():
+            image = pipe(**pipe_kwargs).images[0]
+
+        # 생성 후 CUDA 메모리 정리
+        if device == "cuda":
+            gc.collect()
+            torch.cuda.empty_cache()
 
         # Save with timestamp and parameters
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
