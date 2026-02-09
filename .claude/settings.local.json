@@ -7,7 +7,11 @@
       "Bash(wmic cpu get:*)",
       "Bash(wmic:*)",
       "Bash(nvidia-smi:*)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(C:Usersshkwon.condaenvsPytorchpython.exe -c \"import diffusers; print\\(diffusers.__version__\\)\")",
+      "Bash(conda run:*)",
+      "Bash(/cygdrive/c/Users/shkwon/.conda/envs/Pytorch/python.exe:*)",
+      "Bash(cmd.exe:*)"
     ]
   }
 }
