@@ -158,7 +158,6 @@ if device == "cuda":
     print("Using CUDA device optimizations...")
     pipe.enable_model_cpu_offload()
     pipe.enable_attention_slicing()
-    pipe.enable_sequential_cpu_offload()
 elif device == "mps":
     print("Using MPS device optimizations...")
     print("No memory optimizations applied.")

@@ -166,15 +166,15 @@ pipe = Flux2Pipeline.from_pretrained(
 
 if device == "cuda":
     print("Using CUDA device optimizations...")
-    pipe.enable_attention_slicing()
     pipe.enable_model_cpu_offload()
 elif device == "mps":
     print("Using MPS device optimizations...")
     print("No memory optimizations applied.")
 else:
     print("Using CPU device optimizations...")
-    pipe.enable_attention_slicing()
     pipe.enable_model_cpu_offload()
+    pipe.enable_attention_slicing()
+    pipe.enable_sequential_cpu_offload()
 
 
 print("모델 로딩 완료!")
