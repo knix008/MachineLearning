@@ -1,4 +1,5 @@
 import os
+import platform
 import torch
 import gradio as gr
 from diffusers import Flux2Pipeline
@@ -13,9 +14,54 @@ TURBO_SIGMAS = [1.0, 0.6509, 0.4374, 0.2932, 0.1893, 0.1108, 0.0495, 0.00031]
 DEFAULT_PROMPT = "The image is a high-quality,photorealistic cosplay portrait of a young Asian woman with a soft, idol aesthetic.Physical Appearance: Face: She has a fair,clear complexion.She is wearing striking bright blue contact lenses that contrast with her dark hair.Her expression is innocent and curious,looking directly at the camera with her index finger lightly touching her chin.Hair: She has long,straight jet-black hair with thick,straight-cut bangs (fringe) that frame her face.Attire (Blue & White Bunny Theme): Headwear: She wears tall,upright blue fabric bunny ears with white lace inner lining and a delicate white lace headband base,accented with a small white bow.Outfit: She wears a unique blue denim-textured bodysuit.It features a front zipper,silver buttons,and thin silver chains draped across the chest.The sides are constructed from semi-sheer white lace.Accessories: Around her neck is a blue bow tie attached to a white collar.She wears long,white floral lace fingerless sleeves that extend past her elbows,finished with blue cuffs and small black decorative ribbons.Legwear: She wears white fishnet stockings held up by blue and white ruffled lace garters adorned with small white bows.Pose: She is sitting gracefully on the edge of a light-colored,vintage-style bed or cushioned bench.Her body is slightly angled toward the camera,creating a soft and inviting posture.Setting & Background: Location: A bright,high-key studio set designed to look like a clean,airy bedroom.Background: The background is dominated by large windows with white vertical blinds or curtains,allowing soft,diffused natural-looking light to flood the scene.The background is softly blurred (bokeh).Lighting: The lighting is bright,soft,and even,minimizing harsh shadows and giving the skin a glowing,porcelain appearance.Flux Prompt Prompt: A photorealistic,high-quality cosplay portrait of a beautiful Asian woman dressed in a blue and white bunny girl outfit.She has long straight black hair with hime-cut bangs and vibrant blue eyes.She wears tall blue bunny ears with white lace trim,a blue denim-textured bodysuit with a front zipper and white lace side panels,a blue bow tie,and long white lace sleeves.She is sitting on a white bed in a bright,sun-drenched room with soft-focus white curtains.She poses with a finger to her chin,looking at the camera with a soft,innocent expression.8k resolution,high-key lighting,cinematic soft focus,detailed textures of denim and lace,gravure photography style.Key Stylistic Keywords Blue bunny girl,denim cosplay,white lace,high-key lighting,blue contact lenses,black hair with bangs,fishnet stockings,airy atmosphere,photorealistic,innocent and alluring,studio photography."
 
 # Global variables for model
-DEVICE = "mps"
-DTYPE = torch.bfloat16
 pipe = None
+
+
+def print_hardware_info():
+    """시스템 하드웨어 사양 출력"""
+    print("=" * 60)
+    print("시스템 하드웨어 정보")
+    print("=" * 60)
+    print(f"OS: {platform.system()} {platform.release()} ({platform.machine()})")
+    print(f"Python: {platform.python_version()}")
+    print(f"PyTorch: {torch.__version__}")
+
+    if torch.cuda.is_available():
+        print(f"CUDA: {torch.version.cuda}")
+        for i in range(torch.cuda.device_count()):
+            props = torch.cuda.get_device_properties(i)
+            vram = props.total_mem / (1024**3)
+            print(f"GPU {i}: {props.name} (VRAM: {vram:.1f} GB)")
+    elif torch.backends.mps.is_available():
+        print("GPU: Apple Silicon (MPS)")
+    else:
+        print("GPU: 없음 (CPU 모드)")
+
+    try:
+        import psutil
+        ram = psutil.virtual_memory()
+        print(f"RAM: {ram.total / (1024**3):.1f} GB (사용 가능: {ram.available / (1024**3):.1f} GB)")
+    except ImportError:
+        print("RAM: psutil 미설치 (pip install psutil)")
+    print("=" * 60)
+
+
+def detect_device():
+    """디바이스 자동 감지 (CUDA > MPS > CPU)"""
+    if torch.cuda.is_available():
+        device = "cuda"
+        dtype = torch.bfloat16
+    elif torch.backends.mps.is_available():
+        device = "mps"
+        dtype = torch.bfloat16
+    else:
+        device = "cpu"
+        dtype = torch.float32
+    print(f"디바이스: {device}, dtype: {dtype}")
+    return device, dtype
+
+
+DEVICE, DTYPE = detect_device()
 
 
 def load_model():
@@ -31,11 +77,27 @@ def load_model():
         "fal/FLUX.2-dev-Turbo", weight_name="flux.2-turbo-lora.safetensors"
     )
 
-    # MPS 성능 최적화
-    pipe.enable_attention_slicing()  # 어텐션 분할 처리 (메모리 절약, ~20% 성능 향상)
+    # 디바이스별 최적화
+    if DEVICE == "cuda" or DEVICE == "cpu":
+        pipe.enable_model_cpu_offload()
+        pipe.enable_sequential_cpu_offload()
+        pipe.enable_attention_slicing()
+    elif DEVICE == "mps":
+        pipe.enable_attention_slicing()
+    # CPU: 추가 최적화 불필요
 
     print("모델 로딩 완료!")
     return pipe
+
+
+def clear_device_cache():
+    """디바이스별 메모리 캐시 정리"""
+    if DEVICE == "cuda" and torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.synchronize()
+    elif DEVICE == "mps" and torch.backends.mps.is_available():
+        torch.mps.empty_cache()
+    gc.collect()
 
 
 def generate_image(prompt, guidance_scale, height, width, num_steps, seed):
@@ -83,24 +145,34 @@ def generate_image(prompt, guidance_scale, height, width, num_steps, seed):
         image.save(output_filename)
         print(f"이미지가 저장되었습니다: {output_filename}")
 
-        if torch.backends.mps.is_available():
-            torch.mps.empty_cache()
-        gc.collect()
+        clear_device_cache()
 
         return image, f"✓ 저장됨: {output_filename}"
 
+    except torch.cuda.OutOfMemoryError:
+        print("CUDA OOM 오류 발생! VRAM 정리 중...")
+        clear_device_cache()
+        return None, "⚠️ CUDA OOM: GPU 메모리 부족. 해상도를 낮추거나 스텝 수를 줄여주세요."
+
+    except RuntimeError as e:
+        if "out of memory" in str(e).lower():
+            print("OOM 오류 발생! 메모리 정리 중...")
+            clear_device_cache()
+            return None, "⚠️ OOM: 메모리 부족. 해상도를 낮추거나 스텝 수를 줄여주세요."
+        clear_device_cache()
+        return None, f"오류: {str(e)}"
+
     except Exception as e:
-        if torch.backends.mps.is_available():
-            torch.mps.empty_cache()
-        gc.collect()
+        clear_device_cache()
         return None, f"오류: {str(e)}"
 
 
 def main():
+    print_hardware_info()
     load_model()
 
-    with gr.Blocks(title="FLUX.2-dev Turbo (MacOS)") as demo:
-        gr.Markdown("# FLUX.2-dev Turbo Image Generator (MacOS)")
+    with gr.Blocks(title="FLUX.2-dev Turbo") as demo:
+        gr.Markdown(f"# FLUX.2-dev Turbo Image Generator ({DEVICE.upper()})")
         gr.Markdown("텍스트 설명을 입력하여 이미지를 생성하세요.")
 
         with gr.Row():
@@ -191,12 +263,7 @@ def main():
         except Exception as e:
             print(f"파이프라인 해제 중 오류: {e}")
 
-        if torch.backends.mps.is_available():
-            torch.mps.empty_cache()
-            print("MPS 캐시 정리 완료")
-
-        gc.collect()
-        print("가비지 컬렉션 완료")
+        clear_device_cache()
         print("모든 리소스 정리 완료!")
 
     def signal_handler(sig, frame):
