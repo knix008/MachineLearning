@@ -268,8 +268,8 @@ def main():
     # Print hardware specifications
     print_hardware_info()
 
-    # Auto-load model for CUDA
-    if DEVICE == "cuda":
+    # Auto-load model for CUDA and MPS
+    if DEVICE in ("cuda", "mps"):
         load_model()
 
     # Create Gradio interface
