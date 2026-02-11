@@ -252,7 +252,7 @@ def generate_image(
         # Save with timestamp
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         script_name = os.path.splitext(os.path.basename(__file__))[0]
-        filename = f"{script_name}_{timestamp}_{width}x{height}_gs{guidance_scale}_step{num_inference_steps}_seed{int(seed)}_str{strength}_msl{int(max_sequence_length)}.png"
+        filename = f"{script_name}_{timestamp}_{DEVICE.upper()}_{width}x{height}_gs{guidance_scale}_step{num_inference_steps}_seed{int(seed)}_str{strength}_msl{int(max_sequence_length)}.png"
         
         print(f"이미지가 저장되었습니다 : {filename}")
         image.save(filename)
@@ -268,9 +268,9 @@ def main():
     # Print hardware specifications
     print_hardware_info()
 
-    # Auto-load model for CUDA and MPS
-    if DEVICE in ("cuda", "mps"):
-        load_model()
+    # Auto-load model on startup with detected device
+    print(f"\n자동으로 감지된 디바이스: {DEVICE} (dtype: {DTYPE})")
+    load_model()
 
     # Create Gradio interface
     with gr.Blocks(title="Flux.1-dev Text-to-Image Generator") as interface:
@@ -373,6 +373,13 @@ def main():
 
         # Load model when button is clicked
         load_model_btn.click(
+            fn=load_model,
+            inputs=[device_selector],
+            outputs=[device_status],
+        )
+
+        # Auto-load model when device is changed
+        device_selector.change(
             fn=load_model,
             inputs=[device_selector],
             outputs=[device_status],

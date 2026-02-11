@@ -252,7 +252,7 @@ def generate_image(
         # Save with timestamp
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         script_name = os.path.splitext(os.path.basename(__file__))[0]
-        filename = f"{script_name}_{timestamp}_{width}x{height}_gs{guidance_scale}_step{num_inference_steps}_seed{int(seed)}_str{strength}_msl{int(max_sequence_length)}.png"
+        filename = f"{script_name}_{timestamp}_{DEVICE.upper()}_{width}x{height}_gs{guidance_scale}_step{num_inference_steps}_seed{int(seed)}_str{strength}_msl{int(max_sequence_length)}.png"
         
         print(f"이미지가 저장되었습니다 : {filename}")
         image.save(filename)
