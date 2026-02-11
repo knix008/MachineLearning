@@ -47,7 +47,9 @@ def get_available_devices():
         devices.append("cpu")
     return devices
 
-DEFAULT_PROMPT = "Transparent korean girl, without blouse, tight-fitting,lying on the couch, slender body, abs. 22-year-old woman, great lower shape, opening her mouth full of excitement, realistic 8k in fine silk underwear, in white transparent lingerie in bed. Realistic woman sitting on the bed like in real life, legs spread, makeup on. Korean supermodel, without blouse, tight-fitting, on the bed, slim body, small bust, 38-year-old woman, great lower stomach, mouth opening in ecstasy, blue eyes half open, realistic 8k in elegant, fine silk underwear You can see her whole body from above, the delicate hands with five fingers are at her crotch, hyper realistic 8K photography."
+#DEFAULT_PROMPT = "semi realistic Instagram style skinny korean cute girl, low angle, dynamic pose, sexy pose, highly detailed, sharp lines, thick lines, (masterpiece), best quality, 1women, sexy, slim body, medium breasts, shiny skin, dark skin, wet, rear view, beach water, in water, reflective water, clean water, summer light bikini, (adjusting bikini), tight bikini, sexy bikini, wet bikini, sunrise, close up"
+
+DEFAULT_PROMPT = "A cinematic photorealistic boudoir portrait of a beautiful cute Instagram style Korean woman kneeling on a bed. She is wearing a delicate white lingerie, with one strap slipping off her shoulder. She has long tousled dark hair and red lips, touching her face gently with one hand, with thighs open. A bright sun light cuts across her eyes and nose, contrasting with the soft shadows on the rest of her face. The background features a bright blue diamond-patterned wall and large grid windows overlooking a blurred city. Moody, intimate atmosphere, dramatic lighting, realistic skin texture, 8k resolution. Key Stylistic Keywords: Golden hour, sun shaft on face, floral embroidered lingerie, kneeling pose, grid windows, rim lighting, dramatic contrast, photorealistic, sultry, gravure style."
 
 def print_hardware_info():
     """Print detailed hardware specifications."""
