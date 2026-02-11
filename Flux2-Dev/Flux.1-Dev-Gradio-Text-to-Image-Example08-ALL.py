@@ -47,9 +47,8 @@ def get_available_devices():
         devices.append("cpu")
     return devices
 
-#DEFAULT_PROMPT = "semi realistic Instagram style skinny korean cute girl, low angle, dynamic pose, sexy pose, highly detailed, sharp lines, thick lines, (masterpiece), best quality, 1women, sexy, slim body, medium breasts, shiny skin, dark skin, wet, rear view, beach water, in water, reflective water, clean water, summer light bikini, (adjusting bikini), tight bikini, sexy bikini, wet bikini, sunrise, close up"
 
-DEFAULT_PROMPT = "A cinematic photorealistic boudoir portrait of a beautiful cute Instagram style Korean woman kneeling on a bed. She is wearing a delicate white sexy lingerie, with two strap slipping off her shoulder. She has long tousled dark hair with thighs widely open. The background features a bright blue diamond-patterned wall and large grid windows overlooking a blurred sunny city. Perfect anatomy, perfect fingers, perfect toes. Moody, intimate atmosphere, bright dramatic lighting, realistic skin texture, 8k resolution. Key Stylistic Keywords: bright lighting in the room, kneeling pose, grid windows, cinematic bright lighting, photorealistic, gravure style, airy, high detail, sharp focus, depth of field, bokeh, 8k resolution."
+DEFAULT_PROMPT = "침대에 무릎을 꿇고 있는 아름답고 귀여운 인스타그램 스타일의 한국 여성의 영화 같은 사실적인 부드와르 초상화입니다. 그녀는 어깨에서 흘러내리는 두 개의 끈이 있는 섬세한 흰색 섹시 란제리를 입고 있습니다. 길고 흐트러진 검은 머리에 허벅지를 활짝 벌리고 있습니다. 배경에는 밝은 파란색 다이아몬드 패턴 벽과 햇살이 비치는 도시의 모습이 흐릿하게 보이는 커다란 격자창이 있습니다. 완벽한 인체 비율, 완벽한 손가락과 발가락. 분위기 있고 친밀한 느낌, 밝고 드라마틱한 조명, 사실적인 피부 질감, 8K 해상도. 주요 스타일 키워드: 밝은 조명, 무릎 꿇은 자세, 격자창, 영화 같은 밝은 조명, 사실적인, 그라비아 스타일, 산뜻한 분위기, 높은 디테일, 선명한 초점, 심도, 보케, 8K 해상도."
 
 def print_hardware_info():
     """Print detailed hardware specifications."""
