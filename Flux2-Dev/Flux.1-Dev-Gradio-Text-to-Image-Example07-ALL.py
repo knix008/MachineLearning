@@ -268,6 +268,10 @@ def main():
     # Print hardware specifications
     print_hardware_info()
 
+    # Auto-load model for CUDA
+    if DEVICE == "cuda":
+        load_model()
+
     # Create Gradio interface
     with gr.Blocks(title="Flux.1-dev Text-to-Image Generator") as interface:
         gr.Markdown("# Flux.1-dev Text-to-Image Generator")
@@ -286,7 +290,7 @@ def main():
                 load_model_btn = gr.Button("모델 로드", variant="secondary")
                 device_status = gr.Textbox(
                     label="모델 상태",
-                    value="모델이 로드되지 않았습니다. 디바이스를 선택하고 '모델 로드' 버튼을 눌러주세요.",
+                    value=f"모델 로딩 완료! (Device: {DEVICE}, dtype: {DTYPE})" if pipe is not None else "모델이 로드되지 않았습니다. 디바이스를 선택하고 '모델 로드' 버튼을 눌러주세요.",
                     interactive=False,
                 )
 
