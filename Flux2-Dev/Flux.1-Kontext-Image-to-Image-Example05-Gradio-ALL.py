@@ -23,7 +23,7 @@ print("=" * 50)
 
 DEFAULT_IMAGE = "Test04.png"
 
-DEFAULT_PROMPT = "Perfect anatomy. Turn her body to face the back side with her arms together, showing her back and shoulders. Make her little smile on her face. High quality, 4k, sharp focus, masterpiece, best quality, ultra-detailed, cinematic lighting."
+DEFAULT_PROMPT = "She is looking at the window to see the outside of the house. Showing her back and shoulders. Make her little smile on her face. High quality, 4k, sharp focus, masterpiece, best quality, ultra-detailed, cinematic lighting, perfect anatomy, highly detailed."
 
 DEFAULT_NEGATIVE_PROMPT = (
     "blurry, low quality, distorted, deformed, ugly, bad anatomy, watermark, text"
