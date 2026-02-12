@@ -53,11 +53,9 @@ print(f"Using device: {device_type}, dtype: {data_type}")
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
-print("Loading model (T5-XXL only, skipping CLIP)...")
+print("Loading model...")
 pipe = FluxKontextPipeline.from_pretrained(
     "black-forest-labs/FLUX.1-Kontext-dev",
-    text_encoder=None,
-    tokenizer=None,
     torch_dtype=data_type,
 )
 pipe.to(device_type)
@@ -242,10 +240,10 @@ with gr.Blocks(title="Flux.1 Kontext Image-to-Image") as demo:
                 max_sequence_length = gr.Slider(
                     128,
                     512,
-                    value=512,
+                    value=256,
                     step=64,
                     label="Sequence Length",
-                    info="Max token length for text encoder. Higher = longer prompts supported",
+                    info="Max token length for T5 text encoder. Higher = longer prompts supported but more VRAM",
                 )
             generate_btn = gr.Button("Generate", variant="primary")
 
