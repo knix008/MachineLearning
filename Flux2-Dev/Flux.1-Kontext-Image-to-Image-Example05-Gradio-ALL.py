@@ -23,7 +23,7 @@ print("=" * 50)
 
 DEFAULT_IMAGE = "Test04.png"
 
-DEFAULT_PROMPT = "She is looking at the window to see the outside of the house. Showing her back and shoulders. Make her little smile on her face. High quality, 4k, sharp focus, masterpiece, best quality, ultra-detailed, cinematic lighting, perfect anatomy, highly detailed."
+DEFAULT_PROMPT = "She is standing and looking at the window to watch the outside of the house. Perfect anatomy, perfect 5 fingers in each hands, perfect toes, perfect proportions, detailed face, intricate details, high quality, 4k, sharp focus, masterpiece, best quality, ultra-detailed, cinematic lighting, highly detailed."
 
 DEFAULT_NEGATIVE_PROMPT = (
     "blurry, low quality, distorted, deformed, ugly, bad anatomy, watermark, text"
@@ -173,7 +173,7 @@ with gr.Blocks(title="Flux.1 Kontext Image-to-Image") as demo:
     with gr.Row():
         with gr.Column():
             input_image = gr.Image(
-                label="Input Image", type="pil", value=DEFAULT_IMAGE, height=800
+                label="Input Image", type="pil", value=DEFAULT_IMAGE, height=600
             )
             prompt = gr.Textbox(
                 label="Prompt",
@@ -248,7 +248,7 @@ with gr.Blocks(title="Flux.1 Kontext Image-to-Image") as demo:
             generate_btn = gr.Button("Generate", variant="primary")
 
         with gr.Column():
-            output_image = gr.Image(label="Output Image", type="pil", height=800)
+            output_image = gr.Image(label="Output Image", type="pil", height=1000)
             status = gr.Textbox(label="Status", interactive=False)
 
     generate_btn.click(
