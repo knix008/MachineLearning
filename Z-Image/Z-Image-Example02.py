@@ -25,7 +25,7 @@ negative_prompt = "extra hands,extra legs,extra feet,extra arms,Waist Pleats,pai
 height = 1536
 width = 1024
 cfg_normalization = True
-num_inference_steps = 13
+num_inference_steps = 25
 guidance_scale = 1.3
 seed = 24454331372687
 

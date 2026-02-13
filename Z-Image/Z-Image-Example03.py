@@ -139,7 +139,10 @@ def generate_image(
     global pipe
 
     if pipe is None:
-        return None, "오류: 모델이 로드되지 않았습니다. '모델 로드' 버튼을 먼저 눌러주세요."
+        return (
+            None,
+            "오류: 모델이 로드되지 않았습니다. '모델 로드' 버튼을 먼저 눌러주세요.",
+        )
 
     if not prompt:
         return None, "오류: 프롬프트를 입력해주세요."
@@ -150,7 +153,9 @@ def generate_image(
 
         progress(0.0, desc="이미지 생성 준비 중...")
 
-        generator = torch.Generator(device="cuda" if torch.cuda.is_available() else "cpu")
+        generator = torch.Generator(
+            device="cuda" if torch.cuda.is_available() else "cpu"
+        )
         generator.manual_seed(int(seed))
 
         progress(0.05, desc="추론 시작...")
@@ -161,7 +166,9 @@ def generate_image(
             elapsed = time.time() - start_time
             ratio = current / steps
             progress_val = 0.05 + ratio * 0.85
-            progress(progress_val, desc=f"추론 스텝 {current}/{steps} ({elapsed:.1f}초 경과)")
+            progress(
+                progress_val, desc=f"추론 스텝 {current}/{steps} ({elapsed:.1f}초 경과)"
+            )
             return callback_kwargs
 
         image = pipe(
@@ -241,7 +248,7 @@ def main():
                         minimum=256,
                         maximum=2048,
                         step=64,
-                        value=1024,
+                        value=768,
                         info="생성할 이미지의 너비 (픽셀). 64의 배수.",
                     )
                     height = gr.Slider(
@@ -267,14 +274,16 @@ def main():
                         minimum=1,
                         maximum=50,
                         step=1,
-                        value=13,
+                        value=25,
                         info="이미지 생성 단계 수. 높을수록 품질 향상. 권장: 13",
                     )
 
                 with gr.Row():
                     seed = gr.Number(
                         label="시드",
-                        value=24454331372687,
+                        minimum=0,
+                        maximum=1000,
+                        value=42,
                         precision=0,
                         info="같은 시드 = 같은 결과. 재현성을 위해 사용합니다.",
                     )
