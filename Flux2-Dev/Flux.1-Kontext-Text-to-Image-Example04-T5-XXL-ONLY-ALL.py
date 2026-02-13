@@ -14,9 +14,9 @@ import platform
 import subprocess
 import gradio as gr
 
-prompt = "The image is a high-quality, photorealistic cosplay portrait of a young Korean woman with a soft, idol aesthetic. Physical Appearance: Face: She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera: She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face. Perfect anatomy, perfect fingers, perfect toes. Attire (Blue & White Bunny Theme): Headwear: She wears tall, upright blue fabric bunny ears with white lace inner lining and a delicate white lace headband base, accented with a small white bow. Outfit: She wears a unique blue denim-textured bodysuit. It features a front zipper, silver buttons, and thin silver chains draped across the chest. The sides are constructed from semi-sheer white lace. Accessories: Around her neck is a blue bow tie attached to a white collar. She wears long, white floral lace fingerless sleeves that extend past her elbows, finished with blue cuffs and small black decorative ribbons. Legwear: She wears white fishnet stockings held up by blue and white ruffled lace garters adorned with small white bows. Pose: She is standing gracefully in front of the edge of a light-colored, vintage-style bed or cushioned bench. Her body is slightly angled toward the camera, creating a soft and inviting posture. Setting & Background: Location: A bright, high-key studio set designed to look like a clean, airy bedroom. Background: The background is dominated by large windows with white vertical blinds or curtains, allowing soft, diffused natural-looking light to flood the scene. The background is softly blurred (bokeh). Lighting: The lighting is bright, soft, and even, minimizing harsh shadows and giving the skin a glowing, porcelain appearance. Flux Prompt Prompt: A photorealistic, high-quality cosplay portrait of a beautiful Korean woman dressed in a blue and white bunny girl outfit. She has long straight black hair with hime-cut bangs and vibrant blue eyes. She wears tall blue bunny ears with white lace trim, a blue denim-textured bodysuit with a front zipper and white lace side panels, a blue bow tie, and long white lace sleeves. She is standing in front of a white bed in a bright, sun-drenched room with soft-focus white curtains. She is looking at the camera with a soft, innocent expression.8k resolution, high-key lighting, cinematic soft focus, detailed textures of denim and lace, gravure photography style. Key Stylistic Keywords Blue bunny girl, denim cosplay, white lace, high-key lighting, blue contact lenses, black hair with bangs, fishnet stockings, airy atmosphere, photorealistic, innocent and alluring, studio photography."
+prompt = "The image is a high-quality, photorealistic cosplay portrait of a young Korean woman with a soft, idol aesthetic. Physical Appearance: Face: She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera: She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face. Perfect anatomy, perfect fingers, perfect toes. Attire (Blue & White Bunny Theme): Headwear: She wears tall, upright blue fabric bunny ears with white lace inner lining and a delicate white lace headband base, accented with a small white bow. Outfit: She wears a unique blue denim-textured bodysuit. It features a front zipper, silver buttons, and thin silver chains draped across the chest. The sides are constructed from semi-sheer white lace. Accessories: Around her neck is a blue bow tie attached to a white collar. She wears long, white floral lace fingerless sleeves that extend past her elbows, finished with blue cuffs and small black decorative ribbons. Legwear: She wears white fishnet stockings held up by blue and white ruffled lace garters adorned with small white bows. Pose: She is standing gracefully in front of the edge of a light-colored, vintage-style bed or cushioned bench. Her body is slightly angled toward the camera, creating a soft and inviting posture. Setting & Background: Location: A bright, high-key studio set designed to look like a clean, airy bedroom. Background: The background is dominated by large windows with white vertical blinds or curtains, allowing soft, diffused natural-looking light to flood the scene. The background is softly blurred (bokeh). Lighting: The lighting is bright, soft, and even, minimizing harsh shadows and giving the skin a glowing, porcelain appearance. Flux Prompt Prompt: A photorealistic, high-quality cosplay portrait of a beautiful Korean woman dressed in a blue and white bunny girl outfit." # T5-XXL Only support this prompt length
 
-#prompt = "A vertical ultra-detailed masterpiece photography of a stunning cute skinny Instagram-style korean young girl with long straight black hair and wispy bangs. She is lying on a bed in a pink-themed bedroom, posing with her hands behind her head, and rest on the pillow. She is wearing a red ribbed crop top, a red lace thong, and white thigh-high stockings with lace tops. Her skin has an extremely reflective, glistening wet oily texture with sharp specular highlights. The background features pink floral wallpaper and a white headboard shelf filled with many cute plush toys and dolls. Soft cinematic natural lighting, high-fidelity textures,8k resolution, intricate fabric and hair details, professional digital art style. Key Stylistic Keywords: Domestic setting, red crop top, red lace lingerie, white lace stockings, black hair with bangs, oily skin texture, wet-look skin, pink floral wallpaper, plush toy collection, high-gloss finish, lying on bed, specular highlights, 8k, masterpiece."
+#prompt = "A vertical ultra-detailed masterpiece photography of a stunning cute skinny Instagram-style korean young girl with long straight black hair and wispy bangs. She is lying on a bed in a pink-themed bedroom, posing with her hands naturally down, and rest on the pillow. She is wearing a yellow ribbed crop top, a red lace thong, and white thigh-high stockings with lace tops. Her skin has an extremely reflective, glistening wet oily texture with sharp specular highlights. The background features pink floral wallpaper and a white headboard shelf filled with many cute plush toys and dolls. Soft cinematic natural lighting, high-fidelity textures,8k resolution, intricate fabric and hair details, professional digital art style. Key Stylistic Keywords: Domestic setting, yellow crop top, red lace lingerie, white lace stockings, black hair with bangs, oily skin texture, wet-look skin, pink floral wallpaper, plush toy collection, high-gloss finish, lying on bed, specular highlights, 8k, masterpiece."
 
 
 def detect_device():
@@ -136,22 +136,6 @@ signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
 
 
-def encode_prompt_t5_only(prompt_text, max_seq_len):
-    """Encode prompt using only T5-XXL, bypassing CLIP."""
-    prompt_embeds = pipe._get_t5_prompt_embeds(
-        prompt=prompt_text,
-        num_images_per_prompt=1,
-        max_sequence_length=max_seq_len,
-        device=pipe._execution_device,
-        dtype=data_type,
-    )
-    # CLIP pooled output is 768-dim; use zeros since CLIP is not loaded
-    pooled_prompt_embeds = torch.zeros(
-        prompt_embeds.shape[0], 768, dtype=data_type, device=prompt_embeds.device
-    )
-    return prompt_embeds, pooled_prompt_embeds
-
-
 def generate_image(
     prompt,
     width,
@@ -168,15 +152,9 @@ def generate_image(
     gen_device = device_type if device_type == "cuda" else "cpu"
     generator = torch.Generator(device=gen_device).manual_seed(int(seed))
 
-    # Encode prompt with T5-XXL only
-    prompt_embeds, pooled_prompt_embeds = encode_prompt_t5_only(
-        prompt, int(max_sequence_length)
-    )
-
     image = pipe(
         image=None,
-        prompt_embeds=prompt_embeds,
-        pooled_prompt_embeds=pooled_prompt_embeds,
+        prompt=prompt,
         width=int(width),
         height=int(height),
         guidance_scale=guidance_scale,
@@ -267,7 +245,7 @@ with gr.Blocks(title="Flux.1 Kontext Text-to-Image") as demo:
                 max_sequence_length = gr.Slider(
                     128,
                     512,
-                    value=256,
+                    value=512,
                     step=64,
                     label="Sequence Length",
                     info="Max token length for text encoder. Higher = longer prompts supported",
