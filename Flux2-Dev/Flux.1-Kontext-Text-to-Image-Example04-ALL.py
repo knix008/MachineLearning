@@ -4,7 +4,7 @@ os.environ.pop("MallocStackLogging", None)
 os.environ.pop("MallocStackLoggingDirectory", None)
 
 import torch
-from diffusers import FluxPipeline
+from diffusers import FluxKontextPipeline
 from datetime import datetime
 import gc
 import atexit
@@ -78,11 +78,9 @@ print_hardware_info(device_type, data_type)
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
-print("Loading model (T5-XXL only, CLIP disabled)...")
-pipe = FluxPipeline.from_pretrained(
-    "black-forest-labs/FLUX.1-dev",
-    text_encoder=None,
-    tokenizer=None,
+print("Loading model (CLIP + T5-XXL)...")
+pipe = FluxKontextPipeline.from_pretrained(
+    "black-forest-labs/FLUX.1-Kontext-dev",
     torch_dtype=data_type,
 )
 
@@ -146,40 +144,18 @@ def generate_image(
     if not prompt or prompt.strip() == "":
         return None, "Please enter a prompt."
 
-    #print(f"Generating image with prompt: {prompt}")
-
-    # Use CPU generator for MPS/CPU, device generator for CUDA
+    # Use CPU generator for MPS as it's more stable
     gen_device = device_type if device_type == "cuda" else "cpu"
     generator = torch.Generator(device=gen_device).manual_seed(int(seed))
 
-    # Encode prompt using T5-XXL only (CLIP is disabled)
-    encode_device = device_type if device_type != "cuda" else "cpu"
-    text_inputs = pipe.tokenizer_2(
-        prompt,
-        padding="max_length",
-        max_length=int(max_sequence_length),
-        truncation=True,
-        return_tensors="pt",
-    )
-    with torch.no_grad():
-        prompt_embeds = pipe.text_encoder_2(
-            text_inputs["input_ids"].to(encode_device),
-            output_hidden_states=False,
-        )[0]
-    prompt_embeds = prompt_embeds.to(dtype=data_type)
-
-    # Zero pooled embeddings (normally from CLIP, not needed with T5-only)
-    pooled_prompt_embeds = torch.zeros(
-        1, 768, dtype=data_type, device=prompt_embeds.device
-    )
-
     image = pipe(
-        prompt_embeds=prompt_embeds,
-        pooled_prompt_embeds=pooled_prompt_embeds,
+        image=None,
+        prompt=prompt,
         width=int(width),
         height=int(height),
         guidance_scale=guidance_scale,
         num_inference_steps=int(num_inference_steps),
+        max_sequence_length=int(max_sequence_length),
         generator=generator,
     ).images[0]
 
@@ -265,7 +241,7 @@ with gr.Blocks(title="Flux.1 Kontext Text-to-Image") as demo:
                 max_sequence_length = gr.Slider(
                     128,
                     512,
-                    value=512,
+                    value=256,
                     step=64,
                     label="Sequence Length",
                     info="Max token length for text encoder. Higher = longer prompts supported",
