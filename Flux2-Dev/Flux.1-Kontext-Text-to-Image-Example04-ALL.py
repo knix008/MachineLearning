@@ -78,17 +78,19 @@ print_hardware_info(device_type, data_type)
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
-print("Loading model (CLIP + T5-XXL)...")
+print("Loading model (T5-XXL only, CLIP skipped)...")
 pipe = FluxKontextPipeline.from_pretrained(
     "black-forest-labs/FLUX.1-Kontext-dev",
+    text_encoder=None,
+    tokenizer=None,
     torch_dtype=data_type,
 )
 
 # Apply memory optimizations based on device
 # NOTE: pipe.to(), enable_model_cpu_offload(), enable_sequential_cpu_offload()
 #       are mutually exclusive — only use ONE of them.
-if device_type == "cuda" or device_type == "cpu":
-    pipe.enable_model_cpu_offload()
+if device_type == "cuda":
+    #pipe.enable_model_cpu_offload()
     pipe.enable_attention_slicing()
     pipe.enable_sequential_cpu_offload()
     print("Memory optimization: model CPU offload, attention slicing (CUDA)")
@@ -96,8 +98,10 @@ elif device_type == "mps":
     pipe.to(device_type)
     print("Memory optimization: none (MPS)")
 else:
-    print("No available device for image generation is found.")
-    exit(1)
+    pipe.enable_model_cpu_offload()
+    pipe.enable_attention_slicing()
+    pipe.enable_sequential_cpu_offload()
+    print("We will use CPU.")
 
 print("Model loaded!")
 
@@ -132,6 +136,22 @@ signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
 
 
+def encode_prompt_t5_only(prompt_text, max_seq_len):
+    """Encode prompt using only T5-XXL, bypassing CLIP."""
+    prompt_embeds = pipe._get_t5_prompt_embeds(
+        prompt=prompt_text,
+        num_images_per_prompt=1,
+        max_sequence_length=max_seq_len,
+        device=pipe._execution_device,
+        dtype=data_type,
+    )
+    # CLIP pooled output is 768-dim; use zeros since CLIP is not loaded
+    pooled_prompt_embeds = torch.zeros(
+        prompt_embeds.shape[0], 768, dtype=data_type, device=prompt_embeds.device
+    )
+    return prompt_embeds, pooled_prompt_embeds
+
+
 def generate_image(
     prompt,
     width,
@@ -148,9 +168,15 @@ def generate_image(
     gen_device = device_type if device_type == "cuda" else "cpu"
     generator = torch.Generator(device=gen_device).manual_seed(int(seed))
 
+    # Encode prompt with T5-XXL only
+    prompt_embeds, pooled_prompt_embeds = encode_prompt_t5_only(
+        prompt, int(max_sequence_length)
+    )
+
     image = pipe(
         image=None,
-        prompt=prompt,
+        prompt_embeds=prompt_embeds,
+        pooled_prompt_embeds=pooled_prompt_embeds,
         width=int(width),
         height=int(height),
         guidance_scale=guidance_scale,
