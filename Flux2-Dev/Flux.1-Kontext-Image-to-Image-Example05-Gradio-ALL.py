@@ -8,6 +8,7 @@ import signal
 import sys
 import platform
 import gradio as gr
+from PIL import Image
 
 # Print platform information
 print("=" * 50)
@@ -22,6 +23,23 @@ print(f"PyTorch Version: {torch.__version__}")
 print("=" * 50)
 
 DEFAULT_IMAGE = "Test04.png"
+
+
+# Pre-compute default image dimensions for slider initial values
+def _get_default_dims(image_path):
+    """Read default image and compute 64-aligned dimensions."""
+    try:
+        img_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), image_path)
+        img = Image.open(img_path)
+        orig_w, orig_h = img.size
+        w = max(256, min(1536, round(orig_w / 64) * 64))
+        h = max(256, min(1536, round(orig_h / 64) * 64))
+        return orig_w, orig_h, w, h
+    except Exception:
+        return 512, 512, 512, 512
+
+
+_orig_w, _orig_h, _default_w, _default_h = _get_default_dims(DEFAULT_IMAGE)
 
 DEFAULT_PROMPT = "She is standing and looking at the window to watch the outside of the house. Perfect anatomy, perfect 5 fingers in each hands, perfect toes, perfect proportions, detailed face, intricate details, high quality, 4k, sharp focus, masterpiece, best quality, ultra-detailed, cinematic lighting, highly detailed."
 
@@ -53,7 +71,7 @@ print(f"Using device: {device_type}, dtype: {data_type}")
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
-print("Loading model...")
+print("Loading model (CLIP + T5-XXL)...")
 pipe = FluxKontextPipeline.from_pretrained(
     "black-forest-labs/FLUX.1-Kontext-dev",
     torch_dtype=data_type,
@@ -128,7 +146,7 @@ def generate_image(
     if input_image is None:
         return None, "Please upload an input image."
 
-    #print(f"Generating image with prompt: {prompt}")
+    # print(f"Generating image with prompt: {prompt}")
 
     # Use "cpu" for generator on MPS as it's more stable
     generator_device = "cpu" if device_type == "mps" else device_type
@@ -166,8 +184,8 @@ def generate_image(
     return image, f"Image saved: {output_path}"
 
 
-with gr.Blocks(title="Flux.1 Kontext Image-to-Image") as demo:
-    gr.Markdown("# Flux.1 Kontext Image-to-Image")
+with gr.Blocks(title="Flux.1 Kontext Image-to-Image 테스트") as demo:
+    gr.Markdown("# Flux.1 Kontext Image-to-Image 테스트")
     gr.Markdown("Upload an image and describe the changes you want to make.")
 
     with gr.Row():
@@ -191,14 +209,14 @@ with gr.Blocks(title="Flux.1 Kontext Image-to-Image") as demo:
             dimension_info = gr.Textbox(
                 label="Image Dimensions",
                 interactive=False,
-                value="No image loaded",
+                value=f"Original: {_orig_w} x {_orig_h} → Output: {_default_w} x {_default_h}",
             )
 
             with gr.Row():
                 width = gr.Slider(
                     256,
                     1536,
-                    value=512,
+                    value=_default_w,
                     step=64,
                     label="Width",
                     info="Output image width in pixels (auto-set from input, adjustable)",
@@ -206,7 +224,7 @@ with gr.Blocks(title="Flux.1 Kontext Image-to-Image") as demo:
                 height = gr.Slider(
                     256,
                     1536,
-                    value=1024,
+                    value=_default_h,
                     step=64,
                     label="Height",
                     info="Output image height in pixels (auto-set from input, adjustable)",
@@ -243,7 +261,7 @@ with gr.Blocks(title="Flux.1 Kontext Image-to-Image") as demo:
                     value=256,
                     step=64,
                     label="Sequence Length",
-                    info="Max token length for T5 text encoder. Higher = longer prompts supported but more VRAM",
+                    info="Max token length for text encoder. Higher = longer prompts supported but more VRAM",
                 )
             generate_btn = gr.Button("Generate", variant="primary")
 
@@ -269,13 +287,6 @@ with gr.Blocks(title="Flux.1 Kontext Image-to-Image") as demo:
 
     # Update width/height sliders and dimension info when input image changes
     input_image.change(
-        fn=get_image_dimensions,
-        inputs=[input_image],
-        outputs=[width, height, dimension_info],
-    )
-
-    # Also update dimensions on initial app load for default image
-    demo.load(
         fn=get_image_dimensions,
         inputs=[input_image],
         outputs=[width, height, dimension_info],
