@@ -26,15 +26,28 @@ print("=" * 50)
 DEFAULT_IMAGE = "Test03.png"
 
 
+# Compute 64-aligned output dimensions preserving aspect ratio
+def _compute_output_dims(orig_w, orig_h):
+    """Compute 64-aligned output dimensions that preserve the input aspect ratio."""
+    aspect_ratio = orig_w / orig_h
+    # Start with width rounded to nearest 64
+    w = max(256, min(2048, round(orig_w / 64) * 64))
+    # Compute height from width to preserve aspect ratio
+    h = max(256, min(2048, round(w / aspect_ratio / 64) * 64))
+    # If height was clamped, recalculate width to best preserve ratio
+    if h == 256 or h == 2048:
+        w = max(256, min(2048, round(h * aspect_ratio / 64) * 64))
+    return w, h
+
+
 # Pre-compute default image dimensions for slider initial values
 def _get_default_dims(image_path):
-    """Read default image and compute 64-aligned dimensions."""
+    """Read default image and compute 64-aligned dimensions preserving aspect ratio."""
     try:
         img_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), image_path)
         img = Image.open(img_path)
         orig_w, orig_h = img.size
-        w = max(256, min(1536, round(orig_w / 64) * 64))
-        h = max(256, min(1536, round(orig_h / 64) * 64))
+        w, h = _compute_output_dims(orig_w, orig_h)
         return orig_w, orig_h, w, h
     except Exception:
         return 512, 512, 512, 512
@@ -43,7 +56,7 @@ def _get_default_dims(image_path):
 _orig_w, _orig_h, _default_w, _default_h = _get_default_dims(DEFAULT_IMAGE)
 
 
-DEFAULT_PROMPT = "Show her back. Cinematic lighting, 4k, ultra-detailed texture, with perfect anatomy, perfect arms and legs structure, fashion vibe."
+DEFAULT_PROMPT = "Show her back. Tropical sunny beach, cinematic lighting, 4k, ultra-detailed texture, high definition, perfect anatomy, fashion vibe."
 
 DEFAULT_NEGATIVE_PROMPT = (
     "blurry, low quality, distorted, deformed, ugly, bad anatomy, watermark, text"
@@ -127,14 +140,12 @@ signal.signal(signal.SIGINT, signal_handler)
 
 
 def get_image_dimensions(image):
-    """Get image dimensions and round to nearest step of 64."""
+    """Get image dimensions and compute 64-aligned output preserving aspect ratio."""
     if image is None:
         return gr.update(), gr.update(), "No image loaded"
     orig_w, orig_h = image.size
-    # Round to nearest 64 and clamp to slider range
-    w = max(256, min(1536, round(orig_w / 64) * 64))
-    h = max(256, min(1536, round(orig_h / 64) * 64))
-    info = f"Original: {orig_w} x {orig_h} → Output: {w} x {h}"
+    w, h = _compute_output_dims(orig_w, orig_h)
+    info = f"Original: {orig_w} x {orig_h} → Output: {w} x {h} (ratio {orig_w/orig_h:.2f} → {w/h:.2f})"
     return w, h, info
 
 
@@ -255,7 +266,7 @@ with gr.Blocks(title="Flux.1 Kontext Image-to-Image 테스트") as demo:
             with gr.Row():
                 width = gr.Slider(
                     256,
-                    1536,
+                    2048,
                     value=_default_w,
                     step=64,
                     label="Width",
@@ -263,7 +274,7 @@ with gr.Blocks(title="Flux.1 Kontext Image-to-Image 테스트") as demo:
                 )
                 height = gr.Slider(
                     256,
-                    1536,
+                    2048,
                     value=_default_h,
                     step=64,
                     label="Height",

@@ -251,7 +251,7 @@ def main():
                             label="높이 (Height)",
                             info="생성할 이미지의 높이 (픽셀)",
                             minimum=256,
-                            maximum=1024,
+                            maximum=2048,
                             step=64,
                             value=1024
                         )
@@ -259,7 +259,7 @@ def main():
                             label="너비 (Width)",
                             info="생성할 이미지의 너비 (픽셀)",
                             minimum=256,
-                            maximum=1024,
+                            maximum=2048,
                             step=64,
                             value=768
                         )
