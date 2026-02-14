@@ -168,9 +168,13 @@ def generate_image(
         elapsed = time.time() - start_time
         ratio = current / steps
         progress_val = 0.05 + ratio * 0.85
-        msg = f"Step {current}/{steps} ({elapsed:.1f}s elapsed)"
-        progress(progress_val, desc=msg)
-        print(f"  {msg}")
+        progress(progress_val, desc=f"Step {current}/{steps} ({elapsed:.1f}s elapsed)")
+        bar_len = 30
+        filled = int(bar_len * ratio)
+        bar = "█" * filled + "░" * (bar_len - filled)
+        print(f"\r  [{bar}] Step {current}/{steps} ({ratio*100:.0f}%) - {elapsed:.1f}s elapsed", end="", flush=True)
+        if current == steps:
+            print()
         return callback_kwargs
 
     progress(0.05, desc="Starting inference...")
