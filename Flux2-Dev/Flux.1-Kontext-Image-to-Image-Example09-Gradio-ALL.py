@@ -157,7 +157,9 @@ def generate_image(
     start_time = time.time()
 
     progress(0.0, desc="Preparing...")
-    print(f"Generating image: steps={steps}, guidance={guidance_scale}, seed={int(seed)}")
+    print(
+        f"Generating image: steps={steps}, guidance={guidance_scale}, seed={int(seed)}"
+    )
 
     # Use "cpu" for generator on MPS as it's more stable
     generator_device = "cpu" if device_type == "mps" else device_type
@@ -172,7 +174,11 @@ def generate_image(
         bar_len = 30
         filled = int(bar_len * ratio)
         bar = "█" * filled + "░" * (bar_len - filled)
-        print(f"\r  [{bar}] Step {current}/{steps} ({ratio*100:.0f}%) - {elapsed:.1f}s elapsed", end="", flush=True)
+        print(
+            f"\r  [{bar}] Step {current}/{steps} ({ratio*100:.0f}%) - {elapsed:.1f}s elapsed",
+            end="",
+            flush=True,
+        )
         if current == steps:
             print()
         return callback_kwargs
