@@ -13,7 +13,9 @@
       "Bash(/cygdrive/c/Users/shkwon/.conda/envs/Pytorch/python.exe:*)",
       "Bash(cmd.exe:*)",
       "Bash(git checkout:*)",
-      "Bash(/c/Python313/python:*)"
+      "Bash(/c/Python313/python:*)",
+      "Bash(python3:*)",
+      "Bash(ls:*)"
     ]
   }
 }
