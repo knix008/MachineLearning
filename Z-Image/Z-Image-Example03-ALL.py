@@ -12,15 +12,27 @@ import gradio as gr
 
 # https://prompthero.com/prompt/16c71686861-z-image-turbo-the-image-is-a-high-quality-photorealistic-cosplay-portrait-of-a-young-asian-woman-with-a-soft-idol-aesthetic-physical
 
-DEFAULT_PROMPT = "The image is a high-quality,photorealistic cosplay portrait of a young Asian woman with a soft, idol aesthetic.Physical Appearance: Face: She has a fair,clear complexion.She is wearing striking bright blue contact lenses that contrast with her dark hair.Her expression is innocent and curious,looking directly at the camera with her index finger lightly touching her chin.Hair: She has long,straight jet-black hair with thick,straight-cut bangs (fringe) that frame her face.Attire (Blue & White Bunny Theme): Headwear: She wears tall,upright blue fabric bunny ears with white lace inner lining and a delicate white lace headband base,accented with a small white bow.Outfit: She wears a unique blue denim-textured bodysuit.It features a front zipper,silver buttons,and thin silver chains draped across the chest.The sides are constructed from semi-sheer white lace.Accessories: Around her neck is a blue bow tie attached to a white collar.She wears long,white floral lace fingerless sleeves that extend past her elbows,finished with blue cuffs and small black decorative ribbons.Legwear: She wears white fishnet stockings held up by blue and white ruffled lace garters adorned with small white bows.Pose: She is sitting gracefully on the edge of a light-colored,vintage-style bed or cushioned bench.Her body is slightly angled toward the camera,creating a soft and inviting posture.Setting & Background: Location: A bright,high-key studio set designed to look like a clean,airy bedroom.Background: The background is dominated by large windows with white vertical blinds or curtains,allowing soft,diffused natural-looking light to flood the scene.The background is softly blurred (bokeh).Lighting: The lighting is bright,soft,and even,minimizing harsh shadows and giving the skin a glowing,porcelain appearance.8k resolution,high-key lighting,cinematic soft focus,detailed textures of denim and lace,gravure photography style."
+DEFAULT_PROMPT = "The image is a high-quality,photorealistic cosplay portrait of a Korean girl with a soft, idol aesthetic. Physical Appearance: Face: She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera with her index finger lightly touching her chin. Hair: She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face. Attire (Blue & White Bunny Theme): Headwear: She wears tall, upright blue fabric bunny ears with white lace inner lining and a delicate white lace headband base, accented with a small white bow. Outfit: She wears a unique blue denim-textured bodysuit. It features a front zipper, silver buttons,and thin silver chains draped across the chest. The sides are constructed from semi-sheer white lace.Accessories: Around her neck is a blue bow tie attached to a white collar. She wears long, white floral lace fingerless sleeves that extend past her elbows, finished with blue cuffs and small black decorative ribbons. Legwear: She wears white fishnet stockings held up by blue and white ruffled lace garters adorned with small white bows. Pose: She is sitting gracefully on the edge of a light-colored, vintage-style bed or cushioned bench. Her body is slightly angled toward the camera, creating a soft and inviting posture. Setting & Background: Location: A bright,high-key studio set designed to look like a clean, airy bedroom. Background: The background is dominated by large windows with white vertical blinds or curtains, allowing soft, diffused natural-looking light to flood the scene. The background is softly blurred (bokeh). Lighting: The lighting is bright, soft,and even,minimizing harsh shadows and giving the skin a glowing, porcelain appearance. 8k resolution, high-key lighting, cinematic soft focus, detailed textures of denim and lace, gravure photography style."
 
-DEFAULT_NEGATIVE_PROMPT = "extra hands,extra legs,extra feet,extra arms,Waist Pleats,paintings,sketches,(worst quality:2),(low quality:2),(normal quality:2),lowres,normal quality,((monochrome)),((grayscale)),skin spots,wet,acnes,skin blemishes,age spot,manboobs,backlight,mutated hands,(poorly drawn hands:1.33),blurry,(bad anatomy:1.21),(bad proportions:1.33),extra limbs,(disfigured:1.33),(more than 2 nipples:1.33),(missing arms:1.33),(extra legs:1.33),(fused fingers:1.61),(too many fingers:1.61),(unclear eyes:1.33),lowers,bad hands,missing fingers,extra digit,(futa:1.1),bad hands,missing fingers,(cleft chin:1.3),exposed nipples"
+DEFAULT_NEGATIVE_PROMPT = "extra hands,extra legs, extra feet, extra arms, Waist Pleats, paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, normal quality, ((monochrome)), ((grayscale)), skin spots, wet, acnes, skin blemishes, age spot, manboobs, backlight, mutated hands, (poorly drawn hands:1.33), blurry, (bad anatomy:1.21), (bad proportions:1.33), extra limbs, (disfigured:1.33), (more than 2 nipples:1.33), (missing arms:1.33), (extra legs:1.33), (fused fingers:1.61), (too many fingers:1.61), (unclear eyes:1.33), lowers, bad hands, missing fingers, extra digit, (futa:1.1), bad hands, missing fingers, (cleft chin:1.3), exposed nipples"
 
 # Global variables
 pipe = None
 interface = None
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-DTYPE = torch.bfloat16 if DEVICE == "cuda" else torch.float32
+
+
+def detect_device():
+    """Auto-detect the best available device and data type."""
+    if torch.cuda.is_available():
+        return "cuda", torch.bfloat16
+    elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+        return "mps", torch.bfloat16
+    else:
+        return "cpu", torch.float32
+
+
+DEVICE, DTYPE = detect_device()
+IS_MPS = DEVICE == "mps"
 
 
 def print_hardware_info():
@@ -55,6 +67,8 @@ def print_hardware_info():
             props = torch.cuda.get_device_properties(i)
             print(f"GPU {i}: {props.name}")
             print(f"  - VRAM: {props.total_memory / (1024**3):.1f} GB")
+    elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+        print("MPS (Apple Silicon) 사용 가능")
     else:
         print("GPU 사용 불가 (CPU 모드)")
     print("=" * 60)
@@ -82,6 +96,9 @@ def cleanup():
         torch.cuda.empty_cache()
         torch.cuda.synchronize()
         print("CUDA 캐시 정리됨")
+    elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+        torch.mps.empty_cache()
+        print("MPS 캐시 정리됨")
 
     gc.collect()
     print("메모리 정리 완료")
@@ -97,9 +114,13 @@ def signal_handler(_sig, _frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 
-def load_model():
+def load_model(selected_device=None):
     """Load and initialize the Z-Image model with optimizations."""
-    global pipe
+    global pipe, DEVICE, DTYPE
+
+    if selected_device is not None and not IS_MPS:
+        DEVICE = selected_device
+        DTYPE = torch.bfloat16 if DEVICE == "cuda" else torch.float32
 
     if pipe is not None:
         print("기존 모델 해제 중...")
@@ -108,6 +129,8 @@ def load_model():
         gc.collect()
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
+        elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+            torch.mps.empty_cache()
 
     print(f"모델 로딩 중... (Device: {DEVICE}, dtype: {DTYPE})")
     pipe = ZImagePipeline.from_pretrained(
@@ -123,7 +146,7 @@ def load_model():
         pipe.enable_model_cpu_offload()
         pipe.enable_sequential_cpu_offload()
     elif DEVICE == "mps":
-        print("MPS 최적화 활성화 안함") 
+        print("MPS 최적화 활성화 안함")
     else:
         print("CPU 모드로 실행 중. 최적화는 제한적입니다.")
         pipe.enable_attention_slicing()
@@ -162,9 +185,8 @@ def generate_image(
 
         progress(0.0, desc="이미지 생성 준비 중...")
 
-        generator = torch.Generator(
-            device="cuda" if torch.cuda.is_available() else "cpu"
-        )
+        gen_device = "cpu" if DEVICE == "mps" else DEVICE
+        generator = torch.Generator(device=gen_device)
         generator.manual_seed(int(seed))
 
         progress(0.05, desc="추론 시작...")
@@ -225,6 +247,23 @@ def main():
 
         with gr.Row():
             with gr.Column(scale=1):
+                if not IS_MPS:
+                    device_choices = []
+                    if torch.cuda.is_available():
+                        device_choices.append("cuda")
+                    device_choices.append("cpu")
+                    device_selector = gr.Dropdown(
+                        label="디바이스 선택",
+                        choices=device_choices,
+                        value=DEVICE,
+                        info="모델을 로드할 디바이스를 선택합니다. 변경 후 '모델 로드' 버튼을 눌러주세요.",
+                    )
+                else:
+                    device_selector = gr.Textbox(
+                        label="디바이스",
+                        value="MPS (Apple Silicon)",
+                        interactive=False,
+                    )
                 load_model_btn = gr.Button("모델 로드", variant="secondary")
                 model_status = gr.Textbox(
                     label="모델 상태",
@@ -275,8 +314,8 @@ def main():
                         minimum=1.0,
                         maximum=20.0,
                         step=0.1,
-                        value=1.3,
-                        info="프롬프트 충실도. 낮을수록 창의적, 높을수록 정확. 권장: 1.3",
+                        value=4.0,
+                        info="프롬프트 충실도. 낮을수록 창의적, 높을수록 정확. 권장: 4.0",
                     )
                     num_inference_steps = gr.Slider(
                         label="추론 스텝",
@@ -284,7 +323,7 @@ def main():
                         maximum=50,
                         step=1,
                         value=25,
-                        info="이미지 생성 단계 수. 높을수록 품질 향상. 권장: 13",
+                        info="이미지 생성 단계 수. 높을수록 품질 향상. 권장: 25",
                     )
 
                 with gr.Row():
@@ -298,7 +337,7 @@ def main():
                     )
                     cfg_normalization = gr.Checkbox(
                         label="CFG Normalization",
-                        value=True,
+                        value=False,
                         info="CFG 정규화 사용 여부.",
                     )
 
@@ -310,7 +349,7 @@ def main():
 
         load_model_btn.click(
             fn=load_model,
-            inputs=[],
+            inputs=[device_selector],
             outputs=[model_status],
         )
 
