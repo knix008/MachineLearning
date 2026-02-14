@@ -226,6 +226,7 @@ def generate_image(
         start_time = time.time()
 
         progress(0.0, desc="프롬프트 인코딩 중...")
+        print("프롬프트 인코딩 중...")
 
         # Setup generator (MPS doesn't support Generator directly, use CPU)
         generator_device = "cpu" if DEVICE == "mps" else DEVICE
@@ -252,6 +253,7 @@ def generate_image(
         )
 
         progress(0.05, desc="추론 시작...")
+        print("추론 시작...")
 
         # Callback to report each inference step to Gradio progress bar
         def step_callback(_pipe, step_index, _timestep, callback_kwargs):
@@ -261,6 +263,12 @@ def generate_image(
             # Map step progress to 0.05 ~ 0.90 range
             progress_val = 0.05 + ratio * 0.85
             progress(progress_val, desc=f"추론 스텝 {current}/{steps} ({elapsed:.1f}초 경과)")
+            bar_len = 30
+            filled = int(bar_len * ratio)
+            bar = "█" * filled + "░" * (bar_len - filled)
+            print(f"\r  [{bar}] 스텝 {current}/{steps} ({ratio*100:.0f}%) - {elapsed:.1f}초 경과", end="", flush=True)
+            if current == steps:
+                print()
             return callback_kwargs
 
         # Build pipeline kwargs with pre-computed embeddings
