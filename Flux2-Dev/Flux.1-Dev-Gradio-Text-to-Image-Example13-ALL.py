@@ -257,7 +257,7 @@ def generate_image(
         progress(0.05, desc="추론 시작...")
         print("추론 시작...")
 
-        # Callback to report each inference step to Gradio progress bar
+        # Callback to report each inference step to Gradio progress bar and CLI status bar
         def step_callback(_pipe, step_index, _timestep, callback_kwargs):
             current = step_index + 1
             elapsed = time.time() - start_time
@@ -265,10 +265,19 @@ def generate_image(
             # Map step progress to 0.05 ~ 0.90 range
             progress_val = 0.05 + ratio * 0.85
             progress(progress_val, desc=f"추론 스텝 {current}/{steps} ({elapsed:.1f}초 경과)")
+
+            # CLI status bar
             bar_len = 30
             filled = int(bar_len * ratio)
-            bar = "█" * filled + "░" * (bar_len - filled)
-            print(f"\r  [{bar}] 스텝 {current}/{steps} ({ratio*100:.0f}%) - {elapsed:.1f}초 경과", end="", flush=True)
+            bar = "\u2588" * filled + "\u2591" * (bar_len - filled)
+            speed = elapsed / current
+            eta = speed * (steps - current)
+            print(
+                f"\r  [{bar}] {current}/{steps} ({ratio*100:.0f}%) | "
+                f"{elapsed:.1f}s elapsed | ETA {eta:.1f}s | {speed:.2f}s/step",
+                end="",
+                flush=True,
+            )
             if current == steps:
                 print()
             return callback_kwargs
