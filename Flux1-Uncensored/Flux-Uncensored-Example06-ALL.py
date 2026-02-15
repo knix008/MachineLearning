@@ -8,18 +8,20 @@ import inspect
 import time
 import platform
 from datetime import datetime
-from diffusers import FluxImg2ImgPipeline
-from PIL import Image
+from diffusers import FluxPipeline
 import torch
 import gradio as gr
 
 warnings.filterwarnings("ignore", message=".*No LoRA keys associated.*")
 logging.getLogger("diffusers").setLevel(logging.ERROR)
 
-DEFAULT_PROMPT = "Make her naked."
+DEFAULT_PROMPT = "A vertical ultra-realistic masterpiece photograph of a beautiful young Asian girl with a short dark bob and bangs, posing behind sheer white translucent curtains. She is showing her body to the viewer with opened leges. She is naked and gently holding the curtains showing her boob. The scene is bathed in bright, soft, diffused natural light, creating a high-key, ethereal dreamy atmosphere with a subtle haze. High-fidelity skin textures, Perfect anatomy, 8k resolution, cinematic boudoir photography, soft-focus background with faint white flowers, professional lighting, masterpiece. Key Stylistic Keywords: Photorealistic, boudoir photography, high-key lighting, soft-focus, sheer curtains, long bob hair, over-the-shoulder gaze, ethereal atmosphere, dreamlike, natural skin texture, 8k, masterpiece."
 
-DEFAULT_NEGATIVE_PROMPT = "Extra hands, extra legs, extra feet, extra arms, extra toes, Waist Pleats, paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), low resolution, normal quality, ((monochrome)), ((grayscale)), skin spots, wet, acnes, skin blemishes, age spot, man boobs, backlight, mutated hands, (poorly drawn hands:1.33), blurry, (bad anatomy:1.21), (bad proportions:1.33), extra limbs, (disfigured:1.33), (more than 2 nipples:1.33), (missing arms:1.33), (extra legs:1.33), (fused fingers:1.61), (too many fingers:1.61), (unclear eyes:1.33), lowers, bad hands, missing fingers, extra digit, (futa:1.1), bad hands, missing fingers, (cleft chin:1.3)"
+DEFAULT_NEGATIVE_PROMPT = "Extra hands, extra legs, extra feet, extra arms, waist pleats, paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), low resolution, normal quality,((monochrome)), ((grayscale)), skin spots, wet, acnes, skin blemishes, age spot, man boobs, backlight, mutated hands, (poorly drawn hands:1.33), blurry, (bad anatomy:1.21), (bad proportions:1.33), extra limbs, (disfigured:1.33), (more than 2 nipples:1.33), (missing arms:1.33), (extra legs:1.33), (fused fingers:1.61), (too many fingers:1.61), (unclear eyes:1.33), lowers, bad hands, missing fingers, extra digit, (futa:1.1), bad hands, missing fingers, (cleft chin:1.3)"
 
+# a naked woman leaning against a window sill, a stock photo, by Jakob Gauermann,  shutterstock, open shirt, elegant lady with alabaster skin, androgyn beauty, post processed denoised, fully covered in drapes, smooth pink skin, a beautiful korean woman in white, non binary model, wearing white robe, belly button showing.
+
+# Extra hands, extra legs, extra feet, extra arms, extra toes, Waist Pleats, paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), low resolution, normal quality, 3d,cartoon,anime,(deformed eyes, nose, ears, nose),bad anatomy, ugly, big breasts
 
 def get_device_and_dtype():
     """Detect the best available device and appropriate data type."""
@@ -77,12 +79,15 @@ def signal_handler(sig, frame):
 
 
 def load_model():
-    """Load and initialize the FLUX.1-dev img2img model with uncensored LoRA."""
+    """Load and initialize the FLUX.1-dev model with uncensored LoRA (T5-XXL only, CLIP disabled)."""
     global pipe
 
     print("모델 로딩 중...")
-    pipe = FluxImg2ImgPipeline.from_pretrained(
+    print("T5-XXL 텍스트 인코더만 사용합니다. (CLIP 비활성화)")
+    pipe = FluxPipeline.from_pretrained(
         "black-forest-labs/FLUX.1-dev",
+        text_encoder=None,
+        tokenizer=None,
         torch_dtype=DTYPE,
     )
     pipe.load_lora_weights(
@@ -127,28 +132,11 @@ def load_model():
     return pipe
 
 
-def on_image_upload(image):
-    """Update width/height sliders when an image is uploaded."""
-    if image is None:
-        return gr.update(), gr.update()
-    if not isinstance(image, Image.Image):
-        image = Image.fromarray(image)
-    w, h = image.size
-    # Round to nearest 64
-    w = (w // 64) * 64
-    h = (h // 64) * 64
-    w = max(256, min(2048, w))
-    h = max(256, min(2048, h))
-    return gr.update(value=w), gr.update(value=h)
-
-
 def generate_image(
-    input_image,
     prompt,
     negative_prompt,
-    strength,
-    width,
     height,
+    width,
     num_inference_steps,
     guidance_scale,
     true_cfg_scale,
@@ -156,11 +144,8 @@ def generate_image(
     seed,
     progress=gr.Progress(track_tqdm=True),
 ):
-    """Generate image from input image + text prompt."""
+    """Generate image from text prompt using T5-XXL encoding only."""
     global pipe
-
-    if input_image is None:
-        return None, "오류: 입력 이미지를 업로드해주세요."
 
     if not prompt:
         return None, "오류: 프롬프트를 입력해주세요."
@@ -172,34 +157,53 @@ def generate_image(
             generator.manual_seed(int(seed))
 
         steps = int(num_inference_steps)
-        out_w = int(width)
-        out_h = int(height)
-        max_len = int(max_sequence_length)
         start_time = time.time()
 
-        # Convert input image to PIL if needed
-        if not isinstance(input_image, Image.Image):
-            input_image = Image.fromarray(input_image)
-        orig_w, orig_h = input_image.size
-
-        # Resize input image to target output dimensions
-        if orig_w != out_w or orig_h != out_h:
-            input_image = input_image.resize((out_w, out_h), Image.LANCZOS)
-            print(f"입력 이미지 크기: {orig_w}x{orig_h} → 리사이즈: {out_w}x{out_h}")
-        else:
-            print(f"입력 이미지 크기: {orig_w}x{orig_h}")
-        print(f"추론 스텝: {steps}, 시드: {int(seed)}, 강도: {strength}")
+        print(f"출력 크기: {int(width)}x{int(height)}")
+        print(f"추론 스텝: {steps}, 시드: {int(seed)}")
         print(
             f"이미지 생성 중... (steps: {steps}, guidance: {guidance_scale}, true_cfg: {true_cfg_scale})"
         )
         if negative_prompt:
             print(f"부정 프롬프트: {negative_prompt[:50]}...")
 
-        progress(0.0, desc="이미지 생성 준비 중...")
+        # Count tokens before encoding
+        token_ids = pipe.tokenizer_2(prompt, truncation=False)["input_ids"]
+        num_tokens = len(token_ids)
+        max_len = int(max_sequence_length)
+        truncated = num_tokens > max_len
+        token_info = f"프롬프트 토큰 수: {num_tokens}/{max_len}"
+        if truncated:
+            token_info += f" (초과! {num_tokens - max_len}개 토큰 잘림)"
+        print(token_info)
+
+        progress(0.0, desc=f"프롬프트 인코딩 중... ({num_tokens} 토큰)")
+        print("프롬프트 인코딩 중 (T5-XXL)...")
+
+        # Encode prompt using T5 only (CLIP is disabled)
+        text_inputs = pipe.tokenizer_2(
+            prompt,
+            padding="max_length",
+            max_length=max_len,
+            truncation=True,
+            return_tensors="pt",
+        )
+        with torch.no_grad():
+            prompt_embeds = pipe.text_encoder_2(
+                text_inputs["input_ids"].to(DEVICE),
+                output_hidden_states=False,
+            )[0]
+        prompt_embeds = prompt_embeds.to(dtype=DTYPE)
+
+        # Zero pooled embeddings (normally from CLIP, not needed with T5-only)
+        pooled_prompt_embeds = torch.zeros(
+            1, 768, dtype=DTYPE, device=prompt_embeds.device
+        )
+
         progress(0.05, desc="추론 시작...")
         print("추론 시작...")
 
-        # Callback to report each inference step to Gradio progress bar and CLI status bar
+        # Callback to report each inference step to Gradio progress bar and CLI
         def step_callback(_pipe, step_index, _timestep, callback_kwargs):
             current = step_index + 1
             elapsed = time.time() - start_time
@@ -208,38 +212,49 @@ def generate_image(
             progress(
                 progress_val, desc=f"추론 스텝 {current}/{steps} ({elapsed:.1f}초 경과)"
             )
-
-            # CLI status bar
             bar_len = 30
             filled = int(bar_len * ratio)
             bar = "\u2588" * filled + "\u2591" * (bar_len - filled)
-            speed = elapsed / current
-            eta = speed * (steps - current)
-            line = (
-                f"  [{bar}] {current}/{steps} ({ratio*100:.0f}%) | "
-                f"{elapsed:.1f}s elapsed | ETA {eta:.1f}s | {speed:.2f}s/step"
+            print(
+                f"\r  [{bar}] 스텝 {current}/{steps} ({ratio*100:.0f}%) - {elapsed:.1f}초 경과",
+                end="",
+                flush=True,
             )
-            print(f"\r{line:<80}", end="", flush=True)
             if current == steps:
                 print()
             return callback_kwargs
 
-        # Build pipeline arguments
+        # Prepare arguments with pre-computed T5 embeddings
         pipe_kwargs = {
-            "image": input_image,
-            "prompt": prompt,
-            "strength": float(strength),
+            "prompt_embeds": prompt_embeds,
+            "pooled_prompt_embeds": pooled_prompt_embeds,
+            "height": int(height),
+            "width": int(width),
             "num_inference_steps": steps,
             "guidance_scale": float(guidance_scale),
-            "max_sequence_length": max_len,
+            "true_cfg_scale": float(true_cfg_scale),
             "generator": generator,
             "callback_on_step_end": step_callback,
         }
 
-        # Add negative prompt if provided and true_cfg_scale > 1
-        if negative_prompt and true_cfg_scale > 1.0:
-            pipe_kwargs["negative_prompt"] = negative_prompt
-            pipe_kwargs["true_cfg_scale"] = float(true_cfg_scale)
+        # Add negative prompt if provided
+        if negative_prompt:
+            neg_inputs = pipe.tokenizer_2(
+                negative_prompt,
+                padding="max_length",
+                max_length=int(max_sequence_length),
+                truncation=True,
+                return_tensors="pt",
+            )
+            with torch.no_grad():
+                neg_embeds = pipe.text_encoder_2(
+                    neg_inputs["input_ids"].to(DEVICE),
+                    output_hidden_states=False,
+                )[0]
+            pipe_kwargs["negative_prompt_embeds"] = neg_embeds.to(dtype=DTYPE)
+            pipe_kwargs["negative_pooled_prompt_embeds"] = torch.zeros(
+                1, 768, dtype=DTYPE, device=prompt_embeds.device
+            )
 
         image = pipe(**pipe_kwargs).images[0]
 
@@ -250,7 +265,7 @@ def generate_image(
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         base_name = os.path.splitext(os.path.basename(__file__))[0]
 
-        output_path = f"{base_name}_{timestamp}_{DEVICE}_step{steps}_cfg{guidance_scale}_tcfg{true_cfg_scale}_str{strength}_{out_w}x{out_h}_seed{int(seed)}.png"
+        output_path = f"{base_name}_{timestamp}_{DEVICE}_step{steps}_cfg{guidance_scale}_tcfg{true_cfg_scale}_{int(width)}x{int(height)}_seed{int(seed)}.png"
         image.save(output_path)
         print(f"이미지 저장됨: {output_path}")
         print(f"총 소요 시간: {elapsed:.1f}초")
@@ -272,23 +287,15 @@ def main():
     load_model()
 
     # Create Gradio interface
-    with gr.Blocks(title="Flux.1 Dev Uncensored Image-to-Image") as demo:
-        gr.Markdown("# Flux.1 Dev Uncensored Image-to-Image")
-        gr.Markdown(
-            f"입력 이미지와 프롬프트를 사용하여 이미지를 변환합니다. (Device: **{DEVICE.upper()}**)"
-        )
+    with gr.Blocks(title="Flux.1 Dev Uncensored 이미지 생성기") as demo:
+        gr.Markdown("# Flux.1 Dev Uncensored 이미지 생성기")
+        gr.Markdown(f"프롬프트로 이미지를 생성하세요. (Device: **{DEVICE.upper()}**)")
 
         with gr.Row():
             with gr.Column():
-                image_input = gr.Image(
-                    label="입력 이미지",
-                    type="pil",
-                    value="Test01.png",
-                    height=600,
-                )
                 prompt_input = gr.Textbox(
                     label="프롬프트 (Prompt)",
-                    info="변환할 이미지를 설명하세요 (최대 512 토큰)",
+                    info="생성할 이미지를 설명하세요 (T5-XXL 인코더 사용, 최대 512 토큰)",
                     placeholder="예: a beautiful woman standing on the beach",
                     value=DEFAULT_PROMPT,
                     lines=3,
@@ -303,14 +310,24 @@ def main():
 
                 with gr.Accordion("고급 설정", open=True):
                     with gr.Row():
-                        strength_input = gr.Slider(
-                            label="강도 (Strength)",
-                            info="입력 이미지 변환 정도 (0.0: 변환 없음, 1.0: 완전히 새로 생성)",
-                            minimum=0.0,
-                            maximum=1.0,
-                            step=0.05,
-                            value=0.75,
+                        height_input = gr.Slider(
+                            label="높이 (Height)",
+                            info="생성할 이미지의 높이 (픽셀)",
+                            minimum=256,
+                            maximum=2048,
+                            step=64,
+                            value=1536,
                         )
+                        width_input = gr.Slider(
+                            label="너비 (Width)",
+                            info="생성할 이미지의 너비 (픽셀)",
+                            minimum=256,
+                            maximum=2048,
+                            step=64,
+                            value=768,
+                        )
+
+                    with gr.Row():
                         steps_input = gr.Slider(
                             label="추론 스텝 (Inference Steps)",
                             info="생성 품질 (높을수록 고품질, 느림)",
@@ -319,26 +336,6 @@ def main():
                             step=1,
                             value=28,
                         )
-
-                    with gr.Row():
-                        width_input = gr.Slider(
-                            label="너비 (Width)",
-                            info="출력 이미지의 너비 (이미지 업로드 시 자동 설정)",
-                            minimum=256,
-                            maximum=2048,
-                            step=64,
-                            value=768,
-                        )
-                        height_input = gr.Slider(
-                            label="높이 (Height)",
-                            info="출력 이미지의 높이 (이미지 업로드 시 자동 설정)",
-                            minimum=256,
-                            maximum=2048,
-                            step=64,
-                            value=1024,
-                        )
-
-                    with gr.Row():
                         guidance_input = gr.Slider(
                             label="Guidance Scale",
                             info="프롬프트 충실도 (낮음: 창의적, 높음: 정확)",
@@ -347,6 +344,8 @@ def main():
                             step=0.1,
                             value=3.5,
                         )
+
+                    with gr.Row():
                         true_cfg_input = gr.Slider(
                             label="True CFG Scale",
                             info=">1 에서 부정 프롬프트와 함께 CFG 활성화",
@@ -355,8 +354,6 @@ def main():
                             step=0.1,
                             value=1.0,
                         )
-
-                    with gr.Row():
                         max_seq_input = gr.Slider(
                             label="최대 시퀀스 길이",
                             info="프롬프트의 최대 토큰 수",
@@ -380,23 +377,14 @@ def main():
                 image_output = gr.Image(label="생성된 이미지", height=800)
                 status_output = gr.Textbox(label="상태", interactive=False)
 
-        # Auto-update width/height sliders when image is uploaded
-        image_input.change(
-            fn=on_image_upload,
-            inputs=[image_input],
-            outputs=[width_input, height_input],
-        )
-
         # Connect button to generation function
         submit_btn.click(
             fn=generate_image,
             inputs=[
-                image_input,
                 prompt_input,
                 negative_prompt_input,
-                strength_input,
-                width_input,
                 height_input,
+                width_input,
                 steps_input,
                 guidance_input,
                 true_cfg_input,
