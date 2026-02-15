@@ -237,12 +237,11 @@ def generate_image(
             bar = "\u2588" * filled + "\u2591" * (bar_len - filled)
             speed = elapsed / current
             eta = speed * (steps - current)
-            print(
-                f"\r  [{bar}] {current}/{steps} ({ratio*100:.0f}%) | "
-                f"{elapsed:.1f}s elapsed | ETA {eta:.1f}s | {speed:.2f}s/step",
-                end="",
-                flush=True,
+            line = (
+                f"  [{bar}] {current}/{steps} ({ratio*100:.0f}%) | "
+                f"{elapsed:.1f}s elapsed | ETA {eta:.1f}s | {speed:.2f}s/step"
             )
+            print(f"\r{line:<80}", end="", flush=True)
             if current == steps:
                 print()
             return callback_kwargs
