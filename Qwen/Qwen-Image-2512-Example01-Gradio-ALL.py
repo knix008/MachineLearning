@@ -1,6 +1,6 @@
 import torch
 import platform
-from diffusers import HiDreamImagePipeline
+from diffusers import DiffusionPipeline
 from datetime import datetime
 from PIL import Image
 import os
@@ -19,8 +19,8 @@ ASPECT_RATIOS = {
     "1:1 (1328x1328)": (1328, 1328),
     "16:9 (1664x928)": (1664, 928),
     "9:16 (928x1664)": (928, 1664),
-    "4:3 (1472x1140)": (1472, 1140),
-    "3:4 (1140x1472)": (1140, 1472),
+    "4:3 (1472x1104)": (1472, 1104),
+    "3:4 (1104x1472)": (1104, 1472),
     "3:2 (1584x1056)": (1584, 1056),
     "2:3 (1056x1584)": (1056, 1584),
 }
@@ -41,8 +41,7 @@ def get_device_and_dtype():
 
 
 # Global variables
-#DEVICE, DTYPE = get_device_and_dtype()
-DEVICE, DTYPE = "cpu", torch.float32  # Force CPU for maximum compatibility
+DEVICE, DTYPE = get_device_and_dtype()
 pipe = None
 interface = None
 
@@ -180,30 +179,19 @@ def load_model(device_name=None):
             torch.mps.empty_cache()
 
     print(f"모델 로딩 중... (Device: {DEVICE}, dtype: {DTYPE})")
-    pipe = HiDreamImagePipeline.from_pretrained(
-        "Qwen/Qwen-Image",
+    pipe = DiffusionPipeline.from_pretrained(
+        "Qwen/Qwen-Image-2512",
         torch_dtype=DTYPE,
     )
     pipe.to(DEVICE)
-
-    # Enable memory optimizations based on device
-    if DEVICE == "cuda":
+    if DEVICE == "cuda" or DEVICE == "cpu":
+        print("CUDA or CPU 최적화 적용 중...")
         pipe.enable_model_cpu_offload()
-        pipe.enable_attention_slicing()
         pipe.enable_sequential_cpu_offload()
-        print(
-            "메모리 최적화 적용: sequential CPU offload, model CPU offload, attention slicing (CUDA)"
-        )
-    elif DEVICE == "cpu":
-        pipe.enable_model_cpu_offload()
         pipe.enable_attention_slicing()
-        pipe.enable_sequential_cpu_offload()
-        print(
-            "메모리 최적화 적용: sequential CPU offload, model CPU offload, attention slicing (CPU)"
-        )
     elif DEVICE == "mps":
-        # MPS doesn't support cpu_offload well
-        print("No memory optimizations applied for MPS device.")
+        print("MPS 최적화 적용 중...")
+        pipe.enable_attention_slicing()
 
     print(f"모델 로딩 완료! (Device: {DEVICE})")
     return f"모델 로딩 완료! (Device: {DEVICE}, dtype: {DTYPE})"
@@ -245,7 +233,7 @@ def generate_image(
         # Append positive magic prompt if enabled
         full_prompt = prompt
         if append_magic:
-            full_prompt = prompt + " " + POSITIVE_MAGIC
+            full_prompt = prompt + POSITIVE_MAGIC
 
         progress(0.05, desc="추론 시작...")
         print("추론 시작...")
@@ -317,8 +305,8 @@ def main():
     load_model()
 
     # Create Gradio interface
-    with gr.Blocks(title="Qwen-Image Text-to-Image Generator") as interface:
-        gr.Markdown("# Qwen-Image Text-to-Image Generator")
+    with gr.Blocks(title="Qwen-Image-2512 Text-to-Image Generator") as interface:
+        gr.Markdown("# Qwen-Image-2512 Text-to-Image Generator")
         gr.Markdown(
             f"AI를 사용하여 텍스트에서 이미지를 생성합니다. (Device: **{DEVICE.upper()}**)"
         )
@@ -352,7 +340,7 @@ def main():
                 )
                 negative_prompt = gr.Textbox(
                     label="네거티브 프롬프트",
-                    value=" ",
+                    value="低分辨率，低画质，肢体畸形，手指畸形，画面过饱和，蜡像感，人脸无细节，过度光滑，画面具有AI感。构图混乱。文字模糊，扭曲。",
                     lines=2,
                     placeholder="제거하고 싶은 요소를 입력하세요",
                     info="생성에서 제외하고 싶은 요소를 입력합니다. 특별히 제거할 요소가 없으면 비워두세요.",
