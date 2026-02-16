@@ -15,7 +15,7 @@ import gradio as gr
 
 #DEFAULT_PROMPT = "A professional, ultra-realistic, and high-resolution photograph capturing a candid and intimate moment with a beautiful young Japanese woman. She is standing, leaning casually against a plain, off-white wall. She looks off to the side with a gentle, thoughtful, and slightly shy expression. Her long, straight, jet-black hair is styled with a full, neat fringe that frames her face. Her makeup is flawless and natural, with a rosy blush and glossy lips. She is dressed in a simple, casual, and alluring outfit, perfect for a relaxed day at home: A classic, oversized, white, long-sleeved t-shirt, which she is playfully lifting up with one hand to reveal her toned midriff. A simple pair of high-cut, white thong panties. A black scrunchie is visible on her wrist. The setting is a minimalist and brightly lit room, with the plain white wall serving as a clean backdrop that emphasizes her natural beauty and the intimate atmosphere of the moment. The overall composition is balanced and aesthetically pleasing, with a focus on capturing the genuine emotion and personality of the subject in a way that feels authentic and relatable. 4k, ultra-detailed, high-quality, professional photography, soft lighting, shallow depth of field, bokeh background, natural colors, cinematic style, perfect anatomy, realistic skin texture, and a warm, inviting atmosphere, no extra hands, no extra fingers, no extra limbs, no extra body parts, no extra legs, no extra arms."
 
-DEFAULT_PROMPT = "The image is a vertical, ultra-high-quality digital illustration featuring a beautiful 38 year old Korean woman full body photography in a sunlit indoor setting. The style combines Instagram like facial features with hyper-realistic textures and cinematic lighting. The camera on the floor, captured the image from a dramatic low-angle perspective. The Character: Appearance: She has a fair complexion with a soft pink blush, striking crystalline blue eyes, and a neutral, direct gaze. Hair: Her hair is long, voluminous, and styled in rich chocolate-brown curls that cascade over her shoulders. Skin: Her skin is rendered with an extremely high-gloss, wet or oily finish, creating brilliant white specular highlights on her thighs, midriff, and shoulders. Pose: She is sitting on a sofa in a relaxed yet powerful pose. The low-angle hero shot emphasizes her stature as she looks down toward the camera with one knee raised. Attire: Top: A form-fitting, cream-colored or off-white sports bra made of a high-shine, latex-like material with a small gold script logo on the band. Bottom: Vibrant red high-cut thong-style bikini bottoms. Legwear: She wears thick, slouchy yellow ribbed socks scrunched down around her ankles. Setting & Background: Location: A bright, luxurious, and minimalist living room. Furniture: She is seated on an ivory-white tufted leather or vinyl sofa. Decor: Lush green tropical plants in pots are visible on both sides, partially framing the shot. Backdrop: In the background is a large window with wooden frames and soft beige curtains, allowing bright natural light to fill the room. Lighting: Effect: The scene is bathed in intense, soft natural sunlight. This creates high-contrast highlights on the reflective surfaces (skin and sports bra) and soft, warm shadows in the room, Resulting in a clean and professional editorial look.4k, ultra-detailed, high-quality, professional digital illustration, cinematic lighting, perfect anatomy, realistic skin texture, and a warm, inviting atmosphere. No extra hands, no extra fingers, no extra limbs, no extra body parts, no extra legs, no extra arms."
+DEFAULT_PROMPT = "The image is a vertical, ultra-high-quality digital illustration featuring a beautiful 38 year old Korean woman full body photography in a sunlit indoor setting. The style combines Instagram like facial features with hyper-realistic textures and cinematic lighting. The camera on the floor, captured the image from a dramatic low-angle perspective. The Character: Appearance: She has a fair complexion with a soft pink blush, striking crystalline blue eyes, and a neutral, direct gaze. Perfect anatomy, no extra fingers, no extra toes, no extra arms, no extra hands, no extra limbs, no extra legs, no missing fingers, no mission toes. Hair: Her hair is long, voluminous, and styled in rich chocolate-brown curls that cascade over her shoulders. Skin: Her skin is rendered with an extremely high-gloss, wet or oily finish, creating brilliant white specular highlights on her thighs, midriff, and shoulders. Pose: She is sitting on a sofa in a relaxed yet powerful pose. The low-angle hero shot emphasizes her stature as she looks down toward the camera with one knee raised. Attire: Top: A form-fitting, cream-colored or off-white sports bra made of a high-shine, latex-like material with a small gold script logo on the band. Bottom: Vibrant red high-cut thong-style not oily, cotton bikini bottoms. Legwear: She wears thick, slouchy yellow ribbed socks scrunched down around her ankles. Setting & Background: Location: A bright, luxurious, and minimalist living room. Furniture: She is seated on an ivory-white tufted leather or vinyl sofa. Decor: Lush green tropical plants in pots are visible on both sides, partially framing the shot. Backdrop: In the background is a large window with wooden frames and soft beige curtains, allowing bright natural light to fill the room. Lighting: Effect: The scene is bathed in intense, soft natural sunlight. This creates high-contrast highlights on the reflective surfaces (skin and sports bra) and soft, warm shadows in the room, Resulting in a clean and professional editorial look."
 
 def get_device_and_dtype():
     """Detect the best available device and appropriate data type."""
@@ -250,6 +250,18 @@ def generate_image(
             truncation=True,
             return_tensors="pt",
         )
+
+        # Count actual tokens (exclude padding tokens)
+        input_ids = text_inputs["input_ids"][0]
+        pad_token_id = pipe.tokenizer_2.pad_token_id
+        if pad_token_id is not None:
+            num_tokens = (input_ids != pad_token_id).sum().item()
+        else:
+            num_tokens = len(input_ids)
+        max_len = int(max_sequence_length)
+        truncated = " (잘림!)" if num_tokens >= max_len else ""
+        print(f"프롬프트 토큰 수: {num_tokens} / {max_len}{truncated}")
+
         with torch.inference_mode():
             prompt_embeds = pipe.text_encoder_2(
                 text_inputs["input_ids"].to(DEVICE),
@@ -318,7 +330,7 @@ def generate_image(
         image.save(filename)
 
         progress(1.0, desc="완료!")
-        return image, f"✓ 완료! ({elapsed:.1f}초) 저장됨: {filename}"
+        return image, f"✓ 완료! ({elapsed:.1f}초) | 토큰: {num_tokens}/{max_len}{truncated} | 저장됨: {filename}"
     except Exception as e:
         return None, f"✗ 오류 발생: {str(e)}"
 
