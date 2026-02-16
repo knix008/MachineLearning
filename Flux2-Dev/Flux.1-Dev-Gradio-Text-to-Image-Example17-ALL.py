@@ -403,7 +403,7 @@ def main():
                         minimum=1.0,
                         maximum=20.0,
                         step=0.5,
-                        value=4.0,
+                        value=3.5,
                         info="모델이 프롬프트를 얼마나 따를지 제어합니다. 낮을수록 창의적, 높을수록 정확합니다. 권장: 4-15",
                     )
                     num_inference_steps = gr.Slider(
