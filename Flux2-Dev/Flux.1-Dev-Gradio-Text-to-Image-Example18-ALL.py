@@ -13,13 +13,13 @@ import gradio as gr
 
 
 # Default values for each prompt section
-DEFAULT_QUALITY = "A cute Korean girl, 4k, ultra-detailed, high-quality, professional photography, realistic, photorealistic, RAW photo, masterpiece"
-DEFAULT_APPEARANCE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera: She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face"
+DEFAULT_QUALITY = "A cute Korean girl, 4k, ultra-detailed, high-quality, professional photography, realistic, photorealistic, RAW photo, masterpiece."
+DEFAULT_APPEARANCE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera: She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face."
 DEFAULT_OUTFIT = "She is wearing a red high-cut thong-style bikini that accentuates her slender figure. The bikini top is a classic triangle design with thin straps that tie around her neck and back. The vibrant red color contrasts beautifully with her fair skin and dark hair, creating a bold and eye-catching look."
 DEFAULT_POSE = "She is standing up in front of a white bed in a bright, sun-drenched room with soft-focus white curtains. She is looking at the camera with a soft, innocent expression."
 DEFAULT_SETTING = "The background is dominated by large windows with white vertical blinds or curtains, allowing soft, diffused natural-looking light to flood the scene. The background is softly blurred (bokeh)."
 DEFAULT_LIGHTING = "Cinematic lighting.The lighting is bright, soft, and even, minimizing harsh shadows and giving the skin a glowing, porcelain appearance. The light source appears to be natural sunlight coming through the windows, creating a warm and inviting atmosphere. The overall effect is a bright, airy, and ethereal look that enhances the subject's features and the serene setting."
-DEFAULT_NEGATIVE = "Perfect anatomy, no extra fingers, no extra toes, no extra legs, no extra hands, no extra arms, no missing fingers, no missing toes"
+DEFAULT_NEGATIVE = "Perfect anatomy, no extra fingers, no extra toes, no extra legs, no extra hands, no extra arms, no missing fingers, no missing toes."
 
 
 def combine_prompt_sections(
