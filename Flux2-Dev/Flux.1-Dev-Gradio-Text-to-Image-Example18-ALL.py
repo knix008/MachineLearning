@@ -548,8 +548,8 @@ def main():
                 gr.Markdown("---")
                 gr.Markdown("### 이미지 생성")
                 generate_btn = gr.Button("이미지 생성", variant="primary", size="lg")
-                output_message = gr.Textbox(label="상태", interactive=False)
                 output_image = gr.Image(label="생성된 이미지", height=700)
+                output_message = gr.Textbox(label="상태", interactive=False)
 
         # Load model when button is clicked
         load_model_btn.click(
