@@ -233,6 +233,7 @@ def generate_image(
     seed,
     strength,
     max_sequence_length,
+    image_format,
     progress=gr.Progress(track_tqdm=True),
 ):
     global pipe
@@ -341,15 +342,19 @@ def generate_image(
         elapsed = time.time() - start_time
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         script_name = os.path.splitext(os.path.basename(__file__))[0]
+        ext = "jpg" if image_format == "JPEG" else "png"
         filename = (
             f"{script_name}_{timestamp}_{DEVICE.upper()}_{width}x{height}"
             f"_gs{guidance_scale}_step{steps}_seed{int(seed)}"
-            f"_str{strength}_msl{int(max_sequence_length)}.png"
+            f"_str{strength}_msl{int(max_sequence_length)}.{ext}"
         )
 
         print(f"이미지 생성 완료! 소요 시간: {elapsed:.1f}초")
         print(f"이미지가 저장되었습니다 : {filename}")
-        image.save(filename)
+        if image_format == "JPEG":
+            image.save(filename, format="JPEG", quality=100, subsampling=0)
+        else:
+            image.save(filename)
 
         progress(1.0, desc="완료!")
         return (
@@ -555,6 +560,12 @@ def main():
                         value=512,
                         info="텍스트 인코더 최대 길이. 긴 프롬프트는 높은 값 필요.",
                     )
+                    image_format = gr.Radio(
+                        label="이미지 포맷",
+                        choices=["JPEG", "PNG"],
+                        value="JPEG",
+                        info="JPEG: quality 100 (4:4:4), PNG: 무손실 압축.",
+                    )
 
                 gr.Markdown("---")
                 gr.Markdown("### 이미지 생성")
@@ -588,6 +599,7 @@ def main():
                 seed,
                 strength,
                 max_sequence_length,
+                image_format,
             ],
             outputs=[output_image, output_message],
         )
