@@ -11,21 +11,28 @@ import psutil
 import time
 import gradio as gr
 
-# DEFAULT_PROMPT = "A young 38 years old korean beautiful skinny woman,in the style of Kodak Gold 200 --no freckles --chaos 75 --ar 1:2 --raw --sref 1936951861 --profile x3fq9up --stylize 750"
+# Reference Site : https://prompthero.com/prompt/6ef72602598-gonzalomo-dmd-v20-flux-d-aio-a-raw-documentary-style-photograph-of-a-young-woman-with-long-platinum-blonde-hair-styled-in-loose-tousled-waves-her
 
-#DEFAULT_PROMPT = "A professional, ultra-realistic, and high-resolution photograph capturing a candid and intimate moment with a beautiful young Japanese woman. She is standing, leaning casually against a plain, off-white wall. She looks off to the side with a gentle, thoughtful, and slightly shy expression. Her long, straight, jet-black hair is styled with a full, neat fringe that frames her face. Her makeup is flawless and natural, with a rosy blush and glossy lips. She is dressed in a simple, casual, and alluring outfit, perfect for a relaxed day at home: A classic, oversized, white, long-sleeved t-shirt, which she is playfully lifting up with one hand to reveal her toned midriff. A simple pair of high-cut, white thong panties. A black scrunchie is visible on her wrist. The setting is a minimalist and brightly lit room, with the plain white wall serving as a clean backdrop that emphasizes her natural beauty and the intimate atmosphere of the moment. The overall composition is balanced and aesthetically pleasing, with a focus on capturing the genuine emotion and personality of the subject in a way that feels authentic and relatable. 4k, ultra-detailed, high-quality, professional photography, soft lighting, shallow depth of field, bokeh background, natural colors, cinematic style, perfect anatomy, realistic skin texture, and a warm, inviting atmosphere, no extra hands, no extra fingers, no extra limbs, no extra body parts, no extra legs, no extra arms."
+# Default values for each prompt section
+DEFAULT_QUALITY = "A raw documentary-style photograph, 4k, ultra-detailed, high-quality, professional photography, realistic, photorealistic, RAW photo, masterpiece, fully body photo showing from the head to the toes."
+DEFAULT_NEGATIVE = "Perfect anatomy, perfect arms and hands structure, perfect legs and feet structure, no extra fingers, no extra toes, no extra legs, no extra hands, no extra arms, no missing fingers, no missing toes, no manboob, no more than one nipple."
+DEFAULT_APPEARANCE = "A cute beautiful Korean girl photography. She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious. She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face."
+DEFAULT_CAMERA = "Shot with Canon EOS R5, 85mm f/1.4 lens, ISO 100, 1/500s shutter speed, f/2.0 aperture, shallow depth of field, bokeh background, sharp focus on subject, natural color grading, film grain texture."
+DEFAULT_OUTFIT = "She stands at the edge of the surf on a quiet, modern beach, wearing a simple yet elegant pink bikini that complements her fair skin and dark hair. The bikini consists of a classic triangle top with thin straps that tie around her neck and back, and matching low-rise bottoms with side ties. The pink fabric contrasts beautifully with the golden sand and the soft blue hues of the ocean, creating a serene and timeless beach look. Her outfit is minimalistic, allowing her natural beauty and the tranquil beach setting to take center stage in the photograph."
+DEFAULT_POSE = "She looks down shyly,a natural,intimate pose. Her body is slightly turned to the side, with one hand gently touching her hair and the other resting softly on her thigh. Her gaze is directed downward, giving her an innocent and demure expression. The camera angle captures her from a slightly elevated perspective, emphasizing the graceful lines of her figure and the delicate details of her outfit. The overall composition creates a tender and serene atmosphere, evoking a sense of quiet beauty and introspection."
+DEFAULT_SETTING = "a hyper-realistic style with subtle cinematic influences,emphasizing texture, light, and the sensual yet tender atmosphere. The scene is set on a quiet, modern beach with soft golden sand and a calm ocean in the background. The lighting is bright, soft, and even, minimizing harsh shadows and giving the skin a glowing, porcelain appearance. The light source appears to be natural sunlight coming through the windows, creating a warm and inviting atmosphere. The overall effect is a bright, airy, and ethereal look that enhances the subject's features and the serene setting."
+DEFAULT_LIGHTING = "Sunlight sparkling on the wet sand and water, casting golden highlights across her skin. The background features soft dunes and scattered seashells. Cinematic lighting.The lighting is bright, soft, and even, minimizing harsh shadows and giving the skin a glowing, porcelain appearance. The light source appears to be natural sunlight coming through the windows, creating a warm and inviting atmosphere. The overall effect is a bright, airy, and ethereal look that enhances the subject's features and the serene setting."
 
-#DEFAULT_PROMPT = "The image is a vertical, ultra-high-quality digital illustration featuring a beautiful 38 year old Korean gorgeous woman full body photography in a sunlit indoor setting. The style combines Instagram like facial features with hyper-realistic textures and cinematic lighting. The camera on the floor, captured the image from a dramatic low-angle perspective. The Character: Appearance: She has a fair complexion with a soft pink blush, striking crystalline blue eyes, and a neutral, direct gaze. Perfect anatomy, no extra fingers, no extra toes, no extra arms, no extra hands, no extra limbs, no extra legs, no missing fingers, no mission toes. Hair: Her hair is long, voluminous, and styled in rich chocolate-brown curls that cascade over her shoulders. Skin: Her skin is rendered with an extremely high-gloss, wet or oily finish, creating brilliant white specular highlights on her thighs, midriff, and shoulders. Pose: She is standing on a floor inf front of a sofa in a relaxed yet powerful pose. The low-angle hero shot emphasizes her stature as she looks down toward the camera with one knee raised. Attire: Top: A form-fitting, cream-colored or off-white sports bra made of a high-shine, latex-like material with a small gold script logo on the band. Bottom: Vibrant red high-cut thong-style not oily, cotton bikini bottoms. Legwear: She wears thick, slouchy yellow ribbed socks scrunched down around her ankles. Setting & Background: Location: A bright, luxurious, and minimalist living room. Furniture: She is seated on an ivory-white tufted leather or vinyl sofa. Decor: Lush green tropical plants in pots are visible on both sides, partially framing the shot. Backdrop: In the background is a large window with wooden frames and soft beige curtains, allowing bright natural light to fill the room. Lighting: Effect: The scene is bathed in intense, soft natural sunlight. This creates high-contrast highlights on the reflective surfaces (skin and sports bra) and soft, warm shadows in the room, Resulting in a clean and professional editorial look."
 
-#DEFAULT_PROMPT = "1 girl, beautiful Korean girl, (Cute Loose Bob hair),(wearing a cropped hoodie, capri sweatpants:1.5), (hands in pockets:1.5), (red lips:1.3), (small breasts:1.3), (toned stomach:1.3), (eyelashes:1.2),(aegyo sal:1.2), beautiful detailed eyes, symmetrical eyes, (detailed face), immersive background, volumetric haze, global illumination, soft lighting, (flowing hair), (bright smile), natural lighting, (realistic:1.5), (lifelike:1.4), (4k, masterpiece), High detail, realistic, (top quality), (soft shadows), (best quality, ultra high resolution, highly detailed, physically-based rendering, realism, vibrant colors, f2.2 lens, soft palette, natural beauty, perfect anatomy, no extra fingers, no extra toes, no extra legs, no extra hands, no extra arms, no missing fingers, no missing toes."
+def combine_prompt_sections(
+    quality, negative, appearance, camera, outfit, pose, setting, lighting
+):
+    """Combine separate prompt sections into one final prompt string."""
+    sections = [quality, negative, appearance, camera, outfit, pose, setting, lighting]
+    # Filter out empty sections and join with ', '
+    combined = ", ".join(s.strip() for s in sections if s and s.strip())
+    return combined
 
-#DEFAULT_PROMPT = "Girl, a Beautiful Korean woman, kpop idol, (Cute Loose Bob hair), ((hoodie)), ((sweatpants)), (small breasts), symmetrical eyes, ultra highres, photorealistic, 8k, hyperrealism, dramatic lighting, photography, physics-based rendering, ((full body)), best quality,((realistic photo)), (detailed face), (RAW photo, highest quality, masterpiece), High detail RAW color photo professional close-up photo, (realistic, photo realism:1.4), (highest quality), (best shadow), (ultra high resolution, highly detailed CG unified 8K wallpapers), (aegyo sal:1),beautiful detailed eyes, (eyelashes:1.1), (bright smile), (flowing hair), natural lighting, soft shadows, perfect anatomy, no extra fingers, no extra toes, no extra legs, no extra hands, no extra arms, no missing fingers, no missing toes."
-
-#DEFAULT_PROMPT = "A highly detailed,photorealistic indoor medium shot of a captivating young East Asian woman relaxing on a sofa.Shot Angle & Pose: The image is captured from eye level.The subject is sitting on a beige couch,leaning back slightly and supporting her weight with her right arm extended behind her.Her legs are bent at the knees and drawn up towards her body.Her head is tilted slightly as she looks up and to the left,away from the camera,with a dreamy,contemplative expression.Subject Appearance: She has a fair complexion with a noticeable,soft rosy flush on her cheeks and nose.Her hair is a chin-length brown bob with wispy bangs framing her forehead.Her features are soft and youthful,with large,expressive eyes.Body Shape: She possesses a curvy physique.Her figure features a full,prominent bust that is emphasized by the plunging neckline.Her waist is narrow and tapered,transitioning into soft,wide hips.The overall silhouette is soft and feminine,characterized by smooth skin texture and an hourglass proportion.Outfit Details: She is wearing a tight-fitting,white short-sleeved romper (or onesie) made of soft,stretch fabric.The garment features a delicate pattern of small pink and red flowers with green leaves.The front has a button placket that is unbuttoned low to the center of her torso,revealing deep cleavage.Setting & Environment: The setting is a cozy indoor living space.She is seated on a textured beige sofa.In the background,resting on the top of the sofa cushions,are two plush toys: one appears to be a Shiba Inu dog wearing a yellow bee costume,and the other is a classic brown teddy bear wearing a red shirt.Lighting: The scene is illuminated by soft,moody ambient lighting with a distinct pink and violet hue.This colored light washes over the scene,enhancing the blush on her skin and creating a warm,intimate atmosphere. Perfect anatomy, no extra fingers, no extra toes, no extra legs, no extra hands, no extra arms, no missing fingers, no missing toes."
-
-#DEFAULT_PROMPT = "photo, a cute Instagram-style korean idol girl, oily, standing pose, on wood flooring, cottage core home, covered in freckles, natural redhead, wavy short hair, flirty eyes, hands behind head, tiny bust,skinny build, wearing keyhole top, white underwear, rainbow tights, hazel eyes, 35mm film, cloudy day, dynamic view, perfect anatomy, no extra fingers, no extra toes, no extra legs, no extra hands, no extra arms, no missing fingers, no missing toes."
-
-DEFAULT_PROMPT = "A cute beautiful Korean girl with long flowing black hair in a red bikini, standing on a boardwalk at sunset, turned slightly to her left, looking over her left shoulder towards the camera with a serene expression. Left hand resting on a white railing, right arm relaxed by her side. The setting sun casts a warm golden light, creating a soft glow on her skin and highlighting the contours of her body. The background features a calm ocean with gentle waves and a sky painted in hues of orange, pink, and purple. Full body shot with perfect anatomy, no extra fingers, no extra toes, no extra legs, no extra hands, no extra arms, no missing fingers, no missing toes."
 
 def get_device_and_dtype():
     """Detect the best available device and appropriate data type."""
@@ -211,9 +218,7 @@ def load_model(device_name=None):
             pipe.transformer.to(memory_format=torch.channels_last)
         elif hasattr(pipe, "unet"):
             pipe.unet.to(memory_format=torch.channels_last)
-        print(
-            "메모리 최적화 적용: attention slicing, VAE slicing, VAE tiling (MPS)"
-        )
+        print("메모리 최적화 적용: attention slicing, VAE slicing, VAE tiling (MPS)")
 
     print(f"모델 로딩 완료! (Device: {DEVICE})")
     return f"모델 로딩 완료! (Device: {DEVICE}, dtype: {DTYPE})"
@@ -294,7 +299,10 @@ def generate_image(
             ratio = current / steps
             # Map step progress to 0.05 ~ 0.90 range
             progress_val = 0.05 + ratio * 0.85
-            progress(progress_val, desc=f"추론 스텝 {current}/{steps} ({elapsed:.1f}초 경과)")
+            progress(
+                progress_val,
+                desc=f"추론 스텝 {current}/{steps} ({elapsed:.1f}초 경과)",
+            )
 
             # CLI status bar
             bar_len = 30
@@ -306,7 +314,7 @@ def generate_image(
                 f"  [{bar}] {current}/{steps} ({ratio*100:.0f}%) | "
                 f"{elapsed:.1f}s elapsed | ETA {eta:.1f}s | {speed:.2f}s/step"
             )
-            print(f"\r{line:<80}", end="", flush=True)
+            print(f"\r{line}\033[K", end="", flush=True)
             if current == steps:
                 print()
             return callback_kwargs
@@ -333,14 +341,22 @@ def generate_image(
         elapsed = time.time() - start_time
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         script_name = os.path.splitext(os.path.basename(__file__))[0]
-        filename = f"{script_name}_{timestamp}_{DEVICE.upper()}_{width}x{height}_gs{guidance_scale}_step{steps}_seed{int(seed)}_str{strength}_msl{int(max_sequence_length)}.png"
+        filename = (
+            f"{script_name}_{timestamp}_{DEVICE.upper()}_{width}x{height}"
+            f"_gs{guidance_scale}_step{steps}_seed{int(seed)}"
+            f"_str{strength}_msl{int(max_sequence_length)}.png"
+        )
 
         print(f"이미지 생성 완료! 소요 시간: {elapsed:.1f}초")
         print(f"이미지가 저장되었습니다 : {filename}")
         image.save(filename)
 
         progress(1.0, desc="완료!")
-        return image, f"✓ 완료! ({elapsed:.1f}초) | 토큰: {num_tokens}/{max_len}{truncated} | 저장됨: {filename}"
+        return (
+            image,
+            f"✓ 완료! ({elapsed:.1f}초) | 토큰: {num_tokens}/{max_len}"
+            f"{truncated} | 저장됨: {filename}",
+        )
     except Exception as e:
         return None, f"✗ 오류 발생: {str(e)}"
 
@@ -359,11 +375,14 @@ def main():
     with gr.Blocks(title="Flux.1-dev Text-to-Image Generator") as interface:
         gr.Markdown("# Flux.1-dev Text-to-Image Generator")
         gr.Markdown(
-            f"AI를 사용하여 텍스트에서 이미지를 생성합니다. (Device: **{DEVICE.upper()}**)"
+            f"AI를 사용하여 텍스트에서 이미지를 생성합니다."
+            f" (Device: **{DEVICE.upper()}**)"
         )
 
         with gr.Row():
+            # Left column: Model loading + Prompt sections
             with gr.Column(scale=1):
+                gr.Markdown("### 모델 설정")
                 device_selector = gr.Radio(
                     label="디바이스 선택",
                     choices=get_available_devices(),
@@ -376,19 +395,105 @@ def main():
                     value=(
                         f"모델 로딩 완료! (Device: {DEVICE}, dtype: {DTYPE})"
                         if pipe is not None
-                        else "모델이 로드되지 않았습니다. 디바이스를 선택하고 '모델 로드' 버튼을 눌러주세요."
+                        else "모델이 로드되지 않았습니다."
+                        " 디바이스를 선택하고 '모델 로드' 버튼을 눌러주세요."
                     ),
                     interactive=False,
                 )
 
-                # Input parameters
-                prompt = gr.Textbox(
-                    label="프롬프트",
-                    value=DEFAULT_PROMPT,
-                    lines=3,
-                    placeholder="이미지에 대한 설명을 입력하세요 (77단어 이하 권장)",
-                    info="생성하고 싶은 이미지에 대한 텍스트 설명입니다. 자세할수록 좋습니다. 예: '여자, 미소, 해변, 빨간 비키니'",
+                gr.Markdown("### 프롬프트 구성")
+                prompt_quality = gr.Textbox(
+                    label="1. 품질/해상도 (Quality & Resolution)",
+                    value=DEFAULT_QUALITY,
+                    lines=2,
+                    placeholder="예: 4k, ultra-detailed, photorealistic",
+                    info="이미지의 품질, 해상도, 스타일 관련 키워드입니다.",
                 )
+                prompt_negative = gr.Textbox(
+                    label="2. 해부학/제약 (Anatomy & Constraints)",
+                    value=DEFAULT_NEGATIVE,
+                    lines=2,
+                    placeholder="예: perfect anatomy, no extra fingers",
+                    info="해부학적 정확성 및 생성 제약 조건을 지정합니다.",
+                )
+                prompt_appearance = gr.Textbox(
+                    label="3. 외모 (Appearance)",
+                    value=DEFAULT_APPEARANCE,
+                    lines=2,
+                    placeholder="예: A beautiful Korean girl with long black hair",
+                    info="인물의 외모, 얼굴, 머리카락, 나이 등을 설명합니다.",
+                )
+                prompt_camera = gr.Textbox(
+                    label="4. 카메라 설정 (Camera Settings)",
+                    value=DEFAULT_CAMERA,
+                    lines=2,
+                    placeholder="예: Canon EOS R5, 85mm f/1.4, ISO 100, shallow DOF",
+                    info="카메라 기종, 렌즈, ISO, 셔터 스피드, 조리개, 피사계 심도 등을 설명합니다.",
+                )
+                prompt_outfit = gr.Textbox(
+                    label="5. 의상 (Outfit)",
+                    value=DEFAULT_OUTFIT,
+                    lines=2,
+                    placeholder="예: in a red bikini, wearing a white dress",
+                    info="의상, 액세서리, 착용한 아이템을 설명합니다.",
+                )
+                prompt_pose = gr.Textbox(
+                    label="6. 포즈/구도 (Pose & Composition)",
+                    value=DEFAULT_POSE,
+                    lines=2,
+                    placeholder="예: standing, looking over shoulder, full body",
+                    info="자세, 시선 방향, 카메라 앵글, 촬영 구도를 설명합니다.",
+                )
+                prompt_setting = gr.Textbox(
+                    label="7. 배경/장소 (Setting & Background)",
+                    value=DEFAULT_SETTING,
+                    lines=2,
+                    placeholder="예: on a boardwalk at sunset, calm ocean",
+                    info="배경, 장소, 환경, 계절 등을 설명합니다.",
+                )
+                prompt_lighting = gr.Textbox(
+                    label="8. 조명 (Lighting)",
+                    value=DEFAULT_LIGHTING,
+                    lines=2,
+                    placeholder="예: golden hour, soft glow, cinematic lighting",
+                    info="조명 조건, 빛의 방향, 분위기를 설명합니다.",
+                )
+                combined_prompt = gr.Textbox(
+                    label="최종 프롬프트 (Combined Prompt)",
+                    value=combine_prompt_sections(
+                        DEFAULT_QUALITY,
+                        DEFAULT_NEGATIVE,
+                        DEFAULT_APPEARANCE,
+                        DEFAULT_CAMERA,
+                        DEFAULT_OUTFIT,
+                        DEFAULT_POSE,
+                        DEFAULT_SETTING,
+                        DEFAULT_LIGHTING,
+                    ),
+                    lines=4,
+                    interactive=False,
+                    info="위 섹션들이 자동으로 합쳐진 최종 프롬프트입니다.",
+                )
+                prompt_sections = [
+                    prompt_quality,
+                    prompt_negative,
+                    prompt_appearance,
+                    prompt_camera,
+                    prompt_outfit,
+                    prompt_pose,
+                    prompt_setting,
+                    prompt_lighting,
+                ]
+                for section in prompt_sections:
+                    section.change(
+                        fn=combine_prompt_sections,
+                        inputs=prompt_sections,
+                        outputs=[combined_prompt],
+                    )
+
+            # Right column: Parameters (top) + Image generation (bottom)
+            with gr.Column(scale=1):
+                gr.Markdown("### 파라미터 설정")
                 with gr.Row():
                     width = gr.Slider(
                         label="이미지 너비",
@@ -396,7 +501,7 @@ def main():
                         maximum=2048,
                         step=64,
                         value=768,
-                        info="생성할 이미지의 너비를 지정합니다 (픽셀). 64의 배수여야 합니다.",
+                        info="이미지 너비 (픽셀). 64의 배수.",
                     )
                     height = gr.Slider(
                         label="이미지 높이",
@@ -404,7 +509,7 @@ def main():
                         maximum=2048,
                         step=64,
                         value=1536,
-                        info="생성할 이미지의 높이를 지정합니다 (픽셀). 64의 배수여야 합니다.",
+                        info="이미지 높이 (픽셀). 64의 배수.",
                     )
 
                 with gr.Row():
@@ -414,7 +519,7 @@ def main():
                         maximum=20.0,
                         step=0.5,
                         value=3.5,
-                        info="모델이 프롬프트를 얼마나 따를지 제어합니다. 낮을수록 창의적, 높을수록 정확합니다. 권장: 4-15",
+                        info="프롬프트 준수도. 낮으면 창의적, 높으면 정확. 권장: 4-15",
                     )
                     num_inference_steps = gr.Slider(
                         label="추론 스텝",
@@ -422,7 +527,7 @@ def main():
                         maximum=50,
                         step=1,
                         value=28,
-                        info="이미지 생성 과정의 단계 수입니다. 높을수록 품질이 좋지만 시간이 더 걸립니다. 권장: 20-28",
+                        info="생성 단계 수. 높으면 품질 향상, 시간 증가. 권장: 20-28",
                     )
 
                 with gr.Row():
@@ -430,7 +535,7 @@ def main():
                         label="시드",
                         value=42,
                         precision=0,
-                        info="난수 생성의 시작점입니다. 같은 시드를 사용하면 같은 결과를 얻습니다.",
+                        info="난수 시드. 같은 값이면 같은 결과.",
                     )
                     strength = gr.Slider(
                         label="강도",
@@ -438,7 +543,7 @@ def main():
                         maximum=1.0,
                         step=0.1,
                         value=0.8,
-                        info="생성 모델의 강도를 제어합니다. 낮을수록 다양한 결과, 높을수록 일관성 있는 결과입니다.",
+                        info="생성 강도. 낮으면 다양, 높으면 일관.",
                     )
 
                 with gr.Row():
@@ -448,14 +553,13 @@ def main():
                         maximum=512,
                         step=64,
                         value=512,
-                        info="텍스트 인코더의 최대 시퀀스 길이입니다. 긴 프롬프트를 사용할 경우 높은 값이 필요합니다.",
+                        info="텍스트 인코더 최대 길이. 긴 프롬프트는 높은 값 필요.",
                     )
 
+                gr.Markdown("---")
+                gr.Markdown("### 이미지 생성")
                 generate_btn = gr.Button("이미지 생성", variant="primary", size="lg")
-
-            with gr.Column(scale=1):
-                # Output
-                output_image = gr.Image(label="생성된 이미지", height=800)
+                output_image = gr.Image(label="생성된 이미지", height=700)
                 output_message = gr.Textbox(label="상태", interactive=False)
 
         # Load model when button is clicked
@@ -476,7 +580,7 @@ def main():
         generate_btn.click(
             fn=generate_image,
             inputs=[
-                prompt,
+                combined_prompt,
                 width,
                 height,
                 guidance_scale,

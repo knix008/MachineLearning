@@ -19,7 +19,7 @@ DEFAULT_OUTFIT = "She is wearing a red high-cut thong-style bikini that accentua
 DEFAULT_POSE = "She is standing up in front of a white bed in a bright, sun-drenched room with soft-focus white curtains. She is looking at the camera with a soft, innocent expression."
 DEFAULT_SETTING = "The background is dominated by large windows with white vertical blinds or curtains, allowing soft, diffused natural-looking light to flood the scene. The background is softly blurred (bokeh)."
 DEFAULT_LIGHTING = "Cinematic lighting.The lighting is bright, soft, and even, minimizing harsh shadows and giving the skin a glowing, porcelain appearance. The light source appears to be natural sunlight coming through the windows, creating a warm and inviting atmosphere. The overall effect is a bright, airy, and ethereal look that enhances the subject's features and the serene setting."
-DEFAULT_NEGATIVE = "Perfect anatomy, no extra fingers, no extra toes, no extra legs, no extra hands, no extra arms, no missing fingers, no missing toes."
+DEFAULT_NEGATIVE = "Perfect anatomy, no extra fingers, no extra toes, no extra legs, no extra hands, no extra arms, no missing fingers, no missing toes, no manboob, no more than one nipple."
 
 
 def combine_prompt_sections(
