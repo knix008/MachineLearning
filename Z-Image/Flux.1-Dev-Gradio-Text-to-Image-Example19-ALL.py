@@ -11,22 +11,24 @@ import psutil
 import time
 import gradio as gr
 
+# Reference Site : https://prompthero.com/prompt/6ef72602598-gonzalomo-dmd-v20-flux-d-aio-a-raw-documentary-style-photograph-of-a-young-woman-with-long-platinum-blonde-hair-styled-in-loose-tousled-waves-her
 
 # Default values for each prompt section
-DEFAULT_QUALITY = "A raw documentary-style photograph, 4k, ultra-detailed, high-quality, professional photography, realistic, photorealistic, masterpiece, fully body photo showing from the head to the toes. Shot with Canon EOS R5, 85mm f/1.4 lens, ISO 100, 1/500s shutter speed, f/2.0 aperture, shallow depth of field, bokeh background, sharp focus on subject, natural color grading, film grain texture."
+DEFAULT_QUALITY = "A raw documentary-style photograph, 4k, ultra-detailed, high-quality, professional photography, realistic, photorealistic, masterpiece, fully body photo showing from the head to the toes."
+DEFAULT_NEGATIVE = "Perfect anatomy, perfect arms and hands structure, perfect legs and feet structure, no extra fingers, no extra toes, no extra legs, no extra hands, no extra arms, no missing fingers, no missing toes, no more than one nipple."
 DEFAULT_APPEARANCE = "A cute beautiful Korean girl photography. She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious. She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face."
 DEFAULT_OUTFIT = "She is wearing a simple yet elegant string type pink bikini that complements her fair skin and dark hair. The bikini consists of a classic triangle top with thin straps that tie around her neck and back, and matching low-rise bottoms with side ties. The pink fabric contrasts beautifully with the golden sand and the soft blue hues of the ocean, creating a serene and timeless beach look. Her outfit is minimalistic, allowing her natural beauty and the tranquil beach setting to take center stage in the photograph."
 DEFAULT_POSE = "She is standing on a beach. Her pose is relaxed and natural, with her arms gently resting at her sides and her weight shifted slightly to one leg. The composition captures her full body, showcasing the elegant lines of her figure against the airy, minimalist background. The overall mood is serene and intimate, evoking a sense of quiet beauty and vulnerability."
 DEFAULT_SETTING = "A hyper-realistic style with subtle cinematic influences, emphasizing texture, light, and the sensual yet tender atmosphere. The scene is set on a quiet, modern beach with soft golden sand and a calm ocean in the background. The lighting is bright, soft, and even, minimizing harsh shadows and giving the skin a glowing, porcelain appearance. The light source appears to be natural sunlight coming through the windows, creating a warm and inviting atmosphere. The overall effect is a bright, airy, and ethereal look that enhances the subject's features and the serene setting."
 DEFAULT_LIGHTING = "Sunlight sparkling on the wet sand and water, casting golden highlights across her skin. The background features soft dunes and scattered seashells. Cinematic lighting. The lighting is bright, soft, and even, minimizing harsh shadows and giving the skin a glowing, porcelain appearance. The light source appears to be natural sunlight coming through the windows, creating a warm and inviting atmosphere. The overall effect is a bright, airy, and ethereal look that enhances the subject's features and the serene setting."
-DEFAULT_NEGATIVE = "Perfect anatomy, perfect arms and hands structure, perfect legs and feet structure, no extra fingers, no extra toes, no extra legs, no extra hands, no extra arms, no missing fingers, no missing toes, no more than one nipple."
+DEFAULT_CAMERA = "Shot with Canon EOS R5, 85mm f/1.4 lens, ISO 100, 1/500s shutter speed, f/2.0 aperture, shallow depth of field, bokeh background, sharp focus on subject, natural color grading, film grain texture."
 
 
 def combine_prompt_sections(
-    quality, appearance, outfit, pose, setting, lighting, negative
+    quality, negative, appearance, outfit, pose, setting, lighting, camera
 ):
     """Combine separate prompt sections into one final prompt string."""
-    sections = [quality, appearance, outfit, pose, setting, lighting, negative]
+    sections = [quality, negative, appearance, outfit, pose, setting, lighting, camera]
     # Filter out empty sections and join with ', '
     combined = ", ".join(s.strip() for s in sections if s and s.strip())
     return combined
@@ -231,6 +233,7 @@ def generate_image(
     seed,
     strength,
     max_sequence_length,
+    image_format,
     progress=gr.Progress(track_tqdm=True),
 ):
     global pipe
@@ -339,15 +342,19 @@ def generate_image(
         elapsed = time.time() - start_time
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         script_name = os.path.splitext(os.path.basename(__file__))[0]
+        ext = "jpg" if image_format == "JPEG" else "png"
         filename = (
             f"{script_name}_{timestamp}_{DEVICE.upper()}_{width}x{height}"
             f"_gs{guidance_scale}_step{steps}_seed{int(seed)}"
-            f"_str{strength}_msl{int(max_sequence_length)}.png"
+            f"_str{strength}_msl{int(max_sequence_length)}.{ext}"
         )
 
         print(f"이미지 생성 완료! 소요 시간: {elapsed:.1f}초")
         print(f"이미지가 저장되었습니다 : {filename}")
-        image.save(filename)
+        if image_format == "JPEG":
+            image.save(filename, format="JPEG", quality=100, subsampling=0)
+        else:
+            image.save(filename)
 
         progress(1.0, desc="완료!")
         return (
@@ -370,7 +377,10 @@ def main():
     load_model()
 
     # Create Gradio interface
-    with gr.Blocks(title="Flux.1-dev Text-to-Image Generator") as interface:
+    with gr.Blocks(
+        title="Flux.1-dev Text-to-Image Generator",
+        js="document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();}})",
+    ) as interface:
         gr.Markdown("# Flux.1-dev Text-to-Image Generator")
         gr.Markdown(
             f"AI를 사용하여 텍스트에서 이미지를 생성합니다."
@@ -407,58 +417,66 @@ def main():
                     placeholder="예: 4k, ultra-detailed, photorealistic",
                     info="이미지의 품질, 해상도, 스타일 관련 키워드입니다.",
                 )
+                prompt_negative = gr.Textbox(
+                    label="2. 해부학/제약 (Anatomy & Constraints)",
+                    value=DEFAULT_NEGATIVE,
+                    lines=2,
+                    placeholder="예: perfect anatomy, no extra fingers",
+                    info="해부학적 정확성 및 생성 제약 조건을 지정합니다.",
+                )
                 prompt_appearance = gr.Textbox(
-                    label="2. 외모 (Appearance)",
+                    label="3. 외모 (Appearance)",
                     value=DEFAULT_APPEARANCE,
                     lines=2,
                     placeholder="예: A beautiful Korean girl with long black hair",
                     info="인물의 외모, 얼굴, 머리카락, 나이 등을 설명합니다.",
                 )
                 prompt_outfit = gr.Textbox(
-                    label="3. 의상 (Outfit)",
+                    label="4. 의상 (Outfit)",
                     value=DEFAULT_OUTFIT,
                     lines=2,
                     placeholder="예: in a red bikini, wearing a white dress",
                     info="의상, 액세서리, 착용한 아이템을 설명합니다.",
                 )
                 prompt_pose = gr.Textbox(
-                    label="4. 포즈/구도 (Pose & Composition)",
+                    label="5. 포즈/구도 (Pose & Composition)",
                     value=DEFAULT_POSE,
                     lines=2,
                     placeholder="예: standing, looking over shoulder, full body",
                     info="자세, 시선 방향, 카메라 앵글, 촬영 구도를 설명합니다.",
                 )
                 prompt_setting = gr.Textbox(
-                    label="5. 배경/장소 (Setting & Background)",
+                    label="6. 배경/장소 (Setting & Background)",
                     value=DEFAULT_SETTING,
                     lines=2,
                     placeholder="예: on a boardwalk at sunset, calm ocean",
                     info="배경, 장소, 환경, 계절 등을 설명합니다.",
                 )
                 prompt_lighting = gr.Textbox(
-                    label="6. 조명 (Lighting)",
+                    label="7. 조명 (Lighting)",
                     value=DEFAULT_LIGHTING,
                     lines=2,
                     placeholder="예: golden hour, soft glow, cinematic lighting",
                     info="조명 조건, 빛의 방향, 분위기를 설명합니다.",
                 )
-                prompt_negative = gr.Textbox(
-                    label="7. 해부학/제약 (Anatomy & Constraints)",
-                    value=DEFAULT_NEGATIVE,
+                prompt_camera = gr.Textbox(
+                    label="8. 카메라 설정 (Camera Settings)",
+                    value=DEFAULT_CAMERA,
                     lines=2,
-                    placeholder="예: perfect anatomy, no extra fingers",
-                    info="해부학적 정확성 및 생성 제약 조건을 지정합니다.",
+                    placeholder="예: Canon EOS R5, 85mm f/1.4, ISO 100, shallow DOF",
+                    info="카메라 기종, 렌즈, ISO, 셔터 스피드, 조리개, 피사계 심도 등을 설명합니다.",
                 )
                 combined_prompt = gr.Textbox(
                     label="최종 프롬프트 (Combined Prompt)",
                     value=combine_prompt_sections(
                         DEFAULT_QUALITY,
+                        DEFAULT_NEGATIVE,
                         DEFAULT_APPEARANCE,
                         DEFAULT_OUTFIT,
                         DEFAULT_POSE,
                         DEFAULT_SETTING,
                         DEFAULT_LIGHTING,
-                        DEFAULT_NEGATIVE,
+                        DEFAULT_CAMERA,
                     ),
                     lines=4,
                     interactive=False,
@@ -466,12 +484,13 @@ def main():
                 )
                 prompt_sections = [
                     prompt_quality,
+                    prompt_negative,
                     prompt_appearance,
                     prompt_outfit,
                     prompt_pose,
                     prompt_setting,
                     prompt_lighting,
-                    prompt_negative,
+                    prompt_camera,
                 ]
                 for section in prompt_sections:
                     section.change(
@@ -507,7 +526,7 @@ def main():
                         minimum=1.0,
                         maximum=20.0,
                         step=0.5,
-                        value=3.5,
+                        value=4.0,
                         info="프롬프트 준수도. 낮으면 창의적, 높으면 정확. 권장: 4-15",
                     )
                     num_inference_steps = gr.Slider(
@@ -528,10 +547,10 @@ def main():
                     )
                     strength = gr.Slider(
                         label="강도",
-                        minimum=0.1,
-                        maximum=1.0,
-                        step=0.1,
-                        value=0.8,
+                        minimum=0.01,
+                        maximum=1.00,
+                        step=0.01,
+                        value=0.75,
                         info="생성 강도. 낮으면 다양, 높으면 일관.",
                     )
 
@@ -543,6 +562,12 @@ def main():
                         step=64,
                         value=512,
                         info="텍스트 인코더 최대 길이. 긴 프롬프트는 높은 값 필요.",
+                    )
+                    image_format = gr.Radio(
+                        label="이미지 포맷",
+                        choices=["JPEG", "PNG"],
+                        value="JPEG",
+                        info="JPEG: quality 100 (4:4:4), PNG: 무손실 압축.",
                     )
 
                 gr.Markdown("---")
@@ -577,6 +602,7 @@ def main():
                 seed,
                 strength,
                 max_sequence_length,
+                image_format,
             ],
             outputs=[output_image, output_message],
         )
