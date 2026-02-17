@@ -16,7 +16,7 @@ import gradio as gr
 # Default values for each prompt section
 DEFAULT_QUALITY = "A raw documentary-style photograph, 4k, ultra-detailed, high-quality, professional photography, realistic, photorealistic, masterpiece, fully body photo showing from the head to the toes."
 DEFAULT_NEGATIVE = "Extra hands, extra legs, extra feet, extra arms, Waist Pleats, paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, normal quality, ((monochrome)), ((grayscale)), skin spots, wet, acnes, skin blemishes, age spot, manboobs, backlight, mutated hands, (poorly drawn hands:1.33), blurry, (bad anatomy:1.21), (bad proportions:1.33), extra limbs, (disfigured:1.33), (more than 2 nipples:1.33), (missing arms:1.33), (extra legs:1.33), (fused fingers:1.61), (too many fingers:1.61), (unclear eyes:1.33), lowers, bad hands, missing fingers, extra digit, (futa:1.1), bad hands, missing fingers, (cleft chin:1.3), exposed nipples"
-DEFAULT_APPEARANCE = "A cute beautiful Korean girl photography. She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious. She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face."
+DEFAULT_APPEARANCE = "A beautiful Korean woman with long black hair photography. She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious. She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face."
 DEFAULT_OUTFIT = "She is wearing a simple yet elegant string type pink bikini that complements her fair skin and dark hair. The bikini consists of a classic triangle top with thin straps that tie around her neck and back, and matching low-rise bottoms with side ties. The pink fabric contrasts beautifully with the golden sand and the soft blue hues of the ocean, creating a serene and timeless beach look. Her outfit is minimalistic, allowing her natural beauty and the tranquil beach setting to take center stage in the photograph."
 DEFAULT_POSE = "She is standing on a beach. Her pose is relaxed and natural, with her arms gently resting at her sides and her weight shifted slightly to one leg. The composition captures her full body, showcasing the elegant lines of her figure against the airy, minimalist background. The overall mood is serene and intimate, evoking a sense of quiet beauty and vulnerability."
 DEFAULT_SETTING = "A hyper-realistic style with subtle cinematic influences, emphasizing texture, light, and the sensual yet tender atmosphere. The scene is set on a quiet, modern beach with soft golden sand and a calm ocean in the background. The lighting is bright, soft, and even, minimizing harsh shadows and giving the skin a glowing, porcelain appearance. The light source appears to be natural sunlight coming through the windows, creating a warm and inviting atmosphere. The overall effect is a bright, airy, and ethereal look that enhances the subject's features and the serene setting."
@@ -251,9 +251,14 @@ def generate_image(
         progress(0.05, desc="추론 시작...")
 
         # Callback to report each inference step to Gradio progress bar and CLI status bar
+        last_step_time = [start_time]
+
         def step_callback(_pipe, step_index, _timestep, callback_kwargs):
             current = step_index + 1
-            elapsed = time.time() - start_time
+            now = time.time()
+            elapsed = now - start_time
+            step_time = now - last_step_time[0]
+            last_step_time[0] = now
             ratio = current / steps
             # Map step progress to 0.05 ~ 0.90 range
             progress_val = 0.05 + ratio * 0.85
@@ -266,10 +271,12 @@ def generate_image(
             bar_len = 40
             filled = int(bar_len * ratio)
             bar = "█" * filled + "░" * (bar_len - filled)
-            eta = (elapsed / current) * (steps - current) if current > 0 else 0
+            avg_speed = elapsed / current
+            eta = avg_speed * (steps - current)
             sys.stdout.write(
                 f"\r추론 진행: |{bar}| {current}/{steps} "
-                f"[{elapsed:.1f}s elapsed, ETA {eta:.1f}s]"
+                f"[{elapsed:.1f}s elapsed, ETA {eta:.1f}s, "
+                f"{step_time:.2f}s/step, avg {avg_speed:.2f}s/step]"
             )
             sys.stdout.flush()
             if current == steps:
@@ -327,7 +334,6 @@ def main():
     # Create Gradio interface
     with gr.Blocks(
         title="Z-Image Text-to-Image Generator",
-        js="document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();}})",
     ) as interface:
         gr.Markdown("# Z-Image Text-to-Image Generator")
         gr.Markdown(
@@ -441,7 +447,7 @@ def main():
                 ]
 
                 def update_combined(*sections):
-                    return combine_prompt_sections(*sections, "", "")
+                    return combine_prompt_sections(sections[0], "", *sections[1:])
 
                 for section in prompt_sections:
                     section.change(
@@ -541,7 +547,10 @@ def main():
         )
 
     # Launch the interface
-    interface.launch(inbrowser=True)
+    interface.launch(
+        inbrowser=True,
+        js="document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();}})",
+    )
 
 
 if __name__ == "__main__":
