@@ -17,8 +17,8 @@ import gradio as gr
 DEFAULT_QUALITY = "4k, ultra-detailed, high-quality, professional photography, realistic, photorealistic, masterpiece, best quality, extremely detailed, high resolution, film grain, intricate details, award-winning photography"
 DEFAULT_NEGATIVE = "Perfect anatomy, perfect arms and hands structure, perfect legs and feet structure, no extra fingers, no extra toes, no extra legs, no extra hands, no extra arms, no missing fingers, no missing toes, no more than one nipple."
 DEFAULT_APPEARANCE = "A beautiful Korean woman with a soft, idol aesthetic. She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face."
-DEFAULT_OUTFIT = "Attire (Pink Bikini & Blue Bunny Theme): Legwear (IMPORTANT, must be visible): She is wearing white fishnet stockings that cover her entire legs from toes to upper thighs, held up by blue and white ruffled lace garters adorned with small white bows on each thigh. The fishnet pattern is clearly visible on both legs. Headwear: She wears tall, upright blue fabric bunny ears with white lace inner lining and a delicate white lace headband base, accented with a small white bow. Outfit: She wears a classic pink bikini with a triangle top and matching string bikini bottoms. The bikini has a soft matte fabric with a subtle sheen. Accessories: Around her neck is a blue bow tie attached to a white collar. Armwear: She wears long, white floral lace fingerless sleeves that extend past her elbows, finished with blue cuffs and small black decorative ribbons."
-DEFAULT_POSE = "She is standing gracefully in front of the edge of a light-colored, vintage-style bed or cushioned bench. Her body is slightly angled toward the camera, creating a soft and inviting posture. Her right leg is crossed in front of her left leg, with one knee slightly bent, showing off her white fishnet stockings and the blue and white ruffled lace garters on her thighs. Her left arm is relaxed and gently resting on her left thigh, showing off her long white floral lace fingerless sleeves with blue cuffs and small black decorative ribbons, while her right arm is raised with her fingertips gently touching her cheek, clearly displaying the delicate lace sleeve details on both arms. She gazes directly into the camera with a soft, engaging expression that conveys a sense of warmth and approachability."
+DEFAULT_OUTFIT = "She is wearing a simple yet elegant string type pink bikini that complements her fair skin and dark hair. The Attire (Pink Bikini & Blue Bunny Theme): Legwear (IMPORTANT, must be visible): She is wearing white fishnet stockings that cover her entire legs from toes to upper thighs, held up by blue and white ruffled lace garters adorned with small white bows on each thigh. The fishnet pattern is clearly visible on both legs. Footwear: She wears glossy pink high heel stiletto pumps. Headwear: She wears tall, upright blue fabric bunny ears with white lace inner lining and a delicate white lace headband base, accented with a small white bow. Outfit: She wears a classic pink bikini with a triangle top and matching string bikini bottoms. The bikini has a soft matte fabric with a subtle sheen. Accessories: Around her neck is a blue bow tie attached to a white collar. Armwear: She wears long, white floral lace fingerless sleeves that extend past her elbows, finished with blue cuffs and small black decorative ribbons."
+DEFAULT_POSE = "She is standing gracefully in front of the edge of a light-colored, vintage-style bed or cushioned bench. Her body is slightly angled toward the camera, creating a soft and inviting posture. Her right leg is crossed in front of her left leg, with one knee slightly bent, showing off her white fishnet stockings and the blue and white ruffled lace garters on her thighs. Her glossy pink high heel stiletto pumps are clearly visible on the floor. Her left arm is relaxed and gently resting on her left thigh, showing off her long white floral lace fingerless sleeves with blue cuffs and small black decorative ribbons, while her right arm is raised with her fingertips gently touching her cheek, clearly displaying the delicate lace sleeve details on both arms. She gazes directly into the camera with a soft, engaging expression that conveys a sense of warmth and approachability."
 DEFAULT_SETTING = "A bright, high-key studio set designed to look like a clean, airy bedroom. She is standing in front of a white bed in a bright, sun-drenched room. The background is dominated by large windows with white vertical blinds or curtains, allowing soft, diffused natural-looking light to flood the scene. The background is softly blurred (bokeh). Airy atmosphere."
 DEFAULT_LIGHTING = "The lighting is bright, soft, and even, minimizing harsh shadows and giving the skin a glowing, porcelain appearance. High-key lighting, cinematic soft focus. The light source appears to be soft, diffused natural-looking light flooding the scene, creating a warm and inviting atmosphere."
 DEFAULT_CAMERA = "Shot with Canon EOS R5, 85mm f/1.4 lens, ISO 100, shallow depth of field, bokeh background, sharp focus on subject, natural color grading."
@@ -465,22 +465,23 @@ def main():
                     placeholder="예: Canon EOS R5, 85mm f/1.4, ISO 100, shallow DOF",
                     info="카메라 기종, 렌즈, ISO, 셔터 스피드, 조리개, 피사계 심도 등을 설명합니다.",
                 )
-                combined_prompt = gr.Textbox(
-                    label="최종 프롬프트 (Combined Prompt)",
-                    value=combine_prompt_sections(
-                        DEFAULT_QUALITY,
-                        DEFAULT_NEGATIVE,
-                        DEFAULT_APPEARANCE,
-                        DEFAULT_OUTFIT,
-                        DEFAULT_POSE,
-                        DEFAULT_SETTING,
-                        DEFAULT_LIGHTING,
-                        DEFAULT_CAMERA,
-                    ),
-                    lines=4,
-                    interactive=False,
-                    info="위 섹션들이 자동으로 합쳐진 최종 프롬프트입니다.",
-                )
+                with gr.Accordion("최종 프롬프트 (Combined Prompt)", open=False):
+                    combined_prompt = gr.Textbox(
+                        label="최종 프롬프트",
+                        value=combine_prompt_sections(
+                            DEFAULT_QUALITY,
+                            DEFAULT_NEGATIVE,
+                            DEFAULT_APPEARANCE,
+                            DEFAULT_OUTFIT,
+                            DEFAULT_POSE,
+                            DEFAULT_SETTING,
+                            DEFAULT_LIGHTING,
+                            DEFAULT_CAMERA,
+                        ),
+                        lines=4,
+                        interactive=False,
+                        info="위 섹션들이 자동으로 합쳐진 최종 프롬프트입니다.",
+                    )
                 prompt_sections = [
                     prompt_quality,
                     prompt_negative,
@@ -507,7 +508,7 @@ def main():
                         minimum=256,
                         maximum=2048,
                         step=64,
-                        value=768,
+                        value=512,
                         info="이미지 너비 (픽셀). 64의 배수.",
                     )
                     height = gr.Slider(
@@ -515,7 +516,7 @@ def main():
                         minimum=256,
                         maximum=2048,
                         step=64,
-                        value=1536,
+                        value=1024,
                         info="이미지 높이 (픽셀). 64의 배수.",
                     )
 
@@ -525,7 +526,7 @@ def main():
                         minimum=1.0,
                         maximum=20.0,
                         step=0.5,
-                        value=4.0,
+                        value=3.5,
                         info="프롬프트 준수도. 낮으면 창의적, 높으면 정확. 권장: 4-15",
                     )
                     num_inference_steps = gr.Slider(
