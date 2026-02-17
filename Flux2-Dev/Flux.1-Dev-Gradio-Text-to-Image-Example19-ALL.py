@@ -14,12 +14,12 @@ import gradio as gr
 # Reference Site : https://prompthero.com/prompt/6ef72602598-gonzalomo-dmd-v20-flux-d-aio-a-raw-documentary-style-photograph-of-a-young-woman-with-long-platinum-blonde-hair-styled-in-loose-tousled-waves-her
 
 # Default values for each prompt section
-DEFAULT_QUALITY = "A raw documentary-style photograph, 4k, ultra-detailed, high-quality, professional photography, realistic, photorealistic, RAW photo, masterpiece, fully body photo showing from the head to the toes."
+DEFAULT_QUALITY = "A raw documentary-style photograph, 4k, ultra-detailed, high-quality, professional photography, realistic, photorealistic, masterpiece, fully body photo showing from the head to the toes."
 DEFAULT_NEGATIVE = "Perfect anatomy, perfect arms and hands structure, perfect legs and feet structure, no extra fingers, no extra toes, no extra legs, no extra hands, no extra arms, no missing fingers, no missing toes, no manboob, no more than one nipple."
 DEFAULT_APPEARANCE = "A cute beautiful Korean girl photography. She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious. She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face."
 DEFAULT_CAMERA = "Shot with Canon EOS R5, 85mm f/1.4 lens, ISO 100, 1/500s shutter speed, f/2.0 aperture, shallow depth of field, bokeh background, sharp focus on subject, natural color grading, film grain texture."
 DEFAULT_OUTFIT = "She stands at the edge of the surf on a quiet, modern beach, wearing a simple yet elegant pink bikini that complements her fair skin and dark hair. The bikini consists of a classic triangle top with thin straps that tie around her neck and back, and matching low-rise bottoms with side ties. The pink fabric contrasts beautifully with the golden sand and the soft blue hues of the ocean, creating a serene and timeless beach look. Her outfit is minimalistic, allowing her natural beauty and the tranquil beach setting to take center stage in the photograph."
-DEFAULT_POSE = "She looks down shyly,a natural,intimate pose. Her body is slightly turned to the side, with one hand gently touching her hair and the other resting softly on her thigh. Her gaze is directed downward, giving her an innocent and demure expression. The camera angle captures her from a slightly elevated perspective, emphasizing the graceful lines of her figure and the delicate details of her outfit. The overall composition creates a tender and serene atmosphere, evoking a sense of quiet beauty and introspection."
+DEFAULT_POSE = "She is standing up in front of a white bed in a bright, sun-drenched room with soft-focus white curtains. She is looking at the camera with a soft, innocent expression. Her pose is relaxed and natural, with her arms gently resting at her sides and her weight shifted slightly to one leg. The composition captures her full body, showcasing the elegant lines of her figure against the airy, minimalist background. The overall mood is serene and intimate, evoking a sense of quiet beauty and vulnerability."
 DEFAULT_SETTING = "a hyper-realistic style with subtle cinematic influences,emphasizing texture, light, and the sensual yet tender atmosphere. The scene is set on a quiet, modern beach with soft golden sand and a calm ocean in the background. The lighting is bright, soft, and even, minimizing harsh shadows and giving the skin a glowing, porcelain appearance. The light source appears to be natural sunlight coming through the windows, creating a warm and inviting atmosphere. The overall effect is a bright, airy, and ethereal look that enhances the subject's features and the serene setting."
 DEFAULT_LIGHTING = "Sunlight sparkling on the wet sand and water, casting golden highlights across her skin. The background features soft dunes and scattered seashells. Cinematic lighting.The lighting is bright, soft, and even, minimizing harsh shadows and giving the skin a glowing, porcelain appearance. The light source appears to be natural sunlight coming through the windows, creating a warm and inviting atmosphere. The overall effect is a bright, airy, and ethereal look that enhances the subject's features and the serene setting."
 
@@ -377,7 +377,10 @@ def main():
     load_model()
 
     # Create Gradio interface
-    with gr.Blocks(title="Flux.1-dev Text-to-Image Generator") as interface:
+    with gr.Blocks(
+        title="Flux.1-dev Text-to-Image Generator",
+        js="document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();}})",
+    ) as interface:
         gr.Markdown("# Flux.1-dev Text-to-Image Generator")
         gr.Markdown(
             f"AI를 사용하여 텍스트에서 이미지를 생성합니다."
@@ -531,7 +534,7 @@ def main():
                         minimum=10,
                         maximum=50,
                         step=1,
-                        value=28,
+                        value=25,
                         info="생성 단계 수. 높으면 품질 향상, 시간 증가. 권장: 20-28",
                     )
 
