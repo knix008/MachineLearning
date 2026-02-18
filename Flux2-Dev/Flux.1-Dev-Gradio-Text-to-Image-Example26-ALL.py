@@ -17,8 +17,8 @@ import gradio as gr
 DEFAULT_QUALITY = "8k resolution, photorealistic, high-quality, masterpiece, best quality, ultra-detailed, highly detailed skin, cinematic soft focus, detailed textures of denim and lace, gravure photography style, high-key lighting, airy atmosphere"
 DEFAULT_NEGATIVE = "Perfect anatomy, perfect arms and hands structure, perfect legs and feet structure, no extra fingers, no extra toes, no extra legs, no extra hands, no extra arms, no missing fingers, no missing toes, no fused fingers, no mutated fingers, no disfigured fingers."
 DEFAULT_APPEARANCE = "A beautiful Asian woman with a soft idol aesthetic. She has a fair, clear complexion and striking bright blue contact lenses that contrast with her dark hair. She has long, straight jet-black hair with thick, straight-cut hime-cut bangs (fringe) that frame her face. Her expression is innocent and curious, looking directly at the camera with her index finger lightly touching her chin."
-DEFAULT_OUTFIT = "She wears tall upright blue fabric bunny ears with white lace inner lining and a delicate white lace headband base accented with a small white bow. She wears a skimpy simple triangle type pink bikini that complements her fair skin and dark hair. She wears a blue bow tie attached to a white collar. She wears long white floral lace fingerless sleeves extending past her elbows with blue cuffs and small black decorative ribbons. She wears white fishnet stockings held up by blue and white ruffled lace garters adorned with small white bows."
-DEFAULT_POSE = "She is standing up in front of a light-colored vintage-style cushioned bench. Her body is slightly angled toward the camera, creating a soft and inviting posture. She is touching her hair with her fingertips, looking at the camera with a soft, innocent expression."
+DEFAULT_OUTFIT = "She wears tall upright blue fabric bunny ears with white lace inner lining and a delicate white lace headband base accented with a small white bow. She wears a skimpy simple triangle type pink bra and pink panties that complement her fair skin and dark hair. She wears a blue bow tie attached to a white collar. She wears long white floral lace fingerless sleeves on both arms, each extending past the elbows with blue cuffs and small black decorative ribbons. She wears a blue and white ruffled lace garter belt adorned with small white bows worn over the panties. She wears white fishnet stockings on both legs, each clipped and secured to the garter belt."
+DEFAULT_POSE = "She is standing up in front of a white fabric bed. Her body is slightly angled toward the camera, creating a soft and inviting posture. One hand gently touches her hair with her fingertips, while the other hand hangs naturally straight down at her side. She is looking at the camera with a soft, innocent expression."
 DEFAULT_SETTING = "A bright, high-key studio set designed to look like a clean, airy bedroom. The background is dominated by large windows with white vertical blinds and soft-focus white curtains allowing soft, diffused natural-looking light to flood the scene. The background is softly blurred bokeh."
 DEFAULT_LIGHTING = "Bright, soft, and even high-key lighting, minimizing harsh shadows and giving the skin a glowing, porcelain appearance. Soft, diffused natural-looking light flooding the scene from large windows."
 DEFAULT_CAMERA = "Cosplay portrait photography, gravure photography style, Canon EOS R5, 85mm f/1.4 lens, ISO 100, shallow depth of field, sharp focus on subject, soft bokeh background, studio photography, blue bunny girl, denim cosplay, white lace, blue contact lenses, black hair with bangs, fishnet stockings, innocent and alluring."
@@ -267,16 +267,15 @@ def generate_image(
             return_tensors="pt",
         )
 
-        # Count actual tokens (exclude padding tokens)
-        input_ids = text_inputs["input_ids"][0]
-        pad_token_id = pipe.tokenizer_2.pad_token_id
-        if pad_token_id is not None:
-            num_tokens = (input_ids != pad_token_id).sum().item()
-        else:
-            num_tokens = len(input_ids)
+        # Count tokens before truncation to detect clipping
+        raw_ids = pipe.tokenizer_2(prompt, truncation=False, return_tensors="pt")["input_ids"][0]
+        raw_token_count = len(raw_ids)
         max_len = int(max_sequence_length)
-        truncated = " (잘림!)" if num_tokens >= max_len else ""
-        print(f"프롬프트 토큰 수: {num_tokens} / {max_len}{truncated}")
+        clipped = max(0, raw_token_count - max_len)
+        if clipped > 0:
+            print(f"프롬프트 토큰 수: {raw_token_count} / {max_len} → {clipped}개 잘림!")
+        else:
+            print(f"프롬프트 토큰 수: {raw_token_count} / {max_len} (잘림 없음)")
 
         with torch.inference_mode():
             prompt_embeds = pipe.text_encoder_2(
@@ -359,8 +358,8 @@ def generate_image(
         progress(1.0, desc="완료!")
         return (
             image,
-            f"✓ 완료! ({elapsed:.1f}초) | 토큰: {num_tokens}/{max_len}"
-            f"{truncated} | 저장됨: {filename}",
+            f"✓ 완료! ({elapsed:.1f}초) | 토큰: {raw_token_count}/{max_len}"
+            f"{f' → {clipped}개 잘림!' if clipped > 0 else ''} | 저장됨: {filename}",
         )
     except Exception as e:
         return None, f"✗ 오류 발생: {str(e)}"
