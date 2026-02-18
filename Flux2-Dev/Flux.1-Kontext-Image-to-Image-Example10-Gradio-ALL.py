@@ -15,7 +15,7 @@ import gradio as gr
 DEFAULT_QUALITY = ""
 DEFAULT_NEGATIVE = ""
 DEFAULT_APPEARANCE = "A beautiful Korean woman with a soft, idol aesthetic. She has a fair, clear and flawless complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She is looking directly at the camera."
-DEFAULT_OUTFIT = "change her wearing very small pink bra and pantie."
+DEFAULT_OUTFIT = "Change her wearing very small pink bra and pantie."
 DEFAULT_POSE = ""
 DEFAULT_SETTING = ""
 DEFAULT_LIGHTING = ""
