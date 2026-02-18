@@ -15,10 +15,10 @@ DEFAULT_IMAGE = "Test07.jpg"
 
 # Default values for each prompt section
 DEFAULT_QUALITY = ""
-DEFAULT_NEGATIVE = "Perfect anatomy, perfect arms and hands structure, perfect legs and feet structure, no extra fingers, no extra toes, no extra legs, no extra hands, no extra arms, no missing fingers, no missing toes."
-DEFAULT_APPEARANCE = "A beautiful Korean woman with a soft, idol aesthetic. She has a fair, clear and flawless complexion. She is wearing blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She is looking directly at the camera.Full body photography."
+DEFAULT_NEGATIVE = "Perfect anatomy, perfect arms and hands structure, perfect legs and feet structure, no extra fingers, no extra toes, no extra legs, no extra hands, no extra arms, no missing fingers, no missing toes. Perfect body structure. Perfect body and face ratio."
+DEFAULT_APPEARANCE = "A beautiful Korean woman with a soft, idol aesthetic. She has a fair, clear and flawless complexion. She is wearing blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She is looking directly at the camera.Full body photography. She ties her hair behind her head and she is touch her hair with her one hand. "
 DEFAULT_OUTFIT = "Make her skinny slim tall girl at 174cm. Change her standing on the floor like a fashion model and wearing a very small string type pink bra and high-leg panties."
-DEFAULT_POSE = "She is standing like a fashion model with little bit shy."
+DEFAULT_POSE = "She is standing like a fashion model with little bit shy smile on her face."
 DEFAULT_SETTING = ""
 DEFAULT_LIGHTING = ""
 DEFAULT_CAMERA = ""
@@ -519,7 +519,7 @@ def main():
                 with gr.Row():
                     seed = gr.Number(
                         label="시드",
-                        value=42,
+                        value=100,
                         precision=0,
                         info="난수 시드. 같은 값이면 같은 결과.",
                     )
