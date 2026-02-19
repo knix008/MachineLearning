@@ -14,21 +14,22 @@ import gradio as gr
 # Reference Site : https://prompthero.com/prompt/b55c68bc0e9-z-image-turbo-a-highly-detailed-photorealistic-cinematic-high-angle-full-body-studio-shot-of-a-cute-and-stylish-young-east-asian-woman
 
 # Default values for each prompt section
-DEFAULT_QUALITY = "8k resolution, photorealistic, high-quality, masterpiece, best quality, ultra-detailed, highly detailed skin, cinematic soft focus, detailed textures of denim and lace, gravure photography style, high-key lighting, airy atmosphere"
-DEFAULT_NEGATIVE = "Perfect anatomy, perfect arms and hands structure, perfect legs and feet structure, no extra fingers, no extra toes, no extra legs, no extra hands, no extra arms, no missing fingers, no missing toes, no fused fingers, no mutated fingers, no disfigured fingers."
-DEFAULT_APPEARANCE = "A photorealistic, high-quality cosplay portrait of a beautiful Korean woman at 38 years old with a soft idol aesthetic. She has a fair, clear complexion and striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera with her index finger lightly touching her chin. She has long, straight jet-black hair with thick, straight-cut hime-cut bangs (fringe) that frame her face."
+
+DEFAULT_NEGATIVE = "Fully body, perfect anatomy, perfect arms and hands structure, perfect legs and feet structure, no extra fingers, no extra toes, no extra legs, no extra hands, no extra arms, no missing fingers, no missing toes, no fused fingers, no mutated fingers, no disfigured fingers, natural skin texture, clear eyes, no exposed nipples, appropriate clothing coverage, sharp focus, full color, smooth clear skin."
+DEFAULT_APPEARANCE = "A photorealistic, high-quality cosplay portrait of a beautiful Korean woman with a soft idol aesthetic. She has a fair, clear complexion and striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera with her index finger lightly touching her chin. She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face."
 DEFAULT_OUTFIT = "She wears tall upright blue fabric bunny ears with white lace inner lining and a delicate white lace headband base accented with a small white bow. She wears a unique blue denim-textured bodysuit with a front zipper, silver buttons, and thin silver chains draped across the chest, with sides constructed from semi-sheer white lace. Around her neck is a blue bow tie attached to a white collar. She wears long white floral lace fingerless sleeves that extend past her elbows, finished with blue cuffs and small black decorative ribbons. She wears white fishnet stockings held up by blue and white ruffled lace garters adorned with small white bows."
-DEFAULT_POSE = "Full body photo. She is standing up in front of a light-colored, vintage-style bed. Her body is slightly angled toward the camera, creating a soft and inviting posture. One hand gently touches her hair with her fingertips, while the other hand hangs naturally down by her thigh. She is looking at the camera with a soft, innocent expression."
+DEFAULT_POSE = "She is standing in front of a light-colored vintage-style bed. Her body is slightly angled toward the camera, creating a soft and inviting posture. One hand gently touches her hair with her fingers while the other hand naturally down. She is looking at the camera with a soft, innocent expression. Full body shot showing her complete outfit including her bunny ears, bodysuit, lace sleeves, fishnet stockings, and shoes."
 DEFAULT_SETTING = "A bright, high-key studio set designed to look like a clean, airy bedroom. The background is dominated by large windows with white vertical blinds or curtains, allowing soft, diffused natural-looking light to flood the scene. The background is softly blurred bokeh. A bright, sun-drenched room with soft-focus white curtains."
 DEFAULT_LIGHTING = "Bright, soft, and even high-key lighting, minimizing harsh shadows and giving the skin a glowing, porcelain appearance."
-DEFAULT_CAMERA = ""
+DEFAULT_QUALITY = "8k resolution, photorealistic, high-quality, masterpiece, best quality, ultra-detailed, highly detailed skin, cinematic soft focus, detailed textures of denim and lace, gravure photography style, high-key lighting, airy atmosphere, studio photography, innocent and alluring, blue bunny girl, denim cosplay, white lace, blue contact lenses, black hair with bangs, fishnet stockings"
+DEFAULT_CAMERA = "Shot on Canon EOS R5 mirrorless camera, 85mm f/1.4L prime lens, ISO 100, shutter speed 1/160s, aperture f/2.8 for full body sharpness, shallow depth of field with soft bokeh background, full-frame sensor, gravure photography style, sharp subject focus, professional studio lighting setup."
 
 
 def combine_prompt_sections(
-    quality, negative, appearance, outfit, pose, setting, lighting, camera
+    negative, appearance, outfit, pose, setting, lighting, quality, camera
 ):
     """Combine separate prompt sections into one final prompt string."""
-    sections = [quality, negative, appearance, outfit, pose, setting, lighting, camera]
+    sections = [negative, appearance, outfit, pose, setting, lighting, quality, camera]
     # Filter out empty sections and join with ', '
     combined = ", ".join(s.strip() for s in sections if s and s.strip())
     return combined
@@ -268,12 +269,21 @@ def generate_image(
         )
 
         # Count tokens before truncation to detect clipping
-        raw_ids = pipe.tokenizer_2(prompt, truncation=False, return_tensors="pt")["input_ids"][0]
+        raw_ids = pipe.tokenizer_2(prompt, truncation=False, return_tensors="pt")[
+            "input_ids"
+        ][0]
         raw_token_count = len(raw_ids)
         max_len = int(max_sequence_length)
         clipped = max(0, raw_token_count - max_len)
         if clipped > 0:
-            print(f"프롬프트 토큰 수: {raw_token_count} / {max_len} → {clipped}개 잘림!")
+            print(
+                f"프롬프트 토큰 수: {raw_token_count} / {max_len} → {clipped}개 잘림!"
+            )
+            truncated_ids = raw_ids[max_len:]
+            truncated_text = pipe.tokenizer_2.decode(
+                truncated_ids, skip_special_tokens=True
+            )
+            print(f"[잘린 텍스트]: {truncated_text}")
         else:
             print(f"프롬프트 토큰 수: {raw_token_count} / {max_len} (잘림 없음)")
 
@@ -408,54 +418,54 @@ def main():
                 )
 
                 gr.Markdown("### 프롬프트 구성")
-                prompt_quality = gr.Textbox(
-                    label="1. 품질/해상도 (Quality & Resolution)",
-                    value=DEFAULT_QUALITY,
-                    lines=2,
-                    placeholder="예: 4k, ultra-detailed, photorealistic",
-                    info="이미지의 품질, 해상도, 스타일 관련 키워드입니다.",
-                )
                 prompt_negative = gr.Textbox(
-                    label="2. 해부학/제약 (Anatomy & Constraints)",
+                    label="1. 해부학/제약 (Anatomy & Constraints)",
                     value=DEFAULT_NEGATIVE,
                     lines=2,
                     placeholder="예: perfect anatomy, no extra fingers",
                     info="해부학적 정확성 및 생성 제약 조건을 지정합니다.",
                 )
                 prompt_appearance = gr.Textbox(
-                    label="3. 외모 (Appearance)",
+                    label="2. 외모 (Appearance)",
                     value=DEFAULT_APPEARANCE,
                     lines=2,
                     placeholder="예: A beautiful Korean girl with long black hair",
                     info="인물의 외모, 얼굴, 머리카락, 나이 등을 설명합니다.",
                 )
                 prompt_outfit = gr.Textbox(
-                    label="4. 의상 (Outfit)",
+                    label="3. 의상 (Outfit)",
                     value=DEFAULT_OUTFIT,
                     lines=2,
                     placeholder="예: in a red bikini, wearing a white dress",
                     info="의상, 액세서리, 착용한 아이템을 설명합니다.",
                 )
                 prompt_pose = gr.Textbox(
-                    label="5. 포즈/구도 (Pose & Composition)",
+                    label="4. 포즈/구도 (Pose & Composition)",
                     value=DEFAULT_POSE,
                     lines=2,
                     placeholder="예: standing, looking over shoulder, full body",
                     info="자세, 시선 방향, 카메라 앵글, 촬영 구도를 설명합니다.",
                 )
                 prompt_setting = gr.Textbox(
-                    label="6. 배경/장소 (Setting & Background)",
+                    label="5. 배경/장소 (Setting & Background)",
                     value=DEFAULT_SETTING,
                     lines=2,
                     placeholder="예: on a boardwalk at sunset, calm ocean",
                     info="배경, 장소, 환경, 계절 등을 설명합니다.",
                 )
                 prompt_lighting = gr.Textbox(
-                    label="7. 조명 (Lighting)",
+                    label="6. 조명 (Lighting)",
                     value=DEFAULT_LIGHTING,
                     lines=2,
                     placeholder="예: golden hour, soft glow, cinematic lighting",
                     info="조명 조건, 빛의 방향, 분위기를 설명합니다.",
+                )
+                prompt_quality = gr.Textbox(
+                    label="7. 품질/해상도 (Quality & Resolution)",
+                    value=DEFAULT_QUALITY,
+                    lines=2,
+                    placeholder="예: 4k, ultra-detailed, photorealistic",
+                    info="이미지의 품질, 해상도, 스타일 관련 키워드입니다.",
                 )
                 prompt_camera = gr.Textbox(
                     label="8. 카메라 설정 (Camera Settings)",
@@ -468,13 +478,13 @@ def main():
                     combined_prompt = gr.Textbox(
                         label="최종 프롬프트",
                         value=combine_prompt_sections(
-                            DEFAULT_QUALITY,
                             DEFAULT_NEGATIVE,
                             DEFAULT_APPEARANCE,
                             DEFAULT_OUTFIT,
                             DEFAULT_POSE,
                             DEFAULT_SETTING,
                             DEFAULT_LIGHTING,
+                            DEFAULT_QUALITY,
                             DEFAULT_CAMERA,
                         ),
                         lines=4,
@@ -482,13 +492,13 @@ def main():
                         info="위 섹션들이 자동으로 합쳐진 최종 프롬프트입니다.",
                     )
                 prompt_sections = [
-                    prompt_quality,
                     prompt_negative,
                     prompt_appearance,
                     prompt_outfit,
                     prompt_pose,
                     prompt_setting,
                     prompt_lighting,
+                    prompt_quality,
                     prompt_camera,
                 ]
                 for section in prompt_sections:

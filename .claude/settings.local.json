@@ -15,7 +15,9 @@
       "Bash(git checkout:*)",
       "Bash(/c/Python313/python:*)",
       "Bash(python3:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(where:*)",
+      "Bash(conda env list:*)"
     ]
   }
 }
