@@ -1,3 +1,4 @@
+import re
 import torch
 import platform
 from diffusers import FluxPipeline
@@ -11,18 +12,27 @@ import psutil
 import time
 import gradio as gr
 
-# Reference Site : https://prompthero.com/prompt/b55c68bc0e9-z-image-turbo-a-highly-detailed-photorealistic-cinematic-high-angle-full-body-studio-shot-of-a-cute-and-stylish-young-east-asian-woman
+# Reference Site : https://prompthero.com/prompt/3395872f879-z-image-turbo-a-highly-detailed-photorealistic-cinematic-low-angle-medium-shot-of-a-stunning-young-east-asian-woman-posing-in-a-sun
 
 # Default values for each prompt section
 
-DEFAULT_NEGATIVE = "Negative prompt: extra hands,extra legs,extra feet,extra arms,Waist Pleats,paintings,sketches,(worst quality:2),(low quality:2),(normal quality:2),lowres,normal quality,((monochrome)),((grayscale)),skin spots,wet,acnes,skin blemishes,age spot,manboobs,backlight,mutated hands,(poorly drawn hands:1.33),blurry,(bad anatomy:1.21),(bad proportions:1.33),extra limbs,(disfigured:1.33),(more than 2 nipples:1.33),(missing arms:1.33),(extra legs:1.33),(fused fingers:1.61),(too many fingers:1.61),(unclear eyes:1.33),lowers,bad hands,missing fingers,extra digit,(futa:1.1),bad hands,missing fingers,(cleft chin:1.3),exposed nipples"
-DEFAULT_APPEARANCE = "The image is a high-quality,photorealistic cosplay portrait of a young Asian woman with a soft,idol aesthetic.Physical Appearance: Face: She has a fair,clear complexion.She is wearing striking bright blue contact lenses that contrast with her dark hair.Her expression is innocent and curious,looking directly at the camera with her index finger lightly touching her chin.Hair: She has long,straight jet-black hair with thick,straight-cut bangs (fringe) that frame her face.Attire (Blue & White Bunny Theme): Headwear: She wears tall,upright blue fabric bunny ears with white lace inner lining and a delicate white lace headband base,accented with a small white bow.Outfit: She wears a unique blue denim-textured bodysuit.It features a front zipper,silver buttons,and thin silver chains draped across the chest.The sides are constructed from semi-sheer white lace.Accessories: Around her neck is a blue bow tie attached to a white collar.She wears long,white floral lace fingerless sleeves that extend past her elbows,finished with blue cuffs and small black decorative ribbons.Legwear: She wears white fishnet stockings held up by blue and white ruffled lace garters adorned with small white bows.Pose: She is sitting gracefully on the edge of a light-colored,vintage-style bed or cushioned bench.Her body is slightly angled toward the camera,creating a soft and inviting posture.Setting & Background: Location: A bright,high-key studio set designed to look like a clean,airy bedroom.Background: The background is dominated by large windows with white vertical blinds or curtains,allowing soft,diffused natural-looking light to flood the scene.The background is softly blurred (bokeh).Lighting: The lighting is bright,soft,and even,minimizing harsh shadows and giving the skin a glowing,porcelain appearance.Flux Prompt Prompt: A photorealistic,high-quality cosplay portrait of a beautiful Asian woman dressed in a blue and white bunny girl outfit.She has long straight black hair with hime-cut bangs and vibrant blue eyes.She wears tall blue bunny ears with white lace trim,a blue denim-textured bodysuit with a front zipper and white lace side panels,a blue bow tie,and long white lace sleeves.She is sitting on a white bed in a bright,sun-drenched room with soft-focus white curtains.She poses with a finger to her chin,looking at the camera with a soft,innocent expression.8k resolution,high-key lighting,cinematic soft focus,detailed textures of denim and lace,gravure photography style.Key Stylistic Keywords Blue bunny girl,denim cosplay,white lace,high-key lighting,blue contact lenses,black hair with bangs,fishnet stockings,airy atmosphere,photorealistic,innocent and alluring,studio photography."
-DEFAULT_OUTFIT = ""
-DEFAULT_POSE = ""
-DEFAULT_SETTING = ""
-DEFAULT_LIGHTING = ""
-DEFAULT_QUALITY = ""
-DEFAULT_CAMERA = ""
+DEFAULT_NEGATIVE = "Perfect anatomy, perfect proportions, no extra fingers, no missing fingers, no fused fingers, no deformed hands, no mutated limbs, no extra limbs, no floating limbs, no blurry image."
+DEFAULT_APPEARANCE = "A highly detailed, photorealistic, cinematic shot of a beautiful Korean woman at 38 years old. She has a fair, clear complexion and striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face. Her long hair is tied back. She has a youthful appearance, around 20 years old, with delicate facial features and a slender, toned physique."
+DEFAULT_OUTFIT = "She is wearing a simple minimal bra with small pink ribbon at the center. She is wearing white string pantie bottoms with a tiny pink ribbon bow at the top center front of the pantie. She is wearing a golden edged thin glasses."
+DEFAULT_POSE = "The image is captured from a low angle, looking up at the subject from waist height. She stands with her legs slightly apart, facing the camera."
+DEFAULT_SETTING = "The background is a music practice room with wooden accents. To her left and right, parts of a black drum kit (snare drums, cymbals) are visible, slightly out of focus. Behind her is a large window with a wooden frame and white curtains, allowing soft, sun-lit natural light to flood the scene."
+DEFAULT_LIGHTING = "Bright natural daylight streams in from the window behind her (backlighting), creating a rim-light effect on her hair and shoulders, while soft fill light illuminates her torso and face."
+DEFAULT_QUALITY = "8k resolution, raw photo aesthetic."
+DEFAULT_CAMERA = "Low-angle medium shot, camera at waist height looking up."
+
+
+def normalize_spacing(text: str) -> str:
+    """Normalize whitespace around punctuation in a prompt string."""
+    # Ensure single space after comma, period, colon, semicolon
+    text = re.sub(r"([,.:;])(?!\s)", r"\1 ", text)
+    # Collapse multiple spaces into one
+    text = re.sub(r" {2,}", " ", text)
+    return text.strip()
 
 
 def combine_prompt_sections(
@@ -31,7 +41,7 @@ def combine_prompt_sections(
     """Combine separate prompt sections into one final prompt string."""
     sections = [negative, appearance, outfit, pose, setting, lighting, quality, camera]
     # Filter out empty sections and join with ', '
-    combined = ", ".join(s.strip() for s in sections if s and s.strip())
+    combined = ", ".join(normalize_spacing(s) for s in sections if s and s.strip())
     return combined
 
 
@@ -419,11 +429,11 @@ def main():
 
                 gr.Markdown("### 프롬프트 구성")
                 prompt_negative = gr.Textbox(
-                    label="1. 해부학/제약 (Anatomy & Constraints)",
+                    label="1. 네거티브 프롬프트 (Negative Prompt)",
                     value=DEFAULT_NEGATIVE,
                     lines=2,
-                    placeholder="예: perfect anatomy, no extra fingers",
-                    info="해부학적 정확성 및 생성 제약 조건을 지정합니다.",
+                    placeholder="예: bad anatomy, extra fingers, blurry",
+                    info="생성에서 제외할 요소들입니다. 최종 프롬프트에 포함됩니다.",
                 )
                 prompt_appearance = gr.Textbox(
                     label="2. 외모 (Appearance)",
