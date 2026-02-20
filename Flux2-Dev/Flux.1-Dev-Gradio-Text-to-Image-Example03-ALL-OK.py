@@ -47,17 +47,9 @@ def get_available_devices():
         devices.append("cpu")
     return devices
 
-#DEFAULT_PROMPT = "A sparkling-eyed Instagram-style young and cute korean woman wearing a red bikini photography, posing on a tropical sunny beach, beautiful detailed body with perfect anatomy and perfect arms and legs structure, 5 fingers and 5 toes, beautiful gorgeous model, photorealistic, 4k, high quality, high resolution, beautiful body, attractive pose, attractive face and body."
 
-# DEFAULT_PROMPT ="A sparkling-eyed Instagram-style beautiful young and cute korean woman model wearing a red bikini photography, on a tropical sunny beach, beautiful detailed body with perfect anatomy and perfect arms and legs structure, photorealistic, 4k, high quality, high resolution."
+DEFAULT_PROMPT = "No bad fingers. The image is a high-quality, photorealistic cosplay portrait of a young Korean woman with a soft, idol aesthetic. Physical Appearance: Face: She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera: She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face. Attire (Blue & White Bunny Theme): Headwear: She wears tall, upright blue fabric bunny ears with white lace inner lining and a delicate white lace headband base, accented with a small white bow. Outfit: She wears a unique blue denim-textured bodysuit. It features a front zipper, silver buttons, and thin silver chains draped across the chest. The sides are constructed from semi-sheer white lace. Accessories: Around her neck is a blue bow tie attached to a white collar. She wears long, white floral lace fingerless sleeves that extend past her elbows, finished with blue cuffs and small black decorative ribbons. Legwear: She wears white fishnet stockings held up by blue and white ruffled lace garters adorned with small white bows. Pose: She is standing gracefully in front of the edge of a light-colored, vintage-style bed or cushioned bench. Her body is slightly angled toward the camera, creating a soft and inviting posture. Setting & Background: Location: A bright, high-key studio set designed to look like a clean, airy bedroom. Background: The background is dominated by large windows with white vertical blinds or curtains, allowing soft, diffused natural-looking light to flood the scene. The background is softly blurred (bokeh). Lighting: The lighting is bright, soft, and even, minimizing harsh shadows and giving the skin a glowing, porcelain appearance. Flux Prompt Prompt: A photorealistic, high-quality cosplay portrait of a beautiful Korean woman dressed in a blue and white bunny girl outfit. She has long straight black hair with hime-cut bangs and vibrant blue eyes. She wears tall blue bunny ears with white lace trim, a blue denim-textured bodysuit with a front zipper and white lace side panels, a blue bow tie, and long white lace sleeves. She is standing in front of a white bed in a bright, sun-drenched room with soft-focus white curtains. She is looking at the camera with a soft, innocent expression.8k resolution, high-key lighting, cinematic soft focus, detailed textures of denim and lace, gravure photography style. Key Stylistic Keywords Blue bunny girl, denim cosplay, white lace, high-key lighting, blue contact lenses, black hair with bangs, fishnet stockings, airy atmosphere, photorealistic, innocent and alluring, studio photography."
 
-# DEFAULT_PROMPT ="A sparkling-eyed Instagram-style beautiful young and cute korean woman model full-body photography, wearing a red bikini, on a tropical sunny beach, beautiful detailed body with perfect anatomy and perfect arms and legs structure, photorealistic, 4k, high quality, high resolution."
-
-#DEFAULT_PROMPT = "A sparkling-eyed Instagram-style young and cute korean woman wearing a red bikini full-body photography, standing on a tropical sunny beach, beautiful detailed body with perfect anatomy and perfect arms and legs structure, good fingers and toes, beautiful gorgeous model, photorealistic, 4k, high quality, high resolution, beautiful body, attractive pose, attractive face and body."
-
-DEFAULT_PROMPT = "A photorealistic, high-quality cosplay portrait of a beautiful Korean woman dressed in a blue and white bunny girl outfit. She has long straight black hair with hime-cut bangs and vibrant blue eyes. She wears tall blue bunny ears with white lace trim, a blue denim-textured bodysuit with a front zipper and white lace side panels, a blue bow tie, and long white lace sleeves. She is standing in front of a white bed in a bright, sun-drenched room with soft-focus white curtains. She is looking at the camera with a soft, innocent expression.8k resolution, high-key lighting, cinematic soft focus, detailed textures of denim and lace, gravure photography style. Key Stylistic Keywords Blue bunny girl, denim cosplay, white lace, high-key lighting, blue contact lenses, black hair with bangs, fishnet stockings, airy atmosphere, photorealistic, innocent and alluring, studio photography."
-
-# DEFAULT_PROMPT = "A highly realistic, high-quality photo of a beautiful Instagram-style korean girl on vacation. She has black, medium-length hair that reaches her shoulders, tied back in a casual yet stylish manner. Her eyes are hazel, with a natural sparkle of happiness as she smiles. The image should capture her in a half-body shot, with perfect anatomy, including precise details in her eyes and teeth. Her skin should appear natural, with visible pores, avoiding an overly smooth or filtered look, to maintain a lifelike, 4K resolution quality. The overall atmosphere is bright and joyful, reflecting the sunny, relaxed vacation mood."
 
 def print_hardware_info():
     """Print detailed hardware specifications."""
@@ -208,12 +200,22 @@ def load_model(device_name=None):
 
 
 def generate_image(
-    prompt, width, height, guidance_scale, num_inference_steps, seed, strength, max_sequence_length
+    prompt,
+    width,
+    height,
+    guidance_scale,
+    num_inference_steps,
+    seed,
+    strength,
+    max_sequence_length,
 ):
     global pipe
 
     if pipe is None:
-        return None, "오류: 모델이 로드되지 않았습니다. '모델 로드' 버튼을 먼저 눌러주세요."
+        return (
+            None,
+            "오류: 모델이 로드되지 않았습니다. '모델 로드' 버튼을 먼저 눌러주세요.",
+        )
 
     if not prompt:
         return None, "오류: 프롬프트를 입력해주세요."
@@ -261,7 +263,7 @@ def generate_image(
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         script_name = os.path.splitext(os.path.basename(__file__))[0]
         filename = f"{script_name}_{timestamp}_{DEVICE}_{width}x{height}_gs{guidance_scale}_step{num_inference_steps}_seed{int(seed)}_str{strength}_msl{int(max_sequence_length)}.png"
-        
+
         print(f"이미지 저장 중: {filename}")
         image.save(filename)
 
@@ -320,7 +322,7 @@ def main():
                         minimum=256,
                         maximum=2048,
                         step=64,
-                        value=1536,
+                        value=2048,
                         info="생성할 이미지의 높이를 지정합니다 (픽셀). 64의 배수여야 합니다.",
                     )
 
