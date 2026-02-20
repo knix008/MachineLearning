@@ -17,12 +17,12 @@ import gradio as gr
 # Default values for each prompt section
 
 DEFAULT_QUALITY = "4k, ultra-detailed, high resolution, photorealistic."
+DEFAULT_NEGATIVE = "No missing fingers, no extra fingers, no deformed fingers."
 DEFAULT_APPEARANCE = "The image is a cosplay portrait of a young skinny Korean woman with a soft, idol aesthetic. Physical Appearance: Face: She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera with one hand softly touching her hair and the other hand resting naturally at her side. She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face. She wears tall, upright blue fabric bunny ears with white lace inner lining and a delicate white lace headband base, accented with a small white bow. She wears a unique blue denim-textured bodysuit. It features a front zipper, silver buttons, and thin silver chains draped across the chest. The sides are constructed from semi-sheer white lace. Around her neck is a blue bow tie attached to a white collar. She wears long, white floral lace fingerless sleeves that extend past her elbows, finished with blue cuffs and small black decorative ribbons. She wears white fishnet stockings held up by blue and white ruffled lace garters adorned with small white bows. She is standing up gracefully in front of the edge of a light-colored, vintage-style bed or  cushioned bench. She poses with one hand softly touching her hair and the other hand resting naturally at her side, looking at the camera with a soft, innocent expression. A bright, high-key studio set designed to look like a clean, airy bedroom. The background is dominated by large windows with white vertical blinds or curtains, allowing soft, diffused natural-looking light to flood the scene. The background is softly blurred (bokeh). The lighting is bright, soft, and even, minimizing harsh shadows and giving the skin a glowing, porcelain appearance. A photorealistic, high-quality cosplay portrait of a beautiful Asian woman dressed in a blue and white bunny girl outfit. She has long straight black hair with hime-cut bangs and vibrant blue eyes."
 DEFAULT_OUTFIT = ""
 DEFAULT_POSE = ""
 DEFAULT_SETTING = ""
 DEFAULT_LIGHTING = ""
-DEFAULT_NEGATIVE = "No missing fingers, no extra fingers, no deformed fingers."
 DEFAULT_CAMERA = ""
 
 
@@ -39,7 +39,7 @@ def combine_prompt_sections(
     negative, appearance, outfit, pose, setting, lighting, quality, camera
 ):
     """Combine separate prompt sections into one final prompt string."""
-    sections = [quality, appearance, outfit, pose, setting, lighting, negative, camera]
+    sections = [quality, negative, appearance, outfit, pose, setting, lighting, camera]
     # Filter out empty sections and join with ', '
     combined = ", ".join(normalize_spacing(s) for s in sections if s and s.strip())
     return combined
