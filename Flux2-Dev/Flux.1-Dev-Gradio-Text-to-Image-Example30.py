@@ -16,9 +16,9 @@ import gradio as gr
 
 # Default values for each prompt section
 
-DEFAULT_QUALITY = "4k, ultra-detailed, high resolution, photorealistic."
-DEFAULT_NEGATIVE = "No fused fingers, no missing fingers, no extra fingers, no deformed fingers."
-DEFAULT_APPEARANCE = "The image is a cosplay portrait of a young skinny Korean woman with a soft, idol aesthetic. She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera with one hand softly touching her hair and the other hand resting naturally at her side. She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face. She wears tall, upright blue fabric bunny ears with white lace inner lining and a delicate white lace headband base, accented with a small white bow. She wears a unique blue denim-textured bodysuit. It features a front zipper, silver buttons, and thin silver chains draped across the chest. The sides are constructed from semi-sheer white lace. Around her neck is a blue bow tie attached to a white collar. She wears long, white floral lace fingerless sleeves that extend past her elbows, finished with blue cuffs and small black decorative ribbons. She wears white fishnet stockings held up by blue and white ruffled lace garters adorned with small white bows. She is standing up in front of the edge of a light-colored, vintage-style bed or cushioned bench. She poses with one hand softly touching her hair and the other hand resting naturally nearby her thigh, looking at the camera with a soft, innocent expression. A bright, high-key studio set designed to look like a clean, airy bedroom. The background is dominated by large windows with white vertical blinds or curtains, allowing soft, diffused natural-looking light to flood the scene. The background is softly blurred (bokeh). The lighting is bright, soft, and even, minimizing harsh shadows and giving the skin a glowing, porcelain appearance. A photorealistic, high-quality cosplay portrait of a beautiful Asian woman dressed in a blue and white bunny girl outfit. She has long straight black hair with hime-cut bangs and vibrant blue eyes."
+DEFAULT_QUALITY = "4k, ultra-detailed, high detail, high resolution, photorealistic."
+DEFAULT_NEGATIVE = "Perfect anatomy, perfect proportions, no extra fingers, no missing fingers, no fused fingers, no deformed fingers."
+DEFAULT_APPEARANCE = "The image is a cosplay portrait of a young skinny beautiful Korean woman with a soft, idol aesthetic. She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera with one hand softly touching her hair and the other hand naturally down nearby her thigh. She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face. She wears tall, upright blue fabric bunny ears with white lace inner lining and a delicate white lace headband base, accented with a small white bow. She wears a unique blue denim-textured bodysuit. It features a front zipper, silver buttons, and thin silver chains draped across the chest. The sides are constructed from semi-sheer white lace. Around her neck is a blue bow tie attached to a white collar. She wears long, white floral lace fingerless sleeves that extend past her elbows, finished with blue cuffs and small black decorative ribbons. She wears white fishnet stockings held up by blue and white ruffled lace garters adorned with small white bows. She is standing up straight in front of the edge of a light-colored, vintage-style bed or cushioned bench. She is looking at the camera with a soft, innocent expression. A bright, high-key studio set designed to look like a clean, airy bedroom. The background is dominated by large windows with white vertical blinds or curtains, allowing soft, diffused natural-looking light to flood the scene. The background is softly blurred (bokeh). The lighting is bright, soft, and even, minimizing harsh shadows and giving the skin a glowing, porcelain appearance. A photorealistic, high-quality cosplay portrait of a beautiful Asian woman dressed in a blue and white bunny girl outfit. She has long straight black hair with hime-cut bangs and vibrant blue eyes."
 DEFAULT_OUTFIT = ""
 DEFAULT_POSE = ""
 DEFAULT_SETTING = ""
@@ -428,54 +428,54 @@ def main():
                 )
 
                 gr.Markdown("### 프롬프트 구성")
+                prompt_quality = gr.Textbox(
+                    label="1. 품질/해상도 (Quality & Resolution)",
+                    value=DEFAULT_QUALITY,
+                    lines=2,
+                    placeholder="예: 4k, ultra-detailed, photorealistic",
+                    info="이미지의 품질, 해상도, 스타일 관련 키워드입니다.",
+                )
                 prompt_negative = gr.Textbox(
-                    label="1. 네거티브 프롬프트 (Negative Prompt)",
+                    label="2. 네거티브 프롬프트 (Negative Prompt)",
                     value=DEFAULT_NEGATIVE,
                     lines=2,
                     placeholder="예: bad anatomy, extra fingers, blurry",
                     info="생성에서 제외할 요소들입니다. 최종 프롬프트에 포함됩니다.",
                 )
                 prompt_appearance = gr.Textbox(
-                    label="2. 외모 (Appearance)",
+                    label="3. 외모 (Appearance)",
                     value=DEFAULT_APPEARANCE,
                     lines=2,
                     placeholder="예: A beautiful Korean girl with long black hair",
                     info="인물의 외모, 얼굴, 머리카락, 나이 등을 설명합니다.",
                 )
                 prompt_outfit = gr.Textbox(
-                    label="3. 의상 (Outfit)",
+                    label="4. 의상 (Outfit)",
                     value=DEFAULT_OUTFIT,
                     lines=2,
                     placeholder="예: in a red bikini, wearing a white dress",
                     info="의상, 액세서리, 착용한 아이템을 설명합니다.",
                 )
                 prompt_pose = gr.Textbox(
-                    label="4. 포즈/구도 (Pose & Composition)",
+                    label="5. 포즈/구도 (Pose & Composition)",
                     value=DEFAULT_POSE,
                     lines=2,
                     placeholder="예: standing, looking over shoulder, full body",
                     info="자세, 시선 방향, 카메라 앵글, 촬영 구도를 설명합니다.",
                 )
                 prompt_setting = gr.Textbox(
-                    label="5. 배경/장소 (Setting & Background)",
+                    label="6. 배경/장소 (Setting & Background)",
                     value=DEFAULT_SETTING,
                     lines=2,
                     placeholder="예: on a boardwalk at sunset, calm ocean",
                     info="배경, 장소, 환경, 계절 등을 설명합니다.",
                 )
                 prompt_lighting = gr.Textbox(
-                    label="6. 조명 (Lighting)",
+                    label="7. 조명 (Lighting)",
                     value=DEFAULT_LIGHTING,
                     lines=2,
                     placeholder="예: golden hour, soft glow, cinematic lighting",
                     info="조명 조건, 빛의 방향, 분위기를 설명합니다.",
-                )
-                prompt_quality = gr.Textbox(
-                    label="7. 품질/해상도 (Quality & Resolution)",
-                    value=DEFAULT_QUALITY,
-                    lines=2,
-                    placeholder="예: 4k, ultra-detailed, photorealistic",
-                    info="이미지의 품질, 해상도, 스타일 관련 키워드입니다.",
                 )
                 prompt_camera = gr.Textbox(
                     label="8. 카메라 설정 (Camera Settings)",
