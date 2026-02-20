@@ -223,13 +223,8 @@ def load_model(device_name=None):
             "메모리 최적화 적용: sequential CPU offload, model CPU offload, attention slicing (CPU)"
         )
     elif DEVICE == "mps":
-        pipe.enable_attention_slicing()
-        # channels_last memory format for better MPS performance
-        if hasattr(pipe, "transformer"):
-            pipe.transformer.to(memory_format=torch.channels_last)
-        elif hasattr(pipe, "unet"):
-            pipe.unet.to(memory_format=torch.channels_last)
-        print("메모리 최적화 적용: attention slicing, VAE slicing, VAE tiling (MPS)")
+        #pipe.enable_attention_slicing()
+        print("MPS 사용중(MacOS Apple Silicon)")
 
     print(f"모델 로딩 완료! (Device: {DEVICE})")
     return f"모델 로딩 완료! (Device: {DEVICE}, dtype: {DTYPE})"
