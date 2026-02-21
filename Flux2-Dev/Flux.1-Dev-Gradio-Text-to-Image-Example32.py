@@ -1,6 +1,7 @@
+import re
 import torch
 import platform
-from diffusers import Flux2KleinPipeline
+from diffusers import FluxPipeline
 from datetime import datetime
 from PIL import Image
 import os
@@ -11,26 +12,36 @@ import psutil
 import time
 import gradio as gr
 
-DEFAULT_IMAGE = "Test02.jpg"
+# Reference Site : https://prompthero.com/prompt/3395872f879-z-image-turbo-a-highly-detailed-photorealistic-cinematic-low-angle-medium-shot-of-a-stunning-young-east-asian-woman-posing-in-a-sun
 
 # Default values for each prompt section
+
 DEFAULT_QUALITY = ""
-DEFAULT_NEGATIVE = "Perfect anatomy, missing fingers, no extra fingers, no malformed fingers, no fused fingers. no missing toes, no extra toes, no deformed toes, no fused toes."
-DEFAULT_APPEARANCE = "Her hair is loosely spread out around her head on the sunbed, flowing naturally in all directions."
-DEFAULT_OUTFIT = "She wears blue contact lenses that contrast with her dark hair. She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face. She wears a small high legged string pink bikini. Around her neck is a blue bow tie attached to a white collar. She wears long, white floral lace fingerless sleeves that extend past her elbows, finished with blue cuffs and small black decorative ribbons. She wears white fishnet stockings held up by blue and white ruffled lace garters adorned with small white bows. She wears a headband with bunny ears. The outer surface of the bunny ears is solid blue fabric, while the inner facing surface is distinctly white lace, clearly visible and contrasting against the blue exterior. The bunny ears are attached to a delicate white lace headband base accented with a small white bow."
-DEFAULT_POSE = "She is lying on a sunbed in a classic bikini model pose, body stretched out gracefully, one leg slightly bent, one hand resting naturally on her belly, the other hand placed gently on her thigh, full body visible from head to toe."
-DEFAULT_SETTING = "Sunny beach hotel poolside, bright sunlight, sunbed with white towel, tropical background."
-DEFAULT_LIGHTING = "Natural sunlight, soft and warm, not overly bright, gentle diffused daylight."
-DEFAULT_CAMERA = "Overhead top-down angle, bird's eye view, full body shot, wide frame showing entire body from head to toe on the sunbed."
-DEFAULT_NEGATIVE_PROMPT = ""
+DEFAULT_NEGATIVE = ""
+DEFAULT_APPEARANCE = "The image is a high-quality, photorealistic cosplay portrait of a young Korean woman with a soft, idol aesthetic. Physical Appearance: Face: She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera: She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face. Attire (Blue & White Bunny Theme): Headwear: She wears tall, upright blue fabric bunny ears with white lace inner lining and a delicate white lace headband base, accented with a small white bow. Outfit: She wears a unique blue denim-textured bodysuit. It features a front zipper, silver buttons, and thin silver chains draped across the chest. The sides are constructed from semi-sheer white lace. Accessories: Around her neck is a blue bow tie attached to a white collar. She wears long, white floral lace fingerless sleeves that extend past her elbows, finished with blue cuffs and small black decorative ribbons. Legwear: She wears white fishnet stockings held up by blue and white ruffled lace garters adorned with small white bows. Pose: She is standing gracefully in front of the edge of a light-colored, vintage-style bed or cushioned bench. Her body is slightly angled toward the camera, creating a soft and inviting posture. Setting & Background: Location: A bright, high-key studio set designed to look like a clean, airy bedroom. Background: The background is dominated by large windows with white vertical blinds or curtains, allowing soft, diffused natural-looking light to flood the scene. The background is softly blurred (bokeh). Lighting: The lighting is bright, soft, and even, minimizing harsh shadows and giving the skin a glowing, porcelain appearance. Flux Prompt Prompt: A photorealistic, high-quality cosplay portrait of a beautiful Korean woman dressed in a blue and white bunny girl outfit. She has long straight black hair with hime-cut bangs and vibrant blue eyes. She wears tall blue bunny ears with white lace trim, a blue denim-textured bodysuit with a front zipper and white lace side panels, a blue bow tie, and long white lace sleeves. She is standing in front of a white bed in a bright, sun-drenched room with soft-focus white curtains. She is looking at the camera with a soft, innocent expression. 8k resolution, high-key lighting, cinematic soft focus, detailed textures of denim and lace, gravure photography style. Key Stylistic Keywords Blue bunny girl, denim cosplay, white lace, high-key lighting, blue contact lenses, black hair with bangs, fishnet stockings, airy atmosphere, photorealistic, innocent and alluring, studio photography."
+DEFAULT_OUTFIT = ""
+DEFAULT_POSE = ""
+DEFAULT_SETTING = ""
+DEFAULT_LIGHTING = ""
+DEFAULT_CAMERA = ""
+
+
+def normalize_spacing(text: str) -> str:
+    """Normalize whitespace around punctuation in a prompt string."""
+    # Ensure single space after comma, period, colon, semicolon
+    text = re.sub(r"([,.:;])(?!\s)", r"\1 ", text)
+    # Collapse multiple spaces into one
+    text = re.sub(r" {2,}", " ", text)
+    return text.strip()
 
 
 def combine_prompt_sections(
-    quality, negative, appearance, outfit, pose, setting, lighting, camera
+    negative, appearance, outfit, pose, setting, lighting, quality, camera
 ):
     """Combine separate prompt sections into one final prompt string."""
     sections = [quality, negative, appearance, outfit, pose, setting, lighting, camera]
-    combined = ", ".join(s.strip() for s in sections if s and s.strip())
+    # Filter out empty sections and join with ', '
+    combined = ", ".join(normalize_spacing(s) for s in sections if s and s.strip())
     return combined
 
 
@@ -55,7 +66,11 @@ interface = None
 
 
 def get_available_devices():
-    """Return list of available device choices."""
+    """Return list of available device choices.
+    - CUDA + CPU: both selectable
+    - MPS only (no CUDA): MPS only
+    - No GPU: CPU only
+    """
     devices = []
     if torch.cuda.is_available():
         devices.append("cuda")
@@ -73,12 +88,16 @@ def print_hardware_info():
     print("하드웨어 사양")
     print("=" * 60)
 
+    # OS 정보
     print(f"OS: {platform.system()} {platform.release()}")
     print(f"OS 버전: {platform.version()}")
     print(f"아키텍처: {platform.machine()}")
+
+    # Python 정보
     print(f"Python: {platform.python_version()}")
     print(f"PyTorch: {torch.__version__}")
 
+    # CPU 정보
     print("-" * 60)
     print("CPU 정보")
     print("-" * 60)
@@ -86,6 +105,7 @@ def print_hardware_info():
     print(f"물리 코어: {psutil.cpu_count(logical=False)}")
     print(f"논리 코어: {psutil.cpu_count(logical=True)}")
 
+    # 메모리 정보
     mem = psutil.virtual_memory()
     print("-" * 60)
     print("메모리 정보")
@@ -94,6 +114,7 @@ def print_hardware_info():
     print(f"사용 가능: {mem.available / (1024**3):.1f} GB")
     print(f"사용률: {mem.percent}%")
 
+    # GPU 정보
     print("-" * 60)
     print("GPU 정보")
     print("-" * 60)
@@ -153,17 +174,19 @@ def signal_handler(_sig, _frame):
     sys.exit(0)
 
 
+# Register signal handler
 signal.signal(signal.SIGINT, signal_handler)
 
 
 def load_model(device_name=None):
-    """Load and initialize the Flux2Klein model with optimizations."""
+    """Load and initialize the Flux model with optimizations."""
     global pipe, DEVICE, DTYPE
 
     if device_name is not None:
         DEVICE = device_name
         DTYPE = torch.bfloat16 if device_name in ("cuda", "mps") else torch.float32
 
+    # Release previous model if loaded
     if pipe is not None:
         print("기존 모델 해제 중...")
         del pipe
@@ -175,47 +198,52 @@ def load_model(device_name=None):
             torch.mps.empty_cache()
 
     print(f"모델 로딩 중... (Device: {DEVICE}, dtype: {DTYPE})")
-    pipe = Flux2KleinPipeline.from_pretrained(
-        "black-forest-labs/FLUX.2-klein-9B",
+    print("T5-XXL 텍스트 인코더만 사용합니다. (CLIP 비활성화)")
+    pipe = FluxPipeline.from_pretrained(
+        "black-forest-labs/FLUX.1-dev",
+        text_encoder=None,
+        tokenizer=None,
         torch_dtype=DTYPE,
     )
+    pipe.to(DEVICE)
 
-    if DEVICE == "cuda" or DEVICE == "cpu":
-        pipe.to(DEVICE)
+    # Enable memory optimizations based on device
+    if DEVICE == "cuda":
         pipe.enable_model_cpu_offload()
         pipe.enable_attention_slicing()
         pipe.enable_sequential_cpu_offload()
         print(
-            "메모리 최적화 적용: sequential CPU offload, model CPU offload, attention slicing"
+            "메모리 최적화 적용: sequential CPU offload, model CPU offload, attention slicing (CUDA)"
+        )
+    elif DEVICE == "cpu":
+        pipe.enable_model_cpu_offload()
+        pipe.enable_attention_slicing()
+        pipe.enable_sequential_cpu_offload()
+        print(
+            "메모리 최적화 적용: sequential CPU offload, model CPU offload, attention slicing (CPU)"
         )
     elif DEVICE == "mps":
-        pipe.to(DEVICE)
         pipe.enable_attention_slicing()
-        print("메모리 최적화 적용: attention slicing (MPS)")
+        # channels_last memory format for better MPS performance
+        if hasattr(pipe, "transformer"):
+            pipe.transformer.to(memory_format=torch.channels_last)
+        elif hasattr(pipe, "unet"):
+            pipe.unet.to(memory_format=torch.channels_last)
+        print("메모리 최적화 적용: attention slicing, VAE slicing, VAE tiling (MPS)")
 
     print(f"모델 로딩 완료! (Device: {DEVICE})")
     return f"모델 로딩 완료! (Device: {DEVICE}, dtype: {DTYPE})"
 
 
-def on_image_upload(image):
-    """입력 이미지가 업로드되면 높이/너비 슬라이더를 이미지 크기로 업데이트."""
-    if image is None:
-        return gr.update(), gr.update()
-    if not isinstance(image, Image.Image):
-        image = Image.fromarray(image)
-    w, h = image.size
-    return gr.update(value=h), gr.update(value=w)
-
-
 def generate_image(
-    input_image,
     prompt,
-    negative_prompt,
     width,
     height,
     guidance_scale,
     num_inference_steps,
     seed,
+    strength,
+    max_sequence_length,
     image_format,
     progress=gr.Progress(track_tqdm=True),
 ):
@@ -227,38 +255,72 @@ def generate_image(
             "오류: 모델이 로드되지 않았습니다. '모델 로드' 버튼을 먼저 눌러주세요.",
         )
 
-    if input_image is None:
-        return None, "오류: 입력 이미지를 업로드해주세요."
-
     if not prompt:
         return None, "오류: 프롬프트를 입력해주세요."
 
     try:
-        if not isinstance(input_image, Image.Image):
-            input_image = Image.fromarray(input_image)
-
         steps = int(num_inference_steps)
         start_time = time.time()
 
-        progress(0.0, desc="이미지 편집 준비 중...")
-        print("이미지 편집 준비 중...")
+        progress(0.0, desc="프롬프트 인코딩 중...")
+        print("프롬프트 인코딩 중...")
 
+        # Setup generator (MPS doesn't support Generator directly, use CPU)
         generator_device = "cpu" if DEVICE == "mps" else DEVICE
         generator = torch.Generator(device=generator_device).manual_seed(int(seed))
+
+        # Encode prompt using T5-XXL only
+        max_len = int(max_sequence_length)
+        text_inputs = pipe.tokenizer_2(
+            prompt,
+            padding="max_length",
+            max_length=max_len,
+            truncation=True,
+            return_tensors="pt",
+        )
+
+        # Count tokens to detect clipping
+        raw_ids = pipe.tokenizer_2(prompt, truncation=False, return_tensors="pt")[
+            "input_ids"
+        ][0]
+        raw_token_count = len(raw_ids)
+        clipped = max(0, raw_token_count - max_len)
+        if clipped > 0:
+            print(f"T5 토큰 수: {raw_token_count} / {max_len} → {clipped}개 잘림!")
+            truncated_text = pipe.tokenizer_2.decode(
+                raw_ids[max_len:], skip_special_tokens=True
+            )
+            print(f"[잘린 텍스트]: {truncated_text}")
+        else:
+            print(f"T5 토큰 수: {raw_token_count} / {max_len} (잘림 없음)")
+
+        with torch.inference_mode():
+            prompt_embeds = pipe.text_encoder_2(
+                text_inputs["input_ids"].to(DEVICE),
+                output_hidden_states=False,
+            )[0]
+        prompt_embeds = prompt_embeds.to(dtype=DTYPE)
+
+        # Zero pooled embeddings (CLIP disabled)
+        pooled_prompt_embeds = torch.zeros(
+            1, 768, dtype=DTYPE, device=prompt_embeds.device
+        )
 
         progress(0.05, desc="추론 시작...")
         print("추론 시작...")
 
+        # Callback to report each inference step to Gradio progress bar and CLI status bar
         def step_callback(_pipe, step_index, _timestep, callback_kwargs):
             current = step_index + 1
             elapsed = time.time() - start_time
             ratio = current / steps
-            progress_val = 0.05 + ratio * 0.85
+            progress_val = 0.05 + ratio * 0.90
             progress(
                 progress_val,
                 desc=f"추론 스텝 {current}/{steps} ({elapsed:.1f}초 경과)",
             )
 
+            # CLI status bar
             bar_len = 30
             filled = int(bar_len * ratio)
             bar = "\u2588" * filled + "\u2591" * (bar_len - filled)
@@ -273,14 +335,10 @@ def generate_image(
                 print()
             return callback_kwargs
 
-        # Build final prompt (merge negative prompt for models that don't support the param)
-        final_prompt = prompt
-        if negative_prompt and negative_prompt.strip():
-            final_prompt = f"{prompt}, avoid: {negative_prompt.strip()}"
-
+        # Build pipeline kwargs with pre-computed T5 embeddings
         pipe_kwargs = {
-            "prompt": final_prompt,
-            "image": input_image,
+            "prompt_embeds": prompt_embeds,
+            "pooled_prompt_embeds": pooled_prompt_embeds,
             "width": width,
             "height": height,
             "guidance_scale": guidance_scale,
@@ -289,33 +347,29 @@ def generate_image(
             "callback_on_step_end": step_callback,
         }
 
-        if negative_prompt and negative_prompt.strip():
-            try:
-                test_kwargs = pipe_kwargs.copy()
-                test_kwargs["negative_prompt"] = negative_prompt.strip()
-                image = pipe(**test_kwargs).images[0]
-                print("부정 프롬프트 파라미터가 적용되었습니다.")
-            except TypeError as e:
-                if "negative_prompt" in str(e):
-                    print("이 모델은 negative_prompt 파라미터를 지원하지 않습니다. 메인 프롬프트에 포함시켜 생성합니다.")
-                    image = pipe(**pipe_kwargs).images[0]
-                else:
-                    raise e
-        else:
+        # Run the pipeline
+        with torch.inference_mode():
             image = pipe(**pipe_kwargs).images[0]
 
         progress(0.95, desc="이미지 저장 중...")
 
+        # Save with timestamp
         elapsed = time.time() - start_time
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         script_name = os.path.splitext(os.path.basename(__file__))[0]
         ext = "jpg" if image_format == "JPEG" else "png"
         filename = (
             f"{script_name}_{timestamp}_{DEVICE.upper()}_{width}x{height}"
-            f"_gs{guidance_scale}_step{steps}_seed{int(seed)}.{ext}"
+            f"_gs{guidance_scale}_step{steps}_seed{int(seed)}"
+            f"_str{strength}_msl{int(max_sequence_length)}.{ext}"
         )
 
-        print(f"이미지 편집 완료! 소요 시간: {elapsed:.1f}초")
+        token_info = (
+            f"토큰: {raw_token_count}/{max_len} → {clipped}개 잘림!"
+            if clipped > 0
+            else f"토큰: {raw_token_count}/{max_len}"
+        )
+        print(f"이미지 생성 완료! 소요 시간: {elapsed:.1f}초 | {token_info}")
         print(f"이미지가 저장되었습니다 : {filename}")
         if image_format == "JPEG":
             image.save(filename, format="JPEG", quality=100, subsampling=0)
@@ -325,7 +379,7 @@ def generate_image(
         progress(1.0, desc="완료!")
         return (
             image,
-            f"✓ 완료! ({elapsed:.1f}초) | 저장됨: {filename}",
+            f"✓ 완료! ({elapsed:.1f}초) | {token_info} | 저장됨: {filename}",
         )
     except Exception as e:
         return None, f"✗ 오류 발생: {str(e)}"
@@ -334,17 +388,20 @@ def generate_image(
 def main():
     global interface
 
+    # Print hardware specifications
     print_hardware_info()
 
+    # Auto-load model on startup with detected device
     print(f"\n자동으로 감지된 디바이스: {DEVICE} (dtype: {DTYPE})")
     load_model()
 
+    # Create Gradio interface
     with gr.Blocks(
-        title="Flux.2 Klein 9B Image-to-Image Generator",
+        title="Flux.1-dev Text-to-Image Generator",
     ) as interface:
-        gr.Markdown("# Flux.2 Klein 9B Image-to-Image Generator")
+        gr.Markdown("# Flux.1-dev Text-to-Image Generator")
         gr.Markdown(
-            f"이미지를 업로드하고 프롬프트로 편집하세요."
+            f"AI를 사용하여 텍스트에서 이미지를 생성합니다."
             f" (Device: **{DEVICE.upper()}**)"
         )
 
@@ -379,11 +436,11 @@ def main():
                     info="이미지의 품질, 해상도, 스타일 관련 키워드입니다.",
                 )
                 prompt_negative = gr.Textbox(
-                    label="2. 해부학/제약 (Anatomy & Constraints)",
+                    label="2. 네거티브 프롬프트 (Negative Prompt)",
                     value=DEFAULT_NEGATIVE,
                     lines=2,
-                    placeholder="예: perfect anatomy, no extra fingers",
-                    info="해부학적 정확성 및 생성 제약 조건을 지정합니다.",
+                    placeholder="예: bad anatomy, extra fingers, blurry",
+                    info="생성에서 제외할 요소들입니다. 최종 프롬프트에 포함됩니다.",
                 )
                 prompt_appearance = gr.Textbox(
                     label="3. 외모 (Appearance)",
@@ -431,13 +488,13 @@ def main():
                     combined_prompt = gr.Textbox(
                         label="최종 프롬프트",
                         value=combine_prompt_sections(
-                            DEFAULT_QUALITY,
                             DEFAULT_NEGATIVE,
                             DEFAULT_APPEARANCE,
                             DEFAULT_OUTFIT,
                             DEFAULT_POSE,
                             DEFAULT_SETTING,
                             DEFAULT_LIGHTING,
+                            DEFAULT_QUALITY,
                             DEFAULT_CAMERA,
                         ),
                         lines=4,
@@ -445,13 +502,13 @@ def main():
                         info="위 섹션들이 자동으로 합쳐진 최종 프롬프트입니다.",
                     )
                 prompt_sections = [
-                    prompt_quality,
                     prompt_negative,
                     prompt_appearance,
                     prompt_outfit,
                     prompt_pose,
                     prompt_setting,
                     prompt_lighting,
+                    prompt_quality,
                     prompt_camera,
                 ]
                 for section in prompt_sections:
@@ -461,24 +518,8 @@ def main():
                         outputs=[combined_prompt],
                     )
 
-                negative_prompt_input = gr.Textbox(
-                    label="부정 프롬프트 (Negative Prompt)",
-                    value=DEFAULT_NEGATIVE_PROMPT,
-                    lines=2,
-                    placeholder="예: blurry, bad quality, distorted",
-                    info="이미지에 포함되지 않기를 원하는 요소 (모델이 지원하는 경우에만 적용됨).",
-                )
-
-            # Right column: Input image + Parameters + Image generation
+            # Right column: Parameters (top) + Image generation (bottom)
             with gr.Column(scale=1):
-                gr.Markdown("### 입력 이미지")
-                input_image = gr.Image(
-                    label="입력 이미지",
-                    type="pil",
-                    value=DEFAULT_IMAGE,
-                    height=800,
-                )
-
                 gr.Markdown("### 파라미터 설정")
                 with gr.Row():
                     width = gr.Slider(
@@ -501,19 +542,19 @@ def main():
                 with gr.Row():
                     guidance_scale = gr.Slider(
                         label="Guidance Scale (프롬프트 강도)",
-                        minimum=0.0,
-                        maximum=1.0,
-                        step=0.05,
-                        value=1.0,
-                        info="프롬프트 준수도. 낮으면 창의적, 높으면 정확. 권장: 0.5-1.0",
+                        minimum=1.0,
+                        maximum=20.0,
+                        step=0.5,
+                        value=4.0,
+                        info="프롬프트 준수도. 낮으면 창의적, 높으면 정확. 권장: 4-15",
                     )
                     num_inference_steps = gr.Slider(
                         label="추론 스텝",
-                        minimum=1,
-                        maximum=20,
+                        minimum=10,
+                        maximum=50,
                         step=1,
-                        value=4,
-                        info="생성 단계 수. 높으면 품질 향상, 시간 증가. 권장: 4-12",
+                        value=28,
+                        info="생성 단계 수. 높으면 품질 향상, 시간 증가. 권장: 20-28",
                     )
 
                 with gr.Row():
@@ -522,6 +563,24 @@ def main():
                         value=42,
                         precision=0,
                         info="난수 시드. 같은 값이면 같은 결과.",
+                    )
+                    strength = gr.Slider(
+                        label="강도",
+                        minimum=0.01,
+                        maximum=1.00,
+                        step=0.01,
+                        value=0.75,
+                        info="생성 강도. 낮으면 다양, 높으면 일관.",
+                    )
+
+                with gr.Row():
+                    max_sequence_length = gr.Slider(
+                        label="최대 시퀀스 길이",
+                        minimum=64,
+                        maximum=512,
+                        step=64,
+                        value=512,
+                        info="텍스트 인코더 최대 길이. 긴 프롬프트는 높은 값 필요.",
                     )
                     image_format = gr.Radio(
                         label="이미지 포맷",
@@ -532,47 +591,44 @@ def main():
 
                 gr.Markdown("---")
                 gr.Markdown("### 이미지 생성")
-                generate_btn = gr.Button("이미지 편집", variant="primary", size="lg")
+                generate_btn = gr.Button("이미지 생성", variant="primary", size="lg")
                 output_image = gr.Image(label="생성된 이미지", height=700)
                 output_message = gr.Textbox(label="상태", interactive=False)
 
+        # Load model when button is clicked
         load_model_btn.click(
             fn=load_model,
             inputs=[device_selector],
             outputs=[device_status],
         )
 
+        # Auto-load model when device is changed
         device_selector.change(
             fn=load_model,
             inputs=[device_selector],
             outputs=[device_status],
         )
 
-        input_image.change(
-            fn=on_image_upload,
-            inputs=[input_image],
-            outputs=[height, width],
-        )
-
+        # Connect the generate button to the function
         generate_btn.click(
             fn=generate_image,
             inputs=[
-                input_image,
                 combined_prompt,
-                negative_prompt_input,
                 width,
                 height,
                 guidance_scale,
                 num_inference_steps,
                 seed,
+                strength,
+                max_sequence_length,
                 image_format,
             ],
             outputs=[output_image, output_message],
         )
 
+    # Launch the interface
     interface.launch(
         inbrowser=True,
-        allowed_paths=[os.path.dirname(os.path.abspath(__file__))],
         js="document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();}})",
     )
 
