@@ -185,7 +185,7 @@ def load_model(device_name=None):
 
     print(f"모델 로딩 중... (Device: {DEVICE}, dtype: {DTYPE})")
     pipe = Flux2KleinPipeline.from_pretrained(
-        "black-forest-labs/FLUX.2-klein-9B",
+        "black-forest-labs/FLUX.2-klein-4B",
         torch_dtype=DTYPE,
     )
 
