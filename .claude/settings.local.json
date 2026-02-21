@@ -17,7 +17,8 @@
       "Bash(python3:*)",
       "Bash(ls:*)",
       "Bash(where:*)",
-      "Bash(conda env list:*)"
+      "Bash(conda env list:*)",
+      "Bash(git restore:*)"
     ]
   }
 }
