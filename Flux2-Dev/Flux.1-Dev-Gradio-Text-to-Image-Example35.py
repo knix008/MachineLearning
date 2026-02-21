@@ -14,15 +14,17 @@ import gradio as gr
 
 # Reference Site : https://prompthero.com/prompt/3395872f879-z-image-turbo-a-highly-detailed-photorealistic-cinematic-low-angle-medium-shot-of-a-stunning-young-east-asian-woman-posing-in-a-sun
 
+# 4k, ultra detail, high resolution., Perfect anatomy, no extra fingers, no missing fingers, no fused fingers., The image is a high-quality, photorealistic cosplay portrait of a beautiful Korean woman with a soft, idol aesthetic. Physical Appearance: Face: She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face., Attire (Blue & White Bunny Theme): Headwear: She wears tall, upright blue fabric bunny ears with white lace inner lining and a delicate white lace headband base, accented with a small white bow. Outfit: She wears a very small, micro pink bikini with minimal coverage. Accessories: Around her neck is a blue bow tie attached to a white collar. She wears long, white floral lace fingerless sleeves that extend past her elbows, finished with blue cuffs and small black decorative ribbons. Legwear: She wears white fishnet stockings held up by blue and white ruffled lace garters adorned with small white bows. She wears a golden edged glasses., Pose: She is lying relaxed on a hotel sunbed, her full body visible from a top-down aerial view. Her body faces upward toward the camera. One hand gently strokes her hair, while the other hand rests naturally beside her thigh with fingers neatly gathered together. Her long black hair flows naturally around her head., Setting & Background: Location: A luxury hotel poolside or rooftop terrace. Background: She is lying on a white hotel sunbed. The background shows a clean, elegant hotel outdoor setting with soft natural light. The background is softly blurred (bokeh)., Lighting: The lighting is bright, natural outdoor sunlight, soft and even, minimizing harsh shadows and giving the skin a glowing, porcelain appearance.
+
 # Default values for each prompt section
-DEFAULT_NEGATIVE = "Perfect anatomy, no bad anatomy, no extra fingers, no missing fingers, no deformed fingers, no fused fingers, no extra toes, no missing toes, perfect legs and arms structure, perfect hands and feet structure, perfect body proportion."
+DEFAULT_QUALITY = "4k, ultra detail, high resolution."
+DEFAULT_NEGATIVE = "Perfect anatomy, no extra fingers, no missing fingers, no fused fingers."
 DEFAULT_APPEARANCE = "The image is a high-quality, photorealistic cosplay portrait of a beautiful Korean woman with a soft, idol aesthetic. Physical Appearance: Face: She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face."
-DEFAULT_OUTFIT = "Attire (Blue & White Bunny Theme): Headwear: She wears tall, upright blue fabric bunny ears with white lace inner lining and a delicate white lace headband base, accented with a small white bow. Outfit: She wears a very small, form-fitting pink bikini with minimal coverage. Accessories: Around her neck is a blue bow tie attached to a white collar. She wears long, white floral lace fingerless sleeves that extend past her elbows, finished with blue cuffs and small black decorative ribbons. Legwear: She wears white fishnet stockings held up by blue and white ruffled lace garters adorned with small white bows. She is wearing a golden edged glasses."
+DEFAULT_OUTFIT = "Attire (Blue & White Bunny Theme): Headwear: She wears tall, upright blue fabric bunny ears with white lace inner lining and a delicate white lace headband base, accented with a small white bow. Outfit: She wears a very small, micro pink bikini with minimal coverage. Accessories: Around her neck is a blue bow tie attached to a white collar. She wears long, white floral lace fingerless sleeves that extend past her elbows, finished with blue cuffs and small black decorative ribbons. Legwear: She wears white fishnet stockings held up by blue and white ruffled lace garters adorned with small white bows. She wears a golden edged glasses."
 DEFAULT_POSE = "Pose: She is lying relaxed on a hotel sunbed, her full body visible from a top-down aerial view. Her body faces upward toward the camera. One hand gently strokes her hair, while the other hand rests naturally beside her thigh with fingers neatly gathered together. Her long black hair flows naturally around her head."
 DEFAULT_SETTING = "Setting & Background: Location: A luxury hotel poolside or rooftop terrace. Background: She is lying on a white hotel sunbed. The background shows a clean, elegant hotel outdoor setting with soft natural light. The background is softly blurred (bokeh)."
 DEFAULT_LIGHTING = "Lighting: The lighting is bright, natural outdoor sunlight, soft and even, minimizing harsh shadows and giving the skin a glowing, porcelain appearance."
 DEFAULT_CAMERA = ""
-DEFAULT_QUALITY = "4k, high detail, high resolution, photorealistic, cinematic."
 
 
 def normalize_spacing(text: str) -> str:
@@ -35,10 +37,10 @@ def normalize_spacing(text: str) -> str:
 
 
 def combine_prompt_sections(
-    negative, appearance, outfit, pose, setting, lighting, camera, quality
+    quality, negative, appearance, outfit, pose, setting, lighting, camera
 ):
     """Combine separate prompt sections into one final prompt string."""
-    sections = [negative, appearance, outfit, pose, setting, lighting, camera, quality]
+    sections = [quality, negative, appearance, outfit, pose, setting, lighting, camera]
     # Filter out empty sections and join with ', '
     combined = ", ".join(normalize_spacing(s) for s in sections if s and s.strip())
     return combined
@@ -427,66 +429,67 @@ def main():
                 )
 
                 gr.Markdown("### 프롬프트 구성")
+                prompt_quality = gr.Textbox(
+                    label="1. 품질/해상도 (Quality & Resolution)",
+                    value=DEFAULT_QUALITY,
+                    lines=2,
+                    placeholder="예: 4k, ultra-detailed, photorealistic",
+                    info="이미지의 품질, 해상도, 스타일 관련 키워드입니다. 프롬프트 맨 앞에 위치합니다.",
+                )
                 prompt_negative = gr.Textbox(
-                    label="1. 네거티브 프롬프트 (Negative Prompt)",
+                    label="2. 네거티브 프롬프트 (Negative Prompt)",
                     value=DEFAULT_NEGATIVE,
                     lines=2,
                     placeholder="예: bad anatomy, extra fingers, blurry",
                     info="생성에서 제외할 요소들입니다. 최종 프롬프트에 포함됩니다.",
                 )
                 prompt_appearance = gr.Textbox(
-                    label="2. 외모 (Appearance)",
+                    label="3. 외모 (Appearance)",
                     value=DEFAULT_APPEARANCE,
                     lines=2,
                     placeholder="예: A beautiful Korean girl with long black hair",
                     info="인물의 외모, 얼굴, 머리카락, 나이 등을 설명합니다.",
                 )
                 prompt_outfit = gr.Textbox(
-                    label="3. 의상 (Outfit)",
+                    label="4. 의상 (Outfit)",
                     value=DEFAULT_OUTFIT,
                     lines=2,
                     placeholder="예: in a red bikini, wearing a white dress",
                     info="의상, 액세서리, 착용한 아이템을 설명합니다.",
                 )
                 prompt_pose = gr.Textbox(
-                    label="4. 포즈/구도 (Pose & Composition)",
+                    label="5. 포즈/구도 (Pose & Composition)",
                     value=DEFAULT_POSE,
                     lines=2,
                     placeholder="예: standing, looking over shoulder, full body",
                     info="자세, 시선 방향, 카메라 앵글, 촬영 구도를 설명합니다.",
                 )
                 prompt_setting = gr.Textbox(
-                    label="5. 배경/장소 (Setting & Background)",
+                    label="6. 배경/장소 (Setting & Background)",
                     value=DEFAULT_SETTING,
                     lines=2,
                     placeholder="예: on a boardwalk at sunset, calm ocean",
                     info="배경, 장소, 환경, 계절 등을 설명합니다.",
                 )
                 prompt_lighting = gr.Textbox(
-                    label="6. 조명 (Lighting)",
+                    label="7. 조명 (Lighting)",
                     value=DEFAULT_LIGHTING,
                     lines=2,
                     placeholder="예: golden hour, soft glow, cinematic lighting",
                     info="조명 조건, 빛의 방향, 분위기를 설명합니다.",
                 )
                 prompt_camera = gr.Textbox(
-                    label="7. 카메라 설정 (Camera Settings)",
+                    label="8. 카메라 설정 (Camera Settings)",
                     value=DEFAULT_CAMERA,
                     lines=2,
                     placeholder="예: Canon EOS R5, 85mm f/1.4, ISO 100, shallow DOF",
                     info="카메라 기종, 렌즈, ISO, 셔터 스피드, 조리개, 피사계 심도 등을 설명합니다.",
                 )
-                prompt_quality = gr.Textbox(
-                    label="8. 품질/해상도 (Quality & Resolution)",
-                    value=DEFAULT_QUALITY,
-                    lines=2,
-                    placeholder="예: 4k, ultra-detailed, photorealistic",
-                    info="이미지의 품질, 해상도, 스타일 관련 키워드입니다.",
-                )
                 with gr.Accordion("최종 프롬프트 (Combined Prompt)", open=False):
                     combined_prompt = gr.Textbox(
                         label="최종 프롬프트",
                         value=combine_prompt_sections(
+                            DEFAULT_QUALITY,
                             DEFAULT_NEGATIVE,
                             DEFAULT_APPEARANCE,
                             DEFAULT_OUTFIT,
@@ -494,13 +497,13 @@ def main():
                             DEFAULT_SETTING,
                             DEFAULT_LIGHTING,
                             DEFAULT_CAMERA,
-                            DEFAULT_QUALITY,
                         ),
                         lines=4,
                         interactive=False,
                         info="위 섹션들이 자동으로 합쳐진 최종 프롬프트입니다.",
                     )
                 prompt_sections = [
+                    prompt_quality,
                     prompt_negative,
                     prompt_appearance,
                     prompt_outfit,
@@ -508,7 +511,6 @@ def main():
                     prompt_setting,
                     prompt_lighting,
                     prompt_camera,
-                    prompt_quality,
                 ]
                 for section in prompt_sections:
                     section.change(
