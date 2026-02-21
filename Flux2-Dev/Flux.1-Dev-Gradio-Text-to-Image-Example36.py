@@ -16,10 +16,10 @@ import gradio as gr
 
 # Default values for each prompt section
 DEFAULT_QUALITY = ""
-DEFAULT_NEGATIVE = ""
+DEFAULT_NEGATIVE = "Perfect anatomy, no extra fingers, no missing fingers, no fused fingers, no deformed fingers, no extra toes, no missing toes, no fused toes, no deformed toes."
 DEFAULT_APPEARANCE = ""
 DEFAULT_OUTFIT = ""
-DEFAULT_POSE = "A stunning Korean woman with long, black hair is lying on her stomach on a sandy beach, wearing an orange bikini. The bikini top has a small, metallic embellishment at the center. She is positioned near the shoreline, where gentle waves are washing over the sand. The water is a clear, light blue, and the sand appears white and fine. The lighting suggests a sunny day, with the sunlight reflecting off the water and the woman's skin. The overall scene conveys a relaxed, tropical atmosphere."
+DEFAULT_POSE = "A stunning Korean woman with long, black hair, idol aesthetic, is lying on her stomach on a sandy beach, wearing an orange bikini. The bikini top has a small, metallic embellishment at the center. She is positioned near the shoreline, where gentle waves are washing over the sand. The water is a clear, light blue, and the sand appears white and fine. The lighting suggests a sunny day, with the sunlight reflecting off the water and the woman's skin. The overall scene conveys a relaxed, tropical atmosphere."
 DEFAULT_SETTING = ""
 DEFAULT_LIGHTING = ""
 DEFAULT_CAMERA = ""
