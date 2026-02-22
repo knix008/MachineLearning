@@ -12,17 +12,17 @@ import psutil
 import time
 import gradio as gr
 
-# Luxurious beachfront hotel sunbed scene — photorealistic woman
+# Beach kneeling pose — photorealistic Korean woman
 
 # Default values for each prompt section
-DEFAULT_QUALITY = "4k, ultra detail, high resolution, photorealistic, RAW photo, DSLR photography, realistic skin texture, intricate details, sharp focus, award-winning photography"
-DEFAULT_NEGATIVE = "Perfect anatomy, no extra fingers, no missing fingers, no fused fingers, no extra limbs, no distorted body, no blurry face."
-DEFAULT_APPEARANCE = "A beautiful Korean woman with a soft, idol aesthetic. She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, slightly wavy jet-black hair with soft, flowing waves that frame her face."
-DEFAULT_OUTFIT = "Extremely tiny micro white string bikini, absolute minimal coverage, nearly nothing, just barely legal coverage, thin string sides. Slender and toned figure. Delicate gold necklace, small gold hoop earrings. No hat. No sunglasses."
-DEFAULT_POSE = "Lying in a shy, bashful pose on a luxury white padded sunbed, entire full body visible from head to toe, top-down bird's-eye view directly above. Her body faces straight up toward the camera. Looking up at the camera with a soft, slightly embarrassed and shy expression, a subtle blush on her cheeks. One hand resting gently on her belly, the other hand lightly touching her cheek in a shy, coy gesture. Both legs fully extended straight, not bent, kept naturally together. Hair spread naturally around head on the pillow. Nothing cut off."
-DEFAULT_SETTING = "Five-star luxury beachfront hotel. White cushioned sunbed on pristine white sandy beach beside a sparkling turquoise infinity pool. Bright blue tropical ocean, gentle waves, swaying palm trees, and clear sunny sky in the background. Softly blurred bokeh background."
-DEFAULT_LIGHTING = "Warm bright tropical midday sunlight from above. Golden glow on skin, soft gentle shadows. Radiant, sun-kissed luminosity."
-DEFAULT_CAMERA = "Canon EOS R5, 24mm f/2.0, ISO 200, 1/500s shutter. Camera positioned directly overhead, shooting straight down, top-down bird's-eye view. Full body shot, entire body from head to toe fully in frame. Shallow depth of field, beach and ocean softly blurred in background."
+DEFAULT_QUALITY = "4k, ultra detail, high resolution, photorealistic, RAW photo, DSLR photography, realistic skin texture, intricate details, sharp focus, award-winning photography."
+DEFAULT_NEGATIVE = "Perfect anatomy, no extra fingers, no missing fingers, no fused fingers, no extra limbs, no distorted body, no blurry face, no anime, no cartoon, no illustration."
+DEFAULT_APPEARANCE = "A beautiful Korean woman with a soft, idol aesthetic. She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, slightly wavy jet-black hair with soft, flowing waves."
+DEFAULT_OUTFIT = "Extremely tiny micro light red string bikini, absolute minimal coverage, barely covering, thin string sides. Slender, fit, and toned figure. Delicate gold necklace. No hat. No sunglasses."
+DEFAULT_POSE = "Kneeling on the beach sand, both knees on the ground, leaning her upper body slightly forward. Her back is slightly arched, chest leaning toward the lens. Arms relaxed beside her body. Her head is turned slightly to the side, with a soft, slightly pouty and alluring expression, glancing toward the camera at an angle rather than looking straight ahead."
+DEFAULT_SETTING = "Sunny beach. She is kneeling on pristine white sandy beach. The background shows the wide open sparkling turquoise ocean with gentle waves, clear blue sky, and the sandy beach stretching behind her. No palm trees visible. Both the subject and the beautiful beach background are clearly visible."
+DEFAULT_LIGHTING = "Bright warm tropical sunlight from slightly above. Golden glow on her skin with soft highlights. Radiant, sun-kissed luminosity with minimal harsh shadows."
+DEFAULT_CAMERA = "Canon EOS R5, 35mm f/5.6, ISO 200, 1/500s shutter. Camera positioned far from the subject, slightly below eye level, shooting slightly upward. Wide environmental shot, full body visible with the beach and ocean background clearly in focus. The background is well-exposed and clearly visible, not heavily blurred."
 
 
 def normalize_spacing(text: str) -> str:

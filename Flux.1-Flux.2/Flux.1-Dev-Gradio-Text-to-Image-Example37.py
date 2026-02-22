@@ -12,17 +12,17 @@ import psutil
 import time
 import gradio as gr
 
-# Luxurious beachfront hotel sunbed scene — photorealistic woman
+# Bubble bath scene — photorealistic East Asian woman
 
 # Default values for each prompt section
-DEFAULT_QUALITY = "4k, ultra detail, high resolution, photorealistic, RAW photo, DSLR photography, realistic skin texture, intricate details, sharp focus, award-winning photography"
-DEFAULT_NEGATIVE = "Perfect anatomy, no extra fingers, no missing fingers, no fused fingers, no extra limbs, no distorted body, no blurry face."
+DEFAULT_QUALITY = "8k resolution, ultra detail, high resolution, photorealistic, RAW photo, cinematic, realistic skin texture, sharp focus, realistic water and foam textures, high-key lighting."
+DEFAULT_NEGATIVE = "No extra hands, no extra legs, no extra feet, no extra arms, no extra toes, no paintings, no sketches, no worst quality, no low quality, no monochrome, no grayscale, no skin spots, no acnes, no skin blemishes, no backlight, no mutated hands, no poorly drawn hands, no blurry, no bad anatomy, no bad proportions, no extra limbs, no disfigured, no missing arms, no fused fingers, no too many fingers, no unclear eyes, no bad hands, no missing fingers, no exposed nipples."
 DEFAULT_APPEARANCE = "A beautiful Korean woman with a soft, idol aesthetic. She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, slightly wavy jet-black hair with soft, flowing waves that frame her face."
-DEFAULT_OUTFIT = "Extremely tiny micro white string bikini, absolute minimal coverage, nearly nothing, just barely legal coverage, thin string sides. Slender and toned figure. Delicate gold necklace, small gold hoop earrings. No hat. No sunglasses."
-DEFAULT_POSE = "Lying in a shy, bashful pose on a luxury white padded sunbed, entire full body visible from head to toe, top-down bird's-eye view directly above. Her body faces straight up toward the camera. Looking up at the camera with a soft, slightly embarrassed and shy expression, a subtle blush on her cheeks. One hand resting gently on her belly, the other hand lightly touching her cheek in a shy, coy gesture. Both legs fully extended straight, not bent, kept naturally together. Hair spread naturally around head on the pillow. Nothing cut off."
-DEFAULT_SETTING = "Five-star luxury beachfront hotel. White cushioned sunbed on pristine white sandy beach beside a sparkling turquoise infinity pool. Bright blue tropical ocean, gentle waves, swaying palm trees, and clear sunny sky in the background. Softly blurred bokeh background."
-DEFAULT_LIGHTING = "Warm bright tropical midday sunlight from above. Golden glow on skin, soft gentle shadows. Radiant, sun-kissed luminosity."
-DEFAULT_CAMERA = "Canon EOS R5, 24mm f/2.0, ISO 200, 1/500s shutter. Camera positioned directly overhead, shooting straight down, top-down bird's-eye view. Full body shot, entire body from head to toe fully in frame. Shallow depth of field, beach and ocean softly blurred in background."
+DEFAULT_OUTFIT = "Extremely tiny micro pink string bikini, absolute minimal coverage, nearly nothing, just barely legal coverage, thin string sides. Slender and toned figure. Shoulders, chest, and arms partially covered in clumps of frothy, iridescent white bubbles."
+DEFAULT_POSE = "Sitting in the bathtub, leaning her upper body forward toward the lens. Her arms are crossed over her chest, partially obscured by thick white soap suds. Looking directly into the camera with a soft, alluring, and slightly pouty expression."
+DEFAULT_SETTING = "Clean, minimalist white bathtub. Background is overexposed and bright white, suggesting a high-key studio setting or a very sunlit bathroom."
+DEFAULT_LIGHTING = "High-key, soft, and heavily diffused lighting. Airy, ethereal, and dreamlike atmosphere. Gentle highlights on her wet skin and the crystalline structure of the soap bubbles, with minimal harsh shadows."
+DEFAULT_CAMERA = "Canon EOS R5, 50mm f/1.8, ISO 200, 1/250s shutter. High-angle perspective looking down at the subject, close-up shot. Shallow depth of field, soft background."
 
 
 def normalize_spacing(text: str) -> str:
