@@ -12,17 +12,15 @@ import psutil
 import time
 import gradio as gr
 
-# https://prompthero.com/prompt/3f947ff3483-flux-flux-11-pro-an-13-yes-ol-mad-string-bikini-wicked-string-bikini-next-level-string-bikini-insane-string-bikini-wet-body-moisture
-
 # Default values for each prompt section
-DEFAULT_QUALITY = "8k resolution, photorealistic, sharp focus, detailed skin texture"
-DEFAULT_NEGATIVE = "Perfect anatomy, no extra fingers, no missing fingers, no deformed fingers, no fused fingers, perfect hands structure."
-DEFAULT_APPEARANCE = "The image is a high-quality, photorealistic  portrait of a Korean girl with a soft, idol aesthetic. She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long flowing black hair, loose and cascading naturally past her waist, with soft waves and a few strands gently framing her face."
-DEFAULT_OUTFIT = "Wearing a sleek black mini dress that hugs every curve of her body, accentuating her figure perfectly. The dress is form-fitting, body-con style, with a very short hemline. The black fabric is smooth and elegant, emphasizing her slim waist, hips, and long legs. The hem of the dress is slightly lifted, subtly revealing the edge of white underwear/panties beneath."
-DEFAULT_POSE = "She is sitting relaxed and naturally on a cozy café chair, holding a coffee cup with both hands, taking a sip. A wooden café table is placed in front of her with a coffee cup resting on a saucer. Her posture is comfortable and at ease. Body angled slightly toward the camera. Her legs are slightly apart, with the short dress hem riding up, subtly revealing a glimpse of white panties between her thighs. A candid and natural café moment."
-DEFAULT_SETTING = "Inside a cozy, aesthetically pleasing coffee shop. Warm interior with wooden furniture, exposed brick walls, and large windows letting in soft light. A wooden café table in front of her with a coffee cup on a ceramic saucer. Coffee cups, potted plants, and bookshelves in the background. A warm and inviting café atmosphere."
-DEFAULT_LIGHTING = "Warm, soft natural light filtering through large café windows. Soft afternoon sunlight creating a cozy, golden ambiance inside the café. Gentle bokeh of the warm café interior in the background. Soft shadows adding depth to the scene."
-DEFAULT_CAMERA = "Eye-level shot capturing her from head to toe or a comfortable three-quarter shot."
+DEFAULT_QUALITY = "vertical ultra-realistic masterpiece photograph, photorealistic, high-fidelity skin textures, 8K resolution, cinematic boudoir photography, masterpiece"
+DEFAULT_NEGATIVE = "extra hands, extra legs, extra feet, extra arms, waist pleats, paintings, sketches, worst quality, low quality, low resolution, monochrome, grayscale, skin spots, acnes, skin blemishes, age spot, backlight, mutated hands, poorly drawn hands, blurry, bad anatomy, bad proportions, extra limbs, disfigured, missing arms, fused fingers, too many fingers, unclear eyes, bad hands, missing fingers, extra digit, cleft chin, exposed nipples."
+DEFAULT_APPEARANCE = "The image is a high-quality, photorealistic portrait of a beautiful Korean fashion model with a soft, idol aesthetic. She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. She has long flowing black hair, loose and cascading naturally past her waist, with soft waves and a few strands gently framing her face."
+DEFAULT_OUTFIT = "She is wearing a very tiny, minimal white sheer see-through micro bra and a matching white sheer see-through micro thong. The lingerie is translucent and barely covering her body."
+DEFAULT_POSE = "Three-quarter back view, looking over her shoulder with an intimate expression. Her arms are raised, gently holding sheer white translucent curtains on either side."
+DEFAULT_SETTING = "Sheer white translucent curtains surrounding her. Soft-focus background with faint white flowers. Bright, airy, ethereal dreamlike atmosphere with a subtle haze."
+DEFAULT_LIGHTING = "Bright, soft, diffused natural light, high-key lighting creating an ethereal dreamy atmosphere. Soft shadows, professional boudoir lighting. Light filtered through sheer curtains."
+DEFAULT_CAMERA = "Vertical portrait, 85mm lens, f/1.8, shallow depth of field, soft-focus background, sharp focus on her face and skin, cinematic boudoir photography."
 
 
 def normalize_spacing(text: str) -> str:

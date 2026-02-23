@@ -12,17 +12,17 @@ import psutil
 import time
 import gradio as gr
 
-# https://prompthero.com/prompt/3f947ff3483-flux-flux-11-pro-an-13-yes-ol-mad-string-bikini-wicked-string-bikini-next-level-string-bikini-insane-string-bikini-wet-body-moisture
+# https://prompthero.com/prompt/efed039b5e2-flux-flux-11-pro-ultra-hyperrealistic-korean-girl-korean-ulzzang-face-a-girl-beautiful-wearing-a-gothic-clothes-strapless-pleated-mini-skirt-thick-thighs-standing
 
 # Default values for each prompt section
-DEFAULT_QUALITY = "8k resolution, photorealistic, sharp focus, detailed skin texture"
+DEFAULT_QUALITY = "8k resolution, ultra-detailed, photorealistic, sharp focus."
 DEFAULT_NEGATIVE = "Perfect anatomy, no extra fingers, no missing fingers, no deformed fingers, no fused fingers, perfect hands structure."
-DEFAULT_APPEARANCE = "The image is a high-quality, photorealistic  portrait of a Korean girl with a soft, idol aesthetic. She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long flowing black hair, loose and cascading naturally past her waist, with soft waves and a few strands gently framing her face."
-DEFAULT_OUTFIT = "Wearing a sleek black mini dress that hugs every curve of her body, accentuating her figure perfectly. The dress is form-fitting, body-con style, with a very short hemline. The black fabric is smooth and elegant, emphasizing her slim waist, hips, and long legs. The hem of the dress is slightly lifted, subtly revealing the edge of white underwear/panties beneath."
-DEFAULT_POSE = "She is sitting relaxed and naturally on a cozy café chair, holding a coffee cup with both hands, taking a sip. A wooden café table is placed in front of her with a coffee cup resting on a saucer. Her posture is comfortable and at ease. Body angled slightly toward the camera. Her legs are slightly apart, with the short dress hem riding up, subtly revealing a glimpse of white panties between her thighs. A candid and natural café moment."
-DEFAULT_SETTING = "Inside a cozy, aesthetically pleasing coffee shop. Warm interior with wooden furniture, exposed brick walls, and large windows letting in soft light. A wooden café table in front of her with a coffee cup on a ceramic saucer. Coffee cups, potted plants, and bookshelves in the background. A warm and inviting café atmosphere."
-DEFAULT_LIGHTING = "Warm, soft natural light filtering through large café windows. Soft afternoon sunlight creating a cozy, golden ambiance inside the café. Gentle bokeh of the warm café interior in the background. Soft shadows adding depth to the scene."
-DEFAULT_CAMERA = "Eye-level shot capturing her from head to toe or a comfortable three-quarter shot."
+DEFAULT_APPEARANCE = "A beautiful Korean woman with a soft, idol aesthetic. She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, slightly wavy jet-black hair with soft, flowing waves that frame her face. Her hair cascades naturally past her waist, with a glossy, healthy shine. Her facial features are delicate and harmonious, with large expressive eyes, a small nose, and full lips. She has a youthful appearance, around 20 years old."
+DEFAULT_OUTFIT = "She is wearing gothic clothing: a strapless gothic top and a pleated gothic mini skirt. White, elegant gothic fashion with detailed fabric texture."
+DEFAULT_POSE = "Full body shot, standing upright, looking directly at the viewer. Her thick thighs are visible beneath the short pleated skirt. One hand gently twirling a strand of her long hair."
+DEFAULT_SETTING = "Near a serene lake. Large stone rocks and tall trees surrounding her. Natural lakeside environment with soft reflections on the water surface."
+DEFAULT_LIGHTING = "Soft natural outdoor lighting. Gentle light filtering through the trees, casting soft dappled shadows. Atmospheric and painterly mood."
+DEFAULT_CAMERA = "Full body portrait, eye-level shot, capturing her from head to toe, shallow depth of field with softly blurred natural background."
 
 
 def normalize_spacing(text: str) -> str:

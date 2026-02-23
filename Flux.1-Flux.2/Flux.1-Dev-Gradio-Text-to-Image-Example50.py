@@ -12,17 +12,17 @@ import psutil
 import time
 import gradio as gr
 
-# https://prompthero.com/prompt/3f947ff3483-flux-flux-11-pro-an-13-yes-ol-mad-string-bikini-wicked-string-bikini-next-level-string-bikini-insane-string-bikini-wet-body-moisture
+#https://prompthero.com/prompt/a81663b9bf3-z-image-turbo-a-high-shutter-speed-photorealistic-action-portrait-of-a-beautiful-woman-with-long-straight-dark-hair-performing-a-dramatic-hair
 
 # Default values for each prompt section
-DEFAULT_QUALITY = "8k resolution, photorealistic, sharp focus, detailed skin texture"
+DEFAULT_QUALITY = "high-shutter-speed photorealistic action portrait, photorealistic, authentic skin and water textures, 8K resolution, cinematic atmosphere, sharp focus on water splashes"
 DEFAULT_NEGATIVE = "Perfect anatomy, no extra fingers, no missing fingers, no deformed fingers, no fused fingers, perfect hands structure."
-DEFAULT_APPEARANCE = "The image is a high-quality, photorealistic  portrait of a Korean girl with a soft, idol aesthetic. She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long flowing black hair, loose and cascading naturally past her waist, with soft waves and a few strands gently framing her face."
-DEFAULT_OUTFIT = "Wearing a sleek black mini dress that hugs every curve of her body, accentuating her figure perfectly. The dress is form-fitting, body-con style, with a very short hemline. The black fabric is smooth and elegant, emphasizing her slim waist, hips, and long legs. The hem of the dress is slightly lifted, subtly revealing the edge of white underwear/panties beneath."
-DEFAULT_POSE = "She is sitting relaxed and naturally on a cozy café chair, holding a coffee cup with both hands, taking a sip. A wooden café table is placed in front of her with a coffee cup resting on a saucer. Her posture is comfortable and at ease. Body angled slightly toward the camera. Her legs are slightly apart, with the short dress hem riding up, subtly revealing a glimpse of white panties between her thighs. A candid and natural café moment."
-DEFAULT_SETTING = "Inside a cozy, aesthetically pleasing coffee shop. Warm interior with wooden furniture, exposed brick walls, and large windows letting in soft light. A wooden café table in front of her with a coffee cup on a ceramic saucer. Coffee cups, potted plants, and bookshelves in the background. A warm and inviting café atmosphere."
-DEFAULT_LIGHTING = "Warm, soft natural light filtering through large café windows. Soft afternoon sunlight creating a cozy, golden ambiance inside the café. Gentle bokeh of the warm café interior in the background. Soft shadows adding depth to the scene."
-DEFAULT_CAMERA = "Eye-level shot capturing her from head to toe or a comfortable three-quarter shot."
+DEFAULT_APPEARANCE = "The image is a high-quality, photorealistic portrait of a beautiful Korean fashion model with a soft, idol aesthetic. She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. She has long flowing black hair, loose and cascading naturally past her waist. Her eyes are closed in a serene expression."
+DEFAULT_OUTFIT = "She wears a very tiny black sheer see-through micro bikini, extremely small and translucent, clinging to her wet body."
+DEFAULT_POSE = "She is performing a dramatic hair flip, whipping her head back and creating a massive, perfect arc of sparkling water droplets frozen in mid-air. She is kneeling in dark rippling water, action frozen at peak moment."
+DEFAULT_SETTING = "Rocky lake surrounded by large, smooth grey boulders. Dark, rippling water. Misty hills visible in the background under an overcast, moody sky."
+DEFAULT_LIGHTING = "Soft, diffused natural light, cool color grading, overcast moody sky lighting. No harsh shadows. Atmospheric mist and haze in the background."
+DEFAULT_CAMERA = "High-shutter-speed action shot, 8K resolution, sharp focus on the water splash arc, liquid crystal water textures, cinematic depth of field."
 
 
 def normalize_spacing(text: str) -> str:

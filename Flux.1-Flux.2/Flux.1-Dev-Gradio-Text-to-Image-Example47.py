@@ -12,17 +12,15 @@ import psutil
 import time
 import gradio as gr
 
-# https://prompthero.com/prompt/3f947ff3483-flux-flux-11-pro-an-13-yes-ol-mad-string-bikini-wicked-string-bikini-next-level-string-bikini-insane-string-bikini-wet-body-moisture
-
 # Default values for each prompt section
-DEFAULT_QUALITY = "8k resolution, photorealistic, sharp focus, detailed skin texture"
+DEFAULT_QUALITY = "full-body full-length shot, photorealistic, hyper realistic, sharp focus, detailed skin texture, detailed fabric texture"
 DEFAULT_NEGATIVE = "Perfect anatomy, no extra fingers, no missing fingers, no deformed fingers, no fused fingers, perfect hands structure."
-DEFAULT_APPEARANCE = "The image is a high-quality, photorealistic  portrait of a Korean girl with a soft, idol aesthetic. She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long flowing black hair, loose and cascading naturally past her waist, with soft waves and a few strands gently framing her face."
-DEFAULT_OUTFIT = "Wearing a sleek black mini dress that hugs every curve of her body, accentuating her figure perfectly. The dress is form-fitting, body-con style, with a very short hemline. The black fabric is smooth and elegant, emphasizing her slim waist, hips, and long legs. The hem of the dress is slightly lifted, subtly revealing the edge of white underwear/panties beneath."
-DEFAULT_POSE = "She is sitting relaxed and naturally on a cozy café chair, holding a coffee cup with both hands, taking a sip. A wooden café table is placed in front of her with a coffee cup resting on a saucer. Her posture is comfortable and at ease. Body angled slightly toward the camera. Her legs are slightly apart, with the short dress hem riding up, subtly revealing a glimpse of white panties between her thighs. A candid and natural café moment."
-DEFAULT_SETTING = "Inside a cozy, aesthetically pleasing coffee shop. Warm interior with wooden furniture, exposed brick walls, and large windows letting in soft light. A wooden café table in front of her with a coffee cup on a ceramic saucer. Coffee cups, potted plants, and bookshelves in the background. A warm and inviting café atmosphere."
-DEFAULT_LIGHTING = "Warm, soft natural light filtering through large café windows. Soft afternoon sunlight creating a cozy, golden ambiance inside the café. Gentle bokeh of the warm café interior in the background. Soft shadows adding depth to the scene."
-DEFAULT_CAMERA = "Eye-level shot capturing her from head to toe or a comfortable three-quarter shot."
+DEFAULT_APPEARANCE = "The image is a high-quality, photorealistic portrait of a beautiful Korean fashion model with a soft, idol aesthetic. She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. She has long flowing black hair, loose and cascading naturally past her waist, with soft waves and a few strands gently framing her face. She is 38 years old with a very buxom figure, a slim waist, an hourglass silhouette, and shapely thighs. She is smiling warmly, revealing perfect teeth. Natural makeup."
+DEFAULT_OUTFIT = "She wears a champagne cashmere sweater dress with a thigh-high side slit that drapes elegantly over her curves. She accessorizes with a silver anklet and matching silver stud earrings. Her cream leather thigh-high boots gleam under the light."
+DEFAULT_POSE = "She is walking briskly and confidently, mid-stride, full body visible. Her posture is upright and graceful, conveying movement and energy."
+DEFAULT_SETTING = "Concrete floor of an upscale multi-story car park. Beautiful luxury cars visible in the blurred background. Late afternoon urban environment."
+DEFAULT_LIGHTING = "Late afternoon golden hour light filtering into the car park. Warm directional sunlight casting long soft shadows. Dramatic highlights on her outfit and boots. Cinematic mood."
+DEFAULT_CAMERA = "Eye-level full-length shot capturing her from head to toe, shallow depth of field with softly blurred background, 85mm lens, f/1.8."
 
 
 def normalize_spacing(text: str) -> str:
