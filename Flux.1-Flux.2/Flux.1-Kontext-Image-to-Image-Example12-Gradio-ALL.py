@@ -14,7 +14,7 @@ import gradio as gr
 DEFAULT_IMAGE = "Test05.png"
 
 # Default values for each prompt section
-DEFAULT_NEGATIVE = "No missing fingers, no extra fingers, no malformed fingers, no fused fingers."
+DEFAULT_NEGATIVE = "Perfect anatomy, no missing fingers, no extra fingers, no malformed fingers, no fused fingers. no extra toes, no missing toes, no malformed toes, no fused toes, deformed anatomy, no unrealistic body proportions, no unnatural poses, perfect body structure, no extra limbs, no missing limbs, no malformed limbs, no fused limbs, no extra hands, no missing hands, no malformed hands, no fused hands, no extra feet, no missing feet, no malformed feet, no fused feet."
 DEFAULT_APPEARANCE = ""
 DEFAULT_OUTFIT = ""
 DEFAULT_POSE = ""
