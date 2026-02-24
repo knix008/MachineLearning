@@ -14,12 +14,12 @@ import gradio as gr
 
 # Default values for each prompt section
 DEFAULT_APPEARANCE = "The image is a high-quality, photorealistic cosplay portrait of a young Korean woman with a soft, idol aesthetic. She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous wavy jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air with natural movement and body, full of life and dynamism."
-DEFAULT_OUTFIT = "She is wearing an extremely tiny pink high-leg string bikini with thin spaghetti tie straps and side strings sitting high on her hips, barely covering her body, exposing her full legs and hips."
-DEFAULT_POSE = "She is standing facing the camera on the beach in a seductive model pose. Full body shot facing forward. Hips tilted slightly to one side, accentuating curves. One hand gently lifting a few strands of hair. The other hand hanging naturally near her thigh. Chest subtly pushed forward. Weight on one leg with the other slightly bent to the side. Head held high, lips slightly parted, gazing into the camera with a confident expression. Hair flowing in the sea breeze."
+DEFAULT_OUTFIT = "She is wearing an extremely tiny black lingerie set, barely covering her body. A very small black lace bra and matching micro black lace panties, delicate and sensual, the soft fabric clinging gently to her skin."
+DEFAULT_POSE = "Full body shot, walking gracefully along the beach shoreline toward the camera. Natural and relaxed walking gait, one foot stepping forward. Both arms hanging naturally down at her sides, swinging loosely with the natural rhythm of walking. Head facing forward toward the camera with a confident and alluring expression. Hair flowing freely in the sea breeze."
 DEFAULT_SETTING = "Luxurious resort beach with white sand shoreline. Modern high-rise resort towers in the background skyline. Ocean waves at the shore."
 DEFAULT_LIGHTING = "Bright natural sunlight, golden hour warm tones. Soft warm highlights on her skin. Sparkling ocean water in the background. Cinematic warm beach lighting."
 DEFAULT_CAMERA = "Vertical full body portrait, eye-level shot. 85mm portrait lens, shallow depth of field, resort buildings and ocean softly blurred. Realistic lifestyle beach photography."
-DEFAULT_QUALITY = "Ultra-realistic masterpiece, 8k resolution, high-fidelity skin textures."
+DEFAULT_QUALITY ="Ultra-realistic masterpiece photograph, 8k resolution, high-fidelity skin textures, cinematic lighting, realistic lifestyle photography, photorealistic, sharp focus."
 DEFAULT_NEGATIVE = "Perfect anatomy, correct finger count, no deformed or fused fingers, perfect hand structure, no distorted body."
 
 
