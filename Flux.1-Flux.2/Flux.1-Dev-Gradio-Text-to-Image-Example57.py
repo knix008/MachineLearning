@@ -13,14 +13,14 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-DEFAULT_APPEARANCE = "The image is a high-quality, photorealistic portrait of a young Korean woman with a soft, idol aesthetic. She has a fair, clear complexion. She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous wavy jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air with natural movement and body, full of life and dynamism."
+DEFAULT_QUALITY = "Ultra-realistic masterpiece photograph, 8k resolution, high-fidelity skin textures, cinematic lighting, realistic lifestyle photography, photorealistic, sharp focus."
+DEFAULT_NEGATIVE = "Perfect anatomy, no extra fingers, no missing fingers, no deformed fingers, no fused fingers, perfect hands structure, no distorted body."
+DEFAULT_APPEARANCE = "The image is a high-quality, photorealistic portrait of a young Korean woman with a soft, idol aesthetic. She has a fair, clear complexion. She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking towards the sea. She has long, voluminous wavy jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air with natural movement and body, full of life and dynamism."
 DEFAULT_OUTFIT = "She is wearing an extremely tiny and nearly transparent sheer black lingerie set, barely covering her body. The ultra-thin black fabric is almost see-through, delicate and sensual. The lingerie consists of a sheer black bralette and matching sheer black micro panties, the soft transparent fabric clinging softly to her skin."
-DEFAULT_POSE = "Standing on the beach in a stylish model pose. Head slightly raised, gazing towards the beach. Body slightly turned with a dynamic curve, weight shifted to one side. Not walking, but holding a confident stance. Hair flowing gently in the sea breeze."
+DEFAULT_POSE = "Standing on the beach in a stylish model pose. Head slightly turned towards the sea. One hand gently touching her hair. Body slightly turned with a dynamic curve, weight shifted to one side. Not walking, but holding a confident stance. Hair flowing gently in the sea breeze."
 DEFAULT_SETTING = "A luxurious resort beach with white sand shoreline. Tall modern high-rise buildings and resort towers visible in the background skyline. The ocean waves lapping gently at the shore. A glamorous upscale beach resort destination atmosphere."
 DEFAULT_LIGHTING = "Bright natural sunlight, golden hour warm tones. Sun casting soft warm highlights on her skin. Sparkling ocean water reflecting sunlight in the background. Cinematic warm beach lighting."
 DEFAULT_CAMERA = "Vertical full body portrait, eye-level shot. 85mm portrait lens, shallow depth of field with the resort buildings and ocean softly blurred in the background. Realistic lifestyle beach photography style."
-DEFAULT_QUALITY = "Ultra-realistic masterpiece photograph, 8k resolution, high-fidelity skin textures, cinematic lighting, realistic lifestyle photography, photorealistic, sharp focus."
-DEFAULT_NEGATIVE = "Perfect anatomy, no extra fingers, no missing fingers, no deformed fingers, no fused fingers, perfect hands structure, no distorted body."
 
 
 def normalize_spacing(text: str) -> str:
@@ -222,8 +222,6 @@ def load_model(device_name=None):
     elif DEVICE == "mps":
         pipe.enable_model_cpu_offload()
         pipe.enable_attention_slicing()
-        pipe.enable_vae_tiling()
-        pipe.enable_vae_slicing()
         # channels_last memory format for better MPS performance
         if hasattr(pipe, "transformer"):
             pipe.transformer.to(memory_format=torch.channels_last)
