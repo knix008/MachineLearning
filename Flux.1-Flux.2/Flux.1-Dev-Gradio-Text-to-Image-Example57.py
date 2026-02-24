@@ -13,14 +13,14 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-DEFAULT_APPEARANCE = "The image is a high-quality, photorealistic cosplay portrait of a young Korean woman with a soft, idol aesthetic. She has a fair, clear complexion. She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous wavy jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air with natural movement and body, full of life and dynamism."
-DEFAULT_OUTFIT = "She is wearing an extremely tiny pink high-leg string bikini with thin spaghetti tie straps and side strings sitting high on her hips, barely covering her body, exposing her full legs and hips."
-DEFAULT_POSE = "She is standing facing the camera on the beach in a seductive model pose. Full body shot facing forward. Hips tilted slightly to one side, accentuating curves. One hand gently lifting a few strands of hair. The other hand hanging naturally near her thigh. Chest subtly pushed forward. Weight on one leg with the other slightly bent to the side. Head held high, lips slightly parted, gazing into the camera with a confident expression. Hair flowing in the sea breeze."
-DEFAULT_SETTING = "Luxurious resort beach with white sand shoreline. Modern high-rise resort towers in the background skyline. Ocean waves at the shore."
-DEFAULT_LIGHTING = "Bright natural sunlight, golden hour warm tones. Soft warm highlights on her skin. Sparkling ocean water in the background. Cinematic warm beach lighting."
-DEFAULT_CAMERA = "Vertical full body portrait, eye-level shot. 85mm portrait lens, shallow depth of field, resort buildings and ocean softly blurred. Realistic lifestyle beach photography."
-DEFAULT_QUALITY = "Ultra-realistic masterpiece, 8k resolution, high-fidelity skin textures."
-DEFAULT_NEGATIVE = "Perfect anatomy, correct finger count, no deformed or fused fingers, perfect hand structure, no distorted body."
+DEFAULT_QUALITY = "Ultra-realistic masterpiece photograph, 8k resolution, high-fidelity skin textures, cinematic lighting, realistic lifestyle photography, photorealistic, sharp focus."
+DEFAULT_NEGATIVE = "Perfect anatomy, no extra fingers, no missing fingers, no deformed fingers, no fused fingers, perfect hands structure, no distorted body."
+DEFAULT_APPEARANCE = "The image is a high-quality, photorealistic portrait of a young Korean woman with a soft, idol aesthetic. She has a fair, clear complexion. She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous wavy jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air with natural movement and body, full of life and dynamism."
+DEFAULT_OUTFIT = "She is wearing an extremely tiny and nearly transparent sheer black lingerie set, barely covering her body. The ultra-thin black fabric is almost see-through, delicate and sensual. The lingerie consists of a sheer black bralette and matching sheer black micro panties, the soft transparent fabric clinging softly to her skin."
+DEFAULT_POSE = "Walking gracefully along the beach shoreline, strolling casually with a relaxed and natural gait. Full body shot, body turned slightly toward the camera. Arms swaying naturally as she walks. Hair flowing gently in the sea breeze."
+DEFAULT_SETTING = "A luxurious resort beach with white sand shoreline. Tall modern high-rise buildings and resort towers visible in the background skyline. The ocean waves lapping gently at the shore. A glamorous upscale beach resort destination atmosphere."
+DEFAULT_LIGHTING = "Bright natural sunlight, golden hour warm tones. Sun casting soft warm highlights on her skin. Sparkling ocean water reflecting sunlight in the background. Cinematic warm beach lighting."
+DEFAULT_CAMERA = "Vertical full body portrait, eye-level shot. 85mm portrait lens, shallow depth of field with the resort buildings and ocean softly blurred in the background. Realistic lifestyle beach photography style."
 
 
 def normalize_spacing(text: str) -> str:
@@ -33,10 +33,10 @@ def normalize_spacing(text: str) -> str:
 
 
 def combine_prompt_sections(
-    appearance, outfit, pose, setting, lighting, camera, quality, negative
+    quality, negative, appearance, outfit, pose, setting, lighting, camera
 ):
     """Combine separate prompt sections into one final prompt string."""
-    sections = [appearance, outfit, pose, setting, lighting, camera, quality, negative]
+    sections = [quality, negative, appearance, outfit, pose, setting, lighting, camera]
     # Filter out empty sections and join with ', '
     combined = ", ".join(normalize_spacing(s) for s in sections if s and s.strip())
     return combined
@@ -425,88 +425,88 @@ def main():
                 )
 
                 gr.Markdown("### 프롬프트 구성")
+                prompt_quality = gr.Textbox(
+                    label="1. 품질/해상도 (Quality & Resolution)",
+                    value=DEFAULT_QUALITY,
+                    lines=2,
+                    placeholder="예: 4k, ultra-detailed, photorealistic",
+                    info="이미지의 품질, 해상도, 스타일 관련 키워드입니다. 프롬프트 맨 앞에 위치합니다.",
+                )
+                prompt_negative = gr.Textbox(
+                    label="2. 네거티브 프롬프트 (Negative Prompt)",
+                    value=DEFAULT_NEGATIVE,
+                    lines=2,
+                    placeholder="예: bad anatomy, extra fingers, blurry",
+                    info="생성에서 제외할 요소들입니다. 최종 프롬프트에 포함됩니다.",
+                )
                 prompt_appearance = gr.Textbox(
-                    label="1. 외모 (Appearance)",
+                    label="3. 외모 (Appearance)",
                     value=DEFAULT_APPEARANCE,
                     lines=2,
                     placeholder="예: A beautiful Russian girl with long strawberry blonde hair",
                     info="인물의 외모, 얼굴, 머리카락, 나이 등을 설명합니다.",
                 )
                 prompt_outfit = gr.Textbox(
-                    label="2. 의상 (Outfit)",
+                    label="4. 의상 (Outfit)",
                     value=DEFAULT_OUTFIT,
                     lines=2,
                     placeholder="예: deep burgundy satin slip dress",
                     info="의상, 액세서리, 착용한 아이템을 설명합니다.",
                 )
                 prompt_pose = gr.Textbox(
-                    label="3. 포즈/구도 (Pose & Composition)",
+                    label="5. 포즈/구도 (Pose & Composition)",
                     value=DEFAULT_POSE,
                     lines=2,
                     placeholder="예: seated on rooftop ledge, gazing into distance",
                     info="자세, 시선 방향, 카메라 앵글, 촬영 구도를 설명합니다.",
                 )
                 prompt_setting = gr.Textbox(
-                    label="4. 배경/장소 (Setting & Background)",
+                    label="6. 배경/장소 (Setting & Background)",
                     value=DEFAULT_SETTING,
                     lines=2,
                     placeholder="예: rooftop terrace at twilight, city skyline",
                     info="배경, 장소, 환경, 계절 등을 설명합니다.",
                 )
                 prompt_lighting = gr.Textbox(
-                    label="5. 조명 (Lighting)",
+                    label="7. 조명 (Lighting)",
                     value=DEFAULT_LIGHTING,
                     lines=2,
                     placeholder="예: golden hour, city glow, cinematic rim light",
                     info="조명 조건, 빛의 방향, 분위기를 설명합니다.",
                 )
                 prompt_camera = gr.Textbox(
-                    label="6. 카메라 설정 (Camera Settings)",
+                    label="8. 카메라 설정 (Camera Settings)",
                     value=DEFAULT_CAMERA,
                     lines=2,
                     placeholder="예: Sony A7R V, 85mm f/1.8, ISO 400",
                     info="카메라 기종, 렌즈, ISO, 셔터 스피드, 조리개, 피사계 심도 등을 설명합니다.",
                 )
-                prompt_quality = gr.Textbox(
-                    label="7. 품질/해상도 (Quality & Resolution)",
-                    value=DEFAULT_QUALITY,
-                    lines=2,
-                    placeholder="예: 4k, ultra-detailed, photorealistic",
-                    info="이미지의 품질, 해상도, 스타일 관련 키워드입니다.",
-                )
-                prompt_negative = gr.Textbox(
-                    label="8. 네거티브 프롬프트 (Negative Prompt)",
-                    value=DEFAULT_NEGATIVE,
-                    lines=2,
-                    placeholder="예: bad anatomy, extra fingers, blurry",
-                    info="생성에서 제외할 요소들입니다. 최종 프롬프트에 포함됩니다.",
-                )
                 with gr.Accordion("최종 프롬프트 (Combined Prompt)", open=False):
                     combined_prompt = gr.Textbox(
                         label="최종 프롬프트",
                         value=combine_prompt_sections(
+                            DEFAULT_QUALITY,
+                            DEFAULT_NEGATIVE,
                             DEFAULT_APPEARANCE,
                             DEFAULT_OUTFIT,
                             DEFAULT_POSE,
                             DEFAULT_SETTING,
                             DEFAULT_LIGHTING,
                             DEFAULT_CAMERA,
-                            DEFAULT_QUALITY,
-                            DEFAULT_NEGATIVE,
                         ),
                         lines=4,
                         interactive=False,
                         info="위 섹션들이 자동으로 합쳐진 최종 프롬프트입니다.",
                     )
                 prompt_sections = [
+                    prompt_quality,
+                    prompt_negative,
                     prompt_appearance,
                     prompt_outfit,
                     prompt_pose,
                     prompt_setting,
                     prompt_lighting,
                     prompt_camera,
-                    prompt_quality,
-                    prompt_negative,
                 ]
                 for section in prompt_sections:
                     section.change(
