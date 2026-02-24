@@ -266,16 +266,16 @@ with gr.Blocks() as demo:
             tile_pad = gr.Number(
                 minimum=0,
                 maximum=512,
-                value=2,
+                value=10,
                 label="Tile padding (타일 경계 패딩)",
-                info="타일 경계에 추가로 패딩을 줄 픽셀 수입니다. 공식 기본값 10 권장. Tile 크기의 절반 미만이어야 합니다.",
+                info="타일 경계 아티팩트(seam)를 줄이기 위한 오버랩 픽셀 수입니다. 공식 기본값 10 권장. Tile 크기와 무관하게 고정 설정합니다.",
             )
             pre_pad = gr.Number(
                 minimum=0,
                 maximum=512,
                 value=0,
                 label="Pre padding (전체 이미지 패딩)",
-                info="입력 이미지 전체에 추가로 패딩을 줄 픽셀 수입니다. 일반적으로 0 권장.",
+                info="입력 이미지 전체에 추가로 패딩을 줄 픽셀 수입니다. Tile 크기와 무관하며 일반적으로 0을 권장합니다.",
             )
             fp32 = gr.Checkbox(
                 label="FP32 모드 사용 (고정소수점 연산)",
