@@ -13,14 +13,14 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-DEFAULT_QUALITY = "Ultra-realistic masterpiece photograph, 8k resolution, high-fidelity skin textures, cinematic lighting, realistic lifestyle photography, photorealistic, sharp focus."
-DEFAULT_NEGATIVE = "Perfect anatomy, no extra fingers, no missing fingers, no deformed fingers, no fused fingers, perfect hands structure, no distorted body."
-DEFAULT_APPEARANCE = "The image is a high-quality, photorealistic cosplay portrait of a young Korean woman with a soft, idol aesthetic. She has a fair, clear complexion. She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous wavy jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air with natural movement and body, full of life and dynamism."
-DEFAULT_OUTFIT = "She is wearing an extremely tiny and nearly transparent sheer light blue lingerie set, barely covering her body. The ultra-thin light blue fabric is almost see-through, delicate and sensual. The lingerie consists of a sheer light blue bralette and matching sheer light blue micro panties, the soft transparent fabric clinging softly to her skin."
-DEFAULT_POSE = "Walking gracefully along the beach shoreline, strolling casually with a relaxed and natural gait. Full body shot, body turned slightly toward the camera. Arms swaying naturally as she walks. Hair flowing gently in the sea breeze."
-DEFAULT_SETTING = "A luxurious resort beach with white sand shoreline. Tall modern high-rise buildings and resort towers visible in the background skyline. The ocean waves lapping gently at the shore. A glamorous upscale beach resort destination atmosphere."
-DEFAULT_LIGHTING = "Bright natural sunlight, golden hour warm tones. Sun casting soft warm highlights on her skin. Sparkling ocean water reflecting sunlight in the background. Cinematic warm beach lighting."
-DEFAULT_CAMERA = "Vertical full body portrait, eye-level shot. 85mm portrait lens, shallow depth of field with the resort buildings and ocean softly blurred in the background. Realistic lifestyle beach photography style."
+DEFAULT_QUALITY = "Ultra-realistic masterpiece, 8k resolution, hyper-detailed, photorealistic, cinematic quality, architectural visualization, sharp focus, vivid colors."
+DEFAULT_NEGATIVE = "No blurry, no low quality, no distorted buildings, no unrealistic proportions, no foggy, no dark, no gloomy, no people visible, no ugly architecture."
+DEFAULT_APPEARANCE = ""
+DEFAULT_OUTFIT = ""
+DEFAULT_POSE = ""
+DEFAULT_SETTING = "A breathtaking aerial view of a colossal 22nd century futuristic megacity with a grand harbor. The city features thousands of ultra-modern skyscrapers with sleek organic curves, glass facades, and advanced architectural designs. A magnificent iconic observation tower stands prominently above all other structures, featuring a stunning panoramic observation deck with glass floors and sweeping 360-degree views, lit with elegant lighting. Elevated highways, sky bridges, and hyperloop tubes connecting massive towers. A vast modern harbor with enormous futuristic cargo ships and passenger vessels docked along the waterfront. Green rooftop gardens and vertical forests integrated into the city skyline. The sky above the city is filled with hundreds of futuristic flying vehicles — personal flying pods, aerial taxis, autonomous air buses, and sleek hovercrafts — all navigating designated sky lanes above the city in an organized flow of air traffic."
+DEFAULT_LIGHTING = "Mostly sunny day with scattered soft white clouds partially drifting across the sky, casting gentle moving shadows over parts of the city. Warm bright sunlight breaking through the clouds and illuminating the skyscrapers and harbor below. Dramatic contrast between sunlit and cloud-shadowed areas of the cityscape. Dynamic and cinematic cloudy sky atmosphere while maintaining clear visibility of the city."
+DEFAULT_CAMERA = "Aerial bird's eye view from high altitude, looking down at a slight angle over the city. Wide angle panoramic shot capturing the full expanse of the megacity, harbor, observation tower, and the bustling sky traffic above. Drone photography style, ultra-wide perspective showing the city stretching endlessly to the horizon."
 
 
 def normalize_spacing(text: str) -> str:
