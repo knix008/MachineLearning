@@ -14,13 +14,14 @@ import gradio as gr
 
 # Default values for each prompt section
 DEFAULT_APPEARANCE = "The image is a high-quality, photorealistic cosplay portrait of a young Korean woman with a soft, idol aesthetic. She has a fair, clear complexion. She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous wavy jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air with natural movement and body, full of life and dynamism."
-DEFAULT_OUTFIT = "She is wearing an extremely tiny and nearly transparent sheer black lingerie set, barely covering her body. The ultra-thin black fabric is almost see-through, delicate and sensual. The lingerie consists of a sheer black bralette and matching sheer black micro panties, the soft transparent fabric clinging softly to her skin."
-DEFAULT_POSE = "Standing on the beach in a confident professional model pose. Body and head both facing directly forward toward the camera. Shoulders squared, chin slightly lifted, gaze fixed straight into the lens. Weight evenly balanced, posture tall and poised. One hand resting naturally at her side. Hair flowing gently in the sea breeze."
-DEFAULT_SETTING = "A luxurious resort beach with white sand shoreline. Tall modern high-rise buildings and resort towers visible in the background skyline. The ocean waves lapping gently at the shore. A glamorous upscale beach resort destination atmosphere."
-DEFAULT_LIGHTING = "Bright natural sunlight, golden hour warm tones. Sun casting soft warm highlights on her skin. Sparkling ocean water reflecting sunlight in the background. Cinematic warm beach lighting."
+DEFAULT_OUTFIT = "She is wearing an extremely tiny and cute black lingerie set, minimal and delicate. The micro black bra and micro black panties are very small and barely covering, adorably petite and sensual."
+DEFAULT_POSE = "Walking gracefully along the beach shoreline, strolling casually with a relaxed and natural gait. Full body shot, body turned slightly toward the camera. Arms swaying naturally as she walks. Hair flowing gently in the sea breeze."
+DEFAULT_SETTING = "Luxurious resort beach with white sand shoreline. Modern high-rise resort towers in the background skyline. Ocean waves at the shore."
+DEFAULT_LIGHTING = "Bright natural sunlight, golden hour warm tones. Soft warm highlights on her skin. Sparkling ocean water in the background. Cinematic warm beach lighting."
 DEFAULT_CAMERA = "Vertical full body portrait, eye-level shot. 85mm portrait lens, shallow depth of field with the resort buildings and ocean softly blurred in the background. Realistic lifestyle beach photography style."
-DEFAULT_QUALITY = "Ultra-realistic masterpiece photograph, 8k resolution, high-fidelity skin textures, cinematic lighting, realistic lifestyle photography, photorealistic, sharp focus."
-DEFAULT_NEGATIVE = "Perfect anatomy, no extra fingers, no missing fingers, no deformed fingers, no fused fingers, perfect hands structure, no distorted body."
+DEFAULT_QUALITY = "Ultra-realistic masterpiece, 8k resolution, high-fidelity skin textures."
+DEFAULT_NEGATIVE = "Perfect anatomy, correct finger count, no deformed or fused fingers, perfect hand structure, no distorted body."
+
 
 def normalize_spacing(text: str) -> str:
     """Normalize whitespace around punctuation in a prompt string."""
@@ -32,7 +33,7 @@ def normalize_spacing(text: str) -> str:
 
 
 def combine_prompt_sections(
-    quality, negative, appearance, outfit, pose, setting, lighting, camera
+    appearance, outfit, pose, setting, lighting, camera, quality, negative
 ):
     """Combine separate prompt sections into one final prompt string."""
     sections = [appearance, outfit, pose, setting, lighting, camera, quality, negative]
@@ -219,7 +220,6 @@ def load_model(device_name=None):
             "메모리 최적화 적용: sequential CPU offload, model CPU offload, attention slicing (CPU)"
         )
     elif DEVICE == "mps":
-        pipe.enable_model_cpu_offload()
         pipe.enable_attention_slicing()
         # channels_last memory format for better MPS performance
         if hasattr(pipe, "transformer"):
@@ -472,7 +472,7 @@ def main():
                     value=DEFAULT_QUALITY,
                     lines=2,
                     placeholder="예: 4k, ultra-detailed, photorealistic",
-                    info="이미지의 품질, 해상도, 스타일 관련 키워드입니다. 프롬프트 맨 뒤에 위치합니다.",
+                    info="이미지의 품질, 해상도, 스타일 관련 키워드입니다.",
                 )
                 prompt_negative = gr.Textbox(
                     label="8. 네거티브 프롬프트 (Negative Prompt)",
@@ -485,28 +485,28 @@ def main():
                     combined_prompt = gr.Textbox(
                         label="최종 프롬프트",
                         value=combine_prompt_sections(
-                            DEFAULT_QUALITY,
-                            DEFAULT_NEGATIVE,
                             DEFAULT_APPEARANCE,
                             DEFAULT_OUTFIT,
                             DEFAULT_POSE,
                             DEFAULT_SETTING,
                             DEFAULT_LIGHTING,
                             DEFAULT_CAMERA,
+                            DEFAULT_QUALITY,
+                            DEFAULT_NEGATIVE,
                         ),
                         lines=4,
                         interactive=False,
                         info="위 섹션들이 자동으로 합쳐진 최종 프롬프트입니다.",
                     )
                 prompt_sections = [
-                    prompt_quality,
-                    prompt_negative,
                     prompt_appearance,
                     prompt_outfit,
                     prompt_pose,
                     prompt_setting,
                     prompt_lighting,
                     prompt_camera,
+                    prompt_quality,
+                    prompt_negative,
                 ]
                 for section in prompt_sections:
                     section.change(
