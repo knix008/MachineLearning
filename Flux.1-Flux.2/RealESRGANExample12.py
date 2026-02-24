@@ -256,26 +256,26 @@ with gr.Blocks() as demo:
                 info="이미지를 몇 배로 확대할지 설정합니다. (1~4)",
             )
             tile = gr.Slider(
-                minimum=64,
+                minimum=4,
                 maximum=1024,
-                value=512,
-                step=64,
+                value=4,
+                step=4,
                 label="Tile 크기 (메모리 부족시 분할 처리)",
-                info="이미지를 분할 처리할 타일 크기입니다. 2048×2048 기준 512 권장. 메모리 부족 시 값을 줄이세요.",
+                info="이미지를 분할 처리할 타일 크기입니다. 최솟값 128 (tile_pad의 최소 6배 이상 권장). 메모리 여유가 많을수록 값을 늘리세요.",
             )
             tile_pad = gr.Number(
                 minimum=0,
                 maximum=512,
-                value=32,
+                value=2,
                 label="Tile padding (타일 경계 패딩)",
-                info="타일 경계에 추가로 패딩을 줄 픽셀 수입니다. Tile 크기의 약 6% 권장 (512→32).",
+                info="타일 경계에 추가로 패딩을 줄 픽셀 수입니다. 공식 기본값 10 권장. Tile 크기의 절반 미만이어야 합니다.",
             )
             pre_pad = gr.Number(
                 minimum=0,
                 maximum=512,
                 value=0,
                 label="Pre padding (전체 이미지 패딩)",
-                info="입력 이미지 전체에 추가로 패딩을 줄 픽셀 수입니다.",
+                info="입력 이미지 전체에 추가로 패딩을 줄 픽셀 수입니다. 일반적으로 0 권장.",
             )
             fp32 = gr.Checkbox(
                 label="FP32 모드 사용 (고정소수점 연산)",
