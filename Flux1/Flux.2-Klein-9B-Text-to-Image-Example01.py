@@ -94,7 +94,7 @@ p_subject = "The image is a high-quality, photorealistic portrait of a young Kor
 # Face & Appearance
 p_face = (
     "She has a fair, clear complexion. "
-    "She is wearing striking bright blue contact lenses that contrast with her dark hair. "
+    "She is wearing blue contact lenses that contrast with her dark hair. "
     "Her expression is innocent and curious, looking directly at the camera."
 )
 

@@ -8,7 +8,7 @@ import json
 from datetime import datetime
 import gradio as gr
 from tqdm import tqdm
-from diffusers import Flux2KleinPipeline
+from diffusers import FluxPipeline
 
 # ── Device detection ──────────────────────────────────────────────────────────
 if torch.cuda.is_available():
@@ -68,11 +68,16 @@ opts = memory_opts[device]
 
 # ── Load pipeline ─────────────────────────────────────────────────────────────
 print("Loading pipeline...")
-pipe = Flux2KleinPipeline.from_pretrained(
-    "black-forest-labs/FLUX.2-klein-9B", torch_dtype=dtype
+pipe = FluxPipeline.from_pretrained(
+    "black-forest-labs/FLUX.1-dev",
+    text_encoder=None,
+    tokenizer=None,
+    torch_dtype=dtype,
 )
 if device == "mps":
     pipe = pipe.to(device)
+    if hasattr(pipe, "transformer"):
+        pipe.transformer.to(memory_format=torch.channels_last)
 else:
     if opts["sequential_offload"]:
         pipe.enable_sequential_cpu_offload()
@@ -88,7 +93,7 @@ print(f"Pipeline ready. Device: {device.upper()} | Memory opts: {opts}")
 DEFAULT_SUBJECT = "The image is a high-quality, photorealistic portrait of a young Korean woman with a soft, idol aesthetic."
 
 # Face & Appearance
-DEFAULT_FACE = "She has a fair, clear complexion. She is wearing blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera."
+DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera."
 
 # Hair
 DEFAULT_HAIR = "She has long, voluminous wavy jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air with natural movement and body, full of life and dynamism. Hair flowing freely in the sea breeze."
@@ -133,6 +138,8 @@ def generate(*args, progress=gr.Progress()):
         guidance_scale,
         num_inference_steps,
         seed,
+        max_sequence_length,
+        image_format,
     ) = args
 
     prompt = " ".join(
@@ -150,20 +157,17 @@ def generate(*args, progress=gr.Progress()):
         ]
     )
 
-    # Check prompt truncation
-    max_sequence_length = 512
-    tokens = pipe.tokenizer(prompt, return_tensors="pt")
-    token_count = tokens.input_ids.shape[1]
-    if token_count > max_sequence_length:
-        truncated_text = pipe.tokenizer.decode(
-            tokens.input_ids[0, max_sequence_length:], skip_special_tokens=True
-        )
-        print(
-            f"WARNING: Prompt truncated! {token_count} tokens > {max_sequence_length} max."
-        )
+    # Check prompt truncation (T5-XXL tokenizer)
+    max_len = int(max_sequence_length)
+    raw_ids = pipe.tokenizer_2(prompt, truncation=False, return_tensors="pt")["input_ids"][0]
+    raw_token_count = len(raw_ids)
+    clipped = max(0, raw_token_count - max_len)
+    if clipped > 0:
+        truncated_text = pipe.tokenizer_2.decode(raw_ids[max_len:], skip_special_tokens=True)
+        print(f"WARNING: Prompt truncated! {raw_token_count} tokens > {max_len} max.")
         print(f"Truncated text: '{truncated_text}'")
     else:
-        print(f"Prompt tokens: {token_count}/{max_sequence_length}")
+        print(f"Prompt tokens: {raw_token_count}/{max_len}")
 
     steps = int(num_inference_steps)
     progress(0, desc="Starting...")
@@ -190,7 +194,6 @@ def generate(*args, progress=gr.Progress()):
         avg = (now - start_time) / completed
         est_total = avg * steps
         est_remaining = est_total - (now - start_time)
-        # CLI progress bar
         pbar.set_postfix(
             {
                 "s/step": f"{step_time:.1f}s",
@@ -199,7 +202,6 @@ def generate(*args, progress=gr.Progress()):
             refresh=False,
         )
         pbar.update(1)
-        # Gradio progress bar
         desc = (
             f"Step {completed}/{steps} | "
             f"elapsed: {now - start_time:.1f}s | "
@@ -210,15 +212,36 @@ def generate(*args, progress=gr.Progress()):
         progress(completed / steps, desc=desc)
         return callback_kwargs
 
-    image = pipe(
-        prompt=prompt,
-        height=int(height),
-        width=int(width),
-        guidance_scale=guidance_scale,
-        num_inference_steps=steps,
-        generator=torch.Generator(device=device).manual_seed(int(seed)),
-        callback_on_step_end=step_callback,
-    ).images[0]
+    # Encode prompt using T5-XXL only (CLIP disabled)
+    generator_device = "cpu" if device == "mps" else device
+    generator = torch.Generator(device=generator_device).manual_seed(int(seed))
+
+    text_inputs = pipe.tokenizer_2(
+        prompt,
+        padding="max_length",
+        max_length=max_len,
+        truncation=True,
+        return_tensors="pt",
+    )
+    with torch.inference_mode():
+        prompt_embeds = pipe.text_encoder_2(
+            text_inputs["input_ids"].to(device),
+            output_hidden_states=False,
+        )[0]
+    prompt_embeds = prompt_embeds.to(dtype=dtype)
+    pooled_prompt_embeds = torch.zeros(1, 768, dtype=dtype, device=prompt_embeds.device)
+
+    with torch.inference_mode():
+        image = pipe(
+            prompt_embeds=prompt_embeds,
+            pooled_prompt_embeds=pooled_prompt_embeds,
+            height=int(height),
+            width=int(width),
+            guidance_scale=guidance_scale,
+            num_inference_steps=steps,
+            generator=generator,
+            callback_on_step_end=step_callback,
+        ).images[0]
     pbar.close()
     elapsed = time.time() - start_time
     avg_step = elapsed / steps
@@ -226,20 +249,30 @@ def generate(*args, progress=gr.Progress()):
 
     script_name = os.path.splitext(os.path.basename(__file__))[0]
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    ext = "jpg" if image_format == "JPEG" else "png"
     output_filename = (
         f"{script_name}_{timestamp}_{device.upper()}_"
-        f"{int(width)}x{int(height)}_gs{guidance_scale}_step{int(num_inference_steps)}_seed{int(seed)}.png"
+        f"{int(width)}x{int(height)}_gs{guidance_scale}_step{int(num_inference_steps)}_seed{int(seed)}"
+        f"_msl{int(max_sequence_length)}.{ext}"
     )
-    image.save(output_filename)
+    if image_format == "JPEG":
+        image.save(output_filename, format="JPEG", quality=100, subsampling=0)
+    else:
+        image.save(output_filename)
 
-    info = f"Inference time: {elapsed:.1f}s | Saved: {output_filename}"
+    token_info = (
+        f"Tokens: {raw_token_count}/{max_len} → {clipped} truncated!"
+        if clipped > 0
+        else f"Tokens: {raw_token_count}/{max_len}"
+    )
+    info = f"Inference time: {elapsed:.1f}s | {token_info} | Saved: {output_filename}"
     print(info)
     return image, info
 
 
 # ── Gradio UI ─────────────────────────────────────────────────────────────────
-with gr.Blocks(title="FLUX.2-Klein-9B Text-to-Image") as demo:
-    gr.Markdown("# FLUX.2-Klein-9B Text-to-Image")
+with gr.Blocks(title="FLUX.1-dev Text-to-Image") as demo:
+    gr.Markdown("# FLUX.1-dev Text-to-Image")
     gr.Markdown(f"**Hardware:** {hw_info}")
     gr.Markdown(f"**Device:** `{device.upper()}` | **Memory opts:** `{opts}`")
 
@@ -288,43 +321,34 @@ with gr.Blocks(title="FLUX.2-Klein-9B Text-to-Image") as demo:
             gr.Markdown("### Generation Parameters")
             with gr.Row():
                 width = gr.Slider(
-                    256,
-                    2048,
-                    value=1024,
-                    step=64,
-                    label="Width",
-                    info="Output image width in pixels (256–2048, step 64). FLUX.2-Klein uses 64-pixel tile alignment.",
+                    256, 2048, value=768, step=64, label="Width",
+                    info="Output image width in pixels (256–2048, step 64). FLUX.1-dev uses 64-pixel tile alignment.",
                 )
                 height = gr.Slider(
-                    256,
-                    2048,
-                    value=1024,
-                    step=64,
-                    label="Height",
-                    info="Output image height in pixels (256–2048, step 64). FLUX.2-Klein uses 64-pixel tile alignment.",
+                    256, 2048, value=1536, step=64, label="Height",
+                    info="Output image height in pixels (256–2048, step 64). FLUX.1-dev uses 64-pixel tile alignment.",
                 )
             with gr.Row():
                 guidance_scale = gr.Slider(
-                    1.0,
-                    10.0,
-                    value=1.0,
-                    step=0.5,
-                    label="Guidance Scale",
-                    info="How closely the image follows the prompt. Higher = more prompt-adherent but less diverse. FLUX.2-Klein works best at 1.0–3.5.",
+                    1.0, 20.0, value=4.0, step=0.5, label="Guidance Scale",
+                    info="How closely the image follows the prompt. Higher = more prompt-adherent but less diverse. FLUX.1-dev works best at 4.0–15.0.",
                 )
                 num_inference_steps = gr.Slider(
-                    1,
-                    25,
-                    value=4,
-                    step=1,
-                    label="Steps",
-                    info="Number of denoising steps. More steps = higher quality but slower. FLUX.2-Klein is optimized for 4–8 steps.",
+                    10, 50, value=28, step=1, label="Steps",
+                    info="Number of denoising steps. More steps = higher quality but slower. FLUX.1-dev works best at 20–28 steps.",
                 )
-            seed = gr.Number(
-                value=0,
-                label="Seed",
-                precision=0,
-                info="Random seed for reproducibility. Use the same seed + settings to reproduce an image exactly.",
+            with gr.Row():
+                seed = gr.Number(
+                    value=42, label="Seed", precision=0,
+                    info="Random seed for reproducibility. Use the same seed + settings to reproduce an image exactly.",
+                )
+                max_sequence_length = gr.Slider(
+                    64, 512, value=512, step=64, label="Max Sequence Length",
+                    info="T5-XXL text encoder max token length (64–512). Longer prompts need higher values. FLUX.1-dev supports up to 512.",
+                )
+            image_format = gr.Radio(
+                ["JPEG", "PNG"], value="JPEG", label="Image Format",
+                info="JPEG: quality 100, 4:4:4 subsampling (smaller file). PNG: lossless compression (larger file).",
             )
             btn = gr.Button("Generate", variant="primary")
 
@@ -350,6 +374,8 @@ with gr.Blocks(title="FLUX.2-Klein-9B Text-to-Image") as demo:
             guidance_scale,
             num_inference_steps,
             seed,
+            max_sequence_length,
+            image_format,
         ],
         outputs=[output_image, output_info],
     )
