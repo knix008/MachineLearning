@@ -94,7 +94,7 @@ print(f"Pipeline ready. Device: {device.upper()} | Memory opts: {opts}")
 DEFAULT_SUBJECT = "The image is a high-quality, photorealistic portrait of a young Korean woman with a soft, idol aesthetic."
 
 # Face & Appearance
-DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera."
+DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is soft and gentle, with a very subtle, barely-there smile, lips slightly curved at the corners, looking directly at the camera."
 
 # Hair
 DEFAULT_HAIR = "She has long, voluminous wavy jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air with natural movement and body, full of life and dynamism. Hair flowing freely in the sea breeze."

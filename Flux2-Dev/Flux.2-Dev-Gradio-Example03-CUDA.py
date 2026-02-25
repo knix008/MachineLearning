@@ -83,6 +83,20 @@ def print_system_resources():
 print_system_resources()
 
 
+def _clear_device_cache():
+    gc.collect()
+    if torch.cuda.is_available():
+        try:
+            torch.cuda.empty_cache()
+        except Exception:
+            pass
+    if hasattr(torch, "mps") and torch.backends.mps.is_available():
+        try:
+            torch.mps.empty_cache()
+        except Exception:
+            pass
+
+
 def cleanup_resources():
     global pipe, interface
     try:
@@ -98,17 +112,7 @@ def cleanup_resources():
             except Exception:
                 pass
             pipe = None
-        gc.collect()
-        if torch.cuda.is_available():
-            try:
-                torch.cuda.empty_cache()
-            except Exception:
-                pass
-        if hasattr(torch, "mps") and torch.backends.mps.is_available():
-            try:
-                torch.mps.empty_cache()
-            except Exception:
-                pass
+        _clear_device_cache()
         print("[종료] 자원 해제 완료.")
     except Exception:
         print("[종료] 자원 해제 중 오류 발생.")
@@ -179,14 +183,14 @@ def generate_image(
         print("=" * 60)
 
         # Build pipeline arguments
-        pipe_kwargs = dict(
-            prompt=prompt,
-            width=width,
-            height=height,
-            guidance_scale=guidance_scale,
-            num_inference_steps=num_inference_steps,
-            generator=torch.Generator(device=device).manual_seed(seed),
-        )
+        pipe_kwargs = {
+            "prompt": prompt,
+            "width": width,
+            "height": height,
+            "guidance_scale": guidance_scale,
+            "num_inference_steps": num_inference_steps,
+            "generator": torch.Generator(device=device).manual_seed(seed),
+        }
 
         # Add negative prompt when provided and true_cfg_scale > 1
         if negative_prompt and negative_prompt.strip() and true_cfg_scale > 1.0:
