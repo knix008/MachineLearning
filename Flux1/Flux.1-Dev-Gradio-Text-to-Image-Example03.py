@@ -15,13 +15,13 @@ from diffusers import FluxPipeline
 DEFAULT_QUALITY = "Ultra-realistic masterpiece photograph, 8k resolution, high-fidelity skin textures, cinematic lighting, realistic lifestyle photography, photorealistic, sharp focus."
 
 # Anatomy
-DEFAULT_ANATOMY = "Perfect anatomy, no missing fingers, no extra fingers, no deformed fingers, perfect hand structure, no missing toes, no extra toes, no deformed toes, perfect foot structure, correct body proportions."
+DEFAULT_ANATOMY = "Perfect anatomy, no missing fingers, no extra fingers, no deformed fingers, perfect hand structure, no missing toes, no extra toes, no deformed toes, perfect foot structure."
 
 # Subject
 DEFAULT_SUBJECT = "The image is a high-quality, photorealistic portrait of a young Korean woman with a soft, idol aesthetic."
 
 # Face & Appearance
-DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is soft and gentle, with a very subtle, barely-there smile, lips slightly curved at the corners, looking directly at the camera."
+DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera."
 
 # Hair
 DEFAULT_HAIR = "She has long, voluminous wavy jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air with natural movement and body, full of life and dynamism. Hair flowing freely in the sea breeze."
@@ -30,7 +30,7 @@ DEFAULT_HAIR = "She has long, voluminous wavy jet-black hair with beautiful soft
 DEFAULT_OUTFIT = "She is wearing a sheer black mesh lingerie set, fully see-through delicate lace fabric revealing her skin beneath. A sheer mesh bra top and matching sheer mesh panties, the transparent fabric clinging softly to her body, intricate lace trim detailing along the edges."
 
 # Pose & Action
-DEFAULT_POSE = "She is lying face-down on the beach sand, resting on her stomach. Her body is fully stretched out along the shoreline, both legs completely straight and extended behind her, knees not bent, feet together pointing away from the camera. She props herself up slightly on her elbows, chin tilted up, gazing directly at the camera with a soft and alluring expression. Her hair fans out loosely around her shoulders."
+DEFAULT_POSE = "She is lying face-down on the beach sand, resting on her stomach. Her body is fully stretched out along the shoreline. Both legs are perfectly straight, rigid, and fully extended behind her with absolutely no bend at the knees. Her legs lie flat against the sand, parallel to each other, toes pointed. She props herself up slightly on her elbows, chin tilted up, gazing directly at the camera with a soft and alluring expression. Her hair fans out loosely around her shoulders."
 
 # Background & Setting
 DEFAULT_BACKGROUND = "Luxurious resort beach with white sand shoreline. Modern high-rise resort towers in the background skyline. Gentle ocean waves washing up the shore, the foamy water just reaching and lapping at her bare feet. Sparkling ocean water in the background."
@@ -39,7 +39,7 @@ DEFAULT_BACKGROUND = "Luxurious resort beach with white sand shoreline. Modern h
 DEFAULT_LIGHTING = "Bright natural sunlight, golden hour warm tones. Soft warm highlights on her skin. Cinematic warm beach lighting."
 
 # Camera & Shot Style
-DEFAULT_CAMERA = "Horizontal full body portrait, low-angle front-facing shot from ground level. 85mm portrait lens, shallow depth of field, sand and ocean softly blurred in the background. Realistic lifestyle beach photography."
+DEFAULT_CAMERA = "Low-angle front-facing shot from ground level. 85mm portrait lens, shallow depth of field, sand and ocean softly blurred in the background. Realistic lifestyle beach photography."
 
 
 # ── Device detection ──────────────────────────────────────────────────────────
@@ -499,5 +499,6 @@ if __name__ == "__main__":
         elif torch.backends.mps.is_available():
             torch.mps.empty_cache()
         import gc
+
         gc.collect()
         print("All resources released. Exiting.")
