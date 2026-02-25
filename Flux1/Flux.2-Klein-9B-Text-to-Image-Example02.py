@@ -25,7 +25,7 @@ DEFAULT_HAIR = "She has long, voluminous wavy jet-black hair with beautiful soft
 DEFAULT_OUTFIT = "She is wearing an extremely tiny black lingerie set, barely covering her body. A very small black bra and matching micro black panties, delicate and sensual, the soft fabric clinging gently to her skin."
 
 # Pose & Action
-DEFAULT_POSE = "Full body shot, walking gracefully along the beach shoreline toward the camera. Natural and relaxed walking gait, one foot stepping forward. Both arms hanging naturally down at her sides, swinging loosely with the natural rhythm of walking. Head facing forward toward the camera with a confident and alluring expression."
+DEFAULT_POSE = "She is walking gracefully along the beach shoreline toward the camera. Natural and relaxed walking gait, one foot stepping forward. Both arms hanging naturally down at her sides, swinging loosely with the natural rhythm of walking. Head facing forward toward the camera with a confident and alluring expression."
 
 # Background & Setting
 DEFAULT_BACKGROUND = "Luxurious resort beach with white sand shoreline. Modern high-rise resort towers in the background skyline. Ocean waves at the shore. Sparkling ocean water in the background."
