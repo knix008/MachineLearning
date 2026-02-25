@@ -1,0 +1,379 @@
+import torch
+import os
+import time
+import platform
+import psutil
+import subprocess
+import json
+from datetime import datetime
+import gradio as gr
+from tqdm import tqdm
+from diffusers import Flux2KleinPipeline
+
+# ── Device detection ──────────────────────────────────────────────────────────
+if torch.cuda.is_available():
+    device = "cuda"
+    dtype = torch.bfloat16
+elif torch.backends.mps.is_available():
+    device = "mps"
+    dtype = torch.bfloat16
+else:
+    device = "cpu"
+    dtype = torch.float32
+
+# ── Hardware info ─────────────────────────────────────────────────────────────
+cpu_name = platform.processor() or platform.machine()
+ram_gb = psutil.virtual_memory().total / (1024**3)
+
+if device == "cuda":
+    gpu_name = torch.cuda.get_device_name(0)
+    vram_gb = torch.cuda.get_device_properties(0).total_memory / (1024**3)
+    hw_info = f"CPU: {cpu_name} | RAM: {ram_gb:.1f} GB | GPU: {gpu_name} | VRAM: {vram_gb:.1f} GB"
+elif device == "mps":
+    try:
+        result = subprocess.run(
+            ["system_profiler", "SPDisplaysDataType", "-json"],
+            capture_output=True,
+            text=True,
+        )
+        displays = json.loads(result.stdout).get("SPDisplaysDataType", [{}])
+        vram_info = displays[0].get("sppci_memory", "N/A") if displays else "N/A"
+    except Exception:
+        vram_info = "N/A"
+    hw_info = f"CPU: {cpu_name} | RAM: {ram_gb:.1f} GB | GPU: Apple Silicon (MPS) | VRAM: {vram_info} (unified)"
+else:
+    hw_info = f"CPU: {cpu_name} | RAM: {ram_gb:.1f} GB | GPU: None"
+
+print(hw_info)
+
+# ── Memory optimization ───────────────────────────────────────────────────────
+memory_opts = {
+    "cuda": {
+        "sequential_offload": True,
+        "model_cpu_offload": True,
+        "attention_slicing": True,
+    },
+    "mps": {
+        "sequential_offload": False,
+        "model_cpu_offload": False,
+        "attention_slicing": True,
+    },
+    "cpu": {
+        "sequential_offload": True,
+        "model_cpu_offload": True,
+        "attention_slicing": True,
+    },
+}
+opts = memory_opts[device]
+
+# ── Load pipeline ─────────────────────────────────────────────────────────────
+print("Loading pipeline...")
+pipe = Flux2KleinPipeline.from_pretrained(
+    "black-forest-labs/FLUX.2-klein-9B", torch_dtype=dtype
+)
+if device == "mps":
+    pipe = pipe.to(device)
+else:
+    if opts["sequential_offload"]:
+        pipe.enable_sequential_cpu_offload()
+    elif opts["model_cpu_offload"]:
+        pipe.enable_model_cpu_offload()
+if opts["attention_slicing"]:
+    pipe.enable_attention_slicing()
+print(f"Pipeline ready. Device: {device.upper()} | Memory opts: {opts}")
+
+# ── Default prompt sections ───────────────────────────────────────────────────
+
+# Subject
+DEFAULT_SUBJECT = "The image is a high-quality, photorealistic portrait of a young Korean woman with a soft, idol aesthetic."
+
+# Face & Appearance
+DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera."
+
+# Hair
+DEFAULT_HAIR = "She has long, voluminous wavy jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air with natural movement and body, full of life and dynamism. Hair flowing freely in the sea breeze."
+
+# Outfit
+DEFAULT_OUTFIT = "She is wearing an extremely tiny black lingerie set, barely covering her body. A very small black bra and matching micro black panties, delicate and sensual, the soft fabric clinging gently to her skin."
+
+# Pose & Action
+DEFAULT_POSE = "Full body shot, walking gracefully along the beach shoreline toward the camera. Natural and relaxed walking gait, one foot stepping forward. Both arms hanging naturally down at her sides, swinging loosely with the natural rhythm of walking. Head facing forward toward the camera with a confident and alluring expression."
+
+# Background & Setting
+DEFAULT_BACKGROUND = "Luxurious resort beach with white sand shoreline. Modern high-rise resort towers in the background skyline. Ocean waves at the shore. Sparkling ocean water in the background."
+
+# Lighting
+DEFAULT_LIGHTING = "Bright natural sunlight, golden hour warm tones. Soft warm highlights on her skin. Cinematic warm beach lighting."
+
+# Camera & Shot Style
+DEFAULT_CAMERA = "Vertical full body portrait, chest-level shot. 85mm portrait lens, shallow depth of field, resort buildings and ocean softly blurred. Realistic lifestyle beach photography."
+
+# Quality & Technical
+DEFAULT_QUALITY = "Ultra-realistic masterpiece photograph, 8k resolution, high-fidelity skin textures, cinematic lighting, realistic lifestyle photography, photorealistic, sharp focus."
+
+# Anatomy
+DEFAULT_ANATOMY = "Perfect anatomy, correct finger count, no deformed or fused fingers, perfect hand structure, perfect feet structure, perfect body proportion, no extra hands, no extra feet, no distorted body."
+
+
+# ── Generate function ─────────────────────────────────────────────────────────
+def generate(*args, progress=gr.Progress()):
+    (
+        p_subject,
+        p_face,
+        p_hair,
+        p_outfit,
+        p_pose,
+        p_background,
+        p_lighting,
+        p_camera,
+        p_quality,
+        p_anatomy,
+        height,
+        width,
+        guidance_scale,
+        num_inference_steps,
+        seed,
+    ) = args
+
+    prompt = " ".join(
+        [
+            p_subject,
+            p_face,
+            p_hair,
+            p_outfit,
+            p_pose,
+            p_background,
+            p_lighting,
+            p_camera,
+            p_quality,
+            p_anatomy,
+        ]
+    )
+
+    # Check prompt truncation
+    max_sequence_length = 512
+    tokens = pipe.tokenizer(prompt, return_tensors="pt")
+    token_count = tokens.input_ids.shape[1]
+    if token_count > max_sequence_length:
+        truncated_text = pipe.tokenizer.decode(
+            tokens.input_ids[0, max_sequence_length:], skip_special_tokens=True
+        )
+        print(
+            f"WARNING: Prompt truncated! {token_count} tokens > {max_sequence_length} max."
+        )
+        print(f"Truncated text: '{truncated_text}'")
+    else:
+        print(f"Prompt tokens: {token_count}/{max_sequence_length}")
+
+    steps = int(num_inference_steps)
+    progress(0, desc="Starting...")
+
+    pbar = tqdm(
+        total=steps,
+        desc="Inference",
+        unit="step",
+        dynamic_ncols=True,
+        bar_format=(
+            "{desc}: {percentage:3.0f}%|{bar}| {n}/{total} "
+            "[elapsed: {elapsed} | remaining: {remaining} | {rate_fmt}]"
+        ),
+    )
+
+    start_time = time.time()
+    last_step_time = [start_time]
+
+    def step_callback(_pipe, step, _timestep, callback_kwargs):
+        now = time.time()
+        step_time = now - last_step_time[0]
+        last_step_time[0] = now
+        completed = step + 1
+        avg = (now - start_time) / completed
+        est_total = avg * steps
+        est_remaining = est_total - (now - start_time)
+        # CLI progress bar
+        pbar.set_postfix(
+            {
+                "s/step": f"{step_time:.1f}s",
+                "est_total": f"{est_total:.0f}s",
+            },
+            refresh=False,
+        )
+        pbar.update(1)
+        # Gradio progress bar
+        desc = (
+            f"Step {completed}/{steps} | "
+            f"elapsed: {now - start_time:.1f}s | "
+            f"remaining: {max(est_remaining, 0):.1f}s | "
+            f"est_total: {est_total:.1f}s | "
+            f"s/step: {step_time:.1f}s"
+        )
+        progress(completed / steps, desc=desc)
+        return callback_kwargs
+
+    image = pipe(
+        prompt=prompt,
+        height=int(height),
+        width=int(width),
+        guidance_scale=guidance_scale,
+        num_inference_steps=steps,
+        generator=torch.Generator(device=device).manual_seed(int(seed)),
+        callback_on_step_end=step_callback,
+    ).images[0]
+    pbar.close()
+    elapsed = time.time() - start_time
+    avg_step = elapsed / steps
+    progress(1, desc=f"Done | total: {elapsed:.1f}s | avg: {avg_step:.2f}s/step")
+
+    script_name = os.path.splitext(os.path.basename(__file__))[0]
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    output_filename = (
+        f"{script_name}_{timestamp}_{device.upper()}_"
+        f"{int(width)}x{int(height)}_gs{guidance_scale}_step{int(num_inference_steps)}_seed{int(seed)}.png"
+    )
+    image.save(output_filename)
+
+    info = f"Inference time: {elapsed:.1f}s | Saved: {output_filename}"
+    print(info)
+    return image, info
+
+
+# ── Gradio UI ─────────────────────────────────────────────────────────────────
+with gr.Blocks(title="FLUX.2-Klein-9B Text-to-Image") as demo:
+    gr.Markdown("# FLUX.2-Klein-9B Text-to-Image")
+    gr.Markdown(f"**Hardware:** {hw_info}")
+    gr.Markdown(f"**Device:** `{device.upper()}` | **Memory opts:** `{opts}`")
+
+    with gr.Row():
+        # ── Left: Prompt Sections ─────────────────────────────────────────────
+        with gr.Column(scale=1):
+            gr.Markdown("### Prompt Sections")
+            p_subject = gr.Textbox(label="Subject", value=DEFAULT_SUBJECT, lines=2)
+            p_face = gr.Textbox(label="Face & Appearance", value=DEFAULT_FACE, lines=3)
+            p_hair = gr.Textbox(label="Hair", value=DEFAULT_HAIR, lines=3)
+            p_outfit = gr.Textbox(label="Outfit", value=DEFAULT_OUTFIT, lines=3)
+            p_pose = gr.Textbox(label="Pose & Action", value=DEFAULT_POSE, lines=3)
+            p_background = gr.Textbox(
+                label="Background & Setting", value=DEFAULT_BACKGROUND, lines=3
+            )
+            p_lighting = gr.Textbox(label="Lighting", value=DEFAULT_LIGHTING, lines=2)
+            p_camera = gr.Textbox(
+                label="Camera & Shot Style", value=DEFAULT_CAMERA, lines=2
+            )
+            p_quality = gr.Textbox(
+                label="Quality & Technical", value=DEFAULT_QUALITY, lines=2
+            )
+            p_anatomy = gr.Textbox(label="Anatomy", value=DEFAULT_ANATOMY, lines=2)
+
+            default_full_prompt = " ".join(
+                [
+                    DEFAULT_SUBJECT,
+                    DEFAULT_FACE,
+                    DEFAULT_HAIR,
+                    DEFAULT_OUTFIT,
+                    DEFAULT_POSE,
+                    DEFAULT_BACKGROUND,
+                    DEFAULT_LIGHTING,
+                    DEFAULT_CAMERA,
+                    DEFAULT_QUALITY,
+                    DEFAULT_ANATOMY,
+                ]
+            )
+            with gr.Accordion("Full Prompt", open=False):
+                full_prompt = gr.Textbox(
+                    label="", interactive=False, lines=8, value=default_full_prompt
+                )
+
+        # ── Right: Parameters + Output ────────────────────────────────────────
+        with gr.Column(scale=1):
+            gr.Markdown("### Generation Parameters")
+            with gr.Row():
+                width = gr.Slider(
+                    256,
+                    2048,
+                    value=1024,
+                    step=64,
+                    label="Width",
+                    info="Output image width in pixels (256–2048, step 64). FLUX.2-Klein uses 64-pixel tile alignment.",
+                )
+                height = gr.Slider(
+                    256,
+                    2048,
+                    value=1024,
+                    step=64,
+                    label="Height",
+                    info="Output image height in pixels (256–2048, step 64). FLUX.2-Klein uses 64-pixel tile alignment.",
+                )
+            with gr.Row():
+                guidance_scale = gr.Slider(
+                    1.0,
+                    10.0,
+                    value=1.0,
+                    step=0.5,
+                    label="Guidance Scale",
+                    info="How closely the image follows the prompt. Higher = more prompt-adherent but less diverse. FLUX.2-Klein works best at 1.0–3.5.",
+                )
+                num_inference_steps = gr.Slider(
+                    1,
+                    25,
+                    value=4,
+                    step=1,
+                    label="Steps",
+                    info="Number of denoising steps. More steps = higher quality but slower. FLUX.2-Klein is optimized for 4–8 steps.",
+                )
+            seed = gr.Number(
+                value=0,
+                label="Seed",
+                precision=0,
+                info="Random seed for reproducibility. Use the same seed + settings to reproduce an image exactly.",
+            )
+            btn = gr.Button("Generate", variant="primary")
+
+            gr.Markdown("### Output")
+            output_image = gr.Image(label="Output Image", type="pil", height=800)
+            output_info = gr.Textbox(label="Info", interactive=False)
+
+    btn.click(
+        fn=generate,
+        inputs=[
+            p_subject,
+            p_face,
+            p_hair,
+            p_outfit,
+            p_pose,
+            p_background,
+            p_lighting,
+            p_camera,
+            p_quality,
+            p_anatomy,
+            height,
+            width,
+            guidance_scale,
+            num_inference_steps,
+            seed,
+        ],
+        outputs=[output_image, output_info],
+    )
+
+    def update_full_prompt(*sections):
+        return " ".join(s for s in sections if s)
+
+    section_inputs = [
+        p_subject,
+        p_face,
+        p_hair,
+        p_outfit,
+        p_pose,
+        p_background,
+        p_lighting,
+        p_camera,
+        p_quality,
+        p_anatomy,
+    ]
+    for section in section_inputs:
+        section.change(
+            fn=update_full_prompt, inputs=section_inputs, outputs=full_prompt
+        )
+
+
+if __name__ == "__main__":
+    demo.launch(inbrowser=True)
