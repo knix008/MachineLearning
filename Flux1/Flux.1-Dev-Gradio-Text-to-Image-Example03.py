@@ -11,6 +11,11 @@ from tqdm import tqdm
 from diffusers import FluxPipeline
 
 # ── Default prompt sections ───────────────────────────────────────────────────
+# Quality & Technical
+DEFAULT_QUALITY = "Ultra-realistic masterpiece photograph, 8k resolution, high-fidelity skin textures, cinematic lighting, realistic lifestyle photography, photorealistic, sharp focus."
+
+# Anatomy
+DEFAULT_ANATOMY = "Perfect anatomy, no missing fingers, no extra fingers, no deformed fingers, perfect hand structure, no missing toes, no extra toes, no deformed toes, perfect foot structure, correct body proportions."
 
 # Subject
 DEFAULT_SUBJECT = "The image is a high-quality, photorealistic portrait of a young Korean woman with a soft, idol aesthetic."
@@ -25,7 +30,7 @@ DEFAULT_HAIR = "She has long, voluminous wavy jet-black hair with beautiful soft
 DEFAULT_OUTFIT = "She is wearing a sheer black mesh lingerie set, fully see-through delicate lace fabric revealing her skin beneath. A sheer mesh bra top and matching sheer mesh panties, the transparent fabric clinging softly to her body, intricate lace trim detailing along the edges."
 
 # Pose & Action
-DEFAULT_POSE = "She is lying face-down on the beach sand, resting on her stomach. Her body is stretched out along the shoreline, legs extended behind her. She props herself up slightly on her elbows, chin tilted up, gazing directly at the camera with a soft and alluring expression. Her hair fans out loosely around her shoulders."
+DEFAULT_POSE = "She is lying face-down on the beach sand, resting on her stomach. Her body is fully stretched out along the shoreline, both legs completely straight and extended behind her, knees not bent, feet together pointing away from the camera. She props herself up slightly on her elbows, chin tilted up, gazing directly at the camera with a soft and alluring expression. Her hair fans out loosely around her shoulders."
 
 # Background & Setting
 DEFAULT_BACKGROUND = "Luxurious resort beach with white sand shoreline. Modern high-rise resort towers in the background skyline. Gentle ocean waves washing up the shore, the foamy water just reaching and lapping at her bare feet. Sparkling ocean water in the background."
@@ -36,11 +41,6 @@ DEFAULT_LIGHTING = "Bright natural sunlight, golden hour warm tones. Soft warm h
 # Camera & Shot Style
 DEFAULT_CAMERA = "Horizontal full body portrait, low-angle front-facing shot from ground level. 85mm portrait lens, shallow depth of field, sand and ocean softly blurred in the background. Realistic lifestyle beach photography."
 
-# Quality & Technical
-DEFAULT_QUALITY = "Ultra-realistic masterpiece photograph, 8k resolution, high-fidelity skin textures, cinematic lighting, realistic lifestyle photography, photorealistic, sharp focus."
-
-# Anatomy
-DEFAULT_ANATOMY = "Perfect anatomy, correct finger count, no deformed or fused fingers, correct toes count, no deformed or fused toes, perfect hand structure, perfect feet structure, perfect body proportion, no extra hands, no extra feet, no distorted body."
 
 # ── Device detection ──────────────────────────────────────────────────────────
 if torch.cuda.is_available():
@@ -124,16 +124,16 @@ print(f"Pipeline ready. Device: {device.upper()} | Memory opts: {opts}")
 # ── Generate function ─────────────────────────────────────────────────────────
 def generate(*args, progress=gr.Progress()):
     (
+        p_quality,
+        p_anatomy,
         p_subject,
         p_face,
         p_hair,
         p_outfit,
-        p_anatomy,
         p_pose,
         p_background,
         p_lighting,
         p_camera,
-        p_quality,
         height,
         width,
         guidance_scale,
@@ -145,16 +145,16 @@ def generate(*args, progress=gr.Progress()):
 
     prompt = " ".join(
         [
+            p_quality,
+            p_anatomy,
             p_subject,
             p_face,
             p_hair,
             p_outfit,
-            p_anatomy,
             p_pose,
             p_background,
             p_lighting,
             p_camera,
-            p_quality,
         ]
     )
 
@@ -276,7 +276,18 @@ def generate(*args, progress=gr.Progress()):
 
 
 # ── Gradio UI ─────────────────────────────────────────────────────────────────
-with gr.Blocks(title="FLUX.1-dev Text-to-Image") as demo:
+_BLOCK_CTRL_S_JS = """
+() => {
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    }, true);
+}
+"""
+
+with gr.Blocks(title="FLUX.1-dev Text-to-Image", js=_BLOCK_CTRL_S_JS) as demo:
     gr.Markdown("# FLUX.1-dev Text-to-Image")
     gr.Markdown(f"**Hardware:** {hw_info}")
     gr.Markdown(f"**Device:** `{device.upper()}` | **Memory opts:** `{opts}`")
@@ -285,6 +296,18 @@ with gr.Blocks(title="FLUX.1-dev Text-to-Image") as demo:
         # ── Left: Prompt Sections ─────────────────────────────────────────────
         with gr.Column(scale=1):
             gr.Markdown("### Prompt Sections")
+            p_quality = gr.Textbox(
+                label="Quality & Technical",
+                value=DEFAULT_QUALITY,
+                lines=2,
+                info="이미지 품질과 기술적 키워드. 해상도, 사실감, 렌더링 스타일 등. 예: 'ultra-realistic, 8k, photorealistic, sharp focus'",
+            )
+            p_anatomy = gr.Textbox(
+                label="Anatomy",
+                value=DEFAULT_ANATOMY,
+                lines=2,
+                info="해부학적 정확도 키워드. 손가락, 손, 발, 신체 비율 오류 방지 등. 예: 'correct finger count, no extra limbs'",
+            )
             p_subject = gr.Textbox(
                 label="Subject",
                 value=DEFAULT_SUBJECT,
@@ -308,12 +331,6 @@ with gr.Blocks(title="FLUX.1-dev Text-to-Image") as demo:
                 value=DEFAULT_OUTFIT,
                 lines=3,
                 info="의상과 소품 묘사. 옷 종류, 색상, 소재, 디테일 등. 예: 'tiny black lingerie set, delicate fabric'",
-            )
-            p_anatomy = gr.Textbox(
-                label="Anatomy",
-                value=DEFAULT_ANATOMY,
-                lines=2,
-                info="해부학적 정확도 키워드. 손가락, 손, 발, 신체 비율 오류 방지 등. 예: 'correct finger count, no extra limbs'",
             )
             p_pose = gr.Textbox(
                 label="Pose & Action",
@@ -339,25 +356,18 @@ with gr.Blocks(title="FLUX.1-dev Text-to-Image") as demo:
                 lines=2,
                 info="카메라 설정과 촬영 스타일. 렌즈, 심도, 앵글, 샷 유형 등. 예: '85mm portrait lens, shallow depth of field'",
             )
-            p_quality = gr.Textbox(
-                label="Quality & Technical",
-                value=DEFAULT_QUALITY,
-                lines=2,
-                info="이미지 품질과 기술적 키워드. 해상도, 사실감, 렌더링 스타일 등. 예: 'ultra-realistic, 8k, photorealistic, sharp focus'",
-            )
-
             default_full_prompt = " ".join(
                 [
+                    DEFAULT_QUALITY,
+                    DEFAULT_ANATOMY,
                     DEFAULT_SUBJECT,
                     DEFAULT_FACE,
                     DEFAULT_HAIR,
                     DEFAULT_OUTFIT,
-                    DEFAULT_ANATOMY,
                     DEFAULT_POSE,
                     DEFAULT_BACKGROUND,
                     DEFAULT_LIGHTING,
                     DEFAULT_CAMERA,
-                    DEFAULT_QUALITY,
                 ]
             )
             with gr.Accordion("Full Prompt", open=False):
@@ -432,16 +442,16 @@ with gr.Blocks(title="FLUX.1-dev Text-to-Image") as demo:
     btn.click(
         fn=generate,
         inputs=[
+            p_quality,
+            p_anatomy,
             p_subject,
             p_face,
             p_hair,
             p_outfit,
-            p_anatomy,
             p_pose,
             p_background,
             p_lighting,
             p_camera,
-            p_quality,
             height,
             width,
             guidance_scale,
@@ -457,16 +467,16 @@ with gr.Blocks(title="FLUX.1-dev Text-to-Image") as demo:
         return " ".join(s for s in sections if s)
 
     section_inputs = [
+        p_quality,
+        p_anatomy,
         p_subject,
         p_face,
         p_hair,
         p_outfit,
-        p_anatomy,
         p_pose,
         p_background,
         p_lighting,
         p_camera,
-        p_quality,
     ]
     for section in section_inputs:
         section.change(
@@ -475,4 +485,19 @@ with gr.Blocks(title="FLUX.1-dev Text-to-Image") as demo:
 
 
 if __name__ == "__main__":
-    demo.launch(inbrowser=True)
+    try:
+        demo.launch(inbrowser=True)
+    except KeyboardInterrupt:
+        print("\nKeyboardInterrupt detected. Releasing resources...")
+    finally:
+        demo.close()
+        if "pipe" in globals():
+            del pipe
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.synchronize()
+        elif torch.backends.mps.is_available():
+            torch.mps.empty_cache()
+        import gc
+        gc.collect()
+        print("All resources released. Exiting.")
