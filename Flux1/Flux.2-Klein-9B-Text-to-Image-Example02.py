@@ -10,6 +10,38 @@ import gradio as gr
 from tqdm import tqdm
 from diffusers import Flux2KleinPipeline
 
+# ── Default prompt sections ───────────────────────────────────────────────────
+
+# Subject
+DEFAULT_SUBJECT = "The image is a high-quality, photorealistic portrait of a young Korean woman with a soft, idol aesthetic."
+
+# Face & Appearance
+DEFAULT_FACE = "She has a fair, clear complexion. She is wearing blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera."
+
+# Hair
+DEFAULT_HAIR = "She has long, voluminous wavy jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air with natural movement and body, full of life and dynamism. Hair flowing freely in the sea breeze."
+
+# Outfit
+DEFAULT_OUTFIT = "She is wearing an extremely tiny black lingerie set, barely covering her body. A very small black bra and matching micro black panties, delicate and sensual, the soft fabric clinging gently to her skin."
+
+# Pose & Action
+DEFAULT_POSE = "Full body shot, walking gracefully along the beach shoreline toward the camera. Natural and relaxed walking gait, one foot stepping forward. Both arms hanging naturally down at her sides, swinging loosely with the natural rhythm of walking. Head facing forward toward the camera with a confident and alluring expression."
+
+# Background & Setting
+DEFAULT_BACKGROUND = "Luxurious resort beach with white sand shoreline. Modern high-rise resort towers in the background skyline. Ocean waves at the shore. Sparkling ocean water in the background."
+
+# Lighting
+DEFAULT_LIGHTING = "Bright natural sunlight, golden hour warm tones. Soft warm highlights on her skin. Cinematic warm beach lighting."
+
+# Camera & Shot Style
+DEFAULT_CAMERA = "Vertical full body portrait, chest-level shot. 85mm portrait lens, shallow depth of field, resort buildings and ocean softly blurred. Realistic lifestyle beach photography."
+
+# Quality & Technical
+DEFAULT_QUALITY = "Ultra-realistic masterpiece photograph, 8k resolution, high-fidelity skin textures, cinematic lighting, realistic lifestyle photography, photorealistic, sharp focus."
+
+# Anatomy
+DEFAULT_ANATOMY = "Perfect anatomy, correct finger count, no deformed or fused fingers, perfect hand structure, perfect feet structure, perfect body proportion, no extra hands, no extra feet, no distorted body."
+
 # ── Device detection ──────────────────────────────────────────────────────────
 if torch.cuda.is_available():
     device = "cuda"
@@ -81,38 +113,6 @@ else:
 if opts["attention_slicing"]:
     pipe.enable_attention_slicing()
 print(f"Pipeline ready. Device: {device.upper()} | Memory opts: {opts}")
-
-# ── Default prompt sections ───────────────────────────────────────────────────
-
-# Subject
-DEFAULT_SUBJECT = "The image is a high-quality, photorealistic portrait of a young Korean woman with a soft, idol aesthetic."
-
-# Face & Appearance
-DEFAULT_FACE = "She has a fair, clear complexion. She is wearing blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera."
-
-# Hair
-DEFAULT_HAIR = "She has long, voluminous wavy jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air with natural movement and body, full of life and dynamism. Hair flowing freely in the sea breeze."
-
-# Outfit
-DEFAULT_OUTFIT = "She is wearing an extremely tiny black lingerie set, barely covering her body. A very small black bra and matching micro black panties, delicate and sensual, the soft fabric clinging gently to her skin."
-
-# Pose & Action
-DEFAULT_POSE = "Full body shot, walking gracefully along the beach shoreline toward the camera. Natural and relaxed walking gait, one foot stepping forward. Both arms hanging naturally down at her sides, swinging loosely with the natural rhythm of walking. Head facing forward toward the camera with a confident and alluring expression."
-
-# Background & Setting
-DEFAULT_BACKGROUND = "Luxurious resort beach with white sand shoreline. Modern high-rise resort towers in the background skyline. Ocean waves at the shore. Sparkling ocean water in the background."
-
-# Lighting
-DEFAULT_LIGHTING = "Bright natural sunlight, golden hour warm tones. Soft warm highlights on her skin. Cinematic warm beach lighting."
-
-# Camera & Shot Style
-DEFAULT_CAMERA = "Vertical full body portrait, chest-level shot. 85mm portrait lens, shallow depth of field, resort buildings and ocean softly blurred. Realistic lifestyle beach photography."
-
-# Quality & Technical
-DEFAULT_QUALITY = "Ultra-realistic masterpiece photograph, 8k resolution, high-fidelity skin textures, cinematic lighting, realistic lifestyle photography, photorealistic, sharp focus."
-
-# Anatomy
-DEFAULT_ANATOMY = "Perfect anatomy, correct finger count, no deformed or fused fingers, perfect hand structure, perfect feet structure, perfect body proportion, no extra hands, no extra feet, no distorted body."
 
 
 # ── Generate function ─────────────────────────────────────────────────────────
