@@ -534,7 +534,7 @@ def main():
                 with gr.Row():
                     guidance_scale = gr.Slider(
                         label="Guidance Scale (프롬프트 강도)",
-                        minimum=1.0,
+                        minimum=0.0,
                         maximum=10.0,
                         step=0.1,
                         value=0.0, # Guidance Should be 0 for Z-Image Turbo model.
