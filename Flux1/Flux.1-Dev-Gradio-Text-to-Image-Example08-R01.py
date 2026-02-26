@@ -22,7 +22,7 @@ DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright
 DEFAULT_HAIR = "She has long, voluminous wavy jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air with natural movement and body, full of life and dynamism. Hair flowing freely in the sea breeze."
 
 # Outfit
-DEFAULT_OUTFIT = "She is wearing a light blue bikini swimsuit. The top is a small triangle bikini top with thin spaghetti straps tied behind the neck and back, snugly fitting her chest. The bottom is a tiny light blue bikini bottom with thin side-tie strings resting on her hips, high-cut on the sides. The bright light blue fabric contrasts vividly against her fair skin. No cover-up or additional clothing."
+DEFAULT_OUTFIT = "She is wearing a lightweight flowy white sundress with thin spaghetti straps on both shoulders. The dress has a deep side slit on the right leg running up to mid-thigh. The fabric billows and ripples dramatically in the sea wind — the skirt lifts and flows freely in the breeze. The wind lifts the slit side of the skirt, fully exposing her right leg through the gap. The hem rises just enough to reveal the very bottom edge of her tiny black panties barely peeking out between her thighs — only a subtle hint of black underwear visible. The white fabric catches the sunlight and glows softly. No accessories or cover-up."
 
 # Pose & Action
 DEFAULT_POSE = "She is walking gracefully along the beach shoreline toward the camera. Natural and relaxed walking gait, one foot stepping forward. Both arms hanging naturally down at her sides, swinging loosely with the natural rhythm of walking. Head facing forward toward the camera with a confident and alluring expression."
