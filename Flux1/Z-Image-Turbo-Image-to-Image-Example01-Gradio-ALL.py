@@ -17,7 +17,7 @@ import gradio as gr
 DEFAULT_QUALITY = ""
 DEFAULT_NEGATIVE = ""
 DEFAULT_APPEARANCE = ""
-DEFAULT_OUTFIT = "She is wearing a tiny black bikini."
+DEFAULT_OUTFIT = "She is wearing a tiny black bikini. Remove the black belt."
 DEFAULT_POSE = ""
 DEFAULT_SETTING = ""
 DEFAULT_LIGHTING = ""
