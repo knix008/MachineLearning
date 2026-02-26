@@ -537,7 +537,7 @@ def main():
                         minimum=0.0,
                         maximum=10.0,
                         step=0.1,
-                        value=0.0, # Guidance Should be 0 for Z-Image Turbo model.
+                        value=4.0,
                         info="프롬프트 준수도. 낮으면 창의적, 높으면 정확. 권장: 4.0",
                     )
                     num_inference_steps = gr.Slider(
