@@ -527,7 +527,7 @@ def main():
                     minimum=0.0,
                     maximum=1.0,
                     step=0.05,
-                    value=0.75,
+                    value=0.50,
                     info="원본 이미지에서 얼마나 벗어날지. 높을수록 많이 변환. 권장: 0.6~0.85",
                 )
 
@@ -537,7 +537,7 @@ def main():
                         minimum=1.0,
                         maximum=10.0,
                         step=0.1,
-                        value=4.0,
+                        value=10.0,
                         info="프롬프트 준수도. 낮으면 창의적, 높으면 정확. 권장: 4.0",
                     )
                     num_inference_steps = gr.Slider(
