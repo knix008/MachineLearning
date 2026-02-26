@@ -14,14 +14,29 @@ import gradio as gr
 # https://prompthero.com/prompt/a885d64532b-flux-flux-11-pro-ultra-a-professional-photo-of-a-exceptionally-of-the-most-beautiful-russian-girl-in-the-world-age-18-futuristicmasterpiece-realistic-perfect
 
 # Default values for each prompt section
-DEFAULT_QUALITY = "A professional photo, (futuristic), (masterpiece), (realistic), (perfect anatomy), 8k, highly detailed, full length frame, High detail RAW color art, sharp focus, hyper realism."
-DEFAULT_NEGATIVE = "Extra hands, extra legs, extra feet, extra arms, Waist Pleats, paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, normal quality, ((monochrome)), ((grayscale)), skin spots, wet, acnes, skin blemishes, age spot, manboobs, backlight, mutated hands, (poorly drawn hands:1.33), blurry, (bad anatomy:1.21), (bad proportions:1.33), extra limbs, (disfigured:1.33), (more than 2 nipples:1.33), (missing arms:1.33), (extra legs:1.33), (fused fingers:1.61), (too many fingers:1.61), (unclear eyes:1.33), lowers, bad hands, missing fingers, extra digit, (futa:1.1), bad hands, missing fingers, (cleft chin:1.3)"
-DEFAULT_APPEARANCE = "Exceptionally beautiful skinny Korean girl, age 18, 174cm height, very long dark black, stunning brown eyes."
-DEFAULT_OUTFIT = "Wearing a very tiny string pink bikini top, and tiny G-string pink bikini bottoms."
-DEFAULT_POSE = "Standing on the beach, full body visible, front-facing the camera."
-DEFAULT_SETTING = "Sunny beach, pristine white sandy shore, sparkling turquoise ocean in the background, clear blue sky."
-DEFAULT_LIGHTING = "Diffused soft lighting, shallow depth of field, cinematic lighting."
-DEFAULT_CAMERA = "Canon EOS R5, 35mm f/5.6, ISO 200, 1/500s shutter. Full body visible with beach background clearly in focus."
+DEFAULT_QUALITY = ""
+DEFAULT_NEGATIVE = ""
+DEFAULT_APPEARANCE = ""
+DEFAULT_OUTFIT = "Remove the black belt."
+DEFAULT_POSE = ""
+DEFAULT_SETTING = ""
+DEFAULT_LIGHTING = ""
+DEFAULT_CAMERA = ""
+
+# ── Default input image ───────────────────────────────────────────────────────
+DEFAULT_INPUT_IMAGE_PATH = "Test01.jpg"  # 기본 입력 이미지 경로. 예: "default_input.png"
+_default_input_img = None
+_default_img_w, _default_img_h = 768, 1024  # 기본 이미지가 없을 때 폴백 크기
+if DEFAULT_INPUT_IMAGE_PATH and os.path.isfile(DEFAULT_INPUT_IMAGE_PATH):
+    try:
+        _default_input_img = Image.open(DEFAULT_INPUT_IMAGE_PATH).convert("RGB")
+        _default_img_w, _default_img_h = _default_input_img.size
+        print(
+            f"기본 입력 이미지 로드됨: {DEFAULT_INPUT_IMAGE_PATH}"
+            f" ({_default_img_w}x{_default_img_h})"
+        )
+    except Exception as e:
+        print(f"기본 입력 이미지 로드 실패: {e}")
 
 
 def combine_prompt_sections(
@@ -218,6 +233,8 @@ def load_model(device_name=None):
 
 def generate_image(
     input_image,
+    width,
+    height,
     strength,
     prompt,
     negative_prompt,
@@ -287,9 +304,12 @@ def generate_image(
 
             return callback_kwargs
 
+        # Resize input image to specified dimensions
+        resized_image = input_image.resize((int(width), int(height)), Image.LANCZOS)
+
         # Run the pipeline
         image = pipe(
-            image=input_image,
+            image=resized_image,
             strength=strength,
             prompt=prompt,
             negative_prompt=negative_prompt if negative_prompt else None,
@@ -306,7 +326,7 @@ def generate_image(
         elapsed = time.time() - start_time
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         script_name = os.path.splitext(os.path.basename(__file__))[0]
-        w, h = input_image.size
+        w, h = resized_image.size
         filename = (
             f"{script_name}_{timestamp}_{DEVICE.upper()}_{w}x{h}"
             f"_gs{guidance_scale}_step{steps}_str{strength}_cfgnorm{cfg_normalization}_seed{int(seed)}.png"
@@ -465,13 +485,43 @@ def main():
             with gr.Column(scale=1):
                 gr.Markdown("### 입력 이미지")
                 input_image = gr.Image(
-                    label="입력 이미지",
+                    label="입력 이미지 (변환할 원본 이미지를 업로드하세요)",
                     type="pil",
                     height=400,
-                    info="변환할 원본 이미지를 업로드하세요.",
+                    value=_default_input_img,
                 )
 
                 gr.Markdown("### 파라미터 설정")
+                with gr.Row():
+                    width = gr.Slider(
+                        label="Width",
+                        minimum=64,
+                        maximum=2048,
+                        step=64,
+                        value=_default_img_w,
+                        info="출력 이미지 너비 (픽셀). 입력 이미지를 이 크기로 리사이즈 후 파이프라인 실행.",
+                    )
+                    height = gr.Slider(
+                        label="Height",
+                        minimum=64,
+                        maximum=2048,
+                        step=64,
+                        value=_default_img_h,
+                        info="출력 이미지 높이 (픽셀). 입력 이미지를 이 크기로 리사이즈 후 파이프라인 실행.",
+                    )
+
+                def update_size_from_image(img):
+                    if img is None:
+                        return gr.update(), gr.update()
+                    w, h = img.size
+                    return gr.update(value=w), gr.update(value=h)
+
+                input_image.change(
+                    fn=update_size_from_image,
+                    inputs=[input_image],
+                    outputs=[width, height],
+                )
+
                 strength = gr.Slider(
                     label="Strength (변환 강도)",
                     minimum=0.0,
@@ -539,6 +589,8 @@ def main():
             fn=generate_image,
             inputs=[
                 input_image,
+                width,
+                height,
                 strength,
                 combined_prompt,
                 prompt_negative,
