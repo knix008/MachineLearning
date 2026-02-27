@@ -23,25 +23,25 @@ DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright
 DEFAULT_HAIR = "She has long, voluminous wavy jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air with natural movement and body, full of life and dynamism. Hair flowing freely in the sea breeze."
 
 # Outfit
-DEFAULT_OUTFIT = "She is wearing a light blue semi-transparent one-piece dress, crafted from delicate semi-sheer chiffon fabric with soft translucency that partially reveals her silhouette without being fully see-through. The dress has a deep side slit on one side that opens all the way up above the thigh, the slit parting wide to expose her bare thigh and hip. The high slit slightly reveals the edge of her tiny light pink panties. Underneath the semi-transparent dress, she is wearing a very tiny light pink bra with minimal coverage and very small light pink panties, their delicate shape softly hinted through the semi-sheer fabric and slightly peeking out from the high side slit."
+DEFAULT_OUTFIT = "She is wearing a light blue semi-transparent one-piece dress in semi-sheer chiffon fabric with soft translucency that partially reveals her silhouette. The dress has a deep side slit that opens above the thigh, parting wide to expose her bare thigh and hip. The slit slightly reveals the edge of her tiny light pink bikini bottom. Underneath, she is wearing a very tiny light pink bikini set with minimal fabric coverage, the small bikini top and tiny bikini bottom softly hinted through the semi-sheer fabric and slightly peeking out from the high side slit."
 
 # Pose & Action
-DEFAULT_POSE = "She is standing gracefully at the hotel poolside, facing directly toward the camera with a confident posture. Her weight shifts slightly onto one hip, one leg extended forward to accentuate the high side slit of her dress. Both arms hanging naturally and loosely at her sides. Her head tilts slightly with a soft alluring gaze at the camera."
+DEFAULT_POSE = "She is standing gracefully at the hotel poolside, facing toward the camera with a confident posture. One hip shifted, one leg extended forward to accentuate the side slit of her dress. Both arms hanging loosely at her sides. Her head tilts slightly with a soft alluring gaze at the camera."
 
 # Background & Setting
-DEFAULT_BACKGROUND = "Luxurious hotel swimming pool area with crystal clear turquoise blue pool water. Elegant poolside with white lounge chairs and umbrellas. Modern high-rise hotel building in the background. Lush tropical palm trees surrounding the pool deck. Sparkling reflections dancing on the water surface."
+DEFAULT_BACKGROUND = "Luxurious hotel pool area with crystal clear blue water. Elegant poolside with white lounge chairs and umbrellas. Modern high-rise hotel building in the background. Lush tropical palm trees surrounding the pool deck. Sparkling reflections dancing on the water."
 
 # Lighting
-DEFAULT_LIGHTING = "Natural sunlight, golden hour warm tones with a beautiful glow. Soft warm highlights on her skin. Cinematic warm poolside lighting."
+DEFAULT_LIGHTING = "Golden hour natural sunlight, warm tones with a soft glow. Warm highlights on her skin. Cinematic poolside lighting."
 
 # Camera & Shot Style
-DEFAULT_CAMERA = "Vertical full body portrait from head to toe, entire figure visible. 35mm wide lens, full body in frame. Shallow depth of field, pool area softly blurred. Realistic lifestyle photography."
+DEFAULT_CAMERA = "Vertical full body portrait from head to toe. 35mm lens, full body in frame. Shallow depth of field, pool softly blurred."
 
 # Quality & Technical
 DEFAULT_QUALITY = "Ultra-realistic masterpiece photograph, 8k resolution, high-fidelity skin textures, cinematic lighting, realistic lifestyle photography, photorealistic, sharp focus."
 
 # Anatomy
-DEFAULT_ANATOMY = "Perfect anatomy, correct finger count, no deformed or fused fingers, perfect hand structure, perfect feet structure, perfect body proportion, no extra hands, no extra feet, no distorted body."
+DEFAULT_ANATOMY = "Perfect anatomy, correct finger count, no deformed or fused fingers, perfect hand structure, perfect feet structure, perfect body proportion, no extra hands, no extra feet."
 
 
 # ── Device detection ──────────────────────────────────────────────────────────
