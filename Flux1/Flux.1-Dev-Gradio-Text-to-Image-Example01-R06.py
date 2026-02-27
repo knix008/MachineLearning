@@ -23,19 +23,19 @@ DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright
 DEFAULT_HAIR = "She has long, voluminous wavy jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air with natural movement and body, full of life and dynamism. Hair flowing freely in the sea breeze."
 
 # Outfit
-DEFAULT_OUTFIT = "She is wearing a light blue semi-transparent one-piece dress, semi-sheer fabric with soft translucency that partially reveals the silhouette beneath without being fully see-through. The dress has a deep side slit on one side that opens all the way up above the thigh, the slit parting wide to expose her bare thigh and hip. The high slit slightly reveals the edge of her tiny light pink panties. Underneath the semi-transparent dress, she is wearing a very tiny light pink bra with minimal coverage and very small light pink panties, their shape softly hinted through the semi-sheer fabric and slightly peeking out from the high side slit."
+DEFAULT_OUTFIT = "She is wearing a light blue semi-transparent one-piece dress, crafted from a delicate semi-sheer chiffon fabric with soft translucency that partially reveals the silhouette of her body beneath without being fully see-through. The dress features thin spaghetti straps and a form-fitting silhouette that gently drapes over her curves. The hemline falls just above the knee. A gentle sea breeze causes the lightweight fabric to sway softly. The dress has a deep side slit on one side that opens all the way up above the thigh, the slit parting wide to expose her bare thigh and hip. The high slit slightly reveals the edge of her tiny light pink panties peeking out. Underneath the semi-transparent dress, she is wearing a very tiny light pink bra with minimal coverage and very small light pink panties, their delicate shape softly hinted through the semi-sheer fabric and slightly peeking out from the high side slit."
 
 # Pose & Action
-DEFAULT_POSE = "She is walking gracefully along the beach shoreline toward the camera. Natural and relaxed walking gait, one foot stepping forward. Both arms hanging naturally down at her sides, swinging loosely with the natural rhythm of walking. Head facing forward toward the camera with a confident and alluring expression."
+DEFAULT_POSE = "She is standing gracefully at the hotel poolside, facing directly toward the camera with a confident posture. Her weight shifts slightly onto one hip, one leg extended forward to accentuate the high side slit of her dress. Both arms hanging naturally and loosely at her sides. Her head tilts slightly with a soft alluring gaze at the camera. Her stance is relaxed yet elegant, conveying a sense of natural charm and effortless grace."
 
 # Background & Setting
-DEFAULT_BACKGROUND = "Luxurious hotel swimming pool area. Crystal clear blue pool water. Elegant poolside with white lounge chairs and umbrellas. Modern high-rise hotel building in the background. Lush tropical plants surrounding the pool deck. Sparkling reflections on the water surface."
+DEFAULT_BACKGROUND = "Luxurious five-star hotel swimming pool area with pristine crystal clear turquoise blue pool water. Elegant poolside terrace with white padded lounge chairs, umbrellas, and decorative potted plants. Modern high-rise hotel building rising in the background skyline. Lush exotic tropical palm trees surrounding the polished marble pool deck. Beautiful sparkling light reflections gently dancing on the calm water surface."
 
 # Lighting
-DEFAULT_LIGHTING = "Bright natural sunlight, golden hour warm tones. Soft warm highlights on her skin. Cinematic warm beach lighting."
+DEFAULT_LIGHTING = "Warm natural sunlight streaming from above, golden hour tones casting a warm glow. Soft diffused highlights on her skin. Cinematic warm poolside lighting with sparkling bright reflections."
 
 # Camera & Shot Style
-DEFAULT_CAMERA = "Vertical full body portrait from head to toe, entire body fully visible including both feet. Slightly low angle shot to show the complete figure. 35mm wide portrait lens, full body in frame with ample space above head and below feet. Shallow depth of field, pool area softly blurred in background. Realistic lifestyle photography."
+DEFAULT_CAMERA = "Vertical full body portrait from head to toe, entire body fully visible including both bare feet flat on the poolside deck. Slightly low angle shot capturing the complete figure. 35mm wide portrait lens, full body in frame with ample space above her head and below her feet. Shallow depth of field, hotel pool and surrounding area softly blurred in background. Cinematic bright realistic lifestyle photography with vibrant colors."
 
 # Quality & Technical
 DEFAULT_QUALITY = "Ultra-realistic masterpiece photograph, 8k resolution, high-fidelity skin textures, cinematic lighting, realistic lifestyle photography, photorealistic, sharp focus."
