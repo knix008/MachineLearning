@@ -12,15 +12,12 @@ import psutil
 import time
 import gradio as gr
 
-# Reference Site : https://prompthero.com/prompt/3395872f879-z-image-turbo-a-highly-detailed-photorealistic-cinematic-low-angle-medium-shot-of-a-stunning-young-east-asian-woman-posing-in-a-sun
-
 # Default values for each prompt section
-
-DEFAULT_QUALITY = ""
-DEFAULT_NEGATIVE = ""
+DEFAULT_QUALITY = "Ultra-realistic photograph, 8k resolution, high-fidelity skin textures, photorealistic, sharp focus. Detailed textures of denim and lace, innocent and alluring, studio photography."
+DEFAULT_NEGATIVE = "Five fingers on each hands."
 DEFAULT_APPEARANCE = "A high-quality, photorealistic cosplay portrait of a young Korean woman with a soft, idol aesthetic. She has a fair, clear complexion with striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, straight jet-black hair with thick, straight-cut hime-cut bangs that frame her face."
-DEFAULT_OUTFIT = " She wears very small light pink lingerie bra and panties, minimal coverage, exposing bare thighs and hips fully. Headwear: tall, upright blue fabric bunny ears with white lace inner lining and a delicate white lace headband, accented with a small white bow. Accessories: blue bow tie attached to a white collar. Long white floral lace fingerless sleeves extending past the elbows, finished with blue cuffs and small black decorative ribbons. Legwear: white fishnet stockings held up by blue and white ruffled lace garters adorned with small white bows."
-DEFAULT_POSE = "Lying on the bed, full body extended lengthwise. Body slightly curled inward in a shy, modest posture. One arm bent, hand softly covering one cheek or lightly hiding the face. Other arm crossing over the chest in a self-conscious gesture. Legs slightly bent at the knees, ankles crossed. Face slightly turned away from camera, eyes glancing shyly upward toward camera with a faint blush expression."
+DEFAULT_OUTFIT = "She wears an extremely tiny micro light pink string bra, barely covering the nipples only, maximum skin exposure. Extremely tiny micro light pink string panties, barely covering the groin only, exposing bare thighs, hips, and stomach fully. Headwear: tall, upright blue fabric bunny ears with white lace inner lining and a delicate white lace headband, accented with a small white bow. Accessories: a white detachable fabric collar worn snugly around the neck, with a blue satin bow tie attached at the center front. Armwear: long white floral lace fingerless sleeves extending past the elbows, finished with blue cuffs and small black decorative ribbons. Legwear: white fishnet stockings held up by blue and white ruffled lace garters adorned with small white bows."
+DEFAULT_POSE = "Lying on the bed, full body extended lengthwise. Body slightly curled inward in a shy, modest posture. One arm bent, hand softly covering one cheek or lightly hiding the face. Other arm crossing over the chest in a self-conscious gesture. Legs slightly bent at the knees, ankles crossed. Eyes glancing shyly upward toward camera with a faint blush expression. Full body visible head to toe."
 DEFAULT_SETTING = "A bright, high-key studio set designed to look like a clean, airy bedroom. Large windows with white vertical blinds and sheer curtains, allowing soft diffused natural-looking light to flood the scene. Background softly blurred (bokeh)."
 DEFAULT_LIGHTING = "Bright, soft, and even lighting, minimizing harsh shadows. Skin has a glowing porcelain appearance. High-key lighting, warm natural light from windows, airy atmosphere."
 DEFAULT_CAMERA = "Top-down overhead shot, camera directly above looking straight down at the subject. 35mm wide lens, deep depth of field, full body in sharp focus from head to toe. Gravure photography style, cinematic soft focus."
@@ -39,7 +36,7 @@ def combine_prompt_sections(
     negative, appearance, outfit, pose, setting, lighting, quality, camera
 ):
     """Combine separate prompt sections into one final prompt string."""
-    sections = [quality, negative, appearance, outfit, pose, setting, lighting, camera]
+    sections = [quality, negative, appearance, outfit, pose, camera, setting, lighting]
     # Filter out empty sections and join with ', '
     combined = ", ".join(normalize_spacing(s) for s in sections if s and s.strip())
     return combined
@@ -463,26 +460,26 @@ def main():
                     placeholder="예: standing, looking over shoulder, full body",
                     info="자세, 시선 방향, 카메라 앵글, 촬영 구도를 설명합니다.",
                 )
+                prompt_camera = gr.Textbox(
+                    label="6. 카메라 설정 (Camera Settings)",
+                    value=DEFAULT_CAMERA,
+                    lines=2,
+                    placeholder="예: Canon EOS R5, 85mm f/1.4, ISO 100, shallow DOF",
+                    info="카메라 기종, 렌즈, ISO, 셔터 스피드, 조리개, 피사계 심도 등을 설명합니다.",
+                )
                 prompt_setting = gr.Textbox(
-                    label="6. 배경/장소 (Setting & Background)",
+                    label="7. 배경/장소 (Setting & Background)",
                     value=DEFAULT_SETTING,
                     lines=2,
                     placeholder="예: on a boardwalk at sunset, calm ocean",
                     info="배경, 장소, 환경, 계절 등을 설명합니다.",
                 )
                 prompt_lighting = gr.Textbox(
-                    label="7. 조명 (Lighting)",
+                    label="8. 조명 (Lighting)",
                     value=DEFAULT_LIGHTING,
                     lines=2,
                     placeholder="예: golden hour, soft glow, cinematic lighting",
                     info="조명 조건, 빛의 방향, 분위기를 설명합니다.",
-                )
-                prompt_camera = gr.Textbox(
-                    label="8. 카메라 설정 (Camera Settings)",
-                    value=DEFAULT_CAMERA,
-                    lines=2,
-                    placeholder="예: Canon EOS R5, 85mm f/1.4, ISO 100, shallow DOF",
-                    info="카메라 기종, 렌즈, ISO, 셔터 스피드, 조리개, 피사계 심도 등을 설명합니다.",
                 )
                 with gr.Accordion("최종 프롬프트 (Combined Prompt)", open=False):
                     combined_prompt = gr.Textbox(
