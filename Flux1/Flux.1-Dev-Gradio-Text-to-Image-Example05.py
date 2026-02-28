@@ -15,31 +15,31 @@ from diffusers import FluxPipeline
 DEFAULT_ANATOMY = ""
 
 # Subject
-DEFAULT_SUBJECT = "The image is a high-quality photography of a young beautiful Korean woman with a soft, idol aesthetic."
+DEFAULT_SUBJECT = "The image is a high-quality, photorealistic cosplay portrait of a young Korean woman with a soft, idol aesthetic."
 
 # Face & Appearance
 DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera."
 
 # Hair
-DEFAULT_HAIR = "She has long, voluminous wavy jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air with natural movement and body, full of life and dynamism. Hair flowing freely in the sea breeze."
+DEFAULT_HAIR = "She has long, straight jet-black hair with thick, straight-cut bangs (hime-cut fringe) that frame her face."
 
 # Outfit
-DEFAULT_OUTFIT = "Tiny black bra and extremely tiny black thong panties only. Minimal coverage, very small size. Plain smooth fabric, no lace, no other clothing, no accessories."
+DEFAULT_OUTFIT = "Blue & White Bunny cosplay outfit. Headwear: tall, upright blue fabric bunny ears with white lace inner lining and a delicate white lace headband, accented with a small white bow. Top: very small light pink bra with minimal coverage, soft smooth fabric. Bottom: very small light pink panties, minimal coverage, soft smooth fabric. Accessories: blue bow tie attached to a white collar. Long white floral lace fingerless sleeves extending past the elbows, finished with blue cuffs and small black decorative ribbons. Legwear: white fishnet stockings held up by blue and white ruffled lace garters adorned with small white bows."
 
 # Pose & Action
-DEFAULT_POSE = "Lying seductively on back on the bed, body gently curved in an S-shape. One arm bent, hand placed under the head as a pillow supporting it from below. Other arm bent, hand also tucked behind the head, both hands interlaced behind the head as a cushion. Both legs fully extended and straight, slightly apart, toes pointed. Back slightly arched, lifting torso subtly. Head on pillow, lips slightly parted, sultry gaze looking directly up at camera. Full body visible head to toe."
+DEFAULT_POSE = "Standing gracefully in front of the edge of a light-colored vintage-style bed. Body slightly angled toward the camera, creating a soft and inviting posture. Looking at the camera with a soft, innocent expression. Full body visible head to toe."
 
 # Background & Setting
-DEFAULT_BACKGROUND = "King-size bed with dark navy satin sheets, rumpled naturally. Decorative pillows. Dimly lit upscale hotel bedroom, moody elegant interior."
+DEFAULT_BACKGROUND = "A bright, high-key studio set designed to look like a clean, airy bedroom. Large windows with white vertical blinds and sheer curtains, allowing soft diffused natural-looking light to flood the scene. Background softly blurred (bokeh)."
 
 # Lighting
-DEFAULT_LIGHTING = "Soft warm side light from bedside lamp, golden tones on skin. Soft shadows, low-key lighting, warm amber and cool blue mix. Cinematic intimate bedroom atmosphere."
+DEFAULT_LIGHTING = "Bright, soft, and even lighting, minimizing harsh shadows. Skin has a glowing porcelain appearance. High-key lighting, warm natural light from windows, airy atmosphere."
 
 # Camera & Shot Style
-DEFAULT_CAMERA = "Top-down overhead shot, camera directly above looking straight down at the subject. 35mm wide lens, deep depth of field, full body in sharp focus. Full body head to toe. Cinematic intimate editorial photography."
+DEFAULT_CAMERA = "Full body shot, gravure photography style. 85mm portrait lens, shallow depth of field, softly blurred background. Cinematic soft focus, studio photography."
 
 # Quality & Technical
-DEFAULT_QUALITY = "Ultra-realistic photograph, 8k, high-fidelity skin textures, photorealistic, sharp focus."
+DEFAULT_QUALITY = "Ultra-realistic photograph, 8k resolution, high-fidelity skin textures, photorealistic, sharp focus. Detailed textures of denim and lace, innocent and alluring."
 
 # ── Device detection ──────────────────────────────────────────────────────────
 if torch.cuda.is_available():
