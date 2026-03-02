@@ -12,17 +12,24 @@ import psutil
 import time
 import gradio as gr
 
-# https://prompthero.com/prompt/3f947ff3483-flux-flux-11-pro-an-13-yes-ol-mad-string-bikini-wicked-string-bikini-next-level-string-bikini-insane-string-bikini-wet-body-moisture
-
-# Default values for each prompt section
 DEFAULT_QUALITY = ""
-DEFAULT_NEGATIVE = ""
-DEFAULT_APPEARANCE = "The image is a high-quality, photorealistic cosplay portrait of a young Korean woman with a soft, idol aesthetic. She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera.  She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face."
-DEFAULT_OUTFIT = "She is wearing a tiny, minimalist metallic blue micro bikini with minimal coverage. The bikini top is very small with thin string ties, barely covering her chest. The matching bottoms are extremely small with thin side strings, high-rise and minimal. The shiny metallic blue fabric glistens under the light."
-DEFAULT_POSE = "Standing upright on both knees spread wide apart on the floor, hips fully raised high above the heels. Spine straight and upright, torso fully erect, facing directly forward toward the camera. Both hands interlaced behind the head, elbows flared wide. Chest pushed forward, waist pinched inward to accentuate the S-curve. Head tilted slightly to one side, sultry heavy-lidded gaze into the camera, lips softly parted. Seductive and confident kneeling pose."
+
+DEFAULT_NEGATIVE = "Perfect anatomy, five finger on each hand."
+
+DEFAULT_SUBJECT = "The image is a high-quality, photorealistic cosplay portrait of a young Korean woman with a soft, idol aesthetic."
+
+
+DEFAULT_APPEARANCE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face."
+
+DEFAULT_OUTFIT = "Wearing a tiny, minimalist metallic blue micro bikini with minimal coverage. The bikini top is very small with thin string ties, barely covering her chest. The matching bottoms are extremely small with thin side strings, low-rise and minimal. The shiny metallic blue fabric glistens under the light. Wearing matching metallic blue stiletto high heels."
+
+DEFAULT_POSE = "Standing upright, legs straight, feet slightly apart, full body facing the camera. Both arms raised upward, hands interlaced behind the neck, elbows pointing outward and upward. Chest lifted and pushed forward, shoulders rolled back. Hips tilted slightly to one side for a seductive S-curve. Sultry expression, eyes gazing directly into the camera. Full body in frame, camera at belly button height."
+
 DEFAULT_SETTING = "Dark, dramatic studio setting with deep shadow background. Moody and intense atmosphere. Dark gray to black gradient background emphasizing her silhouette and the shimmering texture of her wet attire. The floor is covered with a thin layer of water, creating a reflective wet surface. Her reflection visible in the water beneath her. Puddles of water surrounding her, glistening under the side light."
-DEFAULT_LIGHTING = "Low-key studio lighting. A soft front key light directly illuminates her face, keeping it clearly and beautifully lit. Body is more shadowed in contrast. A dim side rim light traces the edge of her body and highlights the shimmering bikini fabric. Dramatic contrast between the brightly lit face and the dark shadowy body. Dark, moody atmosphere."
-DEFAULT_CAMERA = "Full body shot showing the entire figure from head to toe, vertical composition. Low-angle shot, camera positioned close to the subject near the floor and slightly to the side, angled upward toward the subject. Subject fills the frame. Sharp focus across the full body."
+
+DEFAULT_LIGHTING = "Extremely low-key, near-dark lighting. Body is deeply shadowed and underexposed. Face is softly and slightly brighter, gently illuminated by a subtle front fill light. A very dim single key light from her left side casts a faint sliver along the edge of her body. Dramatic contrast between the softly lit face and the dark shadowy body. Dark, brooding atmosphere."
+
+DEFAULT_CAMERA = "Full body shot, entire figure fully visible in frame with comfortable padding. 35mm lens, f/2.8, camera at belly button height, perfectly centered. Vertical portrait orientation. No cropping."
 
 
 def normalize_spacing(text: str) -> str:
@@ -35,10 +42,20 @@ def normalize_spacing(text: str) -> str:
 
 
 def combine_prompt_sections(
-    quality, negative, appearance, outfit, pose, setting, lighting, camera
+    quality, negative, subject, appearance, outfit, pose, setting, lighting, camera
 ):
     """Combine separate prompt sections into one final prompt string."""
-    sections = [quality, negative, appearance, outfit, pose, setting, lighting, camera]
+    sections = [
+        quality,
+        negative,
+        subject,
+        appearance,
+        outfit,
+        pose,
+        setting,
+        lighting,
+        camera,
+    ]
     # Filter out empty sections and join with ', '
     combined = ", ".join(normalize_spacing(s) for s in sections if s and s.strip())
     return combined
@@ -441,43 +458,50 @@ def main():
                     placeholder="예: bad anatomy, extra fingers, blurry",
                     info="생성에서 제외할 요소들입니다. 최종 프롬프트에 포함됩니다.",
                 )
+                prompt_subject = gr.Textbox(
+                    label="3. 주제 (Subject)",
+                    value=DEFAULT_SUBJECT,
+                    lines=2,
+                    placeholder="예: A stunning photorealistic image of a young woman",
+                    info="이미지의 주제와 전체적인 장면을 한 문장으로 설명합니다.",
+                )
                 prompt_appearance = gr.Textbox(
-                    label="3. 외모 (Appearance)",
+                    label="4. 외모 (Appearance)",
                     value=DEFAULT_APPEARANCE,
                     lines=2,
                     placeholder="예: A beautiful Russian girl with long strawberry blonde hair",
                     info="인물의 외모, 얼굴, 머리카락, 나이 등을 설명합니다.",
                 )
                 prompt_outfit = gr.Textbox(
-                    label="4. 의상 (Outfit)",
+                    label="5. 의상 (Outfit)",
                     value=DEFAULT_OUTFIT,
                     lines=2,
                     placeholder="예: deep burgundy satin slip dress",
                     info="의상, 액세서리, 착용한 아이템을 설명합니다.",
                 )
                 prompt_pose = gr.Textbox(
-                    label="5. 포즈/구도 (Pose & Composition)",
+                    label="6. 포즈/구도 (Pose & Composition)",
                     value=DEFAULT_POSE,
                     lines=2,
                     placeholder="예: seated on rooftop ledge, gazing into distance",
                     info="자세, 시선 방향, 카메라 앵글, 촬영 구도를 설명합니다.",
                 )
                 prompt_setting = gr.Textbox(
-                    label="6. 배경/장소 (Setting & Background)",
+                    label="7. 배경/장소 (Setting & Background)",
                     value=DEFAULT_SETTING,
                     lines=2,
                     placeholder="예: rooftop terrace at twilight, city skyline",
                     info="배경, 장소, 환경, 계절 등을 설명합니다.",
                 )
                 prompt_lighting = gr.Textbox(
-                    label="7. 조명 (Lighting)",
+                    label="8. 조명 (Lighting)",
                     value=DEFAULT_LIGHTING,
                     lines=2,
                     placeholder="예: golden hour, city glow, cinematic rim light",
                     info="조명 조건, 빛의 방향, 분위기를 설명합니다.",
                 )
                 prompt_camera = gr.Textbox(
-                    label="8. 카메라 설정 (Camera Settings)",
+                    label="9. 카메라 설정 (Camera Settings)",
                     value=DEFAULT_CAMERA,
                     lines=2,
                     placeholder="예: Sony A7R V, 85mm f/1.8, ISO 400",
@@ -489,6 +513,7 @@ def main():
                         value=combine_prompt_sections(
                             DEFAULT_QUALITY,
                             DEFAULT_NEGATIVE,
+                            DEFAULT_SUBJECT,
                             DEFAULT_APPEARANCE,
                             DEFAULT_OUTFIT,
                             DEFAULT_POSE,
@@ -503,6 +528,7 @@ def main():
                 prompt_sections = [
                     prompt_quality,
                     prompt_negative,
+                    prompt_subject,
                     prompt_appearance,
                     prompt_outfit,
                     prompt_pose,
