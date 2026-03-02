@@ -15,14 +15,14 @@ import gradio as gr
 # https://prompthero.com/prompt/3f947ff3483-flux-flux-11-pro-an-13-yes-ol-mad-string-bikini-wicked-string-bikini-next-level-string-bikini-insane-string-bikini-wet-body-moisture
 
 # Default values for each prompt section
-DEFAULT_QUALITY = "Ultra HD, photorealistic, 8K resolution, sharp focus, detailed skin texture, cinematic lighting, professional studio portrait."
-DEFAULT_NEGATIVE = "Perfect anatomy, no extra fingers, no missing fingers, no fused fingers, no deformed fingers, no extra limbs, no distorted body, no blurry face, no bad anatomy."
+DEFAULT_QUALITY = ""
+DEFAULT_NEGATIVE = ""
 DEFAULT_APPEARANCE = "The image is a high-quality, photorealistic cosplay portrait of a young Korean woman with a soft, idol aesthetic. She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face."
-DEFAULT_OUTFIT = "Wearing a tiny, minimalist metallic blue micro bikini with minimal coverage. The bikini top is very small with thin string ties, barely covering her chest. The matching bottoms are extremely small with thin side strings, low-rise and minimal. The shiny metallic blue fabric glistens under the light."
-DEFAULT_POSE = "Kneeling on the wet floor, sitting back on her heels with both knees spread apart, legs open. Thighs spread outward at a wide angle. Upright torso, back arched slightly, chest pushed forward. Both hands raised behind her head, fingers interlaced or loosely holding the back of her head, elbows spread wide to the sides. Head tilted back slightly. Seductive and confident kneeling pose."
+DEFAULT_OUTFIT = "She is wearing a tiny, minimalist metallic blue micro bikini with minimal coverage. The bikini top is very small with thin string ties, barely covering her chest. The matching bottoms are extremely small with thin side strings, high-rise and minimal. The shiny metallic blue fabric glistens under the light."
+DEFAULT_POSE = "Kneeling upright on both knees spread wide apart on the floor, hips fully raised high above the heels. Spine straight and upright, torso fully erect, facing directly forward toward the camera. Both hands interlaced behind the head, elbows flared wide. Chest pushed forward, waist pinched inward to accentuate the S-curve. Head tilted slightly to one side, sultry heavy-lidded gaze into the camera, lips softly parted. Seductive and confident kneeling pose."
 DEFAULT_SETTING = "Dark, dramatic studio setting with deep shadow background. Moody and intense atmosphere. Dark gray to black gradient background emphasizing her silhouette and the shimmering texture of her wet attire. The floor is covered with a thin layer of water, creating a reflective wet surface. Her reflection visible in the water beneath her. Puddles of water surrounding her, glistening under the side light."
-DEFAULT_LIGHTING = "Extremely low-key, near-dark lighting. Body is deeply shadowed and underexposed. Face is softly and slightly brighter, gently illuminated by a subtle front fill light. A very dim single key light from her left side casts a faint sliver along the edge of her body. Dramatic contrast between the softly lit face and the dark shadowy body. Dark, brooding atmosphere."
-DEFAULT_CAMERA = ""
+DEFAULT_LIGHTING = "Extremely low-key, near-dark lighting. Body is deeply shadowed and underexposed. Face is softly and slightly brighter, gently illuminated by a subtle front fill light. A very dim single key light from her side casts a faint sliver along the edge of her body. Dramatic contrast between the softly lit face and the dark shadowy body. Dark, brooding atmosphere."
+DEFAULT_CAMERA = "Full body shot showing the entire figure from head to toe, vertical composition. Camera positioned at a slight distance to capture the complete body. Subject centered in frame. Sharp focus across the full body."
 
 
 def normalize_spacing(text: str) -> str:
