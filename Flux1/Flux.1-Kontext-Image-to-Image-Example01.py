@@ -1,7 +1,7 @@
 import re
 import torch
 import platform
-from diffusers import FluxImg2ImgPipeline
+from diffusers import FluxKontextPipeline
 from datetime import datetime
 from PIL import Image
 import os
@@ -12,15 +12,13 @@ import psutil
 import time
 import gradio as gr
 
-# Default input image (if needed for testing without upload)
-DEFAULT_INPUT_IMAGE = "Test03.jpg"
-
+DEFAULT_IMAGE = "Test03.jpg"
 
 # Default values for each prompt section
 DEFAULT_QUALITY = ""
 DEFAULT_ANATOMY = ""
-DEFAULT_SUBJECT = "The image is a high-quality photo of a young beautiful Korean woman with a soft, idol aesthetic."
-DEFAULT_APPEARANCE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera."
+DEFAULT_SUBJECT = ""
+DEFAULT_APPEARANCE = ""
 DEFAULT_POSE = ""
 DEFAULT_OUTFIT = "She wears white bra and panties."
 DEFAULT_SETTING = ""
@@ -30,16 +28,16 @@ DEFAULT_CAMERA = ""
 
 def load_default_image():
     """Load the default input image if it exists."""
-    if os.path.exists(DEFAULT_INPUT_IMAGE):
-        return Image.open(DEFAULT_INPUT_IMAGE).convert("RGB")
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    img_path = os.path.join(script_dir, DEFAULT_IMAGE)
+    if os.path.exists(img_path):
+        return Image.open(img_path).convert("RGB")
     return None
 
 
 def normalize_spacing(text: str) -> str:
     """Normalize whitespace around punctuation in a prompt string."""
-    # Ensure single space after comma, period, colon, semicolon
     text = re.sub(r"([,.:;])(?!\s)", r"\1 ", text)
-    # Collapse multiple spaces into one
     text = re.sub(r" {2,}", " ", text)
     return text.strip()
 
@@ -210,7 +208,7 @@ signal.signal(signal.SIGINT, signal_handler)
 
 
 def load_model(device_name=None):
-    """Load and initialize the Flux model with optimizations."""
+    """Load and initialize the Flux Kontext model with optimizations."""
     global pipe, DEVICE, DTYPE
 
     if device_name is not None:
@@ -229,11 +227,9 @@ def load_model(device_name=None):
             torch.mps.empty_cache()
 
     print(f"모델 로딩 중... (Device: {DEVICE}, dtype: {DTYPE})")
-    print(
-        "FluxImg2ImgPipeline 로드 중... T5-XXL 텍스트 인코더만 사용합니다. (CLIP 비활성화)"
-    )
-    pipe = FluxImg2ImgPipeline.from_pretrained(
-        "black-forest-labs/FLUX.1-dev",
+    print("T5-XXL 텍스트 인코더만 사용합니다. (CLIP 비활성화)")
+    pipe = FluxKontextPipeline.from_pretrained(
+        "black-forest-labs/FLUX.1-Kontext-dev",
         text_encoder=None,
         tokenizer=None,
         torch_dtype=DTYPE,
@@ -257,15 +253,14 @@ def load_model(device_name=None):
         )
     elif DEVICE == "mps":
         pipe.enable_attention_slicing()
-        # channels_last memory format for better MPS performance
         if hasattr(pipe, "transformer"):
             pipe.transformer.to(memory_format=torch.channels_last)
         elif hasattr(pipe, "unet"):
             pipe.unet.to(memory_format=torch.channels_last)
-        print("메모리 최적화 적용: attention slicing, VAE slicing, VAE tiling (MPS)")
+        print("메모리 최적화 적용: attention slicing (MPS)")
 
-    print(f"모델 로딩 완료! (Device: {DEVICE})")
-    return f"모델 로딩 완료! (Device: {DEVICE}, dtype: {DTYPE})"
+    print(f"모델 로딩 완료! (Device: {DEVICE}, T5-XXL only)")
+    return f"모델 로딩 완료! (Device: {DEVICE}, dtype: {DTYPE}, T5-XXL only)"
 
 
 def generate_image(
@@ -276,7 +271,6 @@ def generate_image(
     guidance_scale,
     num_inference_steps,
     seed,
-    strength,
     max_sequence_length,
     image_format,
     progress=gr.Progress(track_tqdm=True),
@@ -301,18 +295,9 @@ def generate_image(
         steps = int(num_inference_steps)
         start_time = time.time()
 
-        # 입력 이미지를 목표 크기로 리사이즈
-        resized_input = input_image.convert("RGB").resize(
-            (int(width), int(height)), Image.LANCZOS
-        )
-        print(
-            f"입력 이미지 크기 조정: {input_image.size} → ({int(width)}, {int(height)})"
-        )
-
         progress(0.0, desc="프롬프트 인코딩 중...")
         print("프롬프트 인코딩 중...")
 
-        # Setup generator (MPS doesn't support Generator directly, use CPU)
         generator_device = "cpu" if DEVICE == "mps" else DEVICE
         generator = torch.Generator(device=generator_device).manual_seed(int(seed))
 
@@ -382,23 +367,18 @@ def generate_image(
                 print()
             return callback_kwargs
 
-        # Build pipeline kwargs with pre-computed T5 embeddings
-        pipe_kwargs = {
-            "image": resized_input,
-            "strength": float(strength),
-            "prompt_embeds": prompt_embeds,
-            "pooled_prompt_embeds": pooled_prompt_embeds,
-            "width": int(width),
-            "height": int(height),
-            "guidance_scale": guidance_scale,
-            "num_inference_steps": steps,
-            "generator": generator,
-            "callback_on_step_end": step_callback,
-        }
-
-        # Run the pipeline
         with torch.inference_mode():
-            image = pipe(**pipe_kwargs).images[0]
+            image = pipe(
+                image=input_image,
+                prompt_embeds=prompt_embeds,
+                pooled_prompt_embeds=pooled_prompt_embeds,
+                width=int(width),
+                height=int(height),
+                guidance_scale=guidance_scale,
+                num_inference_steps=steps,
+                generator=generator,
+                callback_on_step_end=step_callback,
+            ).images[0]
 
         progress(0.95, desc="이미지 저장 중...")
 
@@ -408,9 +388,9 @@ def generate_image(
         script_name = os.path.splitext(os.path.basename(__file__))[0]
         ext = "jpg" if image_format == "JPEG" else "png"
         filename = (
-            f"{script_name}_{timestamp}_{DEVICE.upper()}_{width}x{height}"
+            f"{script_name}_{timestamp}_{DEVICE.upper()}_{int(width)}x{int(height)}"
             f"_gs{guidance_scale}_step{steps}_seed{int(seed)}"
-            f"_str{strength}_msl{int(max_sequence_length)}.{ext}"
+            f"_msl{int(max_sequence_length)}.{ext}"
         )
 
         token_info = (
@@ -430,6 +410,7 @@ def generate_image(
             image,
             f"✓ 완료! ({elapsed:.1f}초) | {token_info} | 저장됨: {filename}",
         )
+
     except Exception as e:
         return None, f"✗ 오류 발생: {str(e)}"
 
@@ -444,14 +425,22 @@ def main():
     print(f"\n자동으로 감지된 디바이스: {DEVICE} (dtype: {DTYPE})")
     load_model()
 
+    # Load default image and compute initial dimensions
+    _default_img = load_default_image()
+    _init_w, _init_h = get_image_dimensions(_default_img)
+    _default_info = (
+        f"기본 이미지: {DEFAULT_IMAGE} ({_default_img.size[0]} × {_default_img.size[1]} px)"
+        if _default_img is not None
+        else "이미지를 업로드하면 원본 크기가 표시됩니다."
+    )
+
     # Create Gradio interface
     with gr.Blocks(
-        title="Flux.1-dev Image-to-Image Editor",
+        title="Flux.1 Kontext Image-to-Image Generator",
     ) as interface:
-        gr.Markdown("# Flux.1-dev Image-to-Image Editor")
+        gr.Markdown("# Flux.1 Kontext Image-to-Image Generator")
         gr.Markdown(
-            f"입력 이미지를 프롬프트로 변형합니다."
-            f" `strength` 값이 낮을수록 원본을 유지, 높을수록 크게 변형됩니다."
+            f"입력 이미지를 텍스트 프롬프트를 사용하여 편집합니다."
             f" (Device: **{DEVICE.upper()}**)"
         )
 
@@ -483,13 +472,7 @@ def main():
                     type="pil",
                     sources=["upload", "clipboard"],
                     height=800,
-                    value=load_default_image(),
-                )
-                _default_img = load_default_image()
-                _default_info = (
-                    f"기본 이미지: {DEFAULT_INPUT_IMAGE} ({_default_img.size[0]} × {_default_img.size[1]} px)"
-                    if _default_img is not None
-                    else "이미지를 업로드하면 원본 크기가 표시됩니다."
+                    value=_default_img,
                 )
                 image_info = gr.Textbox(
                     label="이미지 정보",
@@ -597,10 +580,9 @@ def main():
                         outputs=[combined_prompt],
                     )
 
-            # Right column: Parameters (top) + Image generation (bottom)
+            # Right column: Parameters + Generate + Output
             with gr.Column(scale=1):
                 gr.Markdown("### 파라미터 설정")
-                _init_w, _init_h = get_image_dimensions(_default_img)
                 with gr.Row():
                     width = gr.Slider(
                         label="출력 너비",
@@ -623,14 +605,14 @@ def main():
                     guidance_scale = gr.Slider(
                         label="Guidance Scale (프롬프트 강도)",
                         minimum=1.0,
-                        maximum=20.0,
-                        step=0.5,
-                        value=7.0,
-                        info="프롬프트 준수도. 낮으면 창의적, 높으면 정확. img2img 변경 권장: 7.0",
+                        maximum=10.0,
+                        step=0.1,
+                        value=2.5,
+                        info="프롬프트 준수도. 낮으면 창의적, 높으면 정확. 권장: 2.0-5.0",
                     )
                     num_inference_steps = gr.Slider(
                         label="추론 스텝",
-                        minimum=10,
+                        minimum=1,
                         maximum=50,
                         step=1,
                         value=28,
@@ -644,24 +626,16 @@ def main():
                         precision=0,
                         info="난수 시드. 같은 값이면 같은 결과.",
                     )
-                    strength = gr.Slider(
-                        label="Strength (변형 강도)",
-                        minimum=0.01,
-                        maximum=1.00,
-                        step=0.01,
-                        value=0.85,
-                        info="낮을수록 원본 이미지 유지, 높을수록 프롬프트 방향으로 크게 변형. 의상/외모 변경 권장: 0.80-0.90",
-                    )
-
-                with gr.Row():
                     max_sequence_length = gr.Slider(
                         label="최대 시퀀스 길이",
-                        minimum=64,
+                        minimum=128,
                         maximum=512,
                         step=64,
                         value=512,
                         info="텍스트 인코더 최대 길이. 긴 프롬프트는 높은 값 필요.",
                     )
+
+                with gr.Row():
                     image_format = gr.Radio(
                         label="이미지 포맷",
                         choices=["JPEG", "PNG"],
@@ -715,7 +689,6 @@ def main():
                 guidance_scale,
                 num_inference_steps,
                 seed,
-                strength,
                 max_sequence_length,
                 image_format,
             ],
@@ -725,6 +698,7 @@ def main():
     # Launch the interface
     interface.launch(
         inbrowser=True,
+        allowed_paths=[os.path.dirname(os.path.abspath(__file__))],
         js="document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();}})",
     )
 
