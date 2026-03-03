@@ -15,10 +15,10 @@ import gradio as gr
 # Default values for each prompt section
 DEFAULT_QUALITY = ""
 DEFAULT_ANATOMY = ""
-DEFAULT_SUBJECT = ""
-DEFAULT_APPEARANCE = ""
+DEFAULT_SUBJECT = "The image is a high-quality photo of a young beautiful Korean woman with a soft, idol aesthetic."
+DEFAULT_APPEARANCE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera."
 DEFAULT_POSE = ""
-DEFAULT_OUTFIT = ""
+DEFAULT_OUTFIT = "She wears a black inner wears."
 DEFAULT_SETTING = ""
 DEFAULT_LIGHTING = ""
 DEFAULT_CAMERA = ""
@@ -455,6 +455,7 @@ def main():
                     label="입력 이미지 (업로드하면 출력 크기가 자동 설정됩니다)",
                     type="pil",
                     sources=["upload", "clipboard"],
+                    height=800,
                 )
                 image_info = gr.Textbox(
                     label="이미지 정보",
@@ -636,7 +637,7 @@ def main():
                 gr.Markdown("---")
                 gr.Markdown("### 이미지 생성")
                 generate_btn = gr.Button("이미지 생성", variant="primary", size="lg")
-                output_image = gr.Image(label="생성된 이미지", height=700)
+                output_image = gr.Image(label="생성된 이미지", height=800)
                 output_message = gr.Textbox(label="상태", interactive=False)
 
         # 입력 이미지 업로드 시 출력 크기 자동 설정
