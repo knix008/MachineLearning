@@ -16,14 +16,14 @@ DEFAULT_IMAGE = "Test04.jpg"
 
 # Default values for each prompt section
 DEFAULT_QUALITY = ""
-DEFAULT_ANATOMY = "Perfect anatomy, perfect body structure. Two legs, two hands."
+DEFAULT_ANATOMY = ""
 DEFAULT_SUBJECT = ""
 DEFAULT_APPEARANCE = ""
-DEFAULT_POSE = "She is lying on a bed in a seductive pose, full body visible from head to toe, head slightly tilted to one side with soft parted lips, eyes gazing directly up at the camera with a sultry and alluring expression, one hand gently resting on her chest over one breast, the other hand resting naturally on the bed beside her thigh near her legs, back gently arched to accentuate the chest and waist, hips subtly rotated to one side while keeping both legs closed and pressed together, the slight hip twist creating a natural and pronounced S-curve silhouette that emphasizes the slender waist and the curves of the hips, both legs fully straightened and extended, one leg resting on top of the other leg, feet slightly overlapping with the top foot crossing lightly over the bottom foot, pointed toes to maximally lengthen the appearance of the legs, visually long and slender legs."
-DEFAULT_OUTFIT = "She is wearing mesh-type fishnet white stocking with blue ribbon on top center of the stocking band."
+DEFAULT_POSE = "She is lying on a bed in a seductive pose."
+DEFAULT_OUTFIT = ""
 DEFAULT_SETTING = ""
 DEFAULT_LIGHTING = ""
-DEFAULT_CAMERA = "Camera positioned at foot level, shooting upward at a low angle toward the head, wide-angle lens with perspective distortion to dramatically elongate and emphasize the full length of the legs, capturing the entire body from feet to head in frame, low-angle perspective."
+DEFAULT_CAMERA = "Camera positioned directly above at eye level, shooting straight down toward the body, top-down overhead perspective."
 
 
 def load_default_image():
