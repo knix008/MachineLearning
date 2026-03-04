@@ -12,18 +12,18 @@ import psutil
 import time
 import gradio as gr
 
-DEFAULT_IMAGE = "Test03.jpg"
+DEFAULT_IMAGE = "Test04.jpg"
 
 # Default values for each prompt section
 DEFAULT_QUALITY = ""
-DEFAULT_ANATOMY = "Perfect anatomy, five fingers."
+DEFAULT_ANATOMY = "Perfect anatomy, perfect body structure. Two legs, two hands."
 DEFAULT_SUBJECT = ""
 DEFAULT_APPEARANCE = ""
-DEFAULT_POSE = "She is lying down on a pillow. Her head is tilted slightly to one side, with her eyes gazing directly into the camera. One hand rests naturally lowered near her thigh. The other hand is placed gently on her belly. Her hips are shifted slightly to one side, creating a natural and sensual S-curve silhouette."
-DEFAULT_OUTFIT = "She wears a tiny white bra and tiny white panties."
+DEFAULT_POSE = "She is lying on a bed in a seductive pose, full body visible from head to toe, head slightly tilted to one side with soft parted lips, eyes gazing directly up at the camera with a sultry and alluring expression, one hand gently resting on her chest over one breast, the other hand resting naturally on the bed beside her thigh near her legs, back gently arched to accentuate the chest and waist, hips subtly rotated to one side while keeping both legs closed and pressed together, the slight hip twist creating a natural and pronounced S-curve silhouette that emphasizes the slender waist and the curves of the hips, both legs fully straightened and extended, one leg resting on top of the other leg, feet slightly overlapping with the top foot crossing lightly over the bottom foot, pointed toes to maximally lengthen the appearance of the legs, visually long and slender legs."
+DEFAULT_OUTFIT = "She is wearing mesh-type fishnet white stocking with blue ribbon on top center of the stocking band."
 DEFAULT_SETTING = ""
 DEFAULT_LIGHTING = ""
-DEFAULT_CAMERA = "Camera positioned at navel level, shooting downward. Wide-angle lens to elongate the legs and emphasize the full length of the body."
+DEFAULT_CAMERA = "Overhead bird's-eye view camera positioned slightly above the head end, shooting downward at a slight angle toward the feet, wide-angle lens with subtle perspective distortion to elongate and emphasize the full length of the legs, capturing the entire body from head to toe in frame, top-down perspective."
 
 
 def load_default_image():
