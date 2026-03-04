@@ -20,7 +20,7 @@ DEFAULT_ANATOMY = ""
 DEFAULT_SUBJECT = ""
 DEFAULT_APPEARANCE = ""
 DEFAULT_POSE = ""
-DEFAULT_OUTFIT = "She wears white bra and panties."
+DEFAULT_OUTFIT = "She wear really tiny white bra and white panties with minimal coverage."
 DEFAULT_SETTING = ""
 DEFAULT_LIGHTING = ""
 DEFAULT_CAMERA = ""
@@ -608,15 +608,15 @@ def main():
                         maximum=10.0,
                         step=0.1,
                         value=2.5,
-                        info="프롬프트 준수도. 낮으면 창의적, 높으면 정확. 권장: 2.0-5.0",
+                        info="Kontext 공식 권장: 2.5. 미세 편집: 2.0-3.0 / 의상·배경 변경: 3.0-5.0 / 대폭 변경: 5.0-7.5",
                     )
                     num_inference_steps = gr.Slider(
                         label="추론 스텝",
-                        minimum=1,
+                        minimum=10,
                         maximum=50,
                         step=1,
                         value=28,
-                        info="생성 단계 수. 높으면 품질 향상, 시간 증가. 권장: 20-28",
+                        info="Kontext 공식 권장: 28. 최소 20 이상 권장. 높을수록 품질 향상.",
                     )
 
                 with gr.Row():
