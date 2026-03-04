@@ -19,8 +19,8 @@ DEFAULT_QUALITY = ""
 DEFAULT_ANATOMY = ""
 DEFAULT_SUBJECT = ""
 DEFAULT_APPEARANCE = ""
-DEFAULT_POSE = ""
-DEFAULT_OUTFIT = "She wears white simple bra and white thong panties."
+DEFAULT_POSE = "She is lying down with both hands resting naturally on a pillow beside her head. One leg is slightly bent at the knee in a relaxed yet alluring pose, with a confident and sultry expression."
+DEFAULT_OUTFIT = "She wears really small string simple white bra with minimum coverage and really small string simple white string panties with minimum coverage."
 DEFAULT_SETTING = ""
 DEFAULT_LIGHTING = ""
 DEFAULT_CAMERA = ""
@@ -216,7 +216,7 @@ def load_model(device_name=None):
 
     print(f"모델 로딩 중... (Device: {DEVICE}, dtype: {DTYPE})")
     pipe = Flux2KleinPipeline.from_pretrained(
-        "black-forest-labs/FLUX.2-klein-9B",
+        "black-forest-labs/FLUX.2-klein-4B",
         torch_dtype=DTYPE,
     )
 
@@ -230,8 +230,8 @@ def load_model(device_name=None):
         )
     elif DEVICE == "mps":
         pipe.to(DEVICE)
-        pipe.enable_attention_slicing()
-        print("메모리 최적화 적용: attention slicing (MPS)")
+        #pipe.enable_attention_slicing()
+        #print("메모리 최적화 적용: attention slicing (MPS)")
         print("MPS 디바이스로 모델 로드 완료 (주의: MPS는 최적화 기능이 제한적입니다)")
 
     print(f"모델 로딩 완료! (Device: {DEVICE})")
@@ -378,9 +378,9 @@ def main():
 
     # Create Gradio interface
     with gr.Blocks(
-        title="Flux.2 Klein 9B Image-to-Image Generator",
+        title="Flux.2 Klein 4B Image-to-Image Generator",
     ) as interface:
-        gr.Markdown("# Flux.2 Klein 9B Image-to-Image Generator")
+        gr.Markdown("# Flux.2 Klein 4B Image-to-Image Generator")
         gr.Markdown(
             f"입력 이미지를 텍스트 프롬프트를 사용하여 편집합니다."
             f" (Device: **{DEVICE.upper()}**)"
