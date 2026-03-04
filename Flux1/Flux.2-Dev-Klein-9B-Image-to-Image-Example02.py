@@ -1,7 +1,7 @@
 import re
 import torch
 import platform
-from diffusers import FluxKontextPipeline
+from diffusers import Flux2KleinPipeline
 from datetime import datetime
 from PIL import Image
 import os
@@ -16,11 +16,11 @@ DEFAULT_IMAGE = "Test03.jpg"
 
 # Default values for each prompt section
 DEFAULT_QUALITY = ""
-DEFAULT_ANATOMY = ""
+DEFAULT_ANATOMY = "perfect anatomy, perfect body, perfect hands, perfect fingers, perfect toes."
 DEFAULT_SUBJECT = ""
 DEFAULT_APPEARANCE = ""
-DEFAULT_POSE = "She is lying down on a pillow. Both elbows rest on the pillow and are flared wide apart, with hands placed behind her head and fingers interlaced, forming a broad V-shape with her arms when viewed from above. Her head is tilted slightly to one side, with her eyes gazing directly into the camera. Her hips are shifted slightly to one side, creating a natural and sensual S-curve silhouette."
-DEFAULT_OUTFIT = "She wears a tiny white g-string bra and tiny white g-string panties."
+DEFAULT_POSE = "She is lying down on a pillow. Her head is tilted slightly to one side, with her eyes gazing directly into the camera. One hand rests naturally lowered near her thigh. The other hand is placed gently on her belly. Her hips are shifted slightly to one side, creating a natural and sensual S-curve silhouette."
+DEFAULT_OUTFIT = "She wears a tiny white bra and tiny white panties."
 DEFAULT_SETTING = ""
 DEFAULT_LIGHTING = ""
 DEFAULT_CAMERA = "Camera positioned at navel level, shooting downward. Wide-angle lens to elongate the legs and emphasize the full length of the body."
@@ -95,11 +95,7 @@ interface = None
 
 
 def get_available_devices():
-    """Return list of available device choices.
-    - CUDA + CPU: both selectable
-    - MPS only (no CUDA): MPS only
-    - No GPU: CPU only
-    """
+    """Return list of available device choices."""
     devices = []
     if torch.cuda.is_available():
         devices.append("cuda")
@@ -117,16 +113,12 @@ def print_hardware_info():
     print("하드웨어 사양")
     print("=" * 60)
 
-    # OS 정보
     print(f"OS: {platform.system()} {platform.release()}")
     print(f"OS 버전: {platform.version()}")
     print(f"아키텍처: {platform.machine()}")
-
-    # Python 정보
     print(f"Python: {platform.python_version()}")
     print(f"PyTorch: {torch.__version__}")
 
-    # CPU 정보
     print("-" * 60)
     print("CPU 정보")
     print("-" * 60)
@@ -134,7 +126,6 @@ def print_hardware_info():
     print(f"물리 코어: {psutil.cpu_count(logical=False)}")
     print(f"논리 코어: {psutil.cpu_count(logical=True)}")
 
-    # 메모리 정보
     mem = psutil.virtual_memory()
     print("-" * 60)
     print("메모리 정보")
@@ -143,7 +134,6 @@ def print_hardware_info():
     print(f"사용 가능: {mem.available / (1024**3):.1f} GB")
     print(f"사용률: {mem.percent}%")
 
-    # GPU 정보
     print("-" * 60)
     print("GPU 정보")
     print("-" * 60)
@@ -203,19 +193,17 @@ def signal_handler(_sig, _frame):
     sys.exit(0)
 
 
-# Register signal handler
 signal.signal(signal.SIGINT, signal_handler)
 
 
 def load_model(device_name=None):
-    """Load and initialize the Flux Kontext model with optimizations."""
+    """Load and initialize the Flux2Klein model with optimizations."""
     global pipe, DEVICE, DTYPE
 
     if device_name is not None:
         DEVICE = device_name
         DTYPE = torch.bfloat16 if device_name in ("cuda", "mps") else torch.float32
 
-    # Release previous model if loaded
     if pipe is not None:
         print("기존 모델 해제 중...")
         del pipe
@@ -227,40 +215,39 @@ def load_model(device_name=None):
             torch.mps.empty_cache()
 
     print(f"모델 로딩 중... (Device: {DEVICE}, dtype: {DTYPE})")
-    print("T5-XXL 텍스트 인코더만 사용합니다. (CLIP 비활성화)")
-    pipe = FluxKontextPipeline.from_pretrained(
-        "black-forest-labs/FLUX.1-Kontext-dev",
-        text_encoder=None,
-        tokenizer=None,
+    pipe = Flux2KleinPipeline.from_pretrained(
+        "black-forest-labs/FLUX.2-klein-9B",
         torch_dtype=DTYPE,
     )
-    pipe.to(DEVICE)
 
-    # Enable memory optimizations based on device
-    if DEVICE == "cuda":
+    if DEVICE == "cuda" or DEVICE == "cpu":
+        pipe.to(DEVICE)
         pipe.enable_model_cpu_offload()
         pipe.enable_attention_slicing()
         pipe.enable_sequential_cpu_offload()
         print(
-            "메모리 최적화 적용: sequential CPU offload, model CPU offload, attention slicing (CUDA)"
-        )
-    elif DEVICE == "cpu":
-        pipe.enable_model_cpu_offload()
-        pipe.enable_attention_slicing()
-        pipe.enable_sequential_cpu_offload()
-        print(
-            "메모리 최적화 적용: sequential CPU offload, model CPU offload, attention slicing (CPU)"
+            "메모리 최적화 적용: sequential CPU offload, model CPU offload, attention slicing"
         )
     elif DEVICE == "mps":
+        pipe.to(DEVICE)
         pipe.enable_attention_slicing()
-        if hasattr(pipe, "transformer"):
-            pipe.transformer.to(memory_format=torch.channels_last)
-        elif hasattr(pipe, "unet"):
-            pipe.unet.to(memory_format=torch.channels_last)
         print("메모리 최적화 적용: attention slicing (MPS)")
+        print("MPS 디바이스로 모델 로드 완료 (주의: MPS는 최적화 기능이 제한적입니다)")
 
-    print(f"모델 로딩 완료! (Device: {DEVICE}, T5-XXL only)")
-    return f"모델 로딩 완료! (Device: {DEVICE}, dtype: {DTYPE}, T5-XXL only)"
+    print(f"모델 로딩 완료! (Device: {DEVICE})")
+    return f"모델 로딩 완료! (Device: {DEVICE}, dtype: {DTYPE})"
+
+
+def on_image_upload(image):
+    """입력 이미지 업로드 시 출력 크기 자동 설정."""
+    if image is None:
+        return 768, 1536, "이미지를 업로드하면 원본 크기가 표시됩니다."
+    if not isinstance(image, Image.Image):
+        image = Image.fromarray(image)
+    w, h = image.size
+    rw, rh = round_to_64(w), round_to_64(h)
+    info = f"원본 크기: {w} × {h} px  →  출력 크기: {rw} × {rh} px (64 배수로 반올림)"
+    return rw, rh, info
 
 
 def generate_image(
@@ -271,7 +258,6 @@ def generate_image(
     guidance_scale,
     num_inference_steps,
     seed,
-    max_sequence_length,
     image_format,
     progress=gr.Progress(track_tqdm=True),
 ):
@@ -292,56 +278,21 @@ def generate_image(
         return None, "오류: 프롬프트를 입력해주세요."
 
     try:
+        if not isinstance(input_image, Image.Image):
+            input_image = Image.fromarray(input_image)
+
         steps = int(num_inference_steps)
         start_time = time.time()
 
-        progress(0.0, desc="프롬프트 인코딩 중...")
-        print("프롬프트 인코딩 중...")
+        progress(0.0, desc="이미지 편집 준비 중...")
+        print("이미지 편집 준비 중...")
 
         generator_device = "cpu" if DEVICE == "mps" else DEVICE
         generator = torch.Generator(device=generator_device).manual_seed(int(seed))
 
-        # Encode prompt using T5-XXL only
-        max_len = int(max_sequence_length)
-        text_inputs = pipe.tokenizer_2(
-            prompt,
-            padding="max_length",
-            max_length=max_len,
-            truncation=True,
-            return_tensors="pt",
-        )
-
-        # Count tokens to detect clipping
-        raw_ids = pipe.tokenizer_2(prompt, truncation=False, return_tensors="pt")[
-            "input_ids"
-        ][0]
-        raw_token_count = len(raw_ids)
-        clipped = max(0, raw_token_count - max_len)
-        if clipped > 0:
-            print(f"T5 토큰 수: {raw_token_count} / {max_len} → {clipped}개 잘림!")
-            truncated_text = pipe.tokenizer_2.decode(
-                raw_ids[max_len:], skip_special_tokens=True
-            )
-            print(f"[잘린 텍스트]: {truncated_text}")
-        else:
-            print(f"T5 토큰 수: {raw_token_count} / {max_len} (잘림 없음)")
-
-        with torch.inference_mode():
-            prompt_embeds = pipe.text_encoder_2(
-                text_inputs["input_ids"].to(DEVICE),
-                output_hidden_states=False,
-            )[0]
-        prompt_embeds = prompt_embeds.to(dtype=DTYPE)
-
-        # Zero pooled embeddings (CLIP disabled)
-        pooled_prompt_embeds = torch.zeros(
-            1, 768, dtype=DTYPE, device=prompt_embeds.device
-        )
-
         progress(0.05, desc="추론 시작...")
         print("추론 시작...")
 
-        # Callback to report each inference step to Gradio progress bar and CLI status bar
         def step_callback(_pipe, step_index, _timestep, callback_kwargs):
             current = step_index + 1
             elapsed = time.time() - start_time
@@ -352,7 +303,6 @@ def generate_image(
                 desc=f"추론 스텝 {current}/{steps} ({elapsed:.1f}초 경과)",
             )
 
-            # CLI status bar
             bar_len = 30
             filled = int(bar_len * ratio)
             bar = "\u2588" * filled + "\u2591" * (bar_len - filled)
@@ -369,9 +319,8 @@ def generate_image(
 
         with torch.inference_mode():
             image = pipe(
+                prompt=prompt,
                 image=input_image,
-                prompt_embeds=prompt_embeds,
-                pooled_prompt_embeds=pooled_prompt_embeds,
                 width=int(width),
                 height=int(height),
                 guidance_scale=guidance_scale,
@@ -382,23 +331,16 @@ def generate_image(
 
         progress(0.95, desc="이미지 저장 중...")
 
-        # Save with timestamp
         elapsed = time.time() - start_time
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         script_name = os.path.splitext(os.path.basename(__file__))[0]
         ext = "jpg" if image_format == "JPEG" else "png"
         filename = (
             f"{script_name}_{timestamp}_{DEVICE.upper()}_{int(width)}x{int(height)}"
-            f"_gs{guidance_scale}_step{steps}_seed{int(seed)}"
-            f"_msl{int(max_sequence_length)}.{ext}"
+            f"_gs{guidance_scale}_step{steps}_seed{int(seed)}.{ext}"
         )
 
-        token_info = (
-            f"토큰: {raw_token_count}/{max_len} → {clipped}개 잘림!"
-            if clipped > 0
-            else f"토큰: {raw_token_count}/{max_len}"
-        )
-        print(f"이미지 생성 완료! 소요 시간: {elapsed:.1f}초 | {token_info}")
+        print(f"이미지 편집 완료! 소요 시간: {elapsed:.1f}초")
         print(f"이미지가 저장되었습니다 : {filename}")
         if image_format == "JPEG":
             image.save(filename, format="JPEG", quality=100, subsampling=0)
@@ -408,7 +350,7 @@ def generate_image(
         progress(1.0, desc="완료!")
         return (
             image,
-            f"✓ 완료! ({elapsed:.1f}초) | {token_info} | 저장됨: {filename}",
+            f"✓ 완료! ({elapsed:.1f}초) | 저장됨: {filename}",
         )
 
     except Exception as e:
@@ -436,9 +378,9 @@ def main():
 
     # Create Gradio interface
     with gr.Blocks(
-        title="Flux.1 Kontext Image-to-Image Generator",
+        title="Flux.2 Klein 9B Image-to-Image Generator",
     ) as interface:
-        gr.Markdown("# Flux.1 Kontext Image-to-Image Generator")
+        gr.Markdown("# Flux.2 Klein 9B Image-to-Image Generator")
         gr.Markdown(
             f"입력 이미지를 텍스트 프롬프트를 사용하여 편집합니다."
             f" (Device: **{DEVICE.upper()}**)"
@@ -604,19 +546,19 @@ def main():
                 with gr.Row():
                     guidance_scale = gr.Slider(
                         label="Guidance Scale (프롬프트 강도)",
-                        minimum=1.0,
-                        maximum=10.0,
-                        step=0.1,
-                        value=2.5,
-                        info="Kontext 공식 권장: 2.5. 미세 편집: 2.0-3.0 / 의상·배경 변경: 3.0-5.0 / 대폭 변경: 5.0-7.5",
+                        minimum=0.0,
+                        maximum=1.0,
+                        step=0.05,
+                        value=1.0,
+                        info="Klein 권장: 1.0. 낮으면 창의적, 높으면 정확. 권장 범위: 0.5-1.0",
                     )
                     num_inference_steps = gr.Slider(
                         label="추론 스텝",
-                        minimum=20,
-                        maximum=50,
+                        minimum=1,
+                        maximum=20,
                         step=1,
-                        value=28,
-                        info="Kontext 공식 권장: 28. 20 미만은 품질 저하. 품질 우선 시 40-50.",
+                        value=4,
+                        info="Klein 권장: 4. 높으면 품질 향상, 시간 증가. 권장: 4-12",
                     )
 
                 with gr.Row():
@@ -626,16 +568,6 @@ def main():
                         precision=0,
                         info="난수 시드. 같은 값이면 같은 결과.",
                     )
-                    max_sequence_length = gr.Slider(
-                        label="최대 시퀀스 길이",
-                        minimum=128,
-                        maximum=512,
-                        step=64,
-                        value=512,
-                        info="텍스트 인코더 최대 길이. 긴 프롬프트는 높은 값 필요.",
-                    )
-
-                with gr.Row():
                     image_format = gr.Radio(
                         label="이미지 포맷",
                         choices=["JPEG", "PNG"],
@@ -650,14 +582,6 @@ def main():
                 output_message = gr.Textbox(label="상태", interactive=False)
 
         # 입력 이미지 업로드 시 출력 크기 자동 설정 (수동 변경도 가능)
-        def on_image_upload(image):
-            if image is None:
-                return _init_w, _init_h, "이미지를 업로드하면 원본 크기가 표시됩니다."
-            w, h = image.size
-            rw, rh = round_to_64(w), round_to_64(h)
-            info = f"원본 크기: {w} × {h} px  →  출력 크기: {rw} × {rh} px (64 배수로 반올림)"
-            return rw, rh, info
-
         input_image.change(
             fn=on_image_upload,
             inputs=[input_image],
@@ -689,7 +613,6 @@ def main():
                 guidance_scale,
                 num_inference_steps,
                 seed,
-                max_sequence_length,
                 image_format,
             ],
             outputs=[output_image, output_message],

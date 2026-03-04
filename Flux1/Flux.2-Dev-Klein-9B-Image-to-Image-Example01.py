@@ -16,14 +16,14 @@ DEFAULT_IMAGE = "Test03.jpg"
 
 # Default values for each prompt section
 DEFAULT_QUALITY = ""
-DEFAULT_ANATOMY = ""
+DEFAULT_ANATOMY = "perfect anatomy, perfect body, perfect toes."
 DEFAULT_SUBJECT = ""
 DEFAULT_APPEARANCE = ""
 DEFAULT_POSE = "She is lying down on a pillow. Both elbows rest on the pillow and are flared wide apart, with hands placed behind her head and fingers interlaced, forming a broad V-shape with her arms when viewed from above. Her head is tilted slightly to one side, with her eyes gazing directly into the camera. Her hips are shifted slightly to one side, creating a natural and sensual S-curve silhouette."
 DEFAULT_OUTFIT = "She wears a tiny white g-string bra and tiny white g-string panties."
 DEFAULT_SETTING = ""
 DEFAULT_LIGHTING = ""
-DEFAULT_CAMERA = "Full body shot."
+DEFAULT_CAMERA = "Camera positioned at navel level, shooting downward. Wide-angle lens to elongate the legs and emphasize the full length of the body."
 
 
 def load_default_image():
