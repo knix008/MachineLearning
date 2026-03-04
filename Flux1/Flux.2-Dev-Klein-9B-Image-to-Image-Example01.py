@@ -23,7 +23,7 @@ DEFAULT_POSE = "She is lying down on a pillow. Both elbows rest on the pillow an
 DEFAULT_OUTFIT = "She wears a tiny white g-string bra and tiny white g-string panties."
 DEFAULT_SETTING = ""
 DEFAULT_LIGHTING = ""
-DEFAULT_CAMERA = ""
+DEFAULT_CAMERA = "Full body shot."
 
 
 def load_default_image():
