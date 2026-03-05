@@ -1,6 +1,4 @@
-import math
 import re
-import numpy as np
 import torch
 import platform
 from diffusers import Flux2KleinPipeline
@@ -17,17 +15,15 @@ import gradio as gr
 DEFAULT_BASE_IMAGE = "Test04.jpg"
 
 # Default values for each prompt section
-DEFAULT_QUALITY = "8k ultra-detailed, photorealistic, masterpiece, high quality, sharp focus"
-DEFAULT_ANATOMY = "perfect anatomy, well-proportioned, natural poses"
-DEFAULT_SUBJECT = "A seamlessly blended composite photograph that harmoniously merges multiple scenes into a single cohesive image"
-DEFAULT_APPEARANCE = "vibrant and consistent colors, rich textures, natural skin tones, detailed features preserved from all source images"
-DEFAULT_POSE = "balanced composition, natural integration of elements, smooth visual flow between merged subjects"
-DEFAULT_OUTFIT = "stylistic elements and clothing details faithfully carried over from the reference images"
-DEFAULT_SETTING = "unified coherent background that blends environments from all source images seamlessly"
-DEFAULT_LIGHTING = "consistent lighting direction, natural illumination, soft shadows, harmonized color temperature across all elements"
-DEFAULT_CAMERA = "85mm lens, f/2.8 aperture, shallow depth of field, cinematic tone mapping"
-
-COMPOSITE_METHODS = ["Grid (그리드)", "Blend (알파 블렌드)", "Horizontal (수평)", "Vertical (수직)", "Overlay (오버레이)"]
+DEFAULT_QUALITY = ""
+DEFAULT_ANATOMY = ""
+DEFAULT_SUBJECT = ""
+DEFAULT_APPEARANCE = ""
+DEFAULT_POSE = ""
+DEFAULT_OUTFIT = "She is wearing a onepiece, sandals, and a hat."
+DEFAULT_SETTING = "u"
+DEFAULT_LIGHTING = ""
+DEFAULT_CAMERA = ""
 
 
 def load_default_image():
@@ -102,83 +98,6 @@ def get_available_devices():
     else:
         devices.append("cpu")
     return devices
-
-
-def composite_images(base_image: Image.Image, reference_images: list, method: str, out_w: int, out_h: int) -> Image.Image:
-    """
-    Composite base_image and reference_images into a single PIL image.
-
-    Methods:
-      - Grid (그리드)       : 모든 이미지를 격자 배치
-      - Blend (알파 블렌드) : 동일 크기로 리사이즈 후 평균 혼합
-      - Horizontal (수평)  : 좌→우 나란히 배치
-      - Vertical (수직)    : 위→아래 배치
-      - Overlay (오버레이) : 기본 이미지 위에 참조 이미지를 섬네일로 오버레이
-    """
-    all_images = [base_image] + [img for img in reference_images if img is not None]
-    n = len(all_images)
-
-    method_key = method.split(" ")[0]  # "Grid", "Blend", "Horizontal", "Vertical", "Overlay"
-
-    if method_key == "Grid":
-        cols = math.ceil(math.sqrt(n))
-        rows = math.ceil(n / cols)
-        cell_w = max(64, out_w // cols)
-        cell_h = max(64, out_h // rows)
-        canvas = Image.new("RGB", (cell_w * cols, cell_h * rows), (0, 0, 0))
-        for i, img in enumerate(all_images):
-            r, c = divmod(i, cols)
-            resized = img.resize((cell_w, cell_h), Image.LANCZOS).convert("RGB")
-            canvas.paste(resized, (c * cell_w, r * cell_h))
-        return canvas.resize((out_w, out_h), Image.LANCZOS)
-
-    elif method_key == "Blend":
-        target_w, target_h = out_w, out_h
-        accumulated = np.zeros((target_h, target_w, 3), dtype=np.float64)
-        for img in all_images:
-            arr = np.array(img.resize((target_w, target_h), Image.LANCZOS).convert("RGB"), dtype=np.float64)
-            accumulated += arr
-        blended = (accumulated / n).clip(0, 255).astype(np.uint8)
-        return Image.fromarray(blended)
-
-    elif method_key == "Horizontal":
-        each_w = max(64, out_w // n)
-        canvas = Image.new("RGB", (each_w * n, out_h), (0, 0, 0))
-        for i, img in enumerate(all_images):
-            resized = img.resize((each_w, out_h), Image.LANCZOS).convert("RGB")
-            canvas.paste(resized, (i * each_w, 0))
-        return canvas.resize((out_w, out_h), Image.LANCZOS)
-
-    elif method_key == "Vertical":
-        each_h = max(64, out_h // n)
-        canvas = Image.new("RGB", (out_w, each_h * n), (0, 0, 0))
-        for i, img in enumerate(all_images):
-            resized = img.resize((out_w, each_h), Image.LANCZOS).convert("RGB")
-            canvas.paste(resized, (0, i * each_h))
-        return canvas.resize((out_w, out_h), Image.LANCZOS)
-
-    elif method_key == "Overlay":
-        # 기본 이미지를 캔버스로, 참조 이미지를 우하단에 섬네일로 오버레이
-        base = base_image.resize((out_w, out_h), Image.LANCZOS).convert("RGBA")
-        refs = [img for img in reference_images if img is not None]
-        n_refs = len(refs)
-        if n_refs == 0:
-            return base.convert("RGB")
-        thumb_w = min(out_w // 3, out_w // max(n_refs, 1))
-        thumb_h = out_h // 4
-        thumb_w = max(64, thumb_w)
-        thumb_h = max(64, thumb_h)
-        for i, ref in enumerate(refs):
-            thumb = ref.resize((thumb_w, thumb_h), Image.LANCZOS).convert("RGBA")
-            x = i * (thumb_w + 4)
-            y = out_h - thumb_h - 4
-            if x + thumb_w <= out_w:
-                base.paste(thumb, (x, y), thumb)
-        return base.convert("RGB")
-
-    else:
-        # fallback: return resized base
-        return base_image.resize((out_w, out_h), Image.LANCZOS).convert("RGB")
 
 
 def print_hardware_info():
@@ -290,7 +209,7 @@ def load_model(device_name=None):
 
     print(f"모델 로딩 중... (Device: {DEVICE}, dtype: {DTYPE})")
     pipe = Flux2KleinPipeline.from_pretrained(
-        "black-forest-labs/FLUX.2-klein-9B",
+        "black-forest-labs/FLUX.2-klein-4B",
         torch_dtype=DTYPE,
     )
 
@@ -321,36 +240,21 @@ def on_base_image_upload(image):
     return rw, rh, info
 
 
-def preview_composite(base_image, ref1, ref2, ref3, ref4, method, width, height):
-    """합성 미리보기를 생성하여 반환."""
-    if base_image is None:
-        base_image = load_default_image()
-    if base_image is None:
-        return None, "오류: 기본 이미지를 업로드해주세요."
-
-    if not isinstance(base_image, Image.Image):
-        base_image = Image.fromarray(base_image)
-
-    ref_images = []
-    for ref in [ref1, ref2, ref3, ref4]:
-        if ref is not None:
-            ref_images.append(ref if isinstance(ref, Image.Image) else Image.fromarray(ref))
-
-    if not ref_images:
-        return base_image.resize((int(width), int(height)), Image.LANCZOS), "참조 이미지가 없습니다. 기본 이미지만 표시됩니다."
-
-    composited = composite_images(base_image, ref_images, method, int(width), int(height))
-    return composited, f"합성 미리보기 완료: 기본 이미지 + 참조 {len(ref_images)}개 ({method})"
-
-
 def generate_image(
     base_image,
     ref_image1,
     ref_image2,
     ref_image3,
     ref_image4,
-    composite_method,
-    prompt,
+    prompt_quality,
+    prompt_anatomy,
+    prompt_subject,
+    prompt_appearance,
+    prompt_pose,
+    prompt_outfit,
+    prompt_setting,
+    prompt_lighting,
+    prompt_camera,
     width,
     height,
     guidance_scale,
@@ -381,6 +285,11 @@ def generate_image(
     if not ref_images:
         return None, "오류: 참조 이미지를 최소 1개 이상 업로드해주세요."
 
+    # --- 프롬프트 섹션 합치기 ---
+    prompt = combine_prompt_sections(
+        prompt_quality, prompt_anatomy, prompt_subject, prompt_appearance,
+        prompt_pose, prompt_outfit, prompt_setting, prompt_lighting, prompt_camera,
+    )
     if not prompt:
         return None, "오류: 프롬프트를 입력해주세요."
 
@@ -389,12 +298,14 @@ def generate_image(
         steps = int(num_inference_steps)
         start_time = time.time()
 
-        progress(0.0, desc="이미지 합성 준비 중...")
-        print(f"이미지 합성 시작: 기본 1개 + 참조 {len(ref_images)}개 ({composite_method})")
+        progress(0.0, desc="이미지 준비 중...")
+        print(f"이미지 준비: 기본 1개 + 참조 {len(ref_images)}개")
 
-        # --- 이미지 합성 ---
-        composited_input = composite_images(base_image, ref_images, composite_method, out_w, out_h)
-        print(f"합성 완료: {composited_input.size}")
+        # --- 모델에 전달할 이미지 리스트 구성 ---
+        input_images = [base_image.resize((out_w, out_h), Image.LANCZOS).convert("RGB")]
+        for ref in ref_images:
+            input_images.append(ref.resize((out_w, out_h), Image.LANCZOS).convert("RGB"))
+        print(f"총 {len(input_images)}개 이미지를 파이프라인에 리스트로 전달")
 
         generator_device = "cpu" if DEVICE == "mps" else DEVICE
         generator = torch.Generator(device=generator_device).manual_seed(int(seed))
@@ -428,7 +339,7 @@ def generate_image(
         with torch.inference_mode():
             result = pipe(
                 prompt=prompt,
-                image=composited_input,
+                image=input_images,
                 width=out_w,
                 height=out_h,
                 guidance_scale=guidance_scale,
@@ -443,10 +354,9 @@ def generate_image(
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         script_name = os.path.splitext(os.path.basename(__file__))[0]
         ext = "jpg" if image_format == "JPEG" else "png"
-        method_tag = composite_method.split(" ")[0]
         filename = (
             f"{script_name}_{timestamp}_{DEVICE.upper()}_{out_w}x{out_h}"
-            f"_{method_tag}_gs{guidance_scale}_step{steps}_seed{int(seed)}.{ext}"
+            f"_gs{guidance_scale}_step{steps}_seed{int(seed)}.{ext}"
         )
 
         print(f"이미지 생성 완료! 소요 시간: {elapsed:.1f}초")
@@ -459,7 +369,7 @@ def generate_image(
         progress(1.0, desc="완료!")
         return (
             result,
-            f"✓ 완료! ({elapsed:.1f}초) | 합성: {len(ref_images)+1}개 이미지 ({method_tag}) | 저장됨: {filename}",
+            f"✓ 완료! ({elapsed:.1f}초) | 입력: 기본 1개 + 참조 {len(ref_images)}개 | 저장됨: {filename}",
         )
 
     except Exception as e:
@@ -482,8 +392,8 @@ def main():
         else "이미지를 업로드하면 원본 크기가 표시됩니다."
     )
 
-    with gr.Blocks(title="Flux.2 Klein 9B Multi-Image Compositor") as interface:
-        gr.Markdown("# Flux.2 Klein 9B Multi-Image Compositor")
+    with gr.Blocks(title="Flux.2 Klein 4B Multi-Image Compositor") as interface:
+        gr.Markdown("# Flux.2 Klein 4B Multi-Image Compositor")
         gr.Markdown(
             f"기본 이미지와 여러 참조 이미지를 합성하여 하나의 이미지를 생성합니다."
             f" (Device: **{DEVICE.upper()}**)"
@@ -551,19 +461,6 @@ def main():
                         sources=["upload", "clipboard"],
                         height=200,
                     )
-
-                gr.Markdown("### 합성 방식")
-                composite_method = gr.Radio(
-                    label="합성 방식 선택",
-                    choices=COMPOSITE_METHODS,
-                    value=COMPOSITE_METHODS[0],
-                    info=(
-                        "Grid: 격자 배치 | Blend: 평균 혼합 | "
-                        "Horizontal: 좌우 배치 | Vertical: 상하 배치 | "
-                        "Overlay: 기본 이미지 위에 섬네일 오버레이"
-                    ),
-                )
-                preview_btn = gr.Button("합성 미리보기", variant="secondary")
 
                 gr.Markdown("### 프롬프트 구성")
                 prompt_quality = gr.Textbox(
@@ -645,7 +542,7 @@ def main():
                         outputs=[combined_prompt],
                     )
 
-            # ── 오른쪽 컬럼: 파라미터 + 합성 미리보기 + 생성 ──
+            # ── 오른쪽 컬럼: 파라미터 + 생성 ──
             with gr.Column(scale=1):
                 gr.Markdown("### 파라미터 설정")
                 with gr.Row():
@@ -685,15 +582,6 @@ def main():
                         info="JPEG: quality 100, PNG: 무손실.",
                     )
 
-                gr.Markdown("---")
-                gr.Markdown("### 합성 미리보기")
-                composite_preview = gr.Image(
-                    label="합성된 입력 이미지 미리보기 (모델에 전달될 이미지)",
-                    height=400,
-                )
-                preview_status = gr.Textbox(label="미리보기 상태", interactive=False)
-
-                gr.Markdown("---")
                 gr.Markdown("### 이미지 생성")
                 generate_btn = gr.Button("이미지 생성", variant="primary", size="lg")
                 output_image = gr.Image(label="생성된 이미지", height=800)
@@ -718,21 +606,13 @@ def main():
             outputs=[device_status],
         )
 
-        # 합성 미리보기 버튼
-        preview_btn.click(
-            fn=preview_composite,
-            inputs=[base_image, ref_image1, ref_image2, ref_image3, ref_image4,
-                    composite_method, width, height],
-            outputs=[composite_preview, preview_status],
-        )
-
         # 이미지 생성 버튼
         generate_btn.click(
             fn=generate_image,
             inputs=[
                 base_image, ref_image1, ref_image2, ref_image3, ref_image4,
-                composite_method,
-                combined_prompt,
+                prompt_quality, prompt_anatomy, prompt_subject, prompt_appearance,
+                prompt_pose, prompt_outfit, prompt_setting, prompt_lighting, prompt_camera,
                 width, height,
                 guidance_scale, num_inference_steps,
                 seed, image_format,
