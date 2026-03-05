@@ -17,7 +17,7 @@ DEFAULT_REF_IMAGE1 = "Sandal01.jpg"
 DEFAULT_REF_IMAGE2 = "Cap01.jpg"
 DEFAULT_REF_IMAGE3 = "Onepiece01.jpg"
 #DEFAULT_REF_IMAGE4 = "Bikini01.jpg"
-DEFAULT_REF_IMAGE4 = "Brapnaties01.jpg"
+DEFAULT_REF_IMAGE4 = "Brapanties01.jpg"
 
 # Default values for each prompt section
 DEFAULT_QUALITY = ""
