@@ -12,7 +12,7 @@ import psutil
 import time
 import gradio as gr
 
-DEFAULT_BASE_IMAGE = "Test04.jpg"
+DEFAULT_BASE_IMAGE = "Test02.jpg"
 DEFAULT_REF_IMAGE1 = "Sandal01.jpg"
 DEFAULT_REF_IMAGE2 = "Cap01.jpg"
 DEFAULT_REF_IMAGE3 = "Onepiece01.jpg"
@@ -24,7 +24,7 @@ DEFAULT_ANATOMY = "Perfect anatomy, well-proportioned figure, natural body struc
 DEFAULT_SUBJECT = ""
 DEFAULT_APPEARANCE = ""
 DEFAULT_POSE = "She is standing, full body visible from head to toe, front-facing the camera."
-DEFAULT_OUTFIT = "She is wearing the exact onepiece dress from the reference image, paired with the sandals and hat from the reference images. She is also wearing a bikini inside. The onepiece dress is clearly visible, fully shown from neckline to hem."
+DEFAULT_OUTFIT = "She is wearing the exact bikini from the reference image, with the onepiece dress over it, paired with the sandals and cap from the reference images. The complete outfit — bikini, onepiece dress, sandals, and cap — is clearly visible from head to toe."
 DEFAULT_SETTING = "tropical beach with palm trees and a clear blue sky."
 DEFAULT_LIGHTING = "Sunlight with soft shadows."
 DEFAULT_CAMERA = "Canon EOS R5, 35mm f/5.6, ISO 200, 1/500s shutter. Full body shot from head to toe. Camera positioned slightly far back to capture the entire figure."
@@ -222,7 +222,7 @@ def load_model(device_name=None):
 
     print(f"모델 로딩 중... (Device: {DEVICE}, dtype: {DTYPE})")
     pipe = Flux2KleinPipeline.from_pretrained(
-        "black-forest-labs/FLUX.2-klein-4B",
+        "black-forest-labs/FLUX.2-klein-9B",
         torch_dtype=DTYPE,
     )
 
@@ -409,8 +409,8 @@ def main():
         else "이미지를 업로드하면 원본 크기가 표시됩니다."
     )
 
-    with gr.Blocks(title="Flux.2 Klein 4B Multi-Image Compositor") as interface:
-        gr.Markdown("# Flux.2 Klein 4B Multi-Image Compositor")
+    with gr.Blocks(title="Flux.2 Klein 9B Multi-Image Compositor") as interface:
+        gr.Markdown("# Flux.2 Klein 9B Multi-Image Compositor")
         gr.Markdown(
             f"기본 이미지와 여러 참조 이미지를 합성하여 하나의 이미지를 생성합니다."
             f" (Device: **{DEVICE.upper()}**)"
