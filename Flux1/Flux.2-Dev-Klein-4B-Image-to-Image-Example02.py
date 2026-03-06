@@ -16,10 +16,10 @@ DEFAULT_IMAGE = "Test07.jpg"
 
 # Default values for each prompt section
 DEFAULT_QUALITY = ""
-DEFAULT_ANATOMY = "She has ten fingers."
+DEFAULT_ANATOMY = "Perfect anatomy, five fingers on hands."
 DEFAULT_SUBJECT = ""
 DEFAULT_APPEARANCE = ""
-DEFAULT_POSE = ""
+DEFAULT_POSE = "one hand resting naturally on chest, other hand resting naturally near legs"
 DEFAULT_OUTFIT = ""
 DEFAULT_SETTING = ""
 DEFAULT_LIGHTING = ""
