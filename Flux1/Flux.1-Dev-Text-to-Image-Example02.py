@@ -15,10 +15,11 @@ import gradio as gr
 # https://prompthero.com/prompt/3f947ff3483-flux-flux-11-pro-an-13-yes-ol-mad-string-bikini-wicked-string-bikini-next-level-string-bikini-insane-string-bikini-wet-body-moisture
 
 # Default values for each prompt section
-DEFAULT_QUALITY = "Ultra HD, photorealistic, 8K resolution, sharp focus, detailed skin texture, cinematic lighting, professional studio portrait."
-DEFAULT_NEGATIVE = "Perfect anatomy, no extra fingers, no missing fingers, no fused fingers, no deformed fingers, no extra limbs, no distorted body, no blurry face, no bad anatomy."
-DEFAULT_APPEARANCE = "The image is a high-quality, photorealistic cosplay portrait of a young Korean woman with a soft, idol aesthetic. She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face."
-DEFAULT_OUTFIT = "Wearing a simple thong bikini. The bikini top is a minimalist triangle top with thin string ties. The bottoms are a classic thong style with thin side strings, offering minimal rear coverage. Simple, clean design in a solid color that complements her look."
+DEFAULT_QUALITY = ""
+DEFAULT_SUBJECT = "The image is a photorealistic cosplay portrait of a young Korean woman with a soft, idol aesthetic."
+DEFAULT_BODY = ""
+DEFAULT_APPEARANCE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face."
+DEFAULT_OUTFIT = "Wearing a simple light blue bikini. The bikini top is a minimalist triangle top with thin string ties. The bottoms are a classic thong style with thin side strings, offering minimal rear coverage. Simple, clean design in a solid color that complements her look."
 DEFAULT_POSE = "Walking leisurely along the shoreline, one foot lightly stepping forward into shallow water. Relaxed and natural full-body walking pose. Arms gently swaying at her sides. Head slightly tilted, gazing toward the horizon with a calm, serene expression. Hair gently blown by the sea breeze. Carefree and graceful stride."
 DEFAULT_SETTING = "Sunny tropical beach setting. Clear turquoise ocean water lapping at the shore. White sandy beach stretching into the distance. Gentle waves washing over her feet as she walks. Bright blue sky with a few soft white clouds. Warm golden sunlight reflecting off the water surface. Lush palm trees visible in the background. Vibrant, outdoor natural lighting."
 DEFAULT_LIGHTING = "Bright, natural outdoor sunlight. Warm golden hour lighting from the side, casting soft shadows. Sun glistening on the water and sand. Natural skin illumination with gentle highlights from the sunlight. Soft fill light from the reflective ocean surface. Cheerful and vibrant atmosphere."
@@ -35,10 +36,10 @@ def normalize_spacing(text: str) -> str:
 
 
 def combine_prompt_sections(
-    quality, negative, appearance, outfit, pose, setting, lighting, camera
+    quality, body, subject, appearance, outfit, pose, setting, lighting, camera
 ):
     """Combine separate prompt sections into one final prompt string."""
-    sections = [quality, negative, appearance, outfit, pose, setting, lighting, camera]
+    sections = [quality, body, subject, appearance, outfit, pose, setting, lighting, camera]
     # Filter out empty sections and join with ', '
     combined = ", ".join(normalize_spacing(s) for s in sections if s and s.strip())
     return combined
@@ -434,50 +435,57 @@ def main():
                     placeholder="예: 4k, ultra-detailed, photorealistic",
                     info="이미지의 품질, 해상도, 스타일 관련 키워드입니다. 프롬프트 맨 앞에 위치합니다.",
                 )
-                prompt_negative = gr.Textbox(
-                    label="2. 네거티브 프롬프트 (Negative Prompt)",
-                    value=DEFAULT_NEGATIVE,
+                prompt_body = gr.Textbox(
+                    label="2. 바디 (Body)",
+                    value=DEFAULT_BODY,
                     lines=2,
-                    placeholder="예: bad anatomy, extra fingers, blurry",
-                    info="생성에서 제외할 요소들입니다. 최종 프롬프트에 포함됩니다.",
+                    placeholder="예: athletic body, slim waist, toned legs",
+                    info="체형, 체격, 신체 특징 등을 설명합니다.",
+                )
+                prompt_subject = gr.Textbox(
+                    label="3. 주제/대상 (Subject)",
+                    value=DEFAULT_SUBJECT,
+                    lines=2,
+                    placeholder="예: 1girl, young woman, a cat",
+                    info="이미지의 주된 주제나 대상을 설명합니다.",
                 )
                 prompt_appearance = gr.Textbox(
-                    label="3. 외모 (Appearance)",
+                    label="4. 외모 (Appearance)",
                     value=DEFAULT_APPEARANCE,
                     lines=2,
                     placeholder="예: A beautiful Russian girl with long strawberry blonde hair",
                     info="인물의 외모, 얼굴, 머리카락, 나이 등을 설명합니다.",
                 )
                 prompt_outfit = gr.Textbox(
-                    label="4. 의상 (Outfit)",
+                    label="5. 의상 (Outfit)",
                     value=DEFAULT_OUTFIT,
                     lines=2,
                     placeholder="예: deep burgundy satin slip dress",
                     info="의상, 액세서리, 착용한 아이템을 설명합니다.",
                 )
                 prompt_pose = gr.Textbox(
-                    label="5. 포즈/구도 (Pose & Composition)",
+                    label="6. 포즈/구도 (Pose & Composition)",
                     value=DEFAULT_POSE,
                     lines=2,
                     placeholder="예: seated on rooftop ledge, gazing into distance",
                     info="자세, 시선 방향, 카메라 앵글, 촬영 구도를 설명합니다.",
                 )
                 prompt_setting = gr.Textbox(
-                    label="6. 배경/장소 (Setting & Background)",
+                    label="7. 배경/장소 (Setting & Background)",
                     value=DEFAULT_SETTING,
                     lines=2,
                     placeholder="예: rooftop terrace at twilight, city skyline",
                     info="배경, 장소, 환경, 계절 등을 설명합니다.",
                 )
                 prompt_lighting = gr.Textbox(
-                    label="7. 조명 (Lighting)",
+                    label="8. 조명 (Lighting)",
                     value=DEFAULT_LIGHTING,
                     lines=2,
                     placeholder="예: golden hour, city glow, cinematic rim light",
                     info="조명 조건, 빛의 방향, 분위기를 설명합니다.",
                 )
                 prompt_camera = gr.Textbox(
-                    label="8. 카메라 설정 (Camera Settings)",
+                    label="9. 카메라 설정 (Camera Settings)",
                     value=DEFAULT_CAMERA,
                     lines=2,
                     placeholder="예: Sony A7R V, 85mm f/1.8, ISO 400",
@@ -488,7 +496,8 @@ def main():
                         label="최종 프롬프트",
                         value=combine_prompt_sections(
                             DEFAULT_QUALITY,
-                            DEFAULT_NEGATIVE,
+                            DEFAULT_BODY,
+                            DEFAULT_SUBJECT,
                             DEFAULT_APPEARANCE,
                             DEFAULT_OUTFIT,
                             DEFAULT_POSE,
@@ -502,7 +511,8 @@ def main():
                     )
                 prompt_sections = [
                     prompt_quality,
-                    prompt_negative,
+                    prompt_body,
+                    prompt_subject,
                     prompt_appearance,
                     prompt_outfit,
                     prompt_pose,
