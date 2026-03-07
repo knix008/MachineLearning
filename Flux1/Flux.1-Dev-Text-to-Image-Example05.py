@@ -15,12 +15,12 @@ import gradio as gr
 # https://prompthero.com/prompt/3f947ff3483-flux-flux-11-pro-an-13-yes-ol-mad-string-bikini-wicked-string-bikini-next-level-string-bikini-insane-string-bikini-wet-body-moisture
 
 # Default values for each prompt section
-DEFAULT_QUALITY = "Photorealistic, ultra-detailed, 4k, high resolution"
-DEFAULT_SUBJECT = "A photorealistic full-body portrait of a young Korean woman lying on a beach sunbed in a sexy pose, photographed from directly above."
-DEFAULT_BODY = ""
+DEFAULT_QUALITY = "4k, high resolution."
+DEFAULT_SUBJECT = "A full-body image of a young Korean woman from head to toe, lying on a beach sunbed in a sexy pose, photographed from directly above."
+DEFAULT_BODY = "Beautiful fingers and navel."
 DEFAULT_APPEARANCE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses. Her expression is relaxed and alluring, gazing directly up at the camera. She has long, straight jet-black hair with thick, straight-cut bangs spread loosely around her head on the sunbed."
-DEFAULT_OUTFIT = "Wearing a simple light blue bikini. The bikini top is a minimalist triangle top with thin string ties. The bottoms are a classic thong style with thin side strings, offering minimal rear coverage. She is also wearing white fishnet stockings with a white lace trim band at the top and a small decorative blue ribbon at the center of the lace band."
-DEFAULT_POSE = "Lying on a sunbed in a confident and sexy pose. Entire body fully stretched out and visible from head to toe. Slightly arched back, one leg straight and the other gently bent. One hand gently touching her cheek with a index finger, the other hand resting on her chest. Gazing directly up at the camera with a relaxed, alluring expression."
+DEFAULT_OUTFIT = "Wearing a simple light blue bikini. The bikini top is a minimalist triangle top with thin string ties. The bottoms are a classic thong style, offering minimal rear coverage."
+DEFAULT_POSE = "Lying on a sunbed in a confident and sexy pose. Entire body fully stretched out and visible from head to toe. Slightly arched back, one leg straight and the other gently bent. One hand gently touching her cheek with a index finger, the other hand resting on her thigh naturally. Gazing directly up at the camera with a relaxed, alluring expression."
 DEFAULT_SETTING = "Sunny tropical beach. White sandy beach with a stylish wooden sunbed. Clear turquoise ocean and blue sky visible in the background. Lush palm trees in the background."
 DEFAULT_LIGHTING = "Bright natural outdoor sunlight. Warm golden hour lighting casting soft shadows. Sun glistening on the skin and fishnet stocking texture. Cheerful and vibrant atmosphere."
 DEFAULT_CAMERA = "Overhead bird's eye view shot, camera positioned directly above looking straight down. Entire body fully visible from head to toe in frame. Top-down perspective."
