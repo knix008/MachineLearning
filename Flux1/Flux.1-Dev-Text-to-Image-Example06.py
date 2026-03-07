@@ -14,8 +14,8 @@ import gradio as gr
 
 # Default values for each prompt section
 DEFAULT_QUALITY = "4k, high resolution."
-DEFAULT_SUBJECT = "A full-body image of a young beautiful Korean woman with a soft, idol aesthetic."
 DEFAULT_BODY = "Beautiful fingers and navel."
+DEFAULT_SUBJECT = "A full-body image of a young beautiful Korean woman with a soft, idol aesthetic."
 DEFAULT_APPEARANCE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses. Her expression is relaxed and alluring, with a soft closed-mouth smile, lips gently pressed together. She has long, straight jet-black hair with thick, straight-cut bangs."
 DEFAULT_OUTFIT = "Wearing a simple light blue tiny bikini. The bikini top is a minimalist triangle top. The bottoms are a classic thong style, offering minimal rear coverage."
 DEFAULT_POSE = "Standing on the beach in a confident and sexy pose, body turned slightly at an angle to the camera, not facing directly front-on. Entire body fully visible from head to toe. Head upright and level, glancing at the camera at a slight angle, not looking directly straight into the lens. Weight shifted to one side, hips slightly cocked to the side creating a natural S-curve. One leg straight, the other slightly bent at the knee. Both arms hanging naturally at her sides, elbows slightly bent, slightly away from her body and thighs."
