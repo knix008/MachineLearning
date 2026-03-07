@@ -21,7 +21,7 @@ MODEL_PATH = "weights/003_realSR_BSRGAN_DFO_s64w8_SwinIR-M_x4_GAN.pth"
 
 TILE_SIZE = 512       # 타일 크기 (픽셀). 큰 이미지 처리 시 메모리 절약
 TILE_OVERLAP = 32     # 타일 간 겹침 (경계 아티팩트 방지)
-USE_FP16 = True       # CUDA에서 FP16으로 약 2배 속도 향상
+USE_FP16 = False      # FP16 autocast (SwinIR에서 black image 발생 가능, 기본 비활성화)
 USE_COMPILE = False   # torch.compile 사용 (PyTorch 2.0+, 첫 실행 느림)
 
 # 결과 저장 디렉토리 (스크립트와 동일한 디렉토리)
@@ -63,10 +63,9 @@ else:
 print(f"Using device: {device}")
 model = load_model(device)
 
-# FP16 변환 (CUDA 전용)
+# FP16: 모델 가중치는 fp32 유지, autocast로 안전한 연산만 fp16 적용
 if USE_FP16 and device.type == "cuda":
-    model = model.half()
-    print("FP16 모드 활성화")
+    print("FP16 autocast 모드 활성화 (모델 가중치는 fp32 유지)")
 
 # torch.compile (PyTorch 2.0+, 첫 실행 시 컴파일 시간 소요)
 if USE_COMPILE and hasattr(torch, "compile"):
@@ -80,8 +79,6 @@ def preprocess(img_pil):
     img = img.astype(np.float32) / 255.0
     img = np.transpose(img, (2, 0, 1))
     t = torch.from_numpy(img).unsqueeze(0).to(device)
-    if USE_FP16 and device.type == "cuda":
-        t = t.half()
     return t
 
 
@@ -95,8 +92,8 @@ def tile_upscale(img_lq, scale=4, window_size=8, progress_callback=None):
     total_tiles = len(y_steps) * len(x_steps)
 
     h_out, w_out = h * scale, w * scale
-    output = torch.zeros(b, c, h_out, w_out, dtype=img_lq.dtype, device=device)
-    count = torch.zeros(b, 1, h_out, w_out, dtype=img_lq.dtype, device=device)
+    output = torch.zeros(b, c, h_out, w_out, dtype=torch.float32, device=device)
+    count = torch.zeros(b, 1, h_out, w_out, dtype=torch.float32, device=device)
 
     tile_idx = 0
     with tqdm(total=total_tiles, desc="타일 업스케일", unit="tile") as pbar:
@@ -117,7 +114,7 @@ def tile_upscale(img_lq, scale=4, window_size=8, progress_callback=None):
 
                 with torch.autocast(device_type=device.type, enabled=(USE_FP16 and device.type == "cuda")):
                     out_patch = model(patch)
-                out_patch = out_patch[..., :ph * scale, :pw * scale]
+                out_patch = out_patch[..., :ph * scale, :pw * scale].float()
 
                 oy, ox = y_start * scale, x_start * scale
                 output[:, :, oy:oy + ph * scale, ox:ox + pw * scale] += out_patch
