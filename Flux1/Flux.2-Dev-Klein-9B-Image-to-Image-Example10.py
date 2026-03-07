@@ -12,39 +12,23 @@ import psutil
 import time
 import gradio as gr
 
-DEFAULT_BASE_IMAGE = "Test09.jpg"
-DEFAULT_REF_IMAGE1 = ""
-DEFAULT_REF_IMAGE2 = ""
-DEFAULT_REF_IMAGE3 = ""
-DEFAULT_REF_IMAGE4 = "Brapanties02.jpg"
+DEFAULT_IMAGE = "Test08.jpg"
 
 # Default values for each prompt section
 DEFAULT_QUALITY = ""
 DEFAULT_ANATOMY = ""
 DEFAULT_SUBJECT = ""
-DEFAULT_APPEARANCE = ""
-DEFAULT_POSE = ""
-DEFAULT_OUTFIT = "Wearing a bra and a panties."
+DEFAULT_APPEARANCE = "Hair tied back in a ponytail."
+DEFAULT_POSE = "She is standing next to a Porsche Carrera. Full body visible from feet to head."
+DEFAULT_OUTFIT = "She is wearing high heels."
 DEFAULT_SETTING = ""
 DEFAULT_LIGHTING = ""
 DEFAULT_CAMERA = ""
 
-
 def load_default_image():
-    """Load the default base image if it exists."""
+    """Load the default input image if it exists."""
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    img_path = os.path.join(script_dir, DEFAULT_BASE_IMAGE)
-    if os.path.exists(img_path):
-        return Image.open(img_path).convert("RGB")
-    return None
-
-
-def load_default_ref_image(filename):
-    """Load a default reference image if it exists."""
-    if not filename:
-        return None
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    img_path = os.path.join(script_dir, filename)
+    img_path = os.path.join(script_dir, DEFAULT_IMAGE)
     if os.path.exists(img_path):
         return Image.open(img_path).convert("RGB")
     return None
@@ -62,8 +46,15 @@ def combine_prompt_sections(
 ):
     """Combine separate prompt sections into one final prompt string."""
     sections = [
-        quality, anatomy, subject, appearance,
-        pose, outfit, setting, lighting, camera,
+        quality,
+        anatomy,
+        subject,
+        appearance,
+        pose,
+        outfit,
+        setting,
+        lighting,
+        camera,
     ]
     combined = ", ".join(normalize_spacing(s) for s in sections if s and s.strip())
     return combined
@@ -233,43 +224,34 @@ def load_model(device_name=None):
         pipe.enable_model_cpu_offload()
         pipe.enable_attention_slicing()
         pipe.enable_sequential_cpu_offload()
-        print("메모리 최적화 적용: sequential CPU offload, model CPU offload, attention slicing")
+        print(
+            "메모리 최적화 적용: sequential CPU offload, model CPU offload, attention slicing"
+        )
     elif DEVICE == "mps":
         pipe.to(DEVICE)
         pipe.enable_attention_slicing()
         print("메모리 최적화 적용: attention slicing (MPS)")
+        print("MPS 디바이스로 모델 로드 완료 (주의: MPS는 최적화 기능이 제한적입니다)")
 
     print(f"모델 로딩 완료! (Device: {DEVICE})")
     return f"모델 로딩 완료! (Device: {DEVICE}, dtype: {DTYPE})"
 
 
-def on_base_image_upload(image):
-    """기본 이미지 업로드 시 출력 크기 자동 설정."""
+def on_image_upload(image):
+    """입력 이미지 업로드 시 출력 크기 자동 설정."""
     if image is None:
         return 768, 1536, "이미지를 업로드하면 원본 크기가 표시됩니다."
     if not isinstance(image, Image.Image):
         image = Image.fromarray(image)
     w, h = image.size
     rw, rh = round_to_64(w), round_to_64(h)
-    info = f"기본 이미지: {w} × {h} px  →  출력 크기: {rw} × {rh} px (64 배수로 반올림)"
+    info = f"원본 크기: {w} × {h} px  →  출력 크기: {rw} × {rh} px (64 배수로 반올림)"
     return rw, rh, info
 
 
 def generate_image(
-    base_image,
-    ref_image1,
-    ref_image2,
-    ref_image3,
-    ref_image4,
-    prompt_quality,
-    prompt_anatomy,
-    prompt_subject,
-    prompt_appearance,
-    prompt_pose,
-    prompt_outfit,
-    prompt_setting,
-    prompt_lighting,
-    prompt_camera,
+    input_image,
+    prompt,
     width,
     height,
     guidance_scale,
@@ -281,46 +263,28 @@ def generate_image(
     global pipe
 
     if pipe is None:
-        return None, "오류: 모델이 로드되지 않았습니다. '모델 로드' 버튼을 먼저 눌러주세요."
+        return (
+            None,
+            "오류: 모델이 로드되지 않았습니다. '모델 로드' 버튼을 먼저 눌러주세요.",
+        )
 
-    # --- 기본 이미지 준비 ---
-    if base_image is None:
-        base_image = load_default_image()
-    if base_image is None:
-        return None, "오류: 기본 이미지를 업로드해주세요."
-    if not isinstance(base_image, Image.Image):
-        base_image = Image.fromarray(base_image)
+    if input_image is None:
+        input_image = load_default_image()
+    if input_image is None:
+        return None, "오류: 입력 이미지를 업로드해주세요."
 
-    # --- 참조 이미지 준비 ---
-    ref_images = []
-    for ref in [ref_image1, ref_image2, ref_image3, ref_image4]:
-        if ref is not None:
-            ref_images.append(ref if isinstance(ref, Image.Image) else Image.fromarray(ref))
-
-    if not ref_images:
-        return None, "오류: 참조 이미지를 최소 1개 이상 업로드해주세요."
-
-    # --- 프롬프트 섹션 합치기 ---
-    prompt = combine_prompt_sections(
-        prompt_quality, prompt_anatomy, prompt_subject, prompt_appearance,
-        prompt_pose, prompt_outfit, prompt_setting, prompt_lighting, prompt_camera,
-    )
     if not prompt:
         return None, "오류: 프롬프트를 입력해주세요."
 
     try:
-        out_w, out_h = int(width), int(height)
+        if not isinstance(input_image, Image.Image):
+            input_image = Image.fromarray(input_image)
+
         steps = int(num_inference_steps)
         start_time = time.time()
 
-        progress(0.0, desc="이미지 준비 중...")
-        print(f"이미지 준비: 기본 1개 + 참조 {len(ref_images)}개")
-
-        # --- 모델에 전달할 이미지 리스트 구성 ---
-        input_images = [base_image.resize((out_w, out_h), Image.LANCZOS).convert("RGB")]
-        for ref in ref_images:
-            input_images.append(ref.resize((out_w, out_h), Image.LANCZOS).convert("RGB"))
-        print(f"총 {len(input_images)}개 이미지를 파이프라인에 리스트로 전달")
+        progress(0.0, desc="이미지 편집 준비 중...")
+        print("이미지 편집 준비 중...")
 
         generator_device = "cpu" if DEVICE == "mps" else DEVICE
         generator = torch.Generator(device=generator_device).manual_seed(int(seed))
@@ -337,6 +301,7 @@ def generate_image(
                 progress_val,
                 desc=f"추론 스텝 {current}/{steps} ({elapsed:.1f}초 경과)",
             )
+
             bar_len = 30
             filled = int(bar_len * ratio)
             bar = "\u2588" * filled + "\u2591" * (bar_len - filled)
@@ -352,11 +317,11 @@ def generate_image(
             return callback_kwargs
 
         with torch.inference_mode():
-            result = pipe(
+            image = pipe(
                 prompt=prompt,
-                image=input_images,
-                width=out_w,
-                height=out_h,
+                image=input_image,
+                width=int(width),
+                height=int(height),
                 guidance_scale=guidance_scale,
                 num_inference_steps=steps,
                 generator=generator,
@@ -370,21 +335,21 @@ def generate_image(
         script_name = os.path.splitext(os.path.basename(__file__))[0]
         ext = "jpg" if image_format == "JPEG" else "png"
         filename = (
-            f"{script_name}_{timestamp}_{DEVICE.upper()}_{out_w}x{out_h}"
+            f"{script_name}_{timestamp}_{DEVICE.upper()}_{int(width)}x{int(height)}"
             f"_gs{guidance_scale}_step{steps}_seed{int(seed)}.{ext}"
         )
 
-        print(f"이미지 생성 완료! 소요 시간: {elapsed:.1f}초")
+        print(f"이미지 편집 완료! 소요 시간: {elapsed:.1f}초")
         print(f"이미지가 저장되었습니다 : {filename}")
         if image_format == "JPEG":
-            result.save(filename, format="JPEG", quality=100, subsampling=0)
+            image.save(filename, format="JPEG", quality=100, subsampling=0)
         else:
-            result.save(filename)
+            image.save(filename)
 
         progress(1.0, desc="완료!")
         return (
-            result,
-            f"✓ 완료! ({elapsed:.1f}초) | 입력: 기본 1개 + 참조 {len(ref_images)}개 | 저장됨: {filename}",
+            image,
+            f"✓ 완료! ({elapsed:.1f}초) | 저장됨: {filename}",
         )
 
     except Exception as e:
@@ -394,32 +359,34 @@ def generate_image(
 def main():
     global interface
 
+    # Print hardware specifications
     print_hardware_info()
 
+    # Auto-load model on startup with detected device
     print(f"\n자동으로 감지된 디바이스: {DEVICE} (dtype: {DTYPE})")
     load_model()
 
+    # Load default image and compute initial dimensions
     _default_img = load_default_image()
-    _default_ref1 = load_default_ref_image(DEFAULT_REF_IMAGE1)
-    _default_ref2 = load_default_ref_image(DEFAULT_REF_IMAGE2)
-    _default_ref3 = load_default_ref_image(DEFAULT_REF_IMAGE3)
-    _default_ref4 = load_default_ref_image(DEFAULT_REF_IMAGE4)
     _init_w, _init_h = get_image_dimensions(_default_img)
     _default_info = (
-        f"기본 이미지: {DEFAULT_BASE_IMAGE} ({_default_img.size[0]} × {_default_img.size[1]} px)"
+        f"기본 이미지: {DEFAULT_IMAGE} ({_default_img.size[0]} × {_default_img.size[1]} px)"
         if _default_img is not None
         else "이미지를 업로드하면 원본 크기가 표시됩니다."
     )
 
-    with gr.Blocks(title="Flux.2 Klein 9B Multi-Image Compositor") as interface:
-        gr.Markdown("# Flux.2 Klein 9B Multi-Image Compositor")
+    # Create Gradio interface
+    with gr.Blocks(
+        title="Flux.2 Klein 9B Image-to-Image Generator",
+    ) as interface:
+        gr.Markdown("# Flux.2 Klein 9B Image-to-Image Generator")
         gr.Markdown(
-            f"기본 이미지와 여러 참조 이미지를 합성하여 하나의 이미지를 생성합니다."
+            f"입력 이미지를 텍스트 프롬프트를 사용하여 편집합니다."
             f" (Device: **{DEVICE.upper()}**)"
         )
 
         with gr.Row():
-            # ── 왼쪽 컬럼: 모델 설정 + 이미지 입력 + 프롬프트 ──
+            # Left column: Model loading + Input image + Prompt sections
             with gr.Column(scale=1):
                 gr.Markdown("### 모델 설정")
                 device_selector = gr.Radio(
@@ -434,17 +401,18 @@ def main():
                     value=(
                         f"모델 로딩 완료! (Device: {DEVICE}, dtype: {DTYPE})"
                         if pipe is not None
-                        else "모델이 로드되지 않았습니다. 디바이스를 선택하고 '모델 로드' 버튼을 눌러주세요."
+                        else "모델이 로드되지 않았습니다."
+                        " 디바이스를 선택하고 '모델 로드' 버튼을 눌러주세요."
                     ),
                     interactive=False,
                 )
 
-                gr.Markdown("### 기본 이미지 (Base Image)")
-                base_image = gr.Image(
-                    label="기본 이미지 (합성의 베이스)",
+                gr.Markdown("### 입력 이미지")
+                input_image = gr.Image(
+                    label="입력 이미지 (업로드하면 출력 크기가 자동 설정됩니다)",
                     type="pil",
                     sources=["upload", "clipboard"],
-                    height=300,
+                    height=800,
                     value=_default_img,
                 )
                 image_info = gr.Textbox(
@@ -453,110 +421,98 @@ def main():
                     interactive=False,
                 )
 
-                gr.Markdown("### 참조 이미지들 (Reference Images) - 최대 4개")
-                with gr.Row():
-                    ref_image1 = gr.Image(
-                        label="참조 이미지 1",
-                        type="pil",
-                        sources=["upload", "clipboard"],
-                        height=200,
-                        value=_default_ref1,
-                    )
-                    ref_image2 = gr.Image(
-                        label="참조 이미지 2",
-                        type="pil",
-                        sources=["upload", "clipboard"],
-                        height=200,
-                        value=_default_ref2,
-                    )
-                with gr.Row():
-                    ref_image3 = gr.Image(
-                        label="참조 이미지 3",
-                        type="pil",
-                        sources=["upload", "clipboard"],
-                        height=200,
-                        value=_default_ref3,
-                    )
-                    ref_image4 = gr.Image(
-                        label="참조 이미지 4",
-                        type="pil",
-                        sources=["upload", "clipboard"],
-                        height=200,
-                        value=_default_ref4,
-                    )
-
                 gr.Markdown("### 프롬프트 구성")
                 prompt_quality = gr.Textbox(
                     label="1. 품질/해상도 (Quality & Resolution)",
                     value=DEFAULT_QUALITY,
                     lines=2,
                     placeholder="예: 4k, ultra-detailed, photorealistic",
-                    info="이미지의 품질, 해상도, 스타일 관련 키워드입니다.",
+                    info="이미지의 품질, 해상도, 스타일 관련 키워드입니다. 프롬프트 맨 앞에 위치합니다.",
                 )
                 prompt_anatomy = gr.Textbox(
                     label="2. 신체 구조 (Anatomy)",
                     value=DEFAULT_ANATOMY,
                     lines=2,
-                    placeholder="예: perfect anatomy, well-proportioned",
+                    placeholder="예: bad anatomy, extra limbs, deformed body",
+                    info="신체 구조 관련 제외 요소들입니다. 최종 프롬프트에 포함됩니다.",
                 )
                 prompt_subject = gr.Textbox(
                     label="3. 주제 (Subject)",
                     value=DEFAULT_SUBJECT,
                     lines=2,
-                    placeholder="예: A seamlessly blended composite of multiple scenes",
-                    info="합성된 이미지의 최종 주제를 설명합니다.",
+                    placeholder="예: A stunning photorealistic image of a young woman on a beach",
+                    info="이미지의 주제와 전체적인 장면을 한 문장으로 설명합니다.",
                 )
                 prompt_appearance = gr.Textbox(
                     label="4. 외모 (Appearance)",
                     value=DEFAULT_APPEARANCE,
                     lines=2,
-                    placeholder="예: vibrant colors, detailed textures",
+                    placeholder="예: A beautiful woman with long strawberry blonde hair",
+                    info="인물의 외모, 얼굴, 머리카락, 나이 등을 설명합니다.",
                 )
                 prompt_pose = gr.Textbox(
                     label="5. 포즈/구도 (Pose & Composition)",
                     value=DEFAULT_POSE,
                     lines=2,
-                    placeholder="예: harmonious composition, balanced layout",
+                    placeholder="예: seated on rooftop ledge, gazing into distance",
+                    info="자세, 시선 방향, 카메라 앵글, 촬영 구도를 설명합니다.",
                 )
                 prompt_outfit = gr.Textbox(
-                    label="6. 의상/요소 (Outfit / Elements)",
+                    label="6. 의상 (Outfit)",
                     value=DEFAULT_OUTFIT,
                     lines=2,
-                    placeholder="예: stylistic elements from all reference images",
+                    placeholder="예: deep burgundy satin slip dress",
+                    info="의상, 액세서리, 착용한 아이템을 설명합니다.",
                 )
                 prompt_setting = gr.Textbox(
                     label="7. 배경/장소 (Setting & Background)",
                     value=DEFAULT_SETTING,
                     lines=2,
-                    placeholder="예: unified background, coherent environment",
+                    placeholder="예: rooftop terrace at twilight, city skyline",
+                    info="배경, 장소, 환경, 계절 등을 설명합니다.",
                 )
                 prompt_lighting = gr.Textbox(
                     label="8. 조명 (Lighting)",
                     value=DEFAULT_LIGHTING,
                     lines=2,
-                    placeholder="예: consistent lighting, natural illumination",
+                    placeholder="예: golden hour, city glow, cinematic rim light",
+                    info="조명 조건, 빛의 방향, 분위기를 설명합니다.",
                 )
                 prompt_camera = gr.Textbox(
                     label="9. 카메라 설정 (Camera Settings)",
                     value=DEFAULT_CAMERA,
                     lines=2,
-                    placeholder="예: 85mm lens, shallow depth of field",
+                    placeholder="예: Sony A7R V, 85mm f/1.8, ISO 400",
+                    info="카메라 기종, 렌즈, ISO, 셔터 스피드, 조리개, 피사계 심도 등을 설명합니다.",
                 )
                 with gr.Accordion("최종 프롬프트 (Combined Prompt)", open=False):
                     combined_prompt = gr.Textbox(
                         label="최종 프롬프트",
                         value=combine_prompt_sections(
-                            DEFAULT_QUALITY, DEFAULT_ANATOMY, DEFAULT_SUBJECT,
-                            DEFAULT_APPEARANCE, DEFAULT_POSE, DEFAULT_OUTFIT,
-                            DEFAULT_SETTING, DEFAULT_LIGHTING, DEFAULT_CAMERA,
+                            DEFAULT_QUALITY,
+                            DEFAULT_ANATOMY,
+                            DEFAULT_SUBJECT,
+                            DEFAULT_APPEARANCE,
+                            DEFAULT_POSE,
+                            DEFAULT_OUTFIT,
+                            DEFAULT_SETTING,
+                            DEFAULT_LIGHTING,
+                            DEFAULT_CAMERA,
                         ),
                         lines=4,
                         interactive=False,
                         info="위 섹션들이 자동으로 합쳐진 최종 프롬프트입니다.",
                     )
                 prompt_sections = [
-                    prompt_quality, prompt_anatomy, prompt_subject, prompt_appearance,
-                    prompt_pose, prompt_outfit, prompt_setting, prompt_lighting, prompt_camera,
+                    prompt_quality,
+                    prompt_anatomy,
+                    prompt_subject,
+                    prompt_appearance,
+                    prompt_pose,
+                    prompt_outfit,
+                    prompt_setting,
+                    prompt_lighting,
+                    prompt_camera,
                 ]
                 for section in prompt_sections:
                     section.change(
@@ -565,84 +521,103 @@ def main():
                         outputs=[combined_prompt],
                     )
 
-            # ── 오른쪽 컬럼: 파라미터 + 생성 ──
+            # Right column: Parameters + Generate + Output
             with gr.Column(scale=1):
                 gr.Markdown("### 파라미터 설정")
                 with gr.Row():
                     width = gr.Slider(
                         label="출력 너비",
-                        minimum=256, maximum=2048, step=64,
+                        minimum=256,
+                        maximum=2048,
+                        step=64,
                         value=_init_w,
-                        info="출력 이미지 너비 (픽셀).",
+                        info="출력 이미지 너비 (픽셀). 입력 이미지 업로드 시 자동 설정되며 수동 변경도 가능합니다.",
                     )
                     height = gr.Slider(
                         label="출력 높이",
-                        minimum=256, maximum=2048, step=64,
+                        minimum=256,
+                        maximum=2048,
+                        step=64,
                         value=_init_h,
-                        info="출력 이미지 높이 (픽셀).",
+                        info="출력 이미지 높이 (픽셀). 입력 이미지 업로드 시 자동 설정되며 수동 변경도 가능합니다.",
                     )
 
                 with gr.Row():
                     guidance_scale = gr.Slider(
-                        label="Guidance Scale",
-                        minimum=0.0, maximum=1.0, step=0.05, value=1.0,
-                        info="Klein 권장: 1.0. 낮으면 창의적, 높으면 정확.",
+                        label="Guidance Scale (프롬프트 강도)",
+                        minimum=0.0,
+                        maximum=1.0,
+                        step=0.05,
+                        value=1.0,
+                        info="Klein 권장: 1.0. 낮으면 창의적, 높으면 정확. 권장 범위: 0.5-1.0",
                     )
                     num_inference_steps = gr.Slider(
                         label="추론 스텝",
-                        minimum=1, maximum=20, step=1, value=4,
-                        info="Klein 권장: 4. 권장 범위: 4-12",
+                        minimum=1,
+                        maximum=20,
+                        step=1,
+                        value=4,
+                        info="Klein 권장: 4. 높으면 품질 향상, 시간 증가. 권장: 4-12",
                     )
 
                 with gr.Row():
                     seed = gr.Number(
-                        label="시드", value=42, precision=0,
+                        label="시드",
+                        value=42,
+                        precision=0,
                         info="난수 시드. 같은 값이면 같은 결과.",
                     )
                     image_format = gr.Radio(
                         label="이미지 포맷",
-                        choices=["JPEG", "PNG"], value="JPEG",
-                        info="JPEG: quality 100, PNG: 무손실.",
+                        choices=["JPEG", "PNG"],
+                        value="JPEG",
+                        info="JPEG: quality 100 (4:4:4), PNG: 무손실 압축.",
                     )
 
+                gr.Markdown("---")
                 gr.Markdown("### 이미지 생성")
                 generate_btn = gr.Button("이미지 생성", variant="primary", size="lg")
                 output_image = gr.Image(label="생성된 이미지", height=800)
                 output_message = gr.Textbox(label="상태", interactive=False)
 
-        # ── 이벤트 연결 ──
-        base_image.change(
-            fn=on_base_image_upload,
-            inputs=[base_image],
+        # 입력 이미지 업로드 시 출력 크기 자동 설정 (수동 변경도 가능)
+        input_image.change(
+            fn=on_image_upload,
+            inputs=[input_image],
             outputs=[width, height, image_info],
         )
 
+        # Load model when button is clicked
         load_model_btn.click(
             fn=load_model,
             inputs=[device_selector],
             outputs=[device_status],
         )
 
+        # Auto-load model when device is changed
         device_selector.change(
             fn=load_model,
             inputs=[device_selector],
             outputs=[device_status],
         )
 
-        # 이미지 생성 버튼
+        # Connect the generate button to the function
         generate_btn.click(
             fn=generate_image,
             inputs=[
-                base_image, ref_image1, ref_image2, ref_image3, ref_image4,
-                prompt_quality, prompt_anatomy, prompt_subject, prompt_appearance,
-                prompt_pose, prompt_outfit, prompt_setting, prompt_lighting, prompt_camera,
-                width, height,
-                guidance_scale, num_inference_steps,
-                seed, image_format,
+                input_image,
+                combined_prompt,
+                width,
+                height,
+                guidance_scale,
+                num_inference_steps,
+                seed,
+                image_format,
             ],
             outputs=[output_image, output_message],
         )
 
+    # Launch the interface
     interface.launch(
         inbrowser=True,
         allowed_paths=[os.path.dirname(os.path.abspath(__file__))],
