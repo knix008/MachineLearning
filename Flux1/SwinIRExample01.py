@@ -12,12 +12,17 @@ from tqdm import tqdm
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=UserWarning)
 
-# Run "git clone https://github.com/JingyunLiang/SwinIR" 
-# Run "pip install timm" 
+# Run "git clone https://github.com/JingyunLiang/SwinIR"
+# Run "pip install timm"
 
 from SwinIR.models.network_swinir import SwinIR as net
 
 MODEL_PATH = "weights/003_realSR_BSRGAN_DFO_s64w8_SwinIR-M_x4_GAN.pth"
+
+TILE_SIZE = 512       # 타일 크기 (픽셀). 큰 이미지 처리 시 메모리 절약
+TILE_OVERLAP = 32     # 타일 간 겹침 (경계 아티팩트 방지)
+USE_FP16 = True       # CUDA에서 FP16으로 약 2배 속도 향상
+USE_COMPILE = False   # torch.compile 사용 (PyTorch 2.0+, 첫 실행 느림)
 
 # 결과 저장 디렉토리 (스크립트와 동일한 디렉토리)
 OUTPUT_DIR = Path(__file__).parent
@@ -49,6 +54,7 @@ def load_model(device):
 # 디바이스 자동 감지
 if torch.cuda.is_available():
     device = torch.device("cuda")
+    torch.backends.cudnn.benchmark = True
 elif torch.backends.mps.is_available():
     device = torch.device("mps")
 else:
@@ -57,14 +63,75 @@ else:
 print(f"Using device: {device}")
 model = load_model(device)
 
+# FP16 변환 (CUDA 전용)
+if USE_FP16 and device.type == "cuda":
+    model = model.half()
+    print("FP16 모드 활성화")
+
+# torch.compile (PyTorch 2.0+, 첫 실행 시 컴파일 시간 소요)
+if USE_COMPILE and hasattr(torch, "compile"):
+    model = torch.compile(model)
+    print("torch.compile 활성화")
+
 
 def preprocess(img_pil):
     img = np.array(img_pil)
     img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
     img = img.astype(np.float32) / 255.0
     img = np.transpose(img, (2, 0, 1))
-    img = torch.from_numpy(img).unsqueeze(0).to(device)
-    return img
+    t = torch.from_numpy(img).unsqueeze(0).to(device)
+    if USE_FP16 and device.type == "cuda":
+        t = t.half()
+    return t
+
+
+def tile_upscale(img_lq, scale=4, window_size=8, progress_callback=None):
+    """큰 이미지를 타일로 나눠 처리 (메모리 절약 + 대형 이미지 지원)"""
+    b, c, h, w = img_lq.shape
+    stride = TILE_SIZE - TILE_OVERLAP
+
+    y_steps = list(range(0, h, stride))
+    x_steps = list(range(0, w, stride))
+    total_tiles = len(y_steps) * len(x_steps)
+
+    h_out, w_out = h * scale, w * scale
+    output = torch.zeros(b, c, h_out, w_out, dtype=img_lq.dtype, device=device)
+    count = torch.zeros(b, 1, h_out, w_out, dtype=img_lq.dtype, device=device)
+
+    tile_idx = 0
+    with tqdm(total=total_tiles, desc="타일 업스케일", unit="tile") as pbar:
+        for y in y_steps:
+            for x in x_steps:
+                y_end = min(y + TILE_SIZE, h)
+                x_end = min(x + TILE_SIZE, w)
+                y_start = y_end - TILE_SIZE if y_end - y < TILE_SIZE else y
+                x_start = x_end - TILE_SIZE if x_end - x < TILE_SIZE else x
+
+                patch = img_lq[:, :, y_start:y_end, x_start:x_end]
+                _, _, ph, pw = patch.shape
+                h_pad = (ph // window_size + 1) * window_size - ph if ph % window_size != 0 else 0
+                w_pad = (pw // window_size + 1) * window_size - pw if pw % window_size != 0 else 0
+                if h_pad > 0 or w_pad > 0:
+                    patch = torch.cat([patch, torch.flip(patch, [2])], 2)[:, :, :ph + h_pad, :]
+                    patch = torch.cat([patch, torch.flip(patch, [3])], 3)[:, :, :, :pw + w_pad]
+
+                with torch.autocast(device_type=device.type, enabled=(USE_FP16 and device.type == "cuda")):
+                    out_patch = model(patch)
+                out_patch = out_patch[..., :ph * scale, :pw * scale]
+
+                oy, ox = y_start * scale, x_start * scale
+                output[:, :, oy:oy + ph * scale, ox:ox + pw * scale] += out_patch
+                count[:, :, oy:oy + ph * scale, ox:ox + pw * scale] += 1
+
+                tile_idx += 1
+                pbar.update(1)
+                if progress_callback:
+                    # Gradio 진행률: 0.2(시작) ~ 0.85(완료) 구간에서 타일 비율 반영
+                    progress_callback(0.2 + 0.65 * tile_idx / total_tiles,
+                                      desc=f"타일 업스케일 중... ({tile_idx}/{total_tiles})")
+
+    output /= count
+    return output
 
 
 def postprocess(output):
@@ -86,22 +153,31 @@ def swinir_upscale(img_pil, output_format, gr_progress=gr.Progress()):
     img_lq = preprocess(img_pil)
 
     gr_progress(0.2, desc="업스케일 중...")
-    with tqdm(total=1, desc="SwinIR Upscaling", unit="image") as pbar:
-        with torch.no_grad():
-            _, _, h_old, w_old = img_lq.size()
-            window_size = 8
-            scale = 4
-            h_pad = (h_old // window_size + 1) * window_size - h_old
-            w_pad = (w_old // window_size + 1) * window_size - w_old
-            img_lq = torch.cat([img_lq, torch.flip(img_lq, [2])], 2)[
-                :, :, : h_old + h_pad, :
-            ]
-            img_lq = torch.cat([img_lq, torch.flip(img_lq, [3])], 3)[
-                :, :, :, : w_old + w_pad
-            ]
-            output = model(img_lq)
-            output = output[..., : h_old * scale, : w_old * scale]
-        pbar.update(1)
+    _, _, h_old, w_old = img_lq.size()
+    scale = 4
+    window_size = 8
+
+    with torch.no_grad():
+        if h_old <= TILE_SIZE and w_old <= TILE_SIZE:
+            # 작은 이미지: 한 번에 처리
+            h_pad = (h_old // window_size + 1) * window_size - h_old if h_old % window_size != 0 else 0
+            w_pad = (w_old // window_size + 1) * window_size - w_old if w_old % window_size != 0 else 0
+            img_padded = img_lq
+            if h_pad > 0:
+                img_padded = torch.cat([img_padded, torch.flip(img_padded, [2])], 2)[:, :, :h_old + h_pad, :]
+            if w_pad > 0:
+                img_padded = torch.cat([img_padded, torch.flip(img_padded, [3])], 3)[:, :, :, :w_old + w_pad]
+            with tqdm(total=1, desc="업스케일 중", unit="image") as pbar:
+                with torch.autocast(device_type=device.type, enabled=(USE_FP16 and device.type == "cuda")):
+                    output = model(img_padded)
+                pbar.update(1)
+            output = output[..., :h_old * scale, :w_old * scale]
+            gr_progress(0.85, desc="후처리 중...")
+        else:
+            # 큰 이미지: 타일 처리
+            print(f"큰 이미지 ({w_old}x{h_old}) → 타일 처리 (tile={TILE_SIZE}, overlap={TILE_OVERLAP})")
+            output = tile_upscale(img_lq, scale=scale, window_size=window_size,
+                                  progress_callback=gr_progress)
 
     gr_progress(0.85, desc="후처리 중...")
     print("후처리 중...")

@@ -15,15 +15,15 @@ import gradio as gr
 # https://prompthero.com/prompt/3f947ff3483-flux-flux-11-pro-an-13-yes-ol-mad-string-bikini-wicked-string-bikini-next-level-string-bikini-insane-string-bikini-wet-body-moisture
 
 # Default values for each prompt section
-DEFAULT_QUALITY = ""
-DEFAULT_SUBJECT = "The image is a portrait of a young Korean woman."
+DEFAULT_QUALITY = "Photorealistic, ultra-detailed, 4k, high resolution"
+DEFAULT_SUBJECT = "A photorealistic full-body portrait of a young Korean woman lying on a beach sunbed in a sexy pose, photographed from directly above."
 DEFAULT_BODY = ""
-DEFAULT_APPEARANCE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face."
-DEFAULT_OUTFIT = "Wearing a simple light blue bikini. The bikini top is a minimalist triangle top with thin string ties. The bottoms are a classic thong style with thin side strings, offering minimal rear coverage. Simple, clean design in a solid color that complements her look. She is also wearing white fishnet stockings with a white lace trim band at the top and a small decorative blue ribbon at the center of the lace band."
-DEFAULT_POSE = "Lying on a sunbed in a confident and sexy pose. Body stretched out, slightly arched back, one leg bent and the other extended. One hand resting on her thigh, the other raised and touching her hair. Head turned slightly to one side with a relaxed, alluring expression."
-DEFAULT_SETTING = "Sunny tropical beach setting. White sandy beach with a stylish wooden sunbed. Clear turquoise ocean and blue sky visible in the background. Bright blue sky with a few soft white clouds. Warm golden sunlight. Lush palm trees visible in the background."
-DEFAULT_LIGHTING = "Bright, natural outdoor sunlight. Warm golden hour lighting casting soft shadows across her body. Sun glistening on the sand and skin. Natural skin illumination with gentle highlights. Cheerful and vibrant atmosphere."
-DEFAULT_CAMERA = "Overhead bird's eye view shot, camera positioned directly above looking straight down. Full body visible from head to toe. Top-down perspective."
+DEFAULT_APPEARANCE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses. Her expression is relaxed and alluring, gazing directly up at the camera. She has long, straight jet-black hair with thick, straight-cut bangs spread loosely around her head on the sunbed."
+DEFAULT_OUTFIT = "Wearing a simple light blue bikini. The bikini top is a minimalist triangle top with thin string ties. The bottoms are a classic thong style with thin side strings, offering minimal rear coverage. She is also wearing white fishnet stockings with a white lace trim band at the top and a small decorative blue ribbon at the center of the lace band."
+DEFAULT_POSE = "Lying on a sunbed in a confident and sexy pose. Entire body fully stretched out and visible from head to toe. Slightly arched back, one leg straight and the other gently bent. One arm resting at her side, the other raised above her head. Gazing directly up at the camera with a relaxed, alluring expression."
+DEFAULT_SETTING = "Sunny tropical beach. White sandy beach with a stylish wooden sunbed. Clear turquoise ocean and blue sky visible in the background. Lush palm trees in the background."
+DEFAULT_LIGHTING = "Bright natural outdoor sunlight. Warm golden hour lighting casting soft shadows. Sun glistening on the skin and fishnet stocking texture. Cheerful and vibrant atmosphere."
+DEFAULT_CAMERA = "Overhead bird's eye view shot, camera positioned directly above looking straight down. Entire body fully visible from head to toe in frame. Top-down perspective."
 
 
 def normalize_spacing(text: str) -> str:
