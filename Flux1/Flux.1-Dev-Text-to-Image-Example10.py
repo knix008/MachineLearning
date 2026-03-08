@@ -13,22 +13,19 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-DEFAULT_QUALITY = ""
-DEFAULT_BODY = ""
+DEFAULT_SUBJECT = "The image is a high-quality, photorealistic full body photography of a young Korean woman with a soft, idol aesthetic."
 
-DEFAULT_SUBJECT = ""
+DEFAULT_APPEARANCE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is soft and gentle, with a subtle, warm smile on her lips, looking directly at the camera. She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face."
 
-DEFAULT_POSE = "A young beautiful Korean woman is standing at the shoreline. Her body is turned away from the camera so that her back and hips are prominently visible. Back and buttocks clearly visible and central to the composition. She is gracefully turning her head and neck back over her shoulder toward the camera, her face angled three-quarters toward the viewer with a calm, confident expression. All arms are slightly bent and all hands are naturally down nearby her thighs. Back arched slightly, pushing the hips and buttocks outward to emphasize their shape. Waist nipped in, creating a strong and sensual hourglass S-curve. Hips tilted to one side, accentuating the curve of her waist and the roundness of her hips. One leg straight and grounded, the other leg slightly bent at the knee."
+DEFAULT_POSE = "Standing gracefully on a sunlit beach, facing directly forward. Her entire body is upright and squared to the camera in a full frontal position, with no rotation or turn. Both feet planted on the sand, standing naturally with weight evenly distributed. Both shoulders squared to the camera, one shoulder gently bare. Her head is straight, chin slightly lowered, gazing directly into the camera with a serene, composed expression. One hand rests lightly on her waist, the other hangs naturally at her side. Her posture radiates poise, refinement, and effortless grace."
 
-DEFAULT_APPEARANCE = "She has fair porcelain skin and long wavy jet-black hair that flows down her back to her waist, with thick blunt-cut bangs. Her hair is gently lifted and carried by the sea breeze, strands flowing softly to one side in a natural, windswept motion."
+DEFAULT_OUTFIT = "Flat beach sandals. Loose white see-through sheer chiffon dress with thin spaghetti shoulder straps, nearly transparent fabric billowing in the breeze. Underneath the dress, a tiny black bra and a tiny black thong panty are clearly and visibly seen through the sheer white fabric. Cinched at the waist with a loose knot. Lateral side slit to mid-thigh, parting to reveal bare outer thigh. Wide-brimmed white beach cap."
 
-DEFAULT_OUTFIT = "Wearing a minimalist light sky-blue bikini. The top is a delicate triangle top tied back. The bottoms are a low-rise simple thong style."
+DEFAULT_SETTING = "Bright tropical beach at peak noon. Dazzling white sand, crystal-clear turquoise waves, blazing white-blue sky flooded with natural light."
 
-DEFAULT_SETTING = "Tropical beach at midday. Brilliant white sand, crystal-clear turquoise waves at her feet. Intensely bright overexposed sky. High-key ethereal background flooded with pure white light."
+DEFAULT_LIGHTING = "High-key midday sunlight. Bright natural light from above, sun-drenched highlights on her bare shoulder and white dress, background blown out to brilliant white-gold."
 
-DEFAULT_LIGHTING = "High-key lighting, overexposed bright white background. Powerful spotlight on her face with sharp highlights on cheekbones, nose, and lips. Rim lighting outlining her silhouette. Background blown out to pure white."
-
-DEFAULT_CAMERA = "Three-quarter rear angle, back and hips as focal point, face turned over shoulder toward camera. 85mm telephoto, medium distance, shallow depth of field, bright background bokeh."
+DEFAULT_CAMERA = "85mm telephoto, medium distance, straight-on eye-level shot. Tack-sharp focus on subject, soft bokeh background."
 
 
 def normalize_spacing(text: str) -> str:
@@ -41,10 +38,10 @@ def normalize_spacing(text: str) -> str:
 
 
 def combine_prompt_sections(
-    quality, body, subject, pose, appearance, outfit, setting, lighting, camera
+    subject, appearance, pose, outfit, setting, lighting, camera
 ):
     """Combine separate prompt sections into one final prompt string."""
-    sections = [quality, body, subject, pose, appearance, outfit, setting, lighting, camera]
+    sections = [subject, appearance, pose, outfit, setting, lighting, camera]
     # Filter out empty sections and join with ', '
     combined = ", ".join(normalize_spacing(s) for s in sections if s and s.strip())
     return combined
@@ -433,64 +430,50 @@ def main():
                 )
 
                 gr.Markdown("### 프롬프트 구성")
-                prompt_quality = gr.Textbox(
-                    label="1. 품질/해상도 (Quality & Resolution)",
-                    value=DEFAULT_QUALITY,
-                    lines=2,
-                    placeholder="예: 4k, ultra-detailed, photorealistic",
-                    info="이미지의 품질, 해상도, 스타일 관련 키워드입니다. 프롬프트 맨 앞에 위치합니다.",
-                )
-                prompt_body = gr.Textbox(
-                    label="2. 바디 (Body)",
-                    value=DEFAULT_BODY,
-                    lines=2,
-                    placeholder="예: athletic body, slim waist, toned legs",
-                    info="체형, 체격, 신체 특징 등을 설명합니다.",
-                )
                 prompt_subject = gr.Textbox(
-                    label="3. 주제/대상 (Subject)",
+                    label="1. 주제/대상 (Subject)",
                     value=DEFAULT_SUBJECT,
                     lines=2,
                     placeholder="예: 1girl, young woman, a cat",
                     info="이미지의 주된 주제나 대상을 설명합니다.",
                 )
-                prompt_pose = gr.Textbox(
-                    label="4. 포즈/구도 (Pose & Composition)",
-                    value=DEFAULT_POSE,
-                    lines=2,
-                    placeholder="예: seated on rooftop ledge, gazing into distance",
-                    info="자세, 시선 방향, 카메라 앵글, 촬영 구도를 설명합니다.",
-                )
                 prompt_appearance = gr.Textbox(
-                    label="5. 외모 (Appearance)",
+                    label="2. 외모 (Appearance)",
                     value=DEFAULT_APPEARANCE,
                     lines=2,
                     placeholder="예: A beautiful Russian girl with long strawberry blonde hair",
                     info="인물의 외모, 얼굴, 머리카락, 나이 등을 설명합니다.",
                 )
+                prompt_pose = gr.Textbox(
+                    label="3. 포즈/구도 (Pose & Composition)",
+                    value=DEFAULT_POSE,
+                    lines=2,
+                    placeholder="예: seated on rooftop ledge, gazing into distance",
+                    info="자세, 시선 방향, 카메라 앵글, 촬영 구도를 설명합니다.",
+                )
                 prompt_outfit = gr.Textbox(
-                    label="6. 의상 (Outfit)",
+                    label="4. 의상과 신발 (Outfit & Footwear)",
                     value=DEFAULT_OUTFIT,
                     lines=2,
                     placeholder="예: deep burgundy satin slip dress",
                     info="의상, 액세서리, 착용한 아이템을 설명합니다.",
                 )
                 prompt_setting = gr.Textbox(
-                    label="7. 배경/장소 (Setting & Background)",
+                    label="5. 배경/장소 (Setting & Background)",
                     value=DEFAULT_SETTING,
                     lines=2,
                     placeholder="예: rooftop terrace at twilight, city skyline",
                     info="배경, 장소, 환경, 계절 등을 설명합니다.",
                 )
                 prompt_lighting = gr.Textbox(
-                    label="8. 조명 (Lighting)",
+                    label="6. 조명 (Lighting)",
                     value=DEFAULT_LIGHTING,
                     lines=2,
                     placeholder="예: golden hour, city glow, cinematic rim light",
                     info="조명 조건, 빛의 방향, 분위기를 설명합니다.",
                 )
                 prompt_camera = gr.Textbox(
-                    label="9. 카메라 설정 (Camera Settings)",
+                    label="7. 카메라 설정 (Camera Settings)",
                     value=DEFAULT_CAMERA,
                     lines=2,
                     placeholder="예: Sony A7R V, 85mm f/1.8, ISO 400",
@@ -500,11 +483,9 @@ def main():
                     combined_prompt = gr.Textbox(
                         label="최종 프롬프트",
                         value=combine_prompt_sections(
-                            DEFAULT_QUALITY,
-                            DEFAULT_BODY,
                             DEFAULT_SUBJECT,
-                            DEFAULT_POSE,
                             DEFAULT_APPEARANCE,
+                            DEFAULT_POSE,
                             DEFAULT_OUTFIT,
                             DEFAULT_SETTING,
                             DEFAULT_LIGHTING,
@@ -515,11 +496,9 @@ def main():
                         info="위 섹션들이 자동으로 합쳐진 최종 프롬프트입니다.",
                     )
                 prompt_sections = [
-                    prompt_quality,
-                    prompt_body,
                     prompt_subject,
-                    prompt_pose,
                     prompt_appearance,
+                    prompt_pose,
                     prompt_outfit,
                     prompt_setting,
                     prompt_lighting,
