@@ -247,6 +247,25 @@ def generate_image(
 
         progress(0.0, desc="이미지 생성 준비 중...")
 
+        # Count tokens to detect clipping
+        token_info = ""
+        try:
+            tokenizer = getattr(pipe, "tokenizer_2", None) or getattr(pipe, "tokenizer", None)
+            if tokenizer is not None:
+                max_len = tokenizer.model_max_length
+                raw_ids = tokenizer(prompt, truncation=False, return_tensors="pt")["input_ids"][0]
+                raw_token_count = len(raw_ids)
+                clipped = max(0, raw_token_count - max_len)
+                if clipped > 0:
+                    token_info = f"토큰: {raw_token_count}/{max_len} → {clipped}개 잘림!"
+                    print(f"⚠ {token_info}")
+                else:
+                    token_info = f"토큰: {raw_token_count}/{max_len} (잘림 없음)"
+                    print(token_info)
+        except Exception as e:
+            token_info = f"토큰 카운트 실패: {e}"
+            print(token_info)
+
         # Setup generator (MPS doesn't support Generator directly, use CPU)
         generator_device = "cpu" if DEVICE == "mps" else DEVICE
         generator = torch.Generator(device=generator_device).manual_seed(int(seed))
@@ -311,14 +330,14 @@ def generate_image(
             f"_gs{guidance_scale}_step{steps}_cfgnorm{cfg_normalization}_seed{int(seed)}.png"
         )
 
-        print(f"이미지 생성 완료! 소요 시간: {elapsed:.1f}초")
+        print(f"이미지 생성 완료! 소요 시간: {elapsed:.1f}초 | {token_info}")
         print(f"이미지가 저장되었습니다 : {filename}")
         image.save(filename)
 
         progress(1.0, desc="완료!")
         return (
             image,
-            f"✓ 완료! ({elapsed:.1f}초) | 저장됨: {filename}",
+            f"✓ 완료! ({elapsed:.1f}초) | {token_info} | 저장됨: {filename}",
         )
     except Exception as e:
         return None, f"✗ 오류 발생: {str(e)}"
@@ -516,7 +535,7 @@ def main():
                 gr.Markdown("---")
                 gr.Markdown("### 이미지 생성")
                 generate_btn = gr.Button("이미지 생성", variant="primary", size="lg")
-                output_image = gr.Image(label="생성된 이미지", height=700)
+                output_image = gr.Image(label="생성된 이미지", height=800)
                 output_message = gr.Textbox(label="상태", interactive=False)
 
         # Load model when button is clicked
