@@ -154,7 +154,7 @@ with gr.Blocks() as demo:
                 )
             run_btn = gr.Button("Upscale", variant="primary")
         with gr.Column():
-            output_image = gr.Image(type="pil", label="Upscaled Image")
+            output_image = gr.Image(type="pil", label="Upscaled Image", height=800)
             save_path_text = gr.Textbox(label="저장 경로", interactive=False)
     run_btn.click(upscale_image, inputs=[input_image, scale, max_batch_size, weight_type, seed, output_format], outputs=[output_image, save_path_text])
 
