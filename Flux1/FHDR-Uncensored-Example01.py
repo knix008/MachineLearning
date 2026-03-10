@@ -6,19 +6,18 @@ from datetime import datetime
 import os
 import gc
 import signal
-import sys
 import psutil
 import time
 import gradio as gr
 
 # Default values for each prompt section
-DEFAULT_SUBJECT = "A photorealistic, high-quality full body portrait of a young Korean woman with a soft, idol aesthetic."
+DEFAULT_SUBJECT = "A photorealistic, high-quality full body portrait of a young skinnyKorean woman with a soft, idol aesthetic."
 
 DEFAULT_APPEARANCE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, wavy jet-black hair with thick, straight-cut bangs (fringe) that frame her face."
 
-DEFAULT_POSE = "Lying gracefully in a bathtub, body fully submerged in clear water, arms resting gently along the sides of the tub. Head tilted slightly back, eyes closed or gazing upward. Relaxed and serene expression. Full body visible from above."
+DEFAULT_POSE = "Lying gracefully in a bathtub, body submerged in clear water, hips shifted slightly to one side accentuating a natural S-curve silhouette, legs slightly bent and tilted to the same side. One hand gently resting in her hair, the other hand naturally resting on her legs. Head tilted slightly back, relaxed and serene expression. Full body visible from above."
 
-DEFAULT_OUTFIT = "fully naked except for black high heels, no accessories, no jewelry, natural beauty. Natural pubic hair. Emphasize her flawless skin and natural form, wearing elegant black high-heeled shoes."
+DEFAULT_OUTFIT = "Fully naked, barefoot, no accessories, no jewelry, natural beauty. Natural pubic hair. Emphasize her flawless skin and natural form."
 
 DEFAULT_SETTING = "A luxurious modern bathroom with a freestanding white bathtub. Clean white tiles, soft ambient light, minimal decor. Clear water in the tub with subtle ripples. Elegant and serene atmosphere."
 
@@ -159,9 +158,7 @@ def cleanup():
 
 def signal_handler(_sig, _frame):
     """Handle keyboard interrupt signal."""
-    print("\n\n키보드 인터럽트 감지됨 (Ctrl+C)")
-    cleanup()
-    sys.exit(0)
+    raise KeyboardInterrupt
 
 
 # Register signal handler

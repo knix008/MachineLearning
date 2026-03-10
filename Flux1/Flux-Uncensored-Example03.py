@@ -7,7 +7,6 @@ from datetime import datetime
 import os
 import gc
 import signal
-import sys
 import psutil
 import time
 import gradio as gr
@@ -17,17 +16,17 @@ warnings.filterwarnings("ignore", message=".*No LoRA keys associated.*")
 # Default values for each prompt section
 DEFAULT_SUBJECT = "A photorealistic, high-quality full body portrait of a young skinny Korean woman with a soft, idol aesthetic."
 
-DEFAULT_APPEARANCE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face."
+DEFAULT_APPEARANCE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is soft and serene with a gentle subtle smile, looking directly at the camera. She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face."
 
-DEFAULT_POSE = "Standing in an elegant pose, body fully visible to the camera. Weight shifted slightly to one leg, creating a gentle S-curve. One hand gracefully raised, fingertips lightly touching her hair. The other hand resting softly beside her thigh. Poised and refined posture."
+DEFAULT_POSE = "Lying comfortably on her back in a bathtub, back flat against the bottom of the tub, legs naturally extended and relaxed. Abdomen and hips fully submerged under clear water. Chest and face above the water surface. Both arms lying naturally alongside her body, hands loosely open and relaxed, palms facing down. Head resting gently, face looking upward toward the camera. Completely relaxed and serene. Full body visible from above."
 
-DEFAULT_OUTFIT = "fully naked except for black high heels, no accessories, no jewelry, natural beauty. Natural pubic hair. Emphasize her flawless skin and natural form, wearing elegant black high-heeled shoes."
+DEFAULT_OUTFIT = "Fully naked, barefoot, no accessories, no jewelry, natural beauty. Natural pubic hair. Emphasize her flawless skin and natural form."
 
-DEFAULT_SETTING = "A bright indoor space with large windows, light-colored walls, and sunlight streaming in. Minimalist, modern, clean, and airy atmosphere. No bed, no furniture."
+DEFAULT_SETTING = "A luxurious modern bathroom with a freestanding white bathtub. Clean white tiles, soft ambient light, minimal decor. Clear water in the tub with subtle ripples. Elegant and serene atmosphere."
 
-DEFAULT_LIGHTING = "Bright natural daylight fills the room, soft and diffused, creating a clean and airy feeling. No harsh shadows, high-key lighting."
+DEFAULT_LIGHTING = "Soft overhead bathroom lighting, warm and gentle glow. Light reflecting off the water surface creating subtle shimmer. Even illumination with no harsh shadows."
 
-DEFAULT_CAMERA = ""
+DEFAULT_CAMERA = "camera positioned above chest level, angled downward at approximately 75 degrees, full body shot from above, 85mm portrait lens, tack-sharp focus on subject, water distortion on submerged areas. Photorealistic, gravure photography style, 8k resolution, masterpiece. Perfect anatomy, High-fidelity skin textures."
 
 DEFAULT_NEGATIVE_PROMPT = ""
 
@@ -162,9 +161,7 @@ def cleanup():
 
 def signal_handler(_sig, _frame):
     """Handle keyboard interrupt signal."""
-    print("\n\n키보드 인터럽트 감지됨 (Ctrl+C)")
-    cleanup()
-    sys.exit(0)
+    raise KeyboardInterrupt
 
 
 # Register signal handler
