@@ -1,4 +1,5 @@
 import re
+import warnings
 import torch
 import platform
 from diffusers import FluxPipeline
@@ -11,22 +12,24 @@ import psutil
 import time
 import gradio as gr
 
+warnings.filterwarnings("ignore", message=".*No LoRA keys associated.*")
+
 # Default values for each prompt section
-DEFAULT_SUBJECT = "A photorealistic, high-quality full body portrait of a young Korean woman with a soft, idol aesthetic."
+DEFAULT_SUBJECT = "A photorealistic, high-quality full body portrait of a young skinny Korean woman with a soft, idol aesthetic."
 
-DEFAULT_APPEARANCE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, wavy jet-black hair with thick, straight-cut bangs (fringe) that frame her face."
+DEFAULT_APPEARANCE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face."
 
-DEFAULT_POSE = "Lying gracefully in a bathtub, body fully submerged in clear water, arms resting gently along the sides of the tub. Head tilted slightly back, eyes closed or gazing upward. Relaxed and serene expression. Full body visible from above."
+DEFAULT_POSE = "Standing in an elegant pose, body fully visible to the camera. Weight shifted slightly to one leg, creating a gentle S-curve. One hand gracefully raised, fingertips lightly touching her hair. The other hand resting softly beside her thigh. Poised and refined posture."
 
 DEFAULT_OUTFIT = "fully naked except for black high heels, no accessories, no jewelry, natural beauty. Natural pubic hair. Emphasize her flawless skin and natural form, wearing elegant black high-heeled shoes."
 
-DEFAULT_SETTING = "A luxurious modern bathroom with a freestanding white bathtub. Clean white tiles, soft ambient light, minimal decor. Clear water in the tub with subtle ripples. Elegant and serene atmosphere."
+DEFAULT_SETTING = "A bright indoor space with large windows, light-colored walls, and sunlight streaming in. Minimalist, modern, clean, and airy atmosphere. No bed, no furniture."
 
-DEFAULT_LIGHTING = "Soft overhead bathroom lighting, warm and gentle glow. Light reflecting off the water surface creating subtle shimmer. Even illumination with no harsh shadows."
+DEFAULT_LIGHTING = "Bright natural daylight fills the room, soft and diffused, creating a clean and airy feeling. No harsh shadows, high-key lighting."
 
-DEFAULT_CAMERA = "overhead bird's-eye view, camera directly above looking straight down, full body shot from above, wide angle lens, tack-sharp focus on subject, water distortion on submerged areas. Photorealistic, gravure photography style, 8k resolution, masterpiece. Perfect anatomy, High-fidelity skin textures."
+DEFAULT_CAMERA = ""
 
-DEFAULT_NEGATIVE_PROMPT = "Extra hands, extra legs, extra feet, extra arms, waist pleats, paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), low resolution, normal quality,((monochrome)), ((grayscale)), skin spots, wet, acnes, skin blemishes, age spot, man boobs, backlight, mutated hands, (poorly drawn hands:1.33), blurry, (bad anatomy:1.21), (bad proportions:1.33), extra limbs, (disfigured:1.33), (more than 2 nipples:1.33), (missing arms:1.33), (extra legs:1.33), (fused fingers:1.61), (too many fingers:1.61), (unclear eyes:1.33), lowers, bad hands, missing fingers, extra digit, (futa:1.1), bad hands, missing fingers, (cleft chin:1.3)"
+DEFAULT_NEGATIVE_PROMPT = ""
 
 
 def normalize_spacing(text: str) -> str:
@@ -169,7 +172,7 @@ signal.signal(signal.SIGINT, signal_handler)
 
 
 def load_model(device_name=None):
-    """Load and initialize the FHDR Uncensored model (T5-XXL only, CLIP disabled)."""
+    """Load and initialize the FLUX.1-dev model with uncensored LoRA (T5-XXL only, CLIP disabled)."""
     global pipe, DEVICE, DTYPE
 
     if device_name is not None:
@@ -190,10 +193,13 @@ def load_model(device_name=None):
     print(f"모델 로딩 중... (Device: {DEVICE}, dtype: {DTYPE})")
     print("T5-XXL 텍스트 인코더만 사용합니다. (CLIP 비활성화)")
     pipe = FluxPipeline.from_pretrained(
-        "kpsss34/FHDR_Uncensored",
+        "black-forest-labs/FLUX.1-dev",
         text_encoder=None,
         tokenizer=None,
         torch_dtype=DTYPE,
+    )
+    pipe.load_lora_weights(
+        "enhanceaiteam/Flux-uncensored-v2", weight_name="lora.safetensors", prefix=None
     )
     pipe.to(DEVICE)
 
@@ -406,11 +412,11 @@ def main():
 
     # Create Gradio interface
     with gr.Blocks(
-        title="FHDR Uncensored Text-to-Image Generator",
+        title="Flux.1-dev Uncensored Text-to-Image Generator",
     ) as interface:
-        gr.Markdown("# FHDR Uncensored Text-to-Image Generator")
+        gr.Markdown("# Flux.1-dev Uncensored Text-to-Image Generator")
         gr.Markdown(
-            f"FHDR Uncensored 모델을 사용하여 텍스트에서 이미지를 생성합니다."
+            f"Uncensored LoRA를 사용하여 텍스트에서 이미지를 생성합니다."
             f" (Device: **{DEVICE.upper()}**)"
         )
 
@@ -593,6 +599,12 @@ def main():
                         step=64,
                         value=512,
                         info="텍스트 인코더 최대 길이. 긴 프롬프트는 높은 값 필요.",
+                    )
+                    image_format = gr.Radio(
+                        label="이미지 포맷",
+                        choices=["JPEG", "PNG"],
+                        value="JPEG",
+                        info="JPEG: quality 100 (4:4:4), PNG: 무손실 압축.",
                     )
 
                 gr.Markdown("---")

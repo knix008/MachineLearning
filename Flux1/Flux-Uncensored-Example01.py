@@ -17,17 +17,17 @@ warnings.filterwarnings("ignore", message=".*No LoRA keys associated.*")
 # Default values for each prompt section
 DEFAULT_SUBJECT = "A photorealistic, high-quality full body portrait of a young Korean woman with a soft, idol aesthetic."
 
-DEFAULT_APPEARANCE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, wavy jet-black hair with thick, straight-cut bangs (fringe) that frame her face."
+DEFAULT_APPEARANCE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face."
 
-DEFAULT_POSE = "Standing in a sexy, confident pose at the shoreline. One hand gently running through her hair, the other resting on her hip. Her body slightly arched, showing off her curves. Feet in the shallow water with waves lapping around her ankles."
+DEFAULT_POSE = "Lying gracefully in a bathtub, body fully submerged in clear water, arms resting gently along the sides of the tub. Head tilted slightly back, eyes closed or gazing upward. Relaxed and serene expression. Full body visible from above."
 
-DEFAULT_OUTFIT = "fully naked, no clothing, no accessories, no jewelry, natural beauty. Emphasize her flawless skin and natural form without any coverings."
+DEFAULT_OUTFIT = "fully naked except for black high heels, no accessories, no jewelry, natural beauty. Natural pubic hair. Emphasize her flawless skin and natural form, wearing elegant black high-heeled shoes."
 
-DEFAULT_SETTING = "Tropical beach at golden hour. Pristine white sand, crystal-clear turquoise ocean water, gentle waves, lush palm trees softly blurred in the background."
+DEFAULT_SETTING = "A luxurious modern bathroom with a freestanding white bathtub. Clean white tiles, soft ambient light, minimal decor. Clear water in the tub with subtle ripples. Elegant and serene atmosphere."
 
-DEFAULT_LIGHTING = "Warm golden hour sunlight casting a soft glow on her skin. Glowing rim light from the setting sun behind her, creating a beautiful halo effect. Warm, sensual, cinematic atmosphere."
+DEFAULT_LIGHTING = "Soft overhead bathroom lighting, warm and gentle glow. Light reflecting off the water surface creating subtle shimmer. Even illumination with no harsh shadows."
 
-DEFAULT_CAMERA = "85mm portrait lens, full body shot, tack-sharp focus on subject, shallow depth of field with soft bokeh background. Photorealistic, gravure photography style, 8k resolution, masterpiece. Perfect anatomy, High-fidelity skin textures."
+DEFAULT_CAMERA = "overhead bird's-eye view, camera directly above looking straight down, full body shot from above, wide angle lens, tack-sharp focus on subject, water distortion on submerged areas. Photorealistic, gravure photography style, 8k resolution, masterpiece. Perfect anatomy, High-fidelity skin textures."
 
 DEFAULT_NEGATIVE_PROMPT = "Extra hands, extra legs, extra feet, extra arms, waist pleats, paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), low resolution, normal quality,((monochrome)), ((grayscale)), skin spots, wet, acnes, skin blemishes, age spot, man boobs, backlight, mutated hands, (poorly drawn hands:1.33), blurry, (bad anatomy:1.21), (bad proportions:1.33), extra limbs, (disfigured:1.33), (more than 2 nipples:1.33), (missing arms:1.33), (extra legs:1.33), (fused fingers:1.61), (too many fingers:1.61), (unclear eyes:1.33), lowers, bad hands, missing fingers, extra digit, (futa:1.1), bad hands, missing fingers, (cleft chin:1.3)"
 
@@ -492,6 +492,29 @@ def main():
                     placeholder="예: 85mm, photorealistic, boudoir, 8k, masterpiece",
                     info="카메라 설정, 렌즈, 화질, 스타일 키워드를 설명합니다.",
                 )
+                with gr.Row():
+                    width = gr.Slider(
+                        label="이미지 너비",
+                        minimum=256,
+                        maximum=2048,
+                        step=64,
+                        value=768,
+                        info="이미지 너비 (픽셀). 64의 배수.",
+                    )
+                    height = gr.Slider(
+                        label="이미지 높이",
+                        minimum=256,
+                        maximum=2048,
+                        step=64,
+                        value=1536,
+                        info="이미지 높이 (픽셀). 64의 배수.",
+                    )
+                    image_format = gr.Radio(
+                        label="이미지 포맷",
+                        choices=["JPEG", "PNG"],
+                        value="JPEG",
+                        info="JPEG: quality 100 (4:4:4), PNG: 무손실 압축.",
+                    )
                 with gr.Accordion("최종 프롬프트 (Combined Prompt)", open=False):
                     combined_prompt = gr.Textbox(
                         label="최종 프롬프트",
@@ -534,24 +557,6 @@ def main():
             # Right column: Parameters (top) + Image generation (bottom)
             with gr.Column(scale=1):
                 gr.Markdown("### 파라미터 설정")
-                with gr.Row():
-                    width = gr.Slider(
-                        label="이미지 너비",
-                        minimum=256,
-                        maximum=2048,
-                        step=64,
-                        value=768,
-                        info="이미지 너비 (픽셀). 64의 배수.",
-                    )
-                    height = gr.Slider(
-                        label="이미지 높이",
-                        minimum=256,
-                        maximum=2048,
-                        step=64,
-                        value=1536,
-                        info="이미지 높이 (픽셀). 64의 배수.",
-                    )
-
                 with gr.Row():
                     guidance_scale = gr.Slider(
                         label="Guidance Scale (프롬프트 강도)",
@@ -640,17 +645,22 @@ def main():
             outputs=[output_image, output_message],
         )
 
-    # Launch the interface
+    # Launch the interface in background thread so main thread can handle Ctrl+C
     interface.launch(
         inbrowser=True,
         js="document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();}})",
+        prevent_thread_lock=True,
+        show_error=True,
     )
+
+    print("Gradio 서버 실행 중... (종료하려면 Ctrl+C)")
+    while True:
+        time.sleep(1)
 
 
 if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        pass
-    finally:
+        print("\nKeyboardInterrupt detected. Exiting...")
         cleanup()
