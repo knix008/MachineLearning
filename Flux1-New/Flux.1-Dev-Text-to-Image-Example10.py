@@ -13,19 +13,19 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-DEFAULT_SUBJECT = "A high-quality photorealistic full body portrait of a stunning young beautiful skinny Korean woman walking on a luxurious resort beach."
+DEFAULT_SUBJECT = "A high-quality photorealistic full body portrait of a stunning young beautiful gorgeous Korean woman walking on a luxurious resort beach."
 
 DEFAULT_APPEARANCE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous wavy jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air with natural movement and body, full of life and dynamism."
 
 DEFAULT_POSE = "She is walking gracefully along the beach shoreline directly toward the camera, body fully facing forward. Full body shot. One leg stepping forward, torso and chest facing straight at the camera, hips swaying naturally with each stride. Both arms hanging naturally down at her sides, swinging loosely with the rhythm of walking. Head held high, lips slightly parted, gazing directly into the camera with a confident and alluring expression. Hair and outfit gently billowing and flowing in the sea breeze."
 
-DEFAULT_OUTFIT = "She is wearing a loose, flowy light blue one-piece dress with a deep side slit reaching up to one thigh, semi-sheer translucent fabric that subtly reveals the silhouette of her body beneath. Underneath the dress she is wearing a tiny white bra and tiny white panties, faintly visible through the sheer fabric. The side slit opens as she walks, revealing one bare thigh. Hem and fabric softly rippling and lifting in the sea breeze."
+DEFAULT_OUTFIT = "She is wearing a loose, flowy light blue one-piece dress with a deep side slit reaching up to one thigh, semi-sheer translucent fabric that subtly reveals the silhouette of her body beneath. The side slit opens as she walks, revealing one bare thigh. Hem and fabric softly rippling and lifting in the sea breeze."
 
 DEFAULT_SETTING = "Luxurious resort beach with white sand shoreline. Modern high-rise resort towers in the background skyline. Ocean waves at the shore. Sparkling ocean water in the background."
 
 DEFAULT_LIGHTING = "Bright natural sunlight, golden hour warm tones. Soft warm highlights on her skin. Cinematic warm beach lighting."
 
-DEFAULT_CAMERA = "Full body front-facing wide shot from a far distance, perfectly straight-on eye-level angle. 35mm wide-angle lens, subject small within the expansive beach environment, beach surroundings prominently visible. Resort buildings and ocean clearly visible in the background. Realistic lifestyle beach photography. 8k resolution, high-fidelity skin textures."
+DEFAULT_CAMERA = "Full body front-facing wide shot from a far distance, perfectly straight-on eye-level angle. 35mm wide-angle lens, subject small within the expansive beach environment, beach surroundings prominently visible. Resort buildings and ocean clearly visible in the background. Realistic lifestyle beach photography. 8k resolution, high-fidelity skin textures. Perfect anatomy. Ten fingers, ten toes."
 
 
 def normalize_spacing(text: str) -> str:
