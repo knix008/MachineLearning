@@ -19,7 +19,7 @@ DEFAULT_APPEARANCE = "She has a fair, clear complexion. She is wearing striking 
 
 DEFAULT_POSE = "She is walking gracefully along the beach shoreline directly toward the camera, body fully facing forward. Full body shot. One leg stepping forward, torso and chest facing straight at the camera, hips swaying naturally with each stride. Both arms hanging naturally down at her sides, swinging loosely with the rhythm of walking. Head held high, lips slightly parted, gazing directly into the camera with a confident and alluring expression. Hair and outfit gently billowing and flowing in the sea breeze."
 
-DEFAULT_OUTFIT = "She is wearing a loose, flowy light blue one-piece dress with a deep side slit reaching up to one thigh, semi-sheer translucent fabric that subtly reveals the silhouette of her body beneath. The side slit opens as she walks, revealing one bare thigh. Hem and fabric softly rippling and lifting in the sea breeze."
+DEFAULT_OUTFIT = "She is wearing a loose, flowy light blue one-piece dress with a deep side slit reaching up to one thigh, semi-sheer translucent fabric that subtly reveals the silhouette of her body beneath. Underneath the dress she is wearing a tiny white bra and tiny white panties, faintly visible through the sheer fabric. The side slit opens as she walks, revealing one bare thigh. Hem and fabric softly rippling and lifting in the sea breeze."
 
 DEFAULT_SETTING = "Luxurious resort beach with white sand shoreline. Modern high-rise resort towers in the background skyline. Ocean waves at the shore. Sparkling ocean water in the background."
 
