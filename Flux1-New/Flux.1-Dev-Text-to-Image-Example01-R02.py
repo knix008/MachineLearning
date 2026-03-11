@@ -12,22 +12,20 @@ import psutil
 import time
 import gradio as gr
 
-# https://prompthero.com/prompt/3395872f879-z-image-turbo-a-highly-detailed-photorealistic-cinematic-low-angle-medium-shot-of-a-stunning-young-east-asian-woman-posing-in-a-sun
-
 # Default values for each prompt section
-DEFAULT_SUBJECT = "An image of a stunning young beautiful skinny Korean woman posing in a sun-lit music practice room."
+DEFAULT_SUBJECT = "A photorealistic overhead top-down aerial view of a beautiful young skinny Korean woman lying in a bathtub, body fully submerged beneath water, face and neck visible above the water surface."
 
-DEFAULT_APPEARANCE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, gazing directly at the camera with no smile. She has long straight jet-black hair with thick straight-cut bangs framing her face."
+DEFAULT_APPEARANCE = "She has a fair, clear complexion and long, dark hair fanning out naturally in the water. Her expression is serene and relaxed, eyes gently open revealing striking bright blue contact lenses. Skin is visibly wet and glistening, water droplets on her face and neck, a moist sheen reflecting soft light across her damp dewy skin."
 
-DEFAULT_POSE = "Standing with legs slightly apart, natural and relaxed posture. One hand raised to the side of her head, fingers gently brushing and tucking her hair behind her ear. The other hand hanging naturally down beside her thigh. Soft, confident expression looking at the camera. Skin has a noticeable dewy sheen."
+DEFAULT_POSE = "She is lying in the bathtub with her entire body including chest fully submerged under clear transparent water. One hand is resting near her head, fingers gently and loosely gripping a few strands of her wet hair. Her other arm is naturally extended to the side, hand casually gripping the bathtub rim. Both legs are draped and resting over the far edge of the bathtub, calves and feet hanging outside."
 
-DEFAULT_OUTFIT = "Wearing a very short white crop short-sleeve t-shirt with 'I Love Seoul' printed on the front, cut extremely short to expose the navel and underboob. White string bikini bottoms with delicate side ties and a small ribbon bow at the center front."
+DEFAULT_OUTFIT = "Completely bare, body submerged beneath clear transparent bath water. Only the face, neck, and lower legs below the knee are above the water surface."
 
-DEFAULT_SETTING = "Music practice room with wooden accents. Black drum kit (snare drums, cymbals) partially visible on both sides, slightly out of focus. Large window with wooden frame and white curtains behind her."
+DEFAULT_SETTING = "White ceramic bathtub completely filled to the brim with warm clear transparent water. Scattered white foam bubbles on the surface. Vivid red rose petals, yellow rose petals, and white flower petals floating on the water surface around her body. Several lit candles of varying heights placed along the edges of the bathtub, warm flickering flames, melting wax. Soft romantic spa-like bathroom setting."
 
-DEFAULT_LIGHTING = "Bright natural daylight streaming in from the window behind her, creating a rim-light effect on her hair and shoulders. Soft fill light illuminating her torso and face. Warm backlighting atmosphere."
+DEFAULT_LIGHTING = "Soft intimate candlelight from multiple candles placed around the bathtub, warm amber glow washing over the scene, gentle flickering light creating a romantic and moody atmosphere, subtle steam rising from hot bath water, no harsh overhead light, low-key warm cinematic photography, 8k high detail."
 
-DEFAULT_CAMERA = "Low-angle medium shot from waist height looking up at the subject, emphasizing physique and dominance in the frame. 8k resolution, raw photo aesthetic, tack-sharp focus, cinematic photography style. Perfect anatomy, High-fidelity skin textures."
+DEFAULT_CAMERA = "Directly overhead top-down shot, perfectly perpendicular bird's-eye aerial angle looking straight down, 50mm lens, tack-sharp focus, professional photography, no tilt."
 
 def normalize_spacing(text: str) -> str:
     """Normalize whitespace around punctuation in a prompt string."""

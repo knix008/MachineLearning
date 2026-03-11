@@ -12,22 +12,20 @@ import psutil
 import time
 import gradio as gr
 
-# https://prompthero.com/prompt/3395872f879-z-image-turbo-a-highly-detailed-photorealistic-cinematic-low-angle-medium-shot-of-a-stunning-young-east-asian-woman-posing-in-a-sun
-
 # Default values for each prompt section
-DEFAULT_SUBJECT = "An image of a stunning young beautiful skinny Korean woman posing in a sun-lit music practice room."
+DEFAULT_SUBJECT = "A photorealistic overhead top-down aerial view of a beautiful young skinny Korean woman lying in a bathtub, body fully submerged beneath water, face and neck visible above the water surface."
 
-DEFAULT_APPEARANCE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, gazing directly at the camera with no smile. She has long straight jet-black hair with thick straight-cut bangs framing her face."
+DEFAULT_APPEARANCE = "She has a fair, clear complexion and long, dark hair fanning out naturally in the water. Her expression is serene and relaxed, eyes gently open revealing striking bright blue contact lenses. Skin is visibly wet and glistening, water droplets on her face and neck, a moist sheen reflecting soft light across her damp dewy skin."
 
-DEFAULT_POSE = "Standing with legs slightly apart, natural and relaxed posture. One hand raised to the side of her head, fingers gently brushing and tucking her hair behind her ear. The other hand hanging naturally down beside her thigh. Soft, confident expression looking at the camera. Skin has a noticeable dewy sheen."
+DEFAULT_POSE = "She is lying in the bathtub with her torso and hips fully submerged beneath murky opaque bath water, completely hidden and invisible beneath the surface. Both arms are raised above the water, hands and forearms clearly visible in the air. Her head and neck are fully above the water surface. Both legs are draped and resting over the far edge of the bathtub, calves and feet hanging outside above the waterline. Only head, arms below elbow, and lower legs are visible above water."
 
-DEFAULT_OUTFIT = "Wearing a very short white crop short-sleeve t-shirt with 'I Love Seoul' printed on the front, cut extremely short to expose the navel and underboob. White string bikini bottoms with delicate side ties and a small ribbon bow at the center front."
+DEFAULT_OUTFIT = "Completely bare, torso and hips entirely submerged and concealed beneath murky cloudy bath water. Only the head, neck, forearms, hands, calves, and feet are visible above the opaque water surface."
 
-DEFAULT_SETTING = "Music practice room with wooden accents. Black drum kit (snare drums, cymbals) partially visible on both sides, slightly out of focus. Large window with wooden frame and white curtains behind her."
+DEFAULT_SETTING = "White ceramic bathtub filled with warm murky opaque bath water, body beneath surface completely invisible. Thick white foam bubbles and froth covering most of the water surface. Red and white flower petals floating among the bubbles. Lit candles along the bathtub edges, warm flickering flames. Soft romantic spa-like bathroom."
 
-DEFAULT_LIGHTING = "Bright natural daylight streaming in from the window behind her, creating a rim-light effect on her hair and shoulders. Soft fill light illuminating her torso and face. Warm backlighting atmosphere."
+DEFAULT_LIGHTING = "Soft warm candlelight, romantic moody atmosphere, subtle steam, 8k high detail."
 
-DEFAULT_CAMERA = "Low-angle medium shot from waist height looking up at the subject, emphasizing physique and dominance in the frame. 8k resolution, raw photo aesthetic, tack-sharp focus, cinematic photography style. Perfect anatomy, High-fidelity skin textures."
+DEFAULT_CAMERA = "Overhead top-down bird's-eye view, perfectly perpendicular, tack-sharp focus, professional photography."
 
 def normalize_spacing(text: str) -> str:
     """Normalize whitespace around punctuation in a prompt string."""
