@@ -19,7 +19,7 @@ DEFAULT_APPEARANCE = "She has a fair, clear complexion and long, dark hair fanni
 
 DEFAULT_POSE = "She is lying in the bathtub with her entire body including chest fully submerged under clear transparent water. One hand is resting near her head, fingers gently and loosely gripping a few strands of her wet hair. Her other arm is naturally extended to the side, hand casually gripping the bathtub rim. Both legs are draped and resting over the far edge of the bathtub, calves and feet hanging outside."
 
-DEFAULT_OUTFIT = "Completely bare, body submerged beneath clear transparent bath water with scattered white foam bubbles floating on the surface. Chest and body faintly visible through the clear water. Only the face, neck, and lower legs below the knee are above the water surface."
+DEFAULT_OUTFIT = "Completely bare, body submerged beneath clear transparent bath water. Thick abundant white foam bubbles completely covering the entire area from chest down to the upper thighs, fully concealing the torso, abdomen, and groin without any gap. Nipples are fully covered and hidden by white foam bubbles and red rose petals floating directly over them. Only the face, neck, and lower legs below the knee are above the water surface."
 
 DEFAULT_SETTING = "White ceramic bathtub completely filled to the brim with warm clear transparent water, water nearly overflowing the edges, deep and abundant water fully covering the body. Scattered white foam bubbles on the surface. Multiple vivid red rose petals floating on the water surface around her body. Soft spa-like bathroom setting with warm ambient light reflected on the water surface."
 
