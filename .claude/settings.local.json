@@ -18,7 +18,8 @@
       "Bash(ls:*)",
       "Bash(where:*)",
       "Bash(conda env list:*)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(C:/Python312/python.exe -c \":*)"
     ]
   }
 }
