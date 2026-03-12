@@ -19,7 +19,7 @@ DEFAULT_APPEARANCE = "She has a fair, clear complexion. She is wearing striking 
 
 DEFAULT_POSE = "She is walking gracefully along the beach shoreline directly toward the camera, body fully facing forward. Full body shot. One leg stepping forward, torso and chest facing straight at the camera, hips swaying naturally with each stride. Both arms hanging naturally down at her sides, swinging loosely with the rhythm of walking. Head held high, lips slightly parted, gazing directly into the camera with a confident and alluring expression. Hair and outfit gently billowing and flowing in the sea breeze."
 
-DEFAULT_OUTFIT = "She is wearing a white short-sleeve fitted t-shirt with 'I Love Seoul' printed in bold text across the chest, cropped short enough to fully expose her bare midriff and belly. Underneath, she is wearing an extremely tiny white thong bikini bottom with no side ties or knots, just minimal fabric. The thong bikini bottom is fully visible below the cropped t-shirt hem."
+DEFAULT_OUTFIT = "She is wearing a white short-sleeve fitted t-shirt with 'I Love Seoul' printed in bold text across the chest, cropped extremely short to fully expose her lower chest and underboob, bare midriff and belly completely visible. Underneath, she is wearing an extremely tiny white thong bikini bottom with no side ties or knots, just minimal fabric. The thong bikini bottom is fully visible below the cropped t-shirt hem."
 
 DEFAULT_SETTING = "Luxurious resort beach with white sand shoreline. Modern high-rise resort towers in the background skyline. Ocean waves at the shore. Sparkling ocean water in the background."
 
