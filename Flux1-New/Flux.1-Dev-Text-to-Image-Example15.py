@@ -12,20 +12,22 @@ import psutil
 import time
 import gradio as gr
 
+#https://prompthero.com/prompt/ec9a1e84666-z-image-turbo-a-highly-detailed-photorealistic-cinematic-vertical-medium-full-shot-of-a-stunning-young-east-asian-woman-posing-in-a-moody
+
 # Default values for each prompt section
-DEFAULT_SUBJECT = "The image is a high-quality, photorealistic portrait of a young skinny Korean woman with a soft, idol aesthetic."
+DEFAULT_SUBJECT = "A  a full body portrait of a beautiful young skinny Korean woman."
 
-DEFAULT_APPEARANCE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous wavy jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air with natural movement and body, full of life and dynamism."
+DEFAULT_APPEARANCE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is soft and serene with a gentle, subtle closed-lip smile, lips lightly pressed together, not parted. She has long, straight jet-black hair."
 
-DEFAULT_POSE = "She is standing gracefully on the beach shoreline directly toward the camera, body fully facing forward. Full body shot. One leg stepping forward, torso and chest facing straight at the camera, hips swaying naturally with each stride. Both arms hanging naturally down at her sides, swinging loosely with the rhythm of walking. Head held high, lips slightly parted, gazing directly into the camera with a confident and alluring expression. Hair and outfit gently billowing and flowing in the sea breeze."
+DEFAULT_POSE = "She is standing with her body angled slightly toward the right, leaning gently forward. Her arms rest casually across her lower torso, with one hand softly gripping her other arm. She turns her head to look completely off-camera to her right with a serene, sultry, and distant gaze. Her relaxed, leaning posture beautifully highlights smooth bare shoulders, delicate collarbones, and an exceptionally full bust, creating a striking and sensuous silhouette."
 
-DEFAULT_OUTFIT = "She is wearing an extremely short white crop top underboob t-shirt with short sleeves, printed with the text 'I Love Seoul' in bold letters on the front. Underneath, she is wearing an ultra-minimal red bikini bottom with a tiny triangular fabric patch, fully revealing her hips and sides."
+DEFAULT_OUTFIT = "She is wearing a seductive, ethereal sheer black ensemble. Top: A translucent, sheer black long-sleeved button-up shirt worn styled completely off her shoulders, draping low to reveal a very deep plunge. The shirt features slightly flared cuffs and prominent silver, jeweled buttons. Underneath, she is wearing an extremely tiny black bra with minimal coverage and an extremely tiny black thong panty. Delicate sparkling rhinestone chain bra straps rest elegantly on her bare shoulders, catching the light. Bottoms: The sheer black shirt falls open over her hips, clearly revealing the tiny black panty underneath. Shoes: Sleek black stiletto high heels. Accessories: no heavy jewelry, allowing the prominent sparkling rhinestone shoulder straps to act as the primary accessory against her bare skin."
 
-DEFAULT_SETTING = "Luxurious resort beach with white sand shoreline. Modern high-rise resort towers in the background skyline. Ocean waves at the shore. Sparkling ocean water in the background."
+DEFAULT_SETTING = "Minimalist indoor boudoir. Background draped with floor-to-ceiling sheer off-white curtains."
 
-DEFAULT_LIGHTING = "Bright natural sunlight, golden hour warm tones. Soft warm highlights on her skin. Cinematic warm beach lighting."
+DEFAULT_LIGHTING = "Bright, evenly lit interior. Abundant soft natural light through sheer curtains floods the entire scene. Strong front fill light clearly illuminates the subject's face and full body with no dark shadows. Bright warm glow on skin. Face is brightly and evenly illuminated, clearly visible with no shadows obscuring facial features."
 
-DEFAULT_CAMERA = "Full body front-facing wide shot from a far distance, perfectly straight-on eye-level angle. 35mm wide-angle lens, subject small within the expansive beach environment, beach surroundings prominently visible. Resort buildings and ocean clearly visible in the background. Realistic lifestyle beach photography. 8k resolution, high-fidelity skin textures. Perfect anatomy. Ten fingers, ten toes."
+DEFAULT_CAMERA = "Slightly elevated, flattering eye-level angle. Vertical medium-full shot."
 
 
 def normalize_spacing(text: str) -> str:
