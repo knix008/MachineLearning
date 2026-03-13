@@ -15,7 +15,7 @@ import gradio as gr
 # https://prompthero.com/prompt/e7d662caaed-flux-flux-11-pro-radiant-figure-in-textured-setting-a-compelling-woman-is-depicted-against-a-clean-white-backdrop-her-curves-and-lines-outlined
 
 # Default values for each prompt section
-DEFAULT_SUBJECT = "A compelling Korean woman rendered with deliberate precision and creative expression, Frazetta-inspired artwork with intense and powerful allure, flowing lines and forms giving a feeling of delicate grace."
+DEFAULT_SUBJECT = "A compelling Korean woman rendered with deliberate precision and creative expression with intense and powerful allure, flowing lines and forms giving a feeling of delicate grace."
 
 DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious. Beautiful face with flowing hair, rendered with expressive strokes, light beige skin tones with deep umber shadows highlighting her features."
 
