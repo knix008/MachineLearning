@@ -12,7 +12,6 @@ import cv2
 import numpy as np
 import os
 import sys
-import signal
 import atexit
 import re
 from PIL import Image
@@ -40,17 +39,6 @@ def cleanup():
 atexit.register(cleanup)
 
 
-def signal_handler(sig, frame):
-    """Handle keyboard interrupt."""
-    print("\nKeyboard interrupt received...")
-    cleanup()
-    sys.exit(0)
-
-
-signal.signal(signal.SIGINT, signal_handler)
-signal.signal(signal.SIGTERM, signal_handler)
-
-
 def print_progress_bar(ratio, desc, start_time, end=False):
     """커맨드라인에 프로그레스 바를 출력합니다."""
     elapsed = time.time() - start_time
@@ -58,7 +46,7 @@ def print_progress_bar(ratio, desc, start_time, end=False):
     filled = int(bar_len * ratio)
     bar = "█" * filled + "░" * (bar_len - filled)
     line = f"\r  [{bar}] {ratio*100:.0f}% - {desc} ({elapsed:.1f}초 경과)"
-    sys.stdout.write(line)
+    sys.stdout.write(line.ljust(100))
     sys.stdout.flush()
     if end:
         sys.stdout.write("\n")
@@ -91,7 +79,7 @@ class ProgressCapture:
                 filled = int(bar_len * val)
                 bar = "█" * filled + "░" * (bar_len - filled)
                 self.original.write(
-                    f"\r  [{bar}] {val*100:.0f}% - {desc} ({elapsed:.1f}초 경과)"
+                    f"\r  [{bar}] {val*100:.0f}% - {desc} ({elapsed:.1f}초 경과)".ljust(100)
                 )
                 self.original.flush()
                 if current == total:
@@ -310,10 +298,4 @@ with gr.Blocks() as demo:
     )
 
 if __name__ == "__main__":
-    try:
-        demo.launch(share=False, inbrowser=True, max_file_size="50mb")
-    except KeyboardInterrupt:
-        print("\nKeyboard interrupt received...")
-    finally:
-        cleanup()
-        sys.exit(0)
+    demo.launch(share=False, inbrowser=True, max_file_size="50mb")
