@@ -15,9 +15,9 @@ import gradio as gr
 # https://prompthero.com/prompt/a6b645bba3e-flux-flux-11-pro-an-ultra-realistic-full-body-portrait-of-a-captivating-celestial-cartographer-woman-radiating-divine-knowledge-and-exploratory-zeal-with-a
 
 # Default values for each prompt section
-DEFAULT_SUBJECT = "A full-body portrait of a captivating celestial cartographer Korean woman with a soft idol aesthetic."
+DEFAULT_SUBJECT = "A full-body photography of a captivating celestial cartographer Korean woman with a soft idol aesthetic."
 
-DEFAULT_FACE = "She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous wavy jet-black hair."
+DEFAULT_FACE = "She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera."
 
 DEFAULT_POSE_HEAD = "Her long platinum hair is styled in a loose flowing braid adorned with delicate silver ornaments, crystal hairpins, and miniature celestial globes that capture the light of distant stars."
 
@@ -47,7 +47,7 @@ DEFAULT_SETTING = "A vivid combination of a celestial observatory and swirling a
 
 DEFAULT_LIGHTING = "Dramatic cinematic lighting casting soft shadows and ethereal highlights, accentuating the precise lines of her pose. V-Ray tracing, Unreal Engine 5 rendering quality, Substance Painter detailing, mixed-media digital painting."
 
-DEFAULT_CAMERA = "Full body composition, UHD resolution, 8k sharp focus, highly detailed skin and outfit textures. Perfect anatomy. Every element showcasing a powerful yet elegant cartographer blending celestial fantasy and futuristic exploration."
+DEFAULT_CAMERA = "Full body composition, UHD resolution, 8k sharp focus, highly detailed skin and outfit textures. Perfect anatomy."
 
 
 def normalize_spacing(text: str) -> str:
