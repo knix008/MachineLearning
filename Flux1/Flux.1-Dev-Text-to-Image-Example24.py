@@ -15,9 +15,9 @@ import gradio as gr
 # https://prompthero.com/prompt/89ae63d475d-flux-flux-11-pro-a-full-body-photo-shot-of-a-stunning-and-lethal-image-of-a-phantom-hunter-wearing-a-shimmering-spectral-suit
 
 # Default values for each prompt section
-DEFAULT_SUBJECT = "A full body photorealistic masterpiece portrait of a stunning and lethal phantom hunter woman, ethereal and deadly presence, 8k sharp focus quality, horror movie poster aesthetic."
+DEFAULT_SUBJECT = "A full body photorealistic masterpiece portrait of a stunning and lethal phantom hunter beautiful Korean woman with soft idol aesthetics, wearing a shimmering spectral suit, standing in a dark ethereal void environment."
 
-DEFAULT_FACE = "Beautiful perfect face with perfect symmetry. Mesmerizing light blue detailed perfect eyes glowing with spectral energy. Ethereal look, perfection, light blue bioluminescent glow emanating from her features. Intense and lethal expression gazing directly into the camera."
+DEFAULT_FACE = "She has a fair complexion with a naturally flushed rosy blush on her cheeks, soft pink tones warming her face. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous wavy jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air. Her face with perfect symmetry. Mesmerizing light blue detailed perfect eyes glowing with spectral energy. Ethereal look, perfection, light blue bioluminescent glow emanating from her features."
 
 DEFAULT_POSE_HEAD = "Head held high with a confident and lethal gaze, looking directly into the camera, commanding and otherworldly presence."
 
@@ -47,7 +47,7 @@ DEFAULT_SETTING = "Dark ethereal void environment with swirling ghostly mist and
 
 DEFAULT_LIGHTING = "Light blue bioluminescent lighting emanating from her suit and claws, casting an eerie glow. Dramatic rim lighting highlighting her silhouette against the dark background. Cinematic horror atmosphere."
 
-DEFAULT_CAMERA = "Full body front-facing shot, perfectly straight-on eye-level angle. 50mm cinematic lens, subject centered in frame. 8k resolution, high-fidelity skin and suit textures. Perfect anatomy. Sharp focus, highly detailed."
+DEFAULT_CAMERA = "Full body front-facing shot, perfectly straight-on eye-level angle. 50mm cinematic lens, subject centered in frame. Perfect anatomy."
 
 
 def normalize_spacing(text: str) -> str:
