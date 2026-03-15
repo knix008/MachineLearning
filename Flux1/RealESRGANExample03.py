@@ -131,7 +131,7 @@ def get_model():
     return model, model_path, dni_weight, device
 
 
-MAX_INPUT_SIZE = 2048
+MAX_INPUT_SIZE = 4096
 OUTPUT_DIR = Path(__file__).parent
 
 
@@ -162,6 +162,16 @@ def enhance_image(
     w, h = input_img.size
     if w > MAX_INPUT_SIZE or h > MAX_INPUT_SIZE:
         return None, f"Error: 입력 이미지 크기({w}×{h})가 최대 허용 크기({MAX_INPUT_SIZE}×{MAX_INPUT_SIZE})를 초과합니다."
+
+    # tile=0일 때 이미지 크기에 따라 자동으로 tile 값 조정
+    if tile == 0:
+        max_side = max(w, h)
+        if max_side > 2048:
+            tile = 1024
+        elif max_side > 1024:
+            tile = 512
+        if tile != 0:
+            print(f"[INFO] 입력 이미지 크기({w}×{h})에 따라 tile 크기를 자동으로 {tile}로 설정합니다.")
 
     start_time = time.time()
 
@@ -218,7 +228,8 @@ def enhance_image(
     ext_to_use = ext
     script_name = Path(__file__).stem
     now = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-    filename = f"{script_name}_{now}_x{upscale}.{ext_to_use}"
+    ow, oh = output.size
+    filename = f"{script_name}_{now}_x{upscale}_{ow}x{oh}.{ext_to_use}"
     save_path = OUTPUT_DIR / filename
     if ext_to_use == "jpg":
         output.convert("RGB").save(save_path, format="JPEG", quality=95)
@@ -232,13 +243,27 @@ def enhance_image(
     return output, f"완료! 처리 시간: {elapsed:.2f}초 | 저장: {save_path}"
 
 
+def auto_tile(img):
+    """이미지 크기에 따라 자동 tile 값을 반환합니다."""
+    if img is None:
+        return gr.update(value=0)
+    w, h = img.size
+    max_side = max(w, h)
+    if max_side > 2048:
+        return gr.update(value=1024)
+    elif max_side > 1024:
+        return gr.update(value=512)
+    else:
+        return gr.update(value=0)
+
+
 with gr.Blocks() as demo:
     gr.Markdown("# Real-ESRGAN 업스케일러 (Gradio 데모)")
     gr.Markdown(f"최대 입력 이미지 크기: **{MAX_INPUT_SIZE}×{MAX_INPUT_SIZE}px**")
     with gr.Row():
         with gr.Column():
             input_img = gr.Image(
-                label="입력 이미지 (업스케일할 원본, 최대 2048×2048)",
+                label=f"입력 이미지 (업스케일할 원본, 최대 {MAX_INPUT_SIZE}×{MAX_INPUT_SIZE})",
                 type="pil",
                 height=600,
             )
@@ -255,8 +280,8 @@ with gr.Blocks() as demo:
                 maximum=1024,
                 value=0,
                 step=4,
-                label="Tile 크기 ★0 권장 (메모리 부족시 분할 처리)",
-                info="0: 전체 이미지 한 번에 처리(권장). 메모리 부족 시 512 이상으로 설정. tile_pad의 최소 6배 이상 권장.",
+                label="Tile 크기 (이미지 업로드 시 자동 설정)",
+                info="0: 전체 이미지 한 번에 처리. 이미지 업로드 시 크기에 따라 자동 조정됩니다. tile_pad의 최소 6배 이상 권장.",
             )
             tile_pad = gr.Number(
                 minimum=0,
@@ -291,6 +316,8 @@ with gr.Blocks() as demo:
             )
             status = gr.Textbox(label="상태 메시지")
 
+    input_img.change(auto_tile, inputs=input_img, outputs=tile)
+
     btn.click(
         enhance_image,
         inputs=[input_img, upscale, tile, tile_pad, pre_pad, fp32, ext],
@@ -298,4 +325,8 @@ with gr.Blocks() as demo:
     )
 
 if __name__ == "__main__":
-    demo.launch(share=False, inbrowser=True, max_file_size="50mb")
+    try:
+        demo.launch(share=False, inbrowser=True, max_file_size="50mb")
+    except KeyboardInterrupt:
+        cleanup()
+        sys.exit(0)
