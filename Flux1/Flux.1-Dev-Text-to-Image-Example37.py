@@ -17,11 +17,11 @@ import gradio as gr
 # Default values for each prompt section
 DEFAULT_SUBJECT = "A photography of an alluring skinny Korean woman with a distinctive hourglass figure."
 
-DEFAULT_FACE = "She has a fair complexion with wet glistening skin, entire body surface visibly damp and shiny, water droplets on skin, strong specular highlights reflecting light across her face, neck, shoulders, and exposed torso. Striking bright blue contact lenses that contrast with her dark hair. She has long, straight jet-black hair. Her expression is soft and serene, eyes completely closed, lips lightly pressed together."
+DEFAULT_FACE = "She has a fair complexion with intensely wet glistening skin, entire body surface visibly soaked and shiny, heavy water droplets covering skin, strong specular highlights and bright light reflections across her face, neck, shoulders, and exposed torso, skin appearing luminous and reflective. Striking bright blue contact lenses that contrast with her dark hair. She has long, straight jet-black hair. Her expression is soft and serene, eyes completely closed, lips lightly pressed together."
 
-DEFAULT_POSE_HEAD = "Her hair completely soaked and drenched, strands heavily clinging to her face, neck, and shoulders, dripping with water."
+DEFAULT_POSE_HEAD = "Her hair completely soaked and drenched, strands heavily clinging to her face, neck, and shoulders, water dripping from hair tips."
 
-DEFAULT_POSE_BODY = "Body slightly turned to one side, with the face angled toward the camera. Entire body soaking wet, rivulets of water streaming down her skin, hourglass silhouette highlighted by her drenched glistening skin."
+DEFAULT_POSE_BODY = "Body slightly turned to one side, with the face angled toward the camera. Entire body drenched, continuous rivulets and streams of water flowing down from shoulders over chest, abdomen, hips, and legs, hourglass silhouette sharply highlighted by the intensely glistening wet skin with bright light reflections."
 
 DEFAULT_POSE_ARM = "Both arms relaxed and hanging naturally at her sides."
 
@@ -33,9 +33,9 @@ DEFAULT_POSE_FOOT = ""
 
 DEFAULT_HEADWEAR = ""
 
-DEFAULT_TOP = "Tiny light pink bikini top with minimal coverage, wet and clinging to her skin."
+DEFAULT_TOP = "Tiny black bikini top with minimal coverage, wet and clinging to her skin."
 
-DEFAULT_BOTTOM = "Tiny light pink bikini bottom with minimal coverage, wet and clinging, highlighting her figure."
+DEFAULT_BOTTOM = "Tiny black bikini bottom with minimal coverage, wet and clinging, highlighting her figure."
 
 DEFAULT_LEGWEAR = ""
 
@@ -45,9 +45,9 @@ DEFAULT_ARMWEAR = ""
 
 DEFAULT_SETTING = "Pool illuminated by soft warm lights reflecting the night sky, water splashing around her with droplets frozen mid-air, poolside adorned with lush greenery and subtle twinkling fairy lights, serene and magical summer night atmosphere."
 
-DEFAULT_LIGHTING = "Soft warm ambient pool lighting, night scene with gentle reflections on the water surface, creating an enchanting and alluring atmosphere."
+DEFAULT_LIGHTING = "Warm ambient pool lighting with strong specular highlights on wet skin, bright light reflections shimmering across her body, night scene with glowing reflections on the water surface, creating an enchanting and alluring atmosphere."
 
-DEFAULT_CAMERA = "Full body shot from a medium distance, showing the entire figure with some surrounding environment visible. Wide angle, high-speed shutter freezing water droplets mid-air, 8k high resolution, realistic skin tones and anatomy."
+DEFAULT_CAMERA = "Wide establishing shot from far away, showing the entire pool and surrounding environment with the woman as a small figure within the scene. Ultra-wide angle lens, 8k high resolution."
 
 
 def normalize_spacing(text: str) -> str:

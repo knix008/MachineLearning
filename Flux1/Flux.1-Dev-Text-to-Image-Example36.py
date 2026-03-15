@@ -25,7 +25,7 @@ DEFAULT_POSE_BODY = "Body slightly turned to one side, with the face angled towa
 
 DEFAULT_POSE_ARM = "Both arms relaxed and hanging naturally at her sides."
 
-DEFAULT_POSE_HAND = "Hands loosely relaxed at her sides, fingers naturally extended."
+DEFAULT_POSE_HAND = "Hands loosely relaxed at her sides, fingers naturally extended. Ten fingers visible."
 
 DEFAULT_POSE_LEG = ""
 
