@@ -12,43 +12,40 @@ import psutil
 import time
 import gradio as gr
 
-# https://prompthero.com/prompt/93e25829d6f-flux-flux1-dev-in-this-captivating-image-we-see-a-candid-photograph-of-an-alluring-woman-captured-in-a-34-shot-as-she
-
 # Default values for each prompt section
-DEFAULT_SUBJECT = "A photography of an alluring skinny Korean woman with soft idol aesthetics."
+DEFAULT_SUBJECT = "A photorealistic full body portrait of a beautiful young skinny Korean woman with a soft idol aesthetic, walking on a bright city street."
 
-DEFAULT_FACE = "Wearing striking blue contact lenses contrasting with her dark hair. A fair complexion with soaking wet glistening skin, rivulets of water streaming down her face, neck, and chest, entire body surface visibly drenched and shiny, water droplets catching and reflecting artificial poolside lights across her wet skin. She has long, wavy jet-black hair completely soaked and drenched, strands clinging to her face and neck, dripping with water. Innocent and curious expression, gazing directly at the camera."
+DEFAULT_FACE = "She has a fair, clear complexion. Wearing striking bright blue contact lenses contrasting with her dark hair. Long straight jet-black hair flowing naturally as she walks. Fresh and cheerful expression, soft natural smile, looking slightly toward the camera."
 
-DEFAULT_POSE_HEAD = "Soaking wet hair clinging to her face and neck, dripping with water."
+DEFAULT_POSE_HEAD = "Head upright, hair flowing naturally with motion as she walks."
 
-DEFAULT_POSE_BODY = "Contrapposto pose, weight on one leg, hip tilted to the side, body facing forward, soaking wet from head to toe, continuous rivulets of water flowing down her torso, waist, and hips, skin glistening with light reflections."
+DEFAULT_POSE_BODY = "Walking naturally along the street, mid-stride with one foot forward, body slightly angled toward the camera, posture upright and relaxed. Full body visible from head to toe."
 
-DEFAULT_POSE_ARM = "Both arms relaxed at her sides."
+DEFAULT_POSE_ARM = "One arm swinging naturally with her walking stride, the other arm raised slightly with hand gripping the backpack shoulder strap."
 
-DEFAULT_POSE_HAND = ""
+DEFAULT_POSE_HAND = "One hand casually gripping the shoulder strap of the backpack slung over that same shoulder."
 
-DEFAULT_POSE_LEG = "One leg bearing weight, opposite hip raised, legs slightly apart."
+DEFAULT_POSE_LEG = "Legs in natural walking stride, one foot forward, weight shifting naturally."
 
-DEFAULT_POSE_FOOT = "Both feet standing right at the very edge of the pool, toes at the pool rim, pool water immediately behind her heels."
+DEFAULT_POSE_FOOT = ""
 
 DEFAULT_HEADWEAR = ""
 
-DEFAULT_TOP = "Loose white pool coverup maxi dress, completely soaked, clinging to her body, fully see-through and transparent when wet. Underneath, an extremely tiny black bra clearly visible through the translucent wet fabric."
+DEFAULT_TOP = "Crisp white school uniform blouse, fitted and neat. Small red ribbon bow tie neatly tied at the collar."
 
-DEFAULT_BOTTOM = "The soaked white dress flowing down to her ankles, transparent when wet. Underneath, an extremely tiny black panty clearly visible through the drenched sheer white fabric."
+DEFAULT_BOTTOM = "Black short pleated school skirt. Stylish backpack casually slung over one shoulder."
 
-DEFAULT_LEGWEAR = ""
+DEFAULT_LEGWEAR = "White crew socks."
 
-DEFAULT_FOOTWEAR = ""
+DEFAULT_FOOTWEAR = "Black leather shoes."
 
 DEFAULT_ARMWEAR = ""
 
-DEFAULT_SETTING = "Standing right at the very edge of an outdoor swimming pool at night, toes at the pool rim with glowing pool water directly behind her, wet pool tiles underfoot, warm ambient poolside lights."
+DEFAULT_SETTING = "Bright sunny city street with shops and trees lining the sidewalk, clean pavement, soft shadows from trees, vibrant daytime urban atmosphere."
 
-DEFAULT_LIGHTING = "Warm poolside spotlights, strong specular highlights shimmering on her wet skin, soft blue glow from underwater pool lights behind her."
+DEFAULT_LIGHTING = "Bright natural sunlight, warm golden daylight, soft shadows, vibrant and cheerful daytime atmosphere."
 
-DEFAULT_CAMERA = "Full-body shot, high-speed shutter freezing water droplets mid-air, sharp focus on subject with softly blurred background, realistic skin tones. Perfect anatomy."
-
+DEFAULT_CAMERA = "85mm portrait lens, eye level full body shot, tack-sharp focus on subject, shallow depth of field with soft bokeh background. Photorealistic, fashion photography style, 8k resolution, masterpiece. Perfect anatomy, High-fidelity skin textures."
 
 def normalize_spacing(text: str) -> str:
     """Normalize whitespace around punctuation in a prompt string."""
@@ -89,21 +86,6 @@ def get_device_and_dtype():
         device = "cpu"
         dtype = torch.float32
     return device, dtype
-
-
-def get_device_label(device: str) -> str:
-    """Return a device label including GPU model name, e.g. 'RTX4070TI-VRAM16'."""
-    if device == "cuda" and torch.cuda.is_available():
-        raw = torch.cuda.get_device_name(0)
-        # Remove vendor prefixes (NVIDIA, AMD, Intel) and normalize
-        name = re.sub(r"(?i)\b(NVIDIA|GeForce|AMD|Intel)\b", "", raw)
-        name = re.sub(r"[^A-Za-z0-9]", "", name).upper()
-        vram_gb = round(torch.cuda.get_device_properties(0).total_memory / (1024 ** 3))
-        return f"{name}-VRAM{vram_gb}"
-    elif device == "mps":
-        return "MPS"
-    else:
-        return "CPU"
 
 
 # Global variables
@@ -311,6 +293,10 @@ def generate_image(
 
         progress(0.0, desc="프롬프트 인코딩 중...")
         print("프롬프트 인코딩 중...")
+        print("=" * 60)
+        print("[입력 프롬프트]")
+        print(prompt)
+        print("=" * 60)
 
         # Setup generator (MPS doesn't support Generator directly, use CPU)
         generator_device = "cpu" if DEVICE == "mps" else DEVICE
@@ -333,13 +319,16 @@ def generate_image(
         raw_token_count = len(raw_ids)
         clipped = max(0, raw_token_count - max_len)
         if clipped > 0:
-            print(f"T5 토큰 수: {raw_token_count} / {max_len} → {clipped}개 잘림!")
+            print(f"✗ T5 토큰 수: {raw_token_count} / {max_len} → {clipped}개 잘림!")
             truncated_text = pipe.tokenizer_2.decode(
                 raw_ids[max_len:], skip_special_tokens=True
             )
-            print(f"[잘린 텍스트]: {truncated_text}")
+            print("-" * 60)
+            print("✗ [잘린 텍스트]")
+            print(truncated_text)
+            print("-" * 60)
         else:
-            print(f"T5 토큰 수: {raw_token_count} / {max_len} (잘림 없음)")
+            print(f"✓ T5 토큰 수: {raw_token_count} / {max_len} (잘림 없음)")
 
         with torch.inference_mode():
             prompt_embeds = pipe.text_encoder_2(
@@ -405,9 +394,8 @@ def generate_image(
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         script_name = os.path.splitext(os.path.basename(__file__))[0]
         ext = "jpg" if image_format == "JPEG" else "png"
-        device_label = get_device_label(DEVICE)
         filename = (
-            f"{script_name}_{timestamp}_{device_label}_{width}x{height}"
+            f"{script_name}_{timestamp}_{DEVICE.upper()}_{width}x{height}"
             f"_gs{guidance_scale}_step{steps}_seed{int(seed)}"
             f"_str{strength}_msl{int(max_sequence_length)}.{ext}"
         )
