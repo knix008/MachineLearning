@@ -17,19 +17,19 @@ import gradio as gr
 # Default values for each prompt section
 DEFAULT_SUBJECT = "A photography of an alluring skinny Korean woman with a distinctive hourglass figure."
 
-DEFAULT_FACE = "She has a fair complexion with wet glistening skin, entire body surface visibly damp and shiny, water droplets covering her face and neck, strong specular highlights reflecting sunlight across her wet skin. Striking bright blue contact lenses that contrast with her dark hair. She has long, straight jet-black hair completely soaked and drenched, strands clinging to her face and neck, dripping with water. Her expression is confident and serene, eyes open and gazing directly at the camera, lips softly parted in a gentle smile."
+DEFAULT_FACE = "She has a fair complexion with wet glistening skin, entire body surface visibly damp and shiny, water droplets covering her face and neck, strong specular highlights reflecting artificial poolside lights across her wet skin. Striking bright blue contact lenses that contrast with her dark hair. She has long, straight jet-black hair completely soaked and drenched, strands clinging to her face and neck, dripping with water. Her expression is confident and serene, eyes open and gazing directly at the camera, lips softly parted in a gentle smile."
 
 DEFAULT_POSE_HEAD = "Hair completely soaked and drenched, heavy wet strands clinging to her face, neck, and shoulders, water visibly dripping from her hair tips."
 
-DEFAULT_POSE_BODY = "Standing upright just after stepping out of the pool, body fully facing forward toward the camera, entire body soaking wet from head to toe, rivulets of water streaming down her skin, hourglass silhouette highlighted by her drenched glistening wet skin."
+DEFAULT_POSE_BODY = "Standing in a natural contrapposto pose just after stepping out of the pool, weight shifted onto one leg causing a subtle hip tilt to the side, body fully facing forward toward the camera, entire body soaking wet from head to toe, rivulets of water streaming down her skin, hourglass silhouette accentuated by the hip shift and her drenched glistening wet skin."
 
-DEFAULT_POSE_ARM = "Both arms relaxed and hanging naturally at her sides."
+DEFAULT_POSE_ARM = "Both arms relaxed and hanging naturally at her sides, slightly away from her body."
 
 DEFAULT_POSE_HAND = "Hands loosely resting at her sides in a natural relaxed position."
 
-DEFAULT_POSE_LEG = ""
+DEFAULT_POSE_LEG = "Weight shifted onto one leg, opposite hip raised slightly, creating a natural and elegant contrapposto stance, legs slightly apart."
 
-DEFAULT_POSE_FOOT = ""
+DEFAULT_POSE_FOOT = "One foot bearing full weight planted firmly, opposite foot slightly relieved with toes lightly touching the wet pool tiles."
 
 DEFAULT_HEADWEAR = ""
 
@@ -43,9 +43,9 @@ DEFAULT_FOOTWEAR = ""
 
 DEFAULT_ARMWEAR = ""
 
-DEFAULT_SETTING = "Just stepped out of an outdoor swimming pool, standing at the pool edge with wet pool tiles beneath her feet, water dripping from her body forming puddles on the tiles, clear blue pool water visible behind her, lush tropical greenery and palm trees in the background, bright sunny summer day atmosphere."
+DEFAULT_SETTING = "Just stepped out of an outdoor swimming pool at night, standing at the pool edge with wet pool tiles beneath her feet, water dripping from her body forming puddles on the tiles, illuminated pool water glowing behind her with underwater lights, poolside adorned with warm ambient lights and subtle twinkling fairy lights, serene and magical summer night atmosphere."
 
-DEFAULT_LIGHTING = "Bright natural sunlight creating strong specular highlights on her wet glistening skin, water droplets sparkling in the sunlight, clear blue sky, vibrant and cheerful daytime atmosphere."
+DEFAULT_LIGHTING = "Dramatic night lighting with warm poolside spotlights and ambient lights illuminating her wet glistening skin, strong specular highlights and shimmering reflections across her entire wet body surface, underwater pool lights casting a soft blue glow from behind, water droplets sparkling brilliantly under artificial light, creating a dazzling alluring nighttime atmosphere."
 
 DEFAULT_CAMERA = "Full-body shot, high-speed shutter freezing water droplets mid-air, sharp focus on subject with softly blurred background, 8k high resolution, realistic skin tones and anatomy."
 
