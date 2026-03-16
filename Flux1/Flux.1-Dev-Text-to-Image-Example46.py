@@ -15,13 +15,13 @@ import gradio as gr
 # https://prompthero.com/prompt/93e25829d6f-flux-flux1-dev-in-this-captivating-image-we-see-a-candid-photograph-of-an-alluring-woman-captured-in-a-34-shot-as-she
 
 # Default values for each prompt section
-DEFAULT_SUBJECT = "A photography of an alluring skinny Korean woman."
+DEFAULT_SUBJECT = "A photography of an alluring skinny Korean woman with a distinctive hourglass figure."
 
-DEFAULT_FACE = "Wearing striking blue contact lenses. A fair complexion with completely drenched glistening skin, heavy rivulets of water streaming down her face, neck, chest, and entire body, every surface of her skin visibly soaked and dripping, water droplets densely covering her skin and catching artificial poolside lights. Long, wavy jet-black hair utterly soaked and waterlogged, thick heavy wet strands plastered across her forehead, face, neck, and shoulders, water dripping continuously from her hair ends. Her expression is confident and serene, gazing directly at the camera, lips softly parted in a gentle smile."
+DEFAULT_FACE = "She has a fair complexion with soaking wet glistening skin, rivulets of water streaming down her face, neck, and chest, entire body surface visibly drenched and shiny, water droplets catching and reflecting artificial poolside lights across her wet skin. She wears striking bright blue contact lenses that contrast with her dark hair. She has long, wavy jet-black hair completely soaked and drenched, strands clinging to her face and neck, dripping with water. Her expression is confident and serene, eyes open and gazing directly at the camera, lips softly parted in a gentle smile."
 
-DEFAULT_POSE_HEAD = "Hair completely waterlogged and plastered to her face, neck, and shoulders, water streaming down from her drenched hair."
+DEFAULT_POSE_HEAD = "Soaking wet hair clinging to her face and neck, dripping with water."
 
-DEFAULT_POSE_BODY = "Contrapposto pose, weight on one leg, hip tilted to the side, body facing forward, entire body utterly soaked and drenched from head to toe, heavy rivulets of water streaming continuously down her neck, chest, torso, waist, hips, and legs, every inch of skin glistening and dripping wet."
+DEFAULT_POSE_BODY = "Contrapposto pose, weight on one leg, hip tilted to the side, body facing forward, soaking wet from head to toe, continuous rivulets of water flowing down her torso, waist, and hips, skin glistening with light reflections."
 
 DEFAULT_POSE_ARM = "Both arms relaxed at her sides."
 
@@ -33,21 +33,21 @@ DEFAULT_POSE_FOOT = "Both feet standing right at the very edge of the pool, toes
 
 DEFAULT_HEADWEAR = ""
 
-DEFAULT_TOP = "Extremely tiny dark blue string bikini top with minimal coverage, wet and clinging tightly to her body."
+DEFAULT_TOP = "Extremely tiny black string bra with minimal coverage, completely soaked and clinging tightly to her body, visible beneath her outer dress."
 
-DEFAULT_BOTTOM = "Extremely tiny dark blue string thong bottom, completely soaked and clinging tightly to her body."
+DEFAULT_BOTTOM = "Extremely tiny black string thong, completely soaked and clinging tightly to her body, faintly visible beneath her soaked outer dress."
 
-DEFAULT_LEGWEAR = ""
+DEFAULT_LEGWEAR = "Thin white mini dress worn over her underwear, completely soaked and drenched, fabric clinging tightly to every curve of her body, sheer and translucent when wet revealing her black underwear beneath, hem reaching mid-thigh."
 
 DEFAULT_FOOTWEAR = ""
 
 DEFAULT_ARMWEAR = ""
 
-DEFAULT_SETTING = "Standing right at the very edge of an outdoor swimming pool at night, toes at the pool rim with glowing pool water directly behind her, wet pool tiles underfoot, warm ambient poolside lights."
+DEFAULT_SETTING = "Standing right at the very edge of an outdoor swimming pool at night, toes at the pool rim with glowing pool water directly behind her, wet pool tiles underfoot, warm ambient poolside lights, serene summer night atmosphere."
 
 DEFAULT_LIGHTING = "Warm poolside spotlights, strong specular highlights shimmering on her wet skin, soft blue glow from underwater pool lights behind her."
 
-DEFAULT_CAMERA = "Full-body shot, high-speed shutter freezing water droplets mid-air, sharp focus on subject with softly blurred background, 8k high resolution, realistic skin tones. Perfect anatomy."
+DEFAULT_CAMERA = "Full-body shot, high-speed shutter freezing water droplets mid-air, sharp focus on subject with softly blurred background, 8k high resolution, realistic skin tones and perfect anatomy."
 
 
 def normalize_spacing(text: str) -> str:
