@@ -19,13 +19,13 @@ DEFAULT_FACE = "She has a fair, clear complexion. Wearing striking bright blue c
 
 DEFAULT_POSE_HEAD = "Head held upright with elegant posture, hair draping naturally over shoulders."
 
-DEFAULT_POSE_BODY = "Standing in a confident model pose, body slightly turned at a three-quarter angle toward the camera, weight shifted onto one leg, posture tall and elegant. Full body visible from head to toe."
+DEFAULT_POSE_BODY = "Standing in a confident model pose, body facing directly forward toward the camera, posture tall and elegant. Full body visible from head to toe."
 
 DEFAULT_POSE_ARM = "One arm raised slightly with hand gripping the backpack shoulder strap near the chest, the other arm resting naturally at her side."
 
 DEFAULT_POSE_HAND = "One hand casually gripping the shoulder strap of the backpack slung over that same shoulder, fingers wrapped around the strap naturally."
 
-DEFAULT_POSE_LEG = "Standing with one leg slightly in front of the other, weight shifted to one side in a relaxed model stance."
+DEFAULT_POSE_LEG = "Both legs straight and together, standing upright with perfect posture, long straight legs fully extended, elegant and tall stance."
 
 DEFAULT_POSE_FOOT = ""
 
