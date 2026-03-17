@@ -470,7 +470,7 @@ def main():
                     label="기본 이미지 (합성의 베이스)",
                     type="pil",
                     sources=["upload", "clipboard"],
-                    height=300,
+                    height=600,
                     value=_default_img,
                 )
                 image_info = gr.Textbox(
