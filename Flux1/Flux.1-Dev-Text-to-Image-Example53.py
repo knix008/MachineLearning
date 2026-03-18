@@ -3,7 +3,6 @@ import torch
 import platform
 from diffusers import FluxPipeline
 from datetime import datetime
-from PIL import Image
 import os
 import gc
 import signal
@@ -21,17 +20,17 @@ DEFAULT_POSE_HEAD = "Head held upright with elegant posture, hair draping natura
 
 DEFAULT_POSE_BODY = "Standing in a confident model pose, body facing directly forward toward the camera, posture tall and elegant. Full body visible from head to toe."
 
-DEFAULT_POSE_ARM = "One arm resting naturally at her side, the other arm slightly bent with hand resting lightly on her hip."
+DEFAULT_POSE_ARM = "Both arms hanging loosely and naturally at her sides, elbows slightly relaxed, not stiff or posed."
 
-DEFAULT_POSE_HAND = "One hand resting lightly on her hip, fingers relaxed and graceful."
+DEFAULT_POSE_HAND = "Both hands hanging loosely at her sides, fingers naturally slightly curled and relaxed, casual and unstaged."
 
-DEFAULT_POSE_LEG = "Both legs straight and together, standing upright with perfect posture, long straight legs fully extended, elegant and tall stance."
+DEFAULT_POSE_LEG = "Standing naturally with a slight relaxed weight shift to one leg, knees soft and not locked, casual and comfortable stance."
 
-DEFAULT_POSE_FOOT = "White sneakers planted firmly on the pavement, standing still."
+DEFAULT_POSE_FOOT = "Feet slightly apart in a natural relaxed standing position, white sneakers resting casually on the pavement."
 
 DEFAULT_HEADWEAR = ""
 
-DEFAULT_TOP = "Loose flowing light sky blue dress, soft and airy pale blue fabric, loose and relaxed above the waist, gently cinched only at the waist with a subtle fitted band accentuating the slim waistline, loose and flowing below the waist, breezy and lightweight."
+DEFAULT_TOP = "Loose flowing light sky blue dress, soft and airy pale blue fabric, loose and relaxed above the waist, gently cinched only at the waist with a subtle fitted band accentuating the slim waistline, loose and flowing below the waist, a front slit starting from the mid-thigh slightly revealing the legs, breezy and lightweight."
 
 DEFAULT_BOTTOM = ""
 
@@ -287,12 +286,12 @@ def generate_image(
 
     if pipe is None:
         return (
-            None,
+            [],
             "오류: 모델이 로드되지 않았습니다. '모델 로드' 버튼을 먼저 눌러주세요.",
         )
 
     if not prompt:
-        return None, "오류: 프롬프트를 입력해주세요."
+        return [], "오류: 프롬프트를 입력해주세요."
 
     try:
         steps = int(num_inference_steps)
@@ -460,11 +459,11 @@ def generate_image(
 
         progress(1.0, desc="완료!")
         return (
-            images[0],
+            images,
             f"✓ 완료! ({elapsed:.1f}초) | {token_info} | {saved_info}",
         )
     except Exception as e:
-        return None, f"✗ 오류 발생: {str(e)}"
+        return [], f"✗ 오류 발생: {str(e)}"
 
 
 def main():
@@ -731,7 +730,7 @@ def main():
                         minimum=10,
                         maximum=50,
                         step=1,
-                        value=25,
+                        value=28,
                         info="생성 단계 수. 높으면 품질 향상, 시간 증가. 권장: 20-30",
                     )
 
@@ -780,7 +779,7 @@ def main():
                 gr.Markdown("---")
                 gr.Markdown("### 이미지 생성")
                 generate_btn = gr.Button("이미지 생성", variant="primary", size="lg")
-                output_image = gr.Image(label="생성된 이미지", height=700)
+                output_image = gr.Gallery(label="생성된 이미지", columns=[1, 1, 2, 2], rows=[1, 1, 1, 2], height=700, object_fit="contain", allow_preview=True)
                 output_message = gr.Textbox(label="상태", interactive=False)
 
         # Load model when button is clicked
