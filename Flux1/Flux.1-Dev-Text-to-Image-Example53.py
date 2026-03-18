@@ -73,8 +73,8 @@ def combine_prompt_sections(
         headwear, top, bottom, legwear, footwear, armwear,
         setting, lighting, camera,
     ]
-    # Filter out empty sections and join with ', '
-    combined = ", ".join(normalize_spacing(s) for s in sections if s and s.strip())
+    # Filter out empty sections, strip trailing punctuation, and join with ', '
+    combined = ", ".join(normalize_spacing(s).rstrip(".,;") for s in sections if s and s.strip())
     return combined
 
 
@@ -300,7 +300,7 @@ def generate_image(
 
         # Append positive prompt to main prompt
         if positive_prompt and positive_prompt.strip():
-            prompt = prompt.rstrip(", ") + ", " + positive_prompt.strip()
+            prompt = prompt.rstrip() + " " + positive_prompt.strip()
 
         progress(0.0, desc="프롬프트 인코딩 중...")
         print("프롬프트 인코딩 중...")
