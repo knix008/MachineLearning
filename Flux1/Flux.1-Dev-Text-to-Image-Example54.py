@@ -31,7 +31,7 @@ DEFAULT_POSE_FOOT = "Feet slightly apart in a natural relaxed standing position,
 
 DEFAULT_HEADWEAR = ""
 
-DEFAULT_TOP = "Loose flowing light sky blue dress, soft and airy pale blue fabric, loose and relaxed above the waist, gently cinched only at the waist with a subtle fitted band accentuating the slim waistline, loose and flowing below the waist, a front slit starting from the mid-thigh slightly revealing the legs, breezy and lightweight."
+DEFAULT_TOP = "White pleated shirt dress, collared shirt-style neckline with button-down front, short sleeves, cinched at the waist with a self-tie belt accentuating her slim waistline, flowing pleated skirt falling below the knees, casual and chic everyday style, light and breezy."
 
 DEFAULT_BOTTOM = ""
 
@@ -41,11 +41,11 @@ DEFAULT_FOOTWEAR = "Clean white canvas sneakers, simple and casual."
 
 DEFAULT_ARMWEAR = ""
 
-DEFAULT_SETTING = "Bright spring street in Seoul, cherry blossom trees lining the sidewalk with pink petals falling gently, warm sunny day, clean pavement, vibrant and cheerful springtime urban atmosphere."
+DEFAULT_SETTING = "Bright spring street in Seoul, cherry blossom trees lining the sidewalk with pink petals falling gently, warm sunny day, clean pavement."
 
 DEFAULT_LIGHTING = "Bright warm spring sunlight, soft golden daylight, gentle shadows, fresh and cheerful outdoor atmosphere."
 
-DEFAULT_CAMERA = "Full body shot, camera positioned low at knee height looking upward toward the subject, strong low angle perspective dramatically elongating the legs, wide angle lens enhancing leg length, subject facing directly toward the camera, body perfectly frontal, legs occupying the lower two thirds of the frame, full body visible from head to toe, sharp focus, fashion photography style."
+DEFAULT_CAMERA = "Full body shot, low angle from knee height looking up, elongated legs perspective, body facing directly toward the camera, sharp focus, fashion photography style."
 
 DEFAULT_POSITIVE_PROMPT = "8k, high quality, best quality, masterpiece, realistic, detailed, sharp focus, perfect anatomy, beautiful lighting, ten fingers."
 
