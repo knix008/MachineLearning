@@ -31,7 +31,7 @@ DEFAULT_POSE_FOOT = "Feet slightly apart in a natural relaxed standing position,
 
 DEFAULT_HEADWEAR = ""
 
-DEFAULT_TOP = "White pleated shirt dress, collared shirt-style neckline with button-down front, short sleeves, cinched at the waist with a self-tie belt accentuating her slim waistline, flowing pleated skirt falling below the knees, casual and chic everyday style, light and breezy."
+DEFAULT_TOP = "Light sky blue long pleated shirt dress with delicate small floral print pattern scattered across the fabric, soft pastel flowers in white and pale pink, collared shirt-style neckline with button-down front, short sleeves, cinched at the waist with a self-tie belt accentuating her slim waistline, long flowing pleated skirt reaching the ankles with a front center slit from mid-thigh revealing a glimpse of her bare legs as she stands, casual and chic everyday style, light and breezy."
 
 DEFAULT_BOTTOM = ""
 
