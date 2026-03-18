@@ -45,7 +45,7 @@ DEFAULT_SETTING = "Bright spring street in Seoul, cherry blossom trees lining th
 
 DEFAULT_LIGHTING = "Bright warm spring sunlight, soft golden daylight, gentle shadows, fresh and cheerful outdoor atmosphere."
 
-DEFAULT_CAMERA = "Medium close full body shot, camera positioned close to the subject at chest height looking slightly upward, subject filling most of the frame, mild low angle perspective making legs appear long and elegant, full body visible from head to toe, sharp focus, fashion photography style."
+DEFAULT_CAMERA = "Medium close full body shot, camera positioned close to the subject at chest height looking slightly upward, subject facing directly toward the camera, body perfectly frontal, subject filling most of the frame, mild low angle perspective making legs appear long and elegant, full body visible from head to toe, sharp focus, fashion photography style."
 
 DEFAULT_POSITIVE_PROMPT = "8k, high quality, best quality, masterpiece, realistic, detailed, sharp focus, perfect anatomy, beautiful lighting, ten fingers."
 
