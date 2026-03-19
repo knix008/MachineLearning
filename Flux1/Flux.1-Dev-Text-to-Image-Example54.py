@@ -15,7 +15,7 @@ import gradio as gr
 # Default values for each prompt section
 DEFAULT_SUBJECT = "A full body photography of a beautiful young skinny Korean woman with a soft idol aesthetic, posing gracefully on a bright spring street in Seoul."
 
-DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Calm and elegant expression, lips closed with a soft gentle smile, looking directly and confidently toward the camera. She has long, voluminous wavy jet-black hair with beautiful soft waves and curls, draping naturally over her shoulders."
+DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous wavy jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air with natural movement and body, full of life and dynamism."
 
 DEFAULT_POSE_HEAD = "Head held upright with elegant posture, hair draping naturally over shoulders."
 
@@ -31,7 +31,7 @@ DEFAULT_POSE_FOOT = "Feet slightly apart in a natural relaxed standing position,
 
 DEFAULT_HEADWEAR = ""
 
-DEFAULT_TOP = "Light sky blue long pleated shirt dress with delicate small floral print pattern scattered across the fabric, soft pastel flowers in white and pale pink, collared shirt-style neckline with button-down front, short sleeves, cinched at the waist with a self-tie belt accentuating her slim waistline, long flowing pleated skirt reaching the ankles with a front center slit from mid-thigh revealing a glimpse of her bare legs as she stands, casual and chic everyday style, light and breezy."
+DEFAULT_TOP = "Navy blue sleeveless maxi dress with small delicate floral print, tiny coral pink and salmon flowers with small green leaves densely scattered across the fabric, thin spaghetti straps, smocked elastic waistband cinching the waist, long flowing semi-sheer chiffon skirt reaching the ankles with a front slit revealing the legs, lightweight and feminine summer style."
 
 DEFAULT_BOTTOM = ""
 
@@ -724,7 +724,7 @@ def main():
                         minimum=256,
                         maximum=2048,
                         step=64,
-                        value=1024,
+                        value=768,
                         info="이미지 너비 (픽셀). 64의 배수.",
                     )
                     height = gr.Slider(
@@ -732,7 +732,7 @@ def main():
                         minimum=256,
                         maximum=2048,
                         step=64,
-                        value=2048,
+                        value=1536,
                         info="이미지 높이 (픽셀). 64의 배수.",
                     )
 
