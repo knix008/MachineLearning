@@ -15,7 +15,7 @@ import gradio as gr
 # Default values for each prompt section
 DEFAULT_SUBJECT = "A full body photography of a beautiful young skinny Korean woman with soft idol aesthetic on a casual spring outing in Seoul."
 
-DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous wavy jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air."
+DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous wavy jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air with natural movement and body, full of life and dynamism."
 
 DEFAULT_POSE_HEAD = "Head held upright with elegant posture, hair draping naturally over shoulders."
 
@@ -25,13 +25,13 @@ DEFAULT_POSE_ARM = "One arm resting naturally at her side, the other arm slightl
 
 DEFAULT_POSE_HAND = ""
 
-DEFAULT_POSE_LEG = "Both legs neatly and gracefully together, standing upright in a refined elegant posture, skirt slit parted naturally to the side revealing smooth fair bare leg from upper thigh downward."
+DEFAULT_POSE_LEG = "Both legs neatly closed together, knees touching, standing perfectly upright, no leg stepping forward or backward, side slit of the skirt naturally parted revealing smooth fair bare leg."
 
-DEFAULT_POSE_FOOT = "Both feet neatly together, toes aligned, standing gracefully, white sneakers clearly shown, feet not cropped."
+DEFAULT_POSE_FOOT = "Both feet flat on the ground, side by side at the same depth, no foot forward or behind the other, white sneakers clearly shown, feet not cropped."
 
 DEFAULT_HEADWEAR = ""
 
-DEFAULT_TOP = "Dark navy chiffon one-piece dress with thin spaghetti straps, simple neckline, bare shoulders and arms, mostly opaque with only a slight translucency, densely scattered tiny cherry blossom print in soft pink and white, fitted waist, flowing A-line skirt with a deep front slit from the upper thigh exposing the bare leg, casual spring outing style."
+DEFAULT_TOP = "Dark navy chiffon one-piece dress with thin spaghetti straps, simple neckline, bare shoulders and arms, mostly opaque with only a slight translucency, densely scattered tiny cherry blossom print in soft pink and white, fitted waist, flowing A-line skirt with a side slit from the upper thigh naturally parting to reveal the bare leg, casual spring outing style."
 
 DEFAULT_BOTTOM = ""
 
@@ -49,7 +49,7 @@ DEFAULT_CAMERA = "Full body shot, entire body from head to feet fully in frame, 
 
 DEFAULT_POSITIVE_PROMPT = "8k, high quality, realistic, detailed, sharp focus, perfect anatomy, ten fingers."
 
-DEFAULT_NEGATIVE_PROMPT = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature."
+DEFAULT_NEGATIVE_PROMPT = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers."
 
 def make_image_grid(images: list) -> Image.Image:
     """Arrange PIL images into a grid that fits in one view."""
