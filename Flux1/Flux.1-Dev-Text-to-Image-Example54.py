@@ -88,8 +88,8 @@ def combine_prompt_sections(
         headwear, top, bottom, legwear, footwear, armwear,
         setting, lighting, camera,
     ]
-    # Filter out empty sections, strip trailing punctuation, and join with ', '
-    combined = ", ".join(normalize_spacing(s).rstrip(".,;") for s in sections if s and s.strip())
+    # Filter out empty sections and join with a space, preserving original punctuation
+    combined = " ".join(normalize_spacing(s) for s in sections if s and s.strip())
     return combined
 
 

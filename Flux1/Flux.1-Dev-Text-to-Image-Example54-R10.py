@@ -13,9 +13,9 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-DEFAULT_SUBJECT = "A full body photography of a beautiful young skinny Korean woman on a casual spring outing in Seoul."
+DEFAULT_SUBJECT = "A full body photography of a beautiful young skinny Korean woman with soft idol aesthetic on a casual spring outing in Seoul."
 
-DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous wavy jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air with natural movement and body, full of life and dynamism."
+DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous wavy jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air."
 
 DEFAULT_POSE_HEAD = "Head held upright with elegant posture, hair draping naturally over shoulders."
 
@@ -25,13 +25,13 @@ DEFAULT_POSE_ARM = "One arm resting naturally at her side, the other arm slightl
 
 DEFAULT_POSE_HAND = ""
 
-DEFAULT_POSE_LEG = "Both legs together, standing straight, skirt slit open revealing bare leg from upper thigh downward, smooth fair skin clearly visible through the slit."
+DEFAULT_POSE_LEG = "Both legs neatly and gracefully together, standing upright in a refined elegant posture, skirt slit parted naturally to the side revealing smooth fair bare leg from upper thigh downward."
 
-DEFAULT_POSE_FOOT = "Both feet together and aligned, standing neatly side by side, white sneakers clearly shown, feet not cropped."
+DEFAULT_POSE_FOOT = "Both feet neatly together, toes aligned, standing gracefully, white sneakers clearly shown, feet not cropped."
 
 DEFAULT_HEADWEAR = ""
 
-DEFAULT_TOP = "Dark navy chiffon one-piece dress with thin spaghetti straps, deep V-neckline, bare shoulders and arms, mostly opaque with only a slight translucency, densely scattered tiny cherry blossom print in soft pink and white, fitted waist, flowing A-line skirt with a deep front slit from the upper thigh exposing the bare leg, casual spring outing style."
+DEFAULT_TOP = "Dark navy chiffon one-piece dress with thin spaghetti straps, simple neckline, bare shoulders and arms, mostly opaque with only a slight translucency, densely scattered tiny cherry blossom print in soft pink and white, fitted waist, flowing A-line skirt with a deep front slit from the upper thigh exposing the bare leg, casual spring outing style."
 
 DEFAULT_BOTTOM = ""
 
@@ -88,8 +88,8 @@ def combine_prompt_sections(
         headwear, top, bottom, legwear, footwear, armwear,
         setting, lighting, camera,
     ]
-    # Filter out empty sections, strip trailing punctuation, and join with ', '
-    combined = ", ".join(normalize_spacing(s).rstrip(".,;") for s in sections if s and s.strip())
+    # Filter out empty sections and join with a space, preserving original punctuation
+    combined = " ".join(normalize_spacing(s) for s in sections if s and s.strip())
     return combined
 
 
