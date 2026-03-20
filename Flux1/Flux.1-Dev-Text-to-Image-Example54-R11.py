@@ -19,11 +19,11 @@ DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright
 
 DEFAULT_POSE_HEAD = "Head held upright with elegant posture, hair draping naturally over shoulders."
 
-DEFAULT_POSE_BODY = "Standing perfectly still and upright, both feet and legs together, body facing completely straight toward the camera, chest and torso fully frontal, posture tall and elegant, shoulders back."
+DEFAULT_POSE_BODY = "Standing perfectly still and upright, body facing exactly and perfectly straight toward the camera, chest and torso completely frontal, no rotation or angling of the torso whatsoever, shoulders level and squared to the camera, posture tall and elegant."
 
-DEFAULT_POSE_ARM = "One arm resting elegantly at her side, the other arm slightly bent with elbow relaxed, fashion model pose."
+DEFAULT_POSE_ARM = "Both arms resting naturally at her sides, elbows slightly relaxed, no weight shift implied."
 
-DEFAULT_POSE_HAND = "One hand hanging gracefully at her side with fingers lightly extended, the other hand resting gently on her upper thigh with fingers elegantly spread, classic fashion model hand pose."
+DEFAULT_POSE_HAND = ""
 
 DEFAULT_POSE_LEG = "Both legs naturally close together in a relaxed standing posture, side slit of skirt naturally parted revealing bare leg."
 
@@ -31,7 +31,7 @@ DEFAULT_POSE_FOOT = "Both feet naturally together, white sneakers clearly shown,
 
 DEFAULT_HEADWEAR = ""
 
-DEFAULT_TOP = "Dark navy chiffon one-piece dress with thin spaghetti straps, simple neckline, bare shoulders and arms, mostly opaque with only a slight translucency, densely scattered tiny cherry blossom print in soft pink and white, fitted waist, flowing A-line skirt with a side slit from the upper thigh naturally parting to reveal the bare leg, casual spring outing style."
+DEFAULT_TOP = "Dark navy chiffon one-piece dress with thin spaghetti straps, bare shoulders and arms, mostly opaque with only a slight translucency, densely scattered tiny cherry blossom print in soft pink and white, fitted waist, flowing A-line skirt with a side slit from the upper thigh naturally parting to reveal the bare leg, casual spring outing style."
 
 DEFAULT_BOTTOM = ""
 
