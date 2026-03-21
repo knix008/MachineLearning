@@ -13,27 +13,27 @@ import time
 import gradio as gr 
 
 # Default values for each prompt section
-DEFAULT_SUBJECT = "In this masterpiece, a stunning skinny Korean woman with a soft idol aesthetic, her entire body soaking wet, glistening with beads of water catching and reflecting the light, relaxing by the resort pool."
+DEFAULT_SUBJECT = "In this masterpiece, a stunning skinny Korean woman with a soft idol aesthetic, standing inside the resort pool with water up to her waist, her upper body and face fully exposed above the water surface, skin drenched and glistening."
 
-DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous wavy jet-black hair drenched with water, strands clinging to her skin. She has a small, delicate nose and full, glossy lips with a natural pink hue. Her cheeks have a subtle rosy flush, and her entire face glistens with sparkling water droplets reflecting the light. Her eyes are large and expressive, framed by wet lashes that enhance her captivating gaze."
+DEFAULT_FACE = "She has a fair, clear complexion. She is wearing blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous wavy jet-black hair drenched with water, strands clinging to her skin. She has a small, delicate nose and full, glossy lips with a natural pink hue. Her cheeks have a subtle rosy flush, and her entire face glistens with sparkling water droplets reflecting the light. Her eyes are large and expressive, framed by wet lashes that enhance her captivating gaze."
 
 DEFAULT_POSE_HEAD = "Gazing directly at the camera with beautiful, expressive eyes, hair pushed back to reveal her armpits."
 
-DEFAULT_POSE_BODY = "Dynamic pose capturing the essence of a super sexy woman relaxing by the resort pool, body slightly reclined, entire skin surface covered in glistening water droplets that shimmer and reflect the light, confident and sensual posture."
+DEFAULT_POSE_BODY = "Dynamic pose inside the pool, standing upright in the water, upper body rising above the water surface, entire exposed skin covered in glistening water droplets that shimmer and reflect the light, confident and sensual posture."
 
 DEFAULT_POSE_ARM = ""
 
 DEFAULT_POSE_HAND = ""
 
-DEFAULT_POSE_LEG = "Slender legs and slim thighs visible, legs gracefully relaxed by the poolside."
+DEFAULT_POSE_LEG = "Slender legs submerged in the clear pool water, visible through the transparent water surface."
 
 DEFAULT_POSE_FOOT = ""
 
 DEFAULT_HEADWEAR = ""
 
-DEFAULT_TOP = "Form-fitting Playboy-style swimsuit top soaking wet and clinging tightly to her body, fabric glistening like polished marble with reflected light, accentuating her slender frame and petite bust."
+DEFAULT_TOP = "Tiny red string bikini top, barely covering her bust, thin straps tied behind her neck and back, soaking wet fabric clinging tightly to her skin, vivid red color intensified by the water, sparkling and gleaming brilliantly under the light."
 
-DEFAULT_BOTTOM = "Form-fitting Playboy-style swimsuit bottom soaking wet and clinging to her body, hugging her slim hips and slender thighs, water trickling down her legs."
+DEFAULT_BOTTOM = "Tiny red string bikini bottom, barely covering her hips, thin side strings tied at the hips, submerged in the pool water, vivid red fabric shimmering and catching the light through the crystal-clear water."
 
 DEFAULT_LEGWEAR = ""
 
@@ -41,11 +41,11 @@ DEFAULT_FOOTWEAR = ""
 
 DEFAULT_ARMWEAR = ""
 
-DEFAULT_SETTING = "Luxury resort pool, glistening pool water, upscale poolside environment."
+DEFAULT_SETTING = "Inside a luxury resort pool, crystal-clear turquoise water surrounding her body, gentle ripples and caustic light patterns dancing on the water surface and her submerged skin, upscale poolside tiles visible beneath the water."
 
 DEFAULT_LIGHTING = "Cinematic studio lighting, dramatic and flattering illumination, strong specular highlights catching every water droplet on her skin, light refracting through beads of water creating a luminous shimmering effect across her entire body."
 
-DEFAULT_CAMERA = "Framed from above, exceptional portrait photography perspective."
+DEFAULT_CAMERA = "Framed from above looking down into the pool, exceptional portrait photography perspective, water surface visible around her body."
 
 DEFAULT_POSITIVE_PROMPT = "8k, raw photo aesthetic, high quality, realistic, detailed, sharp focus, perfect anatomy."
 
