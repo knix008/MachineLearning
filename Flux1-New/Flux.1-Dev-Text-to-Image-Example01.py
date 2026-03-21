@@ -13,13 +13,13 @@ import time
 import gradio as gr 
 
 # Default values for each prompt section
-DEFAULT_SUBJECT = "In this masterpiece, a stunning skinny Korean woman with a wet body glowing from pool water and a soft idol aesthetic, relaxing by the resort pool."
+DEFAULT_SUBJECT = "In this masterpiece, a stunning skinny Korean woman with a soft idol aesthetic, her entire body soaking wet, glistening with beads of water catching and reflecting the light, relaxing by the resort pool."
 
-DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous wavy jet-black hair with beautiful soft waves and curls. She has a small, delicate nose and full, glossy lips with a natural pink hue. Her cheeks have a subtle rosy flush, and her skin glistens with a wet sheen from the pool water. Her eyes are large and expressive, framed by long, thick lashes that enhance her captivating gaze."
+DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous wavy jet-black hair drenched with water, strands clinging to her skin. She has a small, delicate nose and full, glossy lips with a natural pink hue. Her cheeks have a subtle rosy flush, and her entire face glistens with sparkling water droplets reflecting the light. Her eyes are large and expressive, framed by wet lashes that enhance her captivating gaze."
 
 DEFAULT_POSE_HEAD = "Gazing directly at the camera with beautiful, expressive eyes, hair pushed back to reveal her armpits."
 
-DEFAULT_POSE_BODY = "Dynamic pose capturing the essence of a super sexy woman relaxing by the resort pool, body slightly reclined, confident and sensual posture."
+DEFAULT_POSE_BODY = "Dynamic pose capturing the essence of a super sexy woman relaxing by the resort pool, body slightly reclined, entire skin surface covered in glistening water droplets that shimmer and reflect the light, confident and sensual posture."
 
 DEFAULT_POSE_ARM = ""
 
@@ -31,9 +31,9 @@ DEFAULT_POSE_FOOT = ""
 
 DEFAULT_HEADWEAR = ""
 
-DEFAULT_TOP = "Form-fitting Playboy-style swimsuit top glistening like polished marble, accentuating her slender frame and petite bust."
+DEFAULT_TOP = "Form-fitting Playboy-style swimsuit top soaking wet and clinging tightly to her body, fabric glistening like polished marble with reflected light, accentuating her slender frame and petite bust."
 
-DEFAULT_BOTTOM = "Form-fitting Playboy-style swimsuit bottom, hugging her slim hips and slender thighs."
+DEFAULT_BOTTOM = "Form-fitting Playboy-style swimsuit bottom soaking wet and clinging to her body, hugging her slim hips and slender thighs, water trickling down her legs."
 
 DEFAULT_LEGWEAR = ""
 
@@ -43,7 +43,7 @@ DEFAULT_ARMWEAR = ""
 
 DEFAULT_SETTING = "Luxury resort pool, glistening pool water, upscale poolside environment."
 
-DEFAULT_LIGHTING = "Cinematic studio lighting, dramatic and flattering illumination."
+DEFAULT_LIGHTING = "Cinematic studio lighting, dramatic and flattering illumination, strong specular highlights catching every water droplet on her skin, light refracting through beads of water creating a luminous shimmering effect across her entire body."
 
 DEFAULT_CAMERA = "Framed from above, exceptional portrait photography perspective."
 
