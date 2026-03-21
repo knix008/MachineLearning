@@ -24,7 +24,22 @@ from pathlib import Path
 from basicsr.archs.rrdbnet_arch import RRDBNet
 from realesrgan import RealESRGANer
 
-DEFAULT_INPUT_IMAGE = "Test13.jpg"
+DEFAULT_INPUT_IMAGE = ""
+
+
+def load_default_image():
+    """Load the default input image if it exists, return None otherwise."""
+    if not DEFAULT_INPUT_IMAGE:
+        return None
+    try:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        img_path = os.path.join(script_dir, DEFAULT_INPUT_IMAGE)
+        if os.path.exists(img_path):
+            return Image.open(img_path).convert("RGB")
+    except Exception:
+        pass
+    return None
+
 
 def cleanup():
     """Release all resources before exit."""
@@ -267,7 +282,7 @@ with gr.Blocks() as demo:
                 label=f"입력 이미지 (업스케일할 원본, 최대 {MAX_INPUT_SIZE}×{MAX_INPUT_SIZE})",
                 type="pil",
                 height=600,
-                value=DEFAULT_INPUT_IMAGE,
+                value=load_default_image(),
             )
             upscale = gr.Slider(
                 minimum=1,
