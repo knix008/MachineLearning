@@ -17,7 +17,7 @@ import gradio as gr
 # Default values for each prompt section
 DEFAULT_SUBJECT = "A beautiful young woman in a traditional Korean Hanbok, standing serenely under a pink cherry blossom tree in full bloom."
 
-DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous wavy jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air with natural movement and body."
+DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous straight jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air with natural movement and body."
 
 DEFAULT_POSE_HEAD = "Head held upright, chin level."
 
