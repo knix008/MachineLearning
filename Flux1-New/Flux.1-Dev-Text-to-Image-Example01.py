@@ -10,32 +10,30 @@ import signal
 import sys
 import psutil
 import time
-import gradio as gr
-
-# https://prompthero.com/prompt/a812cf59403-z-image-turbo-a-highly-detailed-photorealistic-cinematic-medium-full-shot-of-a-beautiful-young-east-asian-woman-riding-a-white-horse-on
+import gradio as gr 
 
 # Default values for each prompt section
-DEFAULT_SUBJECT = "A highly detailed, photorealistic, cinematic medium-full shot of a beautiful young skinny Korean woman with a soft idol aesthetic, riding a white horse on a sunny beach."
+DEFAULT_SUBJECT = "In this masterpiece, a stunning skinny Korean woman with a wet body glowing from pool water and a soft idol aesthetic, relaxing by the resort pool."
 
-DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous wavy jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air with natural movement and body." 
+DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous wavy jet-black hair with beautiful soft waves and curls. She has a small, delicate nose and full, glossy lips with a natural pink hue. Her cheeks have a subtle rosy flush, and her skin glistens with a wet sheen from the pool water. Her eyes are large and expressive, framed by long, thick lashes that enhance her captivating gaze."
 
-DEFAULT_POSE_HEAD = "Turned toward the camera, looking directly into the lens with a bright, radiant smile."
+DEFAULT_POSE_HEAD = "Gazing directly at the camera with beautiful, expressive eyes, hair pushed back to reveal her armpits."
 
-DEFAULT_POSE_BODY = "Sitting upright on a black saddle atop a white horse, facing forward in the direction of movement, confident and joyful pose."
+DEFAULT_POSE_BODY = "Dynamic pose capturing the essence of a super sexy woman relaxing by the resort pool, body slightly reclined, confident and sensual posture."
 
-DEFAULT_POSE_ARM = "Both arms extended forward, holding the reins."
+DEFAULT_POSE_ARM = ""
 
-DEFAULT_POSE_HAND = "Both hands gripping the red and orange braided reins firmly, fingers wrapped around the leather straps."
+DEFAULT_POSE_HAND = ""
 
-DEFAULT_POSE_LEG = "Right bare foot placed in the stirrup."
+DEFAULT_POSE_LEG = "Slender legs and slim thighs visible, legs gracefully relaxed by the poolside."
 
 DEFAULT_POSE_FOOT = ""
 
 DEFAULT_HEADWEAR = ""
 
-DEFAULT_TOP = "Vibrant multi-colored string bikini top with a pattern of orange, light blue, and white, thin straps tied behind her neck."
+DEFAULT_TOP = "Form-fitting Playboy-style swimsuit top glistening like polished marble, accentuating her slender frame and petite bust."
 
-DEFAULT_BOTTOM = "Matching multi-colored string bikini bottom, thin side straps tied at the hips."
+DEFAULT_BOTTOM = "Form-fitting Playboy-style swimsuit bottom, hugging her slim hips and slender thighs."
 
 DEFAULT_LEGWEAR = ""
 
@@ -43,11 +41,11 @@ DEFAULT_FOOTWEAR = ""
 
 DEFAULT_ARMWEAR = ""
 
-DEFAULT_SETTING = "Tropical beach during the day, a magnificent white horse with a glossy coat gleaming in the sunlight, dark short-trimmed mane neatly groomed, wearing red and orange braided reins with small decorative beads, strong muscular build with powerful haunches and broad chest, elegant long neck arched gracefully, large expressive dark eyes, alert ears pricked forward, well-defined facial features with a refined head, long flowing white tail catching the breeze, hooves lightly splashing in the shallow surf, sparkling blue ocean meeting a clear light blue sky at the horizon, soft white waves on sandy shore."
+DEFAULT_SETTING = "Luxury resort pool, glistening pool water, upscale poolside environment."
 
-DEFAULT_LIGHTING = "Bright natural daylight, warm and airy lighting, high-key aesthetic emphasizing vibrant colors of the bikini and natural beauty of the beach."
+DEFAULT_LIGHTING = "Cinematic studio lighting, dramatic and flattering illumination."
 
-DEFAULT_CAMERA = "Side-profile perspective, medium-full shot, slight film grain, sharp focus on the subject."
+DEFAULT_CAMERA = "Framed from above, exceptional portrait photography perspective."
 
 DEFAULT_POSITIVE_PROMPT = "8k, raw photo aesthetic, high quality, realistic, detailed, sharp focus, perfect anatomy."
 
