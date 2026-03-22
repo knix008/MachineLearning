@@ -12,46 +12,46 @@ import psutil
 import time
 import gradio as gr
 
-# https://prompthero.com/prompt/3b670590135-flux-flux-11-pro-a-woman-in-a-traditional-chinese-hanfu-dress-white-kimono-with-red-and-black-patterned-sleeves-and-a-red-skirt
-
 # Default values for each prompt section
-DEFAULT_SUBJECT = "A beautiful young woman in a traditional Korean Hanbok, standing serenely under a pink cherry blossom tree in full bloom."
+DEFAULT_SUBJECT = "A full body photography of a beautiful young skinny Korean woman standing on a casual spring outing in Seoul."
 
-DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous straight jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air with natural movement and body."
+DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous wavy jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air."
 
-DEFAULT_POSE_HEAD = "Head held upright, chin level."
+DEFAULT_POSE_HEAD = (
+    "Head held upright with elegant posture, hair draping naturally over shoulders."
+)
 
-DEFAULT_POSE_BODY = "Standing upright and serene, body facing completely straight toward the camera, chest and torso fully frontal, relaxed and graceful posture."
+DEFAULT_POSE_BODY = "Standing perfectly still and upright, both feet and legs together, body facing completely straight toward the camera, chest and torso fully frontal, posture tall and elegant, shoulders back."
 
-DEFAULT_POSE_ARM = "Arms relaxed naturally at her sides, elbows slightly bent."
+DEFAULT_POSE_ARM = "One arm resting elegantly at her side, the other arm slightly bent with elbow relaxed."
 
-DEFAULT_POSE_HAND = "Fingers lightly extended, hands loose and graceful."
+DEFAULT_POSE_HAND = "One hand hanging gracefully at her side with fingers lightly extended, the other hand resting gently on her upper thigh with fingers elegantly spread."
 
-DEFAULT_POSE_LEG = "Legs together, standing naturally on the ground."
+DEFAULT_POSE_LEG = "Both legs naturally close together in a relaxed standing posture, side slit of skirt naturally parted revealing bare leg."
 
-DEFAULT_POSE_FOOT = "Feet together, traditional shoes clearly shown."
+DEFAULT_POSE_FOOT = "Both feet naturally together side by side,, white sneakers clearly shown, feet not cropped."
 
 DEFAULT_HEADWEAR = ""
 
-DEFAULT_TOP = "Traditional Korean Hanbok jeogori, soft pastel pink short jacket with white collar and long ribbon ties at the chest, delicate embroidered floral pattern, wide sleeves with white cuffs."
+DEFAULT_TOP = "Dark navy chiffon one-piece dress with thin spaghetti straps, simple neckline, bare shoulders and arms, mostly opaque with only a slight translucency, densely scattered tiny cherry blossom print in soft pink and white, fitted waist, flowing A-line skirt with a side slit from the upper thigh naturally parting to reveal the bare leg, casual spring outing style."
 
-DEFAULT_BOTTOM = "Flowing Korean Hanbok chima skirt in soft white with a pale pink hue, high-waisted, voluminous and full-length, draping gracefully to the ground."
+DEFAULT_BOTTOM = ""
 
-DEFAULT_LEGWEAR = ""
+DEFAULT_LEGWEAR = "Bare legs, smooth and fair skin naturally visible through the flowing skirt slit."
 
-DEFAULT_FOOTWEAR = "Traditional Korean white beoseon socks and white silk flower embroidered boat-shaped shoes."
+DEFAULT_FOOTWEAR = "Clean white canvas sneakers, simple and casual."
 
 DEFAULT_ARMWEAR = ""
 
-DEFAULT_SETTING = "Under a pink cherry blossom tree in full bloom, soft pink petals gently drifting down around her, ancient stone wall stretching behind, timeless and tranquil atmosphere."
+DEFAULT_SETTING = "Bright spring street in Seoul, cherry blossom trees lining the sidewalk with pink petals falling gently, warm sunny day, clean pavement."
 
-DEFAULT_LIGHTING = "Soft diffused natural light, serene and tranquil mood, pastel color palette, subtle film grain."
+DEFAULT_LIGHTING = "Bright even spring daylight, soft frontal natural light, face clearly and brightly lit, no harsh shadows."
 
-DEFAULT_CAMERA = "Full body shot, entire figure from head to feet fully in frame, feet not cropped, eye-level angle, sharp focus, soft bokeh background."
+DEFAULT_CAMERA = "Full body shot, entire body from head to feet fully in frame, feet and sneakers not cropped, slightly low angle to elongate legs, subject facing camera, sharp focus, soft bokeh background."
 
-DEFAULT_POSITIVE_PROMPT = "8k, high quality, realistic, detailed, sharp focus, perfect anatomy, full body, head to toe."
+DEFAULT_POSITIVE_PROMPT = "8k, high quality, realistic, detailed, sharp focus, perfect anatomy, ten fingers."
 
-DEFAULT_NEGATIVE_PROMPT = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, Chinese dress, Hanfu, Chinese style, kimono, Japanese style, qipao, cheongsam."
+DEFAULT_NEGATIVE_PROMPT = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers."
 
 
 def make_image_grid(images: list) -> Image.Image:
@@ -117,10 +117,8 @@ def combine_prompt_sections(
         lighting,
         camera,
     ]
-    # Filter out empty sections, strip trailing punctuation, and join with ', '
-    combined = ", ".join(
-        normalize_spacing(s).rstrip(".,;") for s in sections if s and s.strip()
-    )
+    # Filter out empty sections and join with a space, preserving original punctuation
+    combined = " ".join(normalize_spacing(s) for s in sections if s and s.strip())
     return combined
 
 

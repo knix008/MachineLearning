@@ -36,6 +36,9 @@ DEFAULT_ARMWEAR = ""
 DEFAULT_SETTING = ""
 DEFAULT_LIGHTING = ""
 DEFAULT_CAMERA = ""
+DEFAULT_POSITIVE_PROMPT = "masterpiece, best quality, highly detailed, sharp focus, photorealistic, 8k, perfect anatomy, ten fingers, ten toes."
+DEFAULT_NEGATIVE_PROMPT = "Blurry, low quality, deformed, bad anatomy, extra limbs, missing limbs, ugly, watermark, text, signature, extra fingers, extra toes, missing fingers, fused fingers, poorly drawn hands, poorly drawn face, disfigured, distorted, grainy, noisy, overexposed, underexposed, duplicate, cropped, out of frame."
+DEFAULT_MAX_SEQUENCE_LENGTH = 512
 
 
 def load_default_image():
@@ -60,6 +63,21 @@ def load_default_ref_image(filename):
     return None
 
 
+def make_image_grid(images: list) -> Image.Image:
+    """Arrange PIL images into a grid that fits in one view."""
+    n = len(images)
+    if n == 1:
+        return images[0]
+    cols = 2 if n <= 4 else 3
+    rows = (n + cols - 1) // cols
+    w, h = images[0].size
+    grid = Image.new("RGB", (cols * w, rows * h), color=(20, 20, 20))
+    for idx, img in enumerate(images):
+        r, c = divmod(idx, cols)
+        grid.paste(img, (c * w, r * h))
+    return grid
+
+
 def normalize_spacing(text: str) -> str:
     """Normalize whitespace around punctuation in a prompt string."""
     text = re.sub(r"([,.:;])(?!\s)", r"\1 ", text)
@@ -68,17 +86,43 @@ def normalize_spacing(text: str) -> str:
 
 
 def combine_prompt_sections(
-    subject, face,
-    pose_head, pose_body, pose_arm, pose_hand, pose_leg, pose_foot,
-    headwear, top, bottom, legwear, footwear, armwear,
-    setting, lighting, camera
+    subject,
+    face,
+    pose_head,
+    pose_body,
+    pose_arm,
+    pose_hand,
+    pose_leg,
+    pose_foot,
+    headwear,
+    top,
+    bottom,
+    legwear,
+    footwear,
+    armwear,
+    setting,
+    lighting,
+    camera,
 ):
     """Combine separate prompt sections into one final prompt string."""
     sections = [
-        subject, face,
-        pose_head, pose_body, pose_arm, pose_hand, pose_leg, pose_foot,
-        headwear, top, bottom, legwear, footwear, armwear,
-        setting, lighting, camera,
+        subject,
+        face,
+        pose_head,
+        pose_body,
+        pose_arm,
+        pose_hand,
+        pose_leg,
+        pose_foot,
+        headwear,
+        top,
+        bottom,
+        legwear,
+        footwear,
+        armwear,
+        setting,
+        lighting,
+        camera,
     ]
     combined = ", ".join(normalize_spacing(s) for s in sections if s and s.strip())
     return combined
@@ -248,7 +292,9 @@ def load_model(device_name=None):
         pipe.enable_model_cpu_offload()
         pipe.enable_attention_slicing()
         pipe.enable_sequential_cpu_offload()
-        print("메모리 최적화 적용: sequential CPU offload, model CPU offload, attention slicing")
+        print(
+            "메모리 최적화 적용: sequential CPU offload, model CPU offload, attention slicing"
+        )
     elif DEVICE == "mps":
         pipe.to(DEVICE)
         pipe.enable_attention_slicing()
@@ -297,20 +343,29 @@ def generate_image(
     height,
     guidance_scale,
     num_inference_steps,
+    num_images_per_prompt,
     seed,
+    positive_prompt,
+    negative_prompt,
+    max_sequence_length,
     image_format,
     progress=gr.Progress(track_tqdm=True),
 ):
     global pipe
 
     if pipe is None:
-        return None, "오류: 모델이 로드되지 않았습니다. '모델 로드' 버튼을 먼저 눌러주세요."
+        return (
+            None,
+            [],
+            [],
+            "오류: 모델이 로드되지 않았습니다. '모델 로드' 버튼을 먼저 눌러주세요.",
+        )
 
     # --- 기본 이미지 준비 ---
     if base_image is None:
         base_image = load_default_image()
     if base_image is None:
-        return None, "오류: 기본 이미지를 업로드해주세요."
+        return None, [], [], "오류: 기본 이미지를 업로드해주세요."
     if not isinstance(base_image, Image.Image):
         base_image = Image.fromarray(base_image)
 
@@ -318,34 +373,84 @@ def generate_image(
     ref_images = []
     for ref in [ref_image1, ref_image2, ref_image3, ref_image4]:
         if ref is not None:
-            ref_images.append(ref if isinstance(ref, Image.Image) else Image.fromarray(ref))
+            ref_images.append(
+                ref if isinstance(ref, Image.Image) else Image.fromarray(ref)
+            )
 
     if not ref_images:
-        return None, "오류: 참조 이미지를 최소 1개 이상 업로드해주세요."
+        return None, [], [], "오류: 참조 이미지를 최소 1개 이상 업로드해주세요."
 
     # --- 프롬프트 섹션 합치기 ---
     prompt = combine_prompt_sections(
-        prompt_subject, prompt_face,
-        prompt_pose_head, prompt_pose_body, prompt_pose_arm, prompt_pose_hand,
-        prompt_pose_leg, prompt_pose_foot,
-        prompt_headwear, prompt_top, prompt_bottom, prompt_legwear, prompt_footwear, prompt_armwear,
-        prompt_setting, prompt_lighting, prompt_camera,
+        prompt_subject,
+        prompt_face,
+        prompt_pose_head,
+        prompt_pose_body,
+        prompt_pose_arm,
+        prompt_pose_hand,
+        prompt_pose_leg,
+        prompt_pose_foot,
+        prompt_headwear,
+        prompt_top,
+        prompt_bottom,
+        prompt_legwear,
+        prompt_footwear,
+        prompt_armwear,
+        prompt_setting,
+        prompt_lighting,
+        prompt_camera,
     )
     if not prompt:
-        return None, "오류: 프롬프트를 입력해주세요."
+        return None, [], [], "오류: 프롬프트를 입력해주세요."
+
+    # Append positive prompt
+    if positive_prompt and positive_prompt.strip():
+        prompt = prompt.rstrip() + " " + positive_prompt.strip()
+
+    # Append negative prompt inline (Klein does not support separate negative_prompt parameter)
+    if negative_prompt and negative_prompt.strip():
+        prompt = prompt.rstrip() + " Avoid: " + negative_prompt.strip()
 
     try:
         out_w, out_h = int(width), int(height)
         steps = int(num_inference_steps)
         start_time = time.time()
 
-        progress(0.0, desc="이미지 준비 중...")
-        print(f"이미지 준비: 기본 1개 + 참조 {len(ref_images)}개")
+        progress(0.0, desc="프롬프트 준비 중...")
+        print("=" * 60)
+        print("[입력 프롬프트]")
+        print(prompt)
+        print("=" * 60)
 
-        # --- 모델에 전달할 이미지 리스트 구성 ---
+        # --- Qwen 토큰 카운트 확인 ---
+        max_len = int(max_sequence_length)
+        if hasattr(pipe, "tokenizer") and pipe.tokenizer is not None:
+            raw_ids = pipe.tokenizer(prompt, truncation=False, return_tensors="pt")[
+                "input_ids"
+            ][0]
+            raw_token_count = len(raw_ids)
+            clipped = max(0, raw_token_count - max_len)
+            if clipped > 0:
+                print(
+                    f"✗ Qwen 토큰 수: {raw_token_count} / {max_len} → {clipped}개 잘림!"
+                )
+                truncated_text = pipe.tokenizer.decode(
+                    raw_ids[max_len:], skip_special_tokens=True
+                )
+                print(f"✗ [잘린 텍스트] {truncated_text}")
+            else:
+                print(f"✓ Qwen 토큰 수: {raw_token_count} / {max_len} (잘림 없음)")
+
+        # Note: Klein uses Qwen3-8B encoder. negative_prompt / true_cfg_scale not supported.
+        print("=" * 60)
+
+        # --- 이미지 준비 ---
+        print(f"이미지 준비: 기본 1개 + 참조 {len(ref_images)}개")
         input_images = [base_image.resize((out_w, out_h), Image.LANCZOS).convert("RGB")]
         for ref in ref_images:
-            input_images.append(ref.resize((out_w, out_h), Image.LANCZOS).convert("RGB"))
+            input_images.append(
+                ref.resize((out_w, out_h), Image.LANCZOS).convert("RGB")
+            )
         print(f"총 {len(input_images)}개 이미지를 파이프라인에 리스트로 전달")
 
         generator_device = "cpu" if DEVICE == "mps" else DEVICE
@@ -377,17 +482,21 @@ def generate_image(
                 print()
             return callback_kwargs
 
+        pipe_kwargs = {
+            "prompt": prompt,
+            "image": input_images,
+            "width": out_w,
+            "height": out_h,
+            "guidance_scale": guidance_scale,
+            "num_inference_steps": steps,
+            "num_images_per_prompt": int(num_images_per_prompt),
+            "max_sequence_length": max_len,
+            "generator": generator,
+            "callback_on_step_end": step_callback,
+        }
+
         with torch.inference_mode():
-            result = pipe(
-                prompt=prompt,
-                image=input_images,
-                width=out_w,
-                height=out_h,
-                guidance_scale=guidance_scale,
-                num_inference_steps=steps,
-                generator=generator,
-                callback_on_step_end=step_callback,
-            ).images[0]
+            images = pipe(**pipe_kwargs).images
 
         progress(0.95, desc="이미지 저장 중...")
 
@@ -395,26 +504,39 @@ def generate_image(
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         script_name = os.path.splitext(os.path.basename(__file__))[0]
         ext = "jpg" if image_format == "JPEG" else "png"
-        filename = (
+        base_filename = (
             f"{script_name}_{timestamp}_{DEVICE.upper()}_{out_w}x{out_h}"
-            f"_gs{guidance_scale}_step{steps}_seed{int(seed)}.{ext}"
+            f"_gs{guidance_scale}_step{steps}_seed{int(seed)}_n{int(num_images_per_prompt)}"
         )
 
+        saved_files = []
+        for i, image in enumerate(images):
+            suffix = f"_img{i + 1}" if len(images) > 1 else ""
+            filename = f"{base_filename}{suffix}.{ext}"
+            if image_format == "JPEG":
+                image.save(filename, format="JPEG", quality=100, subsampling=0)
+            else:
+                image.save(filename)
+            saved_files.append(filename)
+            print(f"이미지가 저장되었습니다 : {filename}")
+
+        saved_info = (
+            f"저장됨: {saved_files[0]}"
+            if len(saved_files) == 1
+            else f"{len(saved_files)}장 저장됨: {saved_files[0]} 외"
+        )
         print(f"이미지 생성 완료! 소요 시간: {elapsed:.1f}초")
-        print(f"이미지가 저장되었습니다 : {filename}")
-        if image_format == "JPEG":
-            result.save(filename, format="JPEG", quality=100, subsampling=0)
-        else:
-            result.save(filename)
 
         progress(1.0, desc="완료!")
         return (
-            result,
-            f"✓ 완료! ({elapsed:.1f}초) | 입력: 기본 1개 + 참조 {len(ref_images)}개 | 저장됨: {filename}",
+            make_image_grid(images),
+            images,
+            saved_files,
+            f"✓ 완료! ({elapsed:.1f}초) | 입력: 기본 1개 + 참조 {len(ref_images)}개 | {saved_info}",
         )
 
     except Exception as e:
-        return None, f"✗ 오류 발생: {str(e)}"
+        return None, [], [], f"✗ 오류 발생: {str(e)}"
 
 
 def main():
@@ -635,24 +757,46 @@ def main():
                     combined_prompt = gr.Textbox(
                         label="최종 프롬프트",
                         value=combine_prompt_sections(
-                            DEFAULT_SUBJECT, DEFAULT_FACE,
-                            DEFAULT_POSE_HEAD, DEFAULT_POSE_BODY, DEFAULT_POSE_ARM, DEFAULT_POSE_HAND,
-                            DEFAULT_POSE_LEG, DEFAULT_POSE_FOOT,
-                            DEFAULT_HEADWEAR, DEFAULT_TOP, DEFAULT_BOTTOM,
-                            DEFAULT_LEGWEAR, DEFAULT_FOOTWEAR, DEFAULT_ARMWEAR,
-                            DEFAULT_SETTING, DEFAULT_LIGHTING, DEFAULT_CAMERA,
+                            DEFAULT_SUBJECT,
+                            DEFAULT_FACE,
+                            DEFAULT_POSE_HEAD,
+                            DEFAULT_POSE_BODY,
+                            DEFAULT_POSE_ARM,
+                            DEFAULT_POSE_HAND,
+                            DEFAULT_POSE_LEG,
+                            DEFAULT_POSE_FOOT,
+                            DEFAULT_HEADWEAR,
+                            DEFAULT_TOP,
+                            DEFAULT_BOTTOM,
+                            DEFAULT_LEGWEAR,
+                            DEFAULT_FOOTWEAR,
+                            DEFAULT_ARMWEAR,
+                            DEFAULT_SETTING,
+                            DEFAULT_LIGHTING,
+                            DEFAULT_CAMERA,
                         ),
                         lines=4,
                         interactive=False,
                         info="위 섹션들이 자동으로 합쳐진 최종 프롬프트입니다.",
                     )
                 prompt_sections = [
-                    prompt_subject, prompt_face,
-                    prompt_pose_head, prompt_pose_body, prompt_pose_arm, prompt_pose_hand,
-                    prompt_pose_leg, prompt_pose_foot,
-                    prompt_headwear, prompt_top, prompt_bottom,
-                    prompt_legwear, prompt_footwear, prompt_armwear,
-                    prompt_setting, prompt_lighting, prompt_camera,
+                    prompt_subject,
+                    prompt_face,
+                    prompt_pose_head,
+                    prompt_pose_body,
+                    prompt_pose_arm,
+                    prompt_pose_hand,
+                    prompt_pose_leg,
+                    prompt_pose_foot,
+                    prompt_headwear,
+                    prompt_top,
+                    prompt_bottom,
+                    prompt_legwear,
+                    prompt_footwear,
+                    prompt_armwear,
+                    prompt_setting,
+                    prompt_lighting,
+                    prompt_camera,
                 ]
                 for section in prompt_sections:
                     section.change(
@@ -661,19 +805,38 @@ def main():
                         outputs=[combined_prompt],
                     )
 
+                positive_prompt_box = gr.Textbox(
+                    label="포지티브 프롬프트 (Positive Prompt)",
+                    value=DEFAULT_POSITIVE_PROMPT,
+                    lines=2,
+                    placeholder="예: masterpiece, best quality, highly detailed",
+                    info="최종 프롬프트 뒤에 추가로 덧붙일 키워드를 입력합니다.",
+                )
+                negative_prompt_box = gr.Textbox(
+                    label="네거티브 프롬프트 (Negative Prompt)",
+                    value=DEFAULT_NEGATIVE_PROMPT,
+                    lines=2,
+                    placeholder="예: blurry, deformed hands, bad anatomy",
+                    info="'Avoid: ...' 형식으로 메인 프롬프트에 포함되어 전달됩니다.",
+                )
+
             # ── 오른쪽 컬럼: 파라미터 + 생성 ──
             with gr.Column(scale=1):
                 gr.Markdown("### 파라미터 설정")
                 with gr.Row():
                     width = gr.Slider(
                         label="출력 너비",
-                        minimum=256, maximum=2048, step=64,
+                        minimum=256,
+                        maximum=2048,
+                        step=64,
                         value=_init_w,
                         info="출력 이미지 너비 (픽셀).",
                     )
                     height = gr.Slider(
                         label="출력 높이",
-                        minimum=256, maximum=2048, step=64,
+                        minimum=256,
+                        maximum=2048,
+                        step=64,
                         value=_init_h,
                         info="출력 이미지 높이 (픽셀).",
                     )
@@ -681,29 +844,65 @@ def main():
                 with gr.Row():
                     guidance_scale = gr.Slider(
                         label="Guidance Scale",
-                        minimum=0.0, maximum=1.0, step=0.05, value=1.0,
+                        minimum=0.0,
+                        maximum=1.0,
+                        step=0.05,
+                        value=1.0,
                         info="Klein 권장: 1.0. 낮으면 창의적, 높으면 정확.",
                     )
                     num_inference_steps = gr.Slider(
                         label="추론 스텝",
-                        minimum=1, maximum=20, step=1, value=4,
+                        minimum=1,
+                        maximum=20,
+                        step=1,
+                        value=4,
                         info="Klein 권장: 4. 권장 범위: 4-12",
                     )
 
                 with gr.Row():
+                    num_images_per_prompt = gr.Slider(
+                        label="생성 이미지 수",
+                        minimum=1,
+                        maximum=4,
+                        step=1,
+                        value=1,
+                        info="한 번에 생성할 이미지 수. 많을수록 VRAM 사용 증가.",
+                    )
                     seed = gr.Number(
-                        label="시드", value=42, precision=0,
+                        label="시드",
+                        value=42,
+                        precision=0,
                         info="난수 시드. 같은 값이면 같은 결과.",
+                    )
+
+                with gr.Row():
+                    max_sequence_length = gr.Slider(
+                        label="최대 시퀀스 길이",
+                        minimum=64,
+                        maximum=512,
+                        step=64,
+                        value=DEFAULT_MAX_SEQUENCE_LENGTH,
+                        info="텍스트 인코더 최대 길이. 긴 프롬프트는 높은 값 필요.",
                     )
                     image_format = gr.Radio(
                         label="이미지 포맷",
-                        choices=["JPEG", "PNG"], value="JPEG",
+                        choices=["JPEG", "PNG"],
+                        value="JPEG",
                         info="JPEG: quality 100, PNG: 무손실.",
                     )
 
                 gr.Markdown("### 이미지 생성")
                 generate_btn = gr.Button("이미지 생성", variant="primary", size="lg")
-                output_image = gr.Image(label="생성된 이미지", height=800)
+                output_grid = gr.Image(label="생성된 이미지 (전체 보기)", height=800)
+                with gr.Accordion("개별 이미지 다운로드", open=False):
+                    output_gallery = gr.Gallery(
+                        label="개별 이미지",
+                        columns=[1, 1, 2, 2],
+                        rows=[1, 1, 1, 2],
+                        object_fit="contain",
+                        allow_preview=True,
+                    )
+                    output_files = gr.Files(label="파일 다운로드")
                 output_message = gr.Textbox(label="상태", interactive=False)
 
         # ── 이벤트 연결 ──
@@ -729,18 +928,40 @@ def main():
         generate_btn.click(
             fn=generate_image,
             inputs=[
-                base_image, ref_image1, ref_image2, ref_image3, ref_image4,
-                prompt_subject, prompt_face,
-                prompt_pose_head, prompt_pose_body, prompt_pose_arm, prompt_pose_hand,
-                prompt_pose_leg, prompt_pose_foot,
-                prompt_headwear, prompt_top, prompt_bottom,
-                prompt_legwear, prompt_footwear, prompt_armwear,
-                prompt_setting, prompt_lighting, prompt_camera,
-                width, height,
-                guidance_scale, num_inference_steps,
-                seed, image_format,
+                base_image,
+                ref_image1,
+                ref_image2,
+                ref_image3,
+                ref_image4,
+                prompt_subject,
+                prompt_face,
+                prompt_pose_head,
+                prompt_pose_body,
+                prompt_pose_arm,
+                prompt_pose_hand,
+                prompt_pose_leg,
+                prompt_pose_foot,
+                prompt_headwear,
+                prompt_top,
+                prompt_bottom,
+                prompt_legwear,
+                prompt_footwear,
+                prompt_armwear,
+                prompt_setting,
+                prompt_lighting,
+                prompt_camera,
+                width,
+                height,
+                guidance_scale,
+                num_inference_steps,
+                num_images_per_prompt,
+                seed,
+                positive_prompt_box,
+                negative_prompt_box,
+                max_sequence_length,
+                image_format,
             ],
-            outputs=[output_image, output_message],
+            outputs=[output_grid, output_gallery, output_files, output_message],
         )
 
     interface.launch(
