@@ -25,7 +25,7 @@ DEFAULT_POSE_HAND = "Both hands hanging gracefully, fingers lightly extended and
 
 DEFAULT_POSE_ARM = "Both arms hanging naturally at her sides, relaxed and straight down."
 
-DEFAULT_POSE_LEG = "Both legs fully extended and straight, long slender legs clearly visible from hip to foot, legs appearing elongated and lean, toned thighs and calves, elegant long leg line."
+DEFAULT_POSE_LEG = "One leg straight and weight-bearing, the other leg slightly bent at the knee and shifted to the side, long slender legs clearly visible, toned thighs and calves, elegant leg line accentuated by the subtle bend."
 
 DEFAULT_POSE_BODY = "Standing gracefully by the poolside, body fully facing the camera in a frontal view, hips slightly shifted to one side accentuating the feminine curve, slender waist and hip line clearly visible, relaxed and natural posture."
 
