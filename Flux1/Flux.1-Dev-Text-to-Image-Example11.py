@@ -13,43 +13,43 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-DEFAULT_SUBJECT = "A photography of a beautiful young skinny Korean woman with a soft idol aesthetic by the lakeside."
+DEFAULT_SUBJECT = "A photography of a beautiful young skinny Korean woman with a soft idol aesthetic standing by a bright hotel swimming pool."
 
-DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous straight jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air."
+DEFAULT_FACE = "She has a fair, clear complexion with water droplets glistening on her skin. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is soft and gentle with a subtle faint smile, looking directly at the camera. She has long jet-black hair, soaking wet and clinging to her shoulders and back, strands sticking to her face and neck."
 
 DEFAULT_POSE_HEAD = "Head facing directly forward, eyes gazing straight into the camera, chin slightly lowered, calm and confident."
 
-DEFAULT_POSE_FOOT = "Both feet neatly together, standing with feet closed and aligned, white sneakers fully visible and not cropped."
+DEFAULT_POSE_FOOT = "Both feet fully visible wearing pool sandals, shoes fully in frame, not cropped."
 
 DEFAULT_POSE_HAND = "Both hands hanging gracefully, fingers lightly extended and relaxed."
 
-DEFAULT_POSE_ARM = "Both arms naturally relaxed, one elbow softly bent."
+DEFAULT_POSE_ARM = "Both arms hanging naturally at her sides, relaxed and straight down."
 
-DEFAULT_POSE_LEG = "Both legs straight and together, standing upright with legs neatly closed, slender leg line."
+DEFAULT_POSE_LEG = "One leg straight and weight-bearing, the other leg slightly bent at the knee and shifted to the side, creating a natural hip tilt, long slender legs clearly visible, toned thighs and calves, elegant leg line."
 
-DEFAULT_POSE_BODY = "Standing gracefully, body fully facing the camera in a frontal view, hips naturally shifted slightly to one side accentuating the feminine curve, slender waist and hip line clearly visible, elegant and relaxed posture."
+DEFAULT_POSE_BODY = "Standing gracefully by the poolside, body fully facing the camera in a frontal view, hips tilted and pushed noticeably to one side in a sensual S-curve pose, accentuating the feminine waist-to-hip ratio, hourglass silhouette clearly visible, confident and alluring posture."
 
 DEFAULT_HEADWEAR = ""
 
-DEFAULT_TOP = "Dark navy floral print A-line dress, thin spaghetti straps over the shoulders, bare arms and collarbone exposed, soft loosely draped fabric with delicate flower pattern, relaxed and flowy silhouette, waist lightly tied by a fabric sash bow, skirt hemline above the knee, deep side slit on one side extending up to the upper thigh exposing the leg, light and feminine."
+DEFAULT_TOP = "Wearing a dark blue bikini top, very tiny and minimal coverage, thin straps, wet fabric clinging tightly to the body, sparkling in the sunlight."
 
-DEFAULT_BOTTOM = ""
+DEFAULT_BOTTOM = "Wearing a dark blue bikini bottom, very tiny and minimal coverage, wet fabric clinging to the body, hips and curves fully visible."
 
-DEFAULT_LEGWEAR = "Wearing white ankle socks, clean white fabric, slightly folded cuff at the top."
+DEFAULT_LEGWEAR = ""
 
-DEFAULT_FOOTWEAR = "Wearing white casual sneakers, clean white laces, low-profile sole."
+DEFAULT_FOOTWEAR = "Wearing white pool slide sandals, simple flat open-toe slippers, wet and glistening."
 
 DEFAULT_ARMWEAR = ""
 
-DEFAULT_SETTING = "Lakeside cherry blossom park in full bloom, pale pink petals drifting over calm water, bright spring atmosphere."
+DEFAULT_SETTING = "Bright luxury hotel outdoor swimming pool, clear blue water, white poolside tiles glistening wet, sunny summer atmosphere."
 
-DEFAULT_LIGHTING = "Bright soft spring daylight, diffused natural light through cherry blossom branches, gentle warm glow on the face, luminous and dreamy ambiance."
+DEFAULT_LIGHTING = "Bright direct summer sunlight, strong warm highlights on the body, vivid and radiant ambiance."
 
-DEFAULT_CAMERA = "Full body shot, entire body from head to toe fully in frame including shoes, feet must not be cropped, natural eye-level angle, sharp focus on the subject, soft bokeh on the background."
+DEFAULT_CAMERA = "Full body shot, entire body from head to toe fully in frame, feet must not be cropped, low angle shot from below eye level to dramatically elongate the legs, sharp focus on the subject, soft bokeh on the background."
 
-DEFAULT_POSITIVE_PROMPT = "8k, high quality, realistic, detailed, perfect anatomy, ten fingers."
+DEFAULT_POSITIVE_PROMPT = "8k, high quality, realistic, detailed, perfect anatomy, ten fingers, ten toes."
 
-DEFAULT_NEGATIVE_PROMPT = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, extra toes, barefoot, high heels, stiletto, feet cropped, shoes cropped."
+DEFAULT_NEGATIVE_PROMPT = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, extra toes, barefoot, feet cropped, shoes cropped, dry skin, dry hair."
 
 
 def make_image_grid(images: list) -> Image.Image:
