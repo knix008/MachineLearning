@@ -25,7 +25,7 @@ USE_COMPILE = False   # torch.compile 사용 (PyTorch 2.0+, 첫 실행 느림)
 
 # 결과 저장 디렉토리 (스크립트와 동일한 디렉토리)
 OUTPUT_DIR = Path(__file__).parent
-DEFAULT_INPUT_IMAGE = "Test13.jpg"  # 기본 입력 이미지 경로 (적절히 변경)
+DEFAULT_INPUT_IMAGE = ""  # 기본 입력 이미지 경로 (적절히 변경)
 
 # SwinIR 모델 프리셋 정의
 MODEL_PRESETS = {
@@ -317,7 +317,7 @@ with gr.Blocks() as demo:
     gr.Markdown("Upload an image to upscale using SwinIR (official model).")
     with gr.Row():
         with gr.Column():
-            input_image = gr.Image(type="pil", label="Input Image", height=500, value=DEFAULT_INPUT_IMAGE)
+            input_image = gr.Image(type="pil", label="Input Image", height=500, value=DEFAULT_INPUT_IMAGE if DEFAULT_INPUT_IMAGE else None)
             with gr.Accordion("출력 설정", open=True):
                 output_format = gr.Radio(
                     ["JPG", "PNG"],
