@@ -17,9 +17,9 @@ DEFAULT_SUBJECT = "A photography of a beautiful young skinny Korean woman with a
 
 DEFAULT_FACE = "She has a fair, clear complexion with water droplets glistening on her skin. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is soft and gentle with a subtle faint smile, looking directly at the camera. She has long jet-black hair, soaking wet and clinging to her shoulders and back, strands sticking to her face and neck."
 
-DEFAULT_POSE_HEAD = "Head facing directly forward, eyes gazing straight into the camera, chin slightly lowered, calm and confident."
+DEFAULT_POSE_HEAD = ""
 
-DEFAULT_POSE_FOOT = "Both feet fully visible wearing pool sandals, shoes fully in frame, not cropped."
+DEFAULT_POSE_FOOT = "Wearing pool sandals."
 
 DEFAULT_POSE_HAND = "Both hands hanging gracefully, fingers lightly extended and relaxed."
 
