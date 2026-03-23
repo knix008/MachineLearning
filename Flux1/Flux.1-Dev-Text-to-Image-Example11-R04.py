@@ -13,13 +13,13 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-DEFAULT_SUBJECT = "A full body portrait of a beautiful young skinny Korean woman standing outdoors wearing sandals, her body and hair completely soaking wet, water dripping down her skin."
+DEFAULT_SUBJECT = "A full body portrait of a beautiful young skinny Korean woman standing barefoot outdoors, her body and hair completely soaking wet, water dripping down her skin."
 
-DEFAULT_CAMERA = "35mm lens, full body shot, chest level view, head to feet in frame, sharp focus, soft bokeh background."
+DEFAULT_CAMERA = "35mm lens, full body shot, chest level view, head to toes in frame, sharp focus, soft bokeh background."
 
-DEFAULT_POSE_FOOT = "Both feet flat on the wet ground, fully visible at the bottom of the frame."
+DEFAULT_POSE_FOOT = "Both bare feet flat on the wet ground, fully visible at the bottom of the frame, wet skin glistening, toes clearly visible, not cropped."
 
-DEFAULT_FOOTWEAR = "White pool slide sandals, simple flat open-toe style, pure white color, wet and glistening with water droplets, sandals clearly visible."
+DEFAULT_FOOTWEAR = ""
 
 DEFAULT_FACE = "She has a fair, clear complexion with water droplets glistening on her skin. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is soft and gentle with a subtle faint smile, looking directly at the camera. She has long jet-black hair, soaking wet and clinging to her shoulders and back, strands sticking to her face and neck."
 
@@ -29,7 +29,7 @@ DEFAULT_POSE_BODY = "Body in a clear three-quarter pose, torso turned about 45 d
 
 DEFAULT_POSE_ARM = "Both arms hanging naturally at her sides, relaxed and straight down."
 
-DEFAULT_POSE_HAND = "Fingers gently relaxed, hands resting loosely beside her legs."
+DEFAULT_POSE_HAND = "Fingers gently relaxed, hands resting loosely beside her thighs."
 
 DEFAULT_POSE_LEG = "One leg straight and weight-bearing, the other leg slightly bent at the knee with the foot lightly turned out to the side, classic fashion model leg pose, long slender legs clearly visible, elegant elongated leg line."
 
@@ -47,9 +47,9 @@ DEFAULT_SETTING = "Luxury hotel swimming pool background, wet white stone floor,
 
 DEFAULT_LIGHTING = "Bright direct summer sunlight, strong warm highlights on the body, vivid and radiant ambiance."
 
-DEFAULT_POSITIVE_PROMPT = "8k, high quality, realistic, detailed, perfect anatomy, three-quarter view, angled pose, ten fingers, ten toes, feet fully visible, sandals visible."
+DEFAULT_POSITIVE_PROMPT = "8k, high quality, realistic, detailed, perfect anatomy, three-quarter view, angled pose, ten fingers, ten toes, bare feet fully visible."
 
-DEFAULT_NEGATIVE_PROMPT = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, extra toes, barefoot, feet cropped, head cropped, frontal pose, facing directly forward."
+DEFAULT_NEGATIVE_PROMPT = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, extra toes, feet cropped, head cropped, frontal pose, facing directly forward, sandals, shoes."
 
 
 def make_image_grid(images: list) -> Image.Image:
