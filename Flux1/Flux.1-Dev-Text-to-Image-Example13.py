@@ -13,43 +13,43 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-DEFAULT_SUBJECT = "A full body photography of a beautiful young skinny Korean woman with a soft idol aesthetic by the lakeside."
+DEFAULT_SUBJECT = "A full body photography of a beautiful young skinny Korean woman with a soft idol aesthetic standing inside a luxury hotel room."
 
 DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous straight jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air."
 
-DEFAULT_POSE_HEAD = "Head facing directly forward, eyes gazing straight into the camera, chin slightly lowered, calm and confident."
+DEFAULT_POSE_HEAD = ""
 
-DEFAULT_POSE_FOOT = "Both feet neatly together, standing with feet closed and aligned, white sneakers fully visible and not cropped."
+DEFAULT_POSE_FOOT = "Both feet flat on the floor, fully visible at the bottom of the frame, not cropped."
 
-DEFAULT_POSE_HAND = "Both hands hanging gracefully, fingers lightly extended and relaxed."
+DEFAULT_POSE_HAND = "One hand hanging naturally at her side near her leg, fingers gently relaxed. The other hand resting lightly near her waist, wrist softly bent."
 
-DEFAULT_POSE_ARM = "Both arms naturally relaxed, one elbow softly bent."
+DEFAULT_POSE_ARM = "One arm relaxed and straight down beside her leg. The other arm slightly bent at the elbow, hand resting near the waist."
 
-DEFAULT_POSE_LEG = "Both legs straight and together, standing upright with legs neatly closed, slender leg line."
+DEFAULT_POSE_LEG = "One leg straight and weight-bearing, the other leg slightly bent at the knee, weight shifted to one side, long slender legs clearly visible, elegant leg line."
 
-DEFAULT_POSE_BODY = "Standing gracefully, body fully facing the camera in a frontal view, hips naturally shifted slightly to one side accentuating the feminine curve, slender waist and hip line clearly visible, elegant and relaxed posture."
+DEFAULT_POSE_BODY = "Body facing completely and directly toward the camera, fully frontal, torso and shoulders squared to the camera, hips slightly shifted to one side, slender waist visible, relaxed and natural posture."
 
 DEFAULT_HEADWEAR = ""
 
-DEFAULT_TOP = "Dark navy floral print A-line dress, thin spaghetti straps over the shoulders, bare arms and collarbone exposed, soft loosely draped fabric with delicate flower pattern, relaxed and flowy silhouette, waist lightly tied by a fabric sash bow, skirt hemline above the knee, deep side slit on one side extending up to the upper thigh exposing the leg, light and feminine."
+DEFAULT_TOP = "Wearing a very tiny light blue swimsuit, minimal coverage, thin straps, soft sky blue color, form-fitting fabric highlighting the body."
 
 DEFAULT_BOTTOM = ""
 
-DEFAULT_LEGWEAR = "Wearing white ankle socks, clean white fabric, slightly folded cuff at the top."
+DEFAULT_LEGWEAR = ""
 
-DEFAULT_FOOTWEAR = "Wearing white casual sneakers, clean white laces, low-profile sole."
+DEFAULT_FOOTWEAR = "Wearing soft hotel indoor slippers, simple flat open-toe style, clean and minimal."
 
 DEFAULT_ARMWEAR = ""
 
-DEFAULT_SETTING = "Bright luxury hotel outdoor swimming pool, clear blue water, white poolside tiles, sunny summer atmosphere."
+DEFAULT_SETTING = "Luxury hotel interior, large floor-to-ceiling window behind her with cool blue ambient light flooding in, soft blue tones reflecting on the floor and walls."
 
-DEFAULT_LIGHTING = "Bright direct summer sunlight, strong warm highlights on the subject, vivid and radiant ambiance."
+DEFAULT_LIGHTING = "Bright even frontal lighting with a cool blue tint from the large window, entire body clearly and brightly illuminated, no harsh shadows, smooth skin highlighted."
 
-DEFAULT_CAMERA = "Full body shot, entire body from head to toe fully in frame including shoes, feet must not be cropped, natural eye-level angle, sharp focus on the subject, soft bokeh on the background."
+DEFAULT_CAMERA = "35mm lens, full body shot, low angle from hip height looking slightly upward to elongate the legs, entire body from head to feet in frame, sharp focus, soft bokeh background."
 
-DEFAULT_POSITIVE_PROMPT = "8k, high quality, realistic, detailed, perfect anatomy, ten fingers."
+DEFAULT_POSITIVE_PROMPT = "8k, high quality, realistic, detailed, perfect anatomy, ten fingers, ten toes."
 
-DEFAULT_NEGATIVE_PROMPT = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, extra toes, barefoot, high heels, stiletto, feet cropped, shoes cropped."
+DEFAULT_NEGATIVE_PROMPT = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, extra toes, barefoot, high heels, stiletto, feet cropped."
 
 
 def make_image_grid(images: list) -> Image.Image:

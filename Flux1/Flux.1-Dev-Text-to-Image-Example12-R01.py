@@ -13,7 +13,7 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-DEFAULT_SUBJECT = "A landscape photography of a beautiful young skinny Korean woman with a soft idol aesthetic standing by a bright hotel swimming pool, wearing bikini and pool sandals."
+DEFAULT_SUBJECT = "A full body photography of a beautiful young skinny Korean woman with a soft idol aesthetic standing by a bright hotel swimming pool, wearing bikini and pool sandals."
 
 DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous straight jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air."
 
@@ -476,8 +476,15 @@ def generate_image(
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         script_name = os.path.splitext(os.path.basename(__file__))[0]
         ext = "jpg" if image_format == "JPEG" else "png"
+        if DEVICE == "cuda" and torch.cuda.is_available():
+            gpu_name = torch.cuda.get_device_name(0)
+            gpu_mem = round(torch.cuda.get_device_properties(0).total_memory / (1024**3))
+            gpu_label = gpu_name.replace(" ", "").replace("NVIDIA", "").replace("GeForce", "") + f"-{gpu_mem}GB"
+            device_label = f"CUDA-{gpu_label}"
+        else:
+            device_label = DEVICE.upper()
         base_filename = (
-            f"{script_name}_{timestamp}_{DEVICE.upper()}_{width}x{height}"
+            f"{script_name}_{timestamp}_{device_label}_{width}x{height}"
             f"_gs{guidance_scale}_step{steps}_seed{int(seed)}"
             f"_cfg{true_cfg_scale}_n{int(num_images_per_prompt)}_msl{int(max_sequence_length)}"
         )
