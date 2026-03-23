@@ -15,17 +15,21 @@ import gradio as gr
 # Default values for each prompt section
 DEFAULT_SUBJECT = "A photography of a beautiful young skinny Korean woman with a soft idol aesthetic standing by a bright hotel swimming pool, her entire body soaking wet."
 
+DEFAULT_CAMERA = "Full body shot, 35mm wide lens, entire body head to toe fully in frame with space around, feet not cropped, low angle from knee height looking slightly upward to elongate legs, sharp focus, soft bokeh background."
+
 DEFAULT_FACE = "She has a fair, clear complexion with water droplets glistening on her skin. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is soft and gentle with a subtle faint smile, looking directly at the camera. She has long jet-black hair, soaking wet and clinging to her shoulders and back, strands sticking to her face and neck."
 
 DEFAULT_POSE_HEAD = "Head facing directly forward, eyes gazing straight into the camera, chin slightly lowered, calm and confident."
 
-DEFAULT_POSE_FOOT = "Both feet fully visible wearing pool sandals, shoes fully in frame, not cropped."
+DEFAULT_POSE_FOOT = ""
 
-DEFAULT_POSE_HAND = "Both hands hanging gracefully, fingers lightly extended and relaxed."
+DEFAULT_FOOTWEAR = "Wearing white pool slide sandals, simple flat open-toe slippers, wet and glistening."
 
 DEFAULT_POSE_ARM = "Both arms hanging naturally at her sides, relaxed and straight down."
 
-DEFAULT_POSE_LEG = "Both legs fully extended and straight, long slender legs clearly visible from hip to foot, legs appearing elongated and lean, toned thighs and calves, elegant long leg line."
+DEFAULT_POSE_HAND = "Both hands hanging naturally at her sides, resting loosely beside her legs, fingers gently relaxed."
+
+DEFAULT_POSE_LEG = "One leg straight and weight-bearing, the other leg slightly bent at the knee and shifted to the side, long slender legs clearly visible, toned thighs and calves, elegant leg line accentuated by the subtle bend."
 
 DEFAULT_POSE_BODY = "Standing gracefully by the poolside, body fully facing the camera in a frontal view, hips slightly shifted to one side accentuating the feminine curve, slender waist and hip line clearly visible, relaxed and natural posture."
 
@@ -37,15 +41,11 @@ DEFAULT_BOTTOM = "Wearing a dark blue bikini bottom, very tiny and minimal cover
 
 DEFAULT_LEGWEAR = ""
 
-DEFAULT_FOOTWEAR = "Wearing white pool slide sandals, simple flat open-toe slippers, wet and glistening."
-
 DEFAULT_ARMWEAR = ""
 
 DEFAULT_SETTING = "Bright luxury hotel outdoor swimming pool, clear blue water, white poolside tiles glistening wet, sunny summer atmosphere."
 
 DEFAULT_LIGHTING = "Bright direct summer sunlight, strong warm highlights on the body, vivid and radiant ambiance."
-
-DEFAULT_CAMERA = "Full body shot, entire body from head to toe fully in frame, feet must not be cropped, slightly low angle to elongate the legs, sharp focus on the subject, soft bokeh on the background."
 
 DEFAULT_POSITIVE_PROMPT = "8k, high quality, realistic, detailed, perfect anatomy, ten fingers, ten toes."
 
@@ -78,42 +78,42 @@ def normalize_spacing(text: str) -> str:
 
 def combine_prompt_sections(
     subject,
+    camera,
     face,
     pose_head,
     pose_foot,
-    pose_hand,
-    pose_arm,
+    footwear,
     pose_leg,
+    pose_arm,
+    pose_hand,
     pose_body,
     headwear,
     top,
     bottom,
     armwear,
     legwear,
-    footwear,
     setting,
     lighting,
-    camera,
 ):
     """Combine separate prompt sections into one final prompt string."""
     sections = [
         subject,
+        camera,
         face,
         pose_head,
         pose_foot,
-        pose_hand,
-        pose_arm,
+        footwear,
         pose_leg,
+        pose_arm,
+        pose_hand,
         pose_body,
         headwear,
         top,
         bottom,
         armwear,
         legwear,
-        footwear,
         setting,
         lighting,
-        camera,
     ]
     # Filter out empty sections and join with a space, preserving original punctuation
     combined = " ".join(normalize_spacing(s) for s in sections if s and s.strip())
@@ -574,6 +574,13 @@ def main():
                     placeholder="예: 1girl, young woman, a cat",
                     info="이미지의 주된 주제나 대상을 설명합니다.",
                 )
+                prompt_camera = gr.Textbox(
+                    label="2. 카메라 설정 (Camera Settings)",
+                    value=DEFAULT_CAMERA,
+                    lines=2,
+                    placeholder="예: Sony A7R V, 85mm f/1.8, ISO 400",
+                    info="카메라 기종, 렌즈, ISO, 셔터 스피드, 조리개, 피사계 심도 등을 설명합니다.",
+                )
                 prompt_face = gr.Textbox(
                     label="2. 얼굴/외모 (Face)",
                     value=DEFAULT_FACE,
@@ -595,12 +602,19 @@ def main():
                     placeholder="예: feet slightly apart, toes pointed forward",
                     info="발의 위치를 설명합니다.",
                 )
-                prompt_pose_hand = gr.Textbox(
-                    label="3c. 포즈 - 손 (Pose: Hand)",
-                    value=DEFAULT_POSE_HAND,
+                prompt_footwear = gr.Textbox(
+                    label="3b-1. 신발 (Footwear)",
+                    value=DEFAULT_FOOTWEAR,
                     lines=1,
-                    placeholder="예: one hand gripping the other arm",
-                    info="손의 위치와 동작을 설명합니다.",
+                    placeholder="예: black stiletto heels, white sneakers",
+                    info="신발, 부츠, 샌들 등을 설명합니다.",
+                )
+                prompt_pose_leg = gr.Textbox(
+                    label="3c. 포즈 - 다리 (Pose: Leg)",
+                    value=DEFAULT_POSE_LEG,
+                    lines=1,
+                    placeholder="예: one leg stepping forward, weight on left leg",
+                    info="다리 자세를 설명합니다.",
                 )
                 prompt_pose_arm = gr.Textbox(
                     label="3d. 포즈 - 팔 (Pose: Arm)",
@@ -609,12 +623,12 @@ def main():
                     placeholder="예: arms resting across torso",
                     info="팔의 위치와 자세를 설명합니다.",
                 )
-                prompt_pose_leg = gr.Textbox(
-                    label="3e. 포즈 - 다리 (Pose: Leg)",
-                    value=DEFAULT_POSE_LEG,
+                prompt_pose_hand = gr.Textbox(
+                    label="3e. 포즈 - 손 (Pose: Hand)",
+                    value=DEFAULT_POSE_HAND,
                     lines=1,
-                    placeholder="예: one leg stepping forward, weight on left leg",
-                    info="다리 자세를 설명합니다.",
+                    placeholder="예: one hand gripping the other arm",
+                    info="손의 위치와 동작을 설명합니다.",
                 )
                 prompt_pose_body = gr.Textbox(
                     label="3f. 포즈 - 몸통 (Pose: Body)",
@@ -658,13 +672,6 @@ def main():
                     placeholder="예: thigh-high black stockings, sheer tights",
                     info="스타킹, 양말, 레깅스 등을 설명합니다.",
                 )
-                prompt_footwear = gr.Textbox(
-                    label="9. 신발 (Footwear)",
-                    value=DEFAULT_FOOTWEAR,
-                    lines=1,
-                    placeholder="예: black stiletto heels, white sneakers",
-                    info="신발, 부츠, 샌들 등을 설명합니다.",
-                )
                 prompt_setting = gr.Textbox(
                     label="10. 배경/장소 (Setting & Background)",
                     value=DEFAULT_SETTING,
@@ -679,34 +686,27 @@ def main():
                     placeholder="예: golden hour, city glow, cinematic rim light",
                     info="조명 조건, 빛의 방향, 분위기를 설명합니다.",
                 )
-                prompt_camera = gr.Textbox(
-                    label="12. 카메라 설정 (Camera Settings)",
-                    value=DEFAULT_CAMERA,
-                    lines=2,
-                    placeholder="예: Sony A7R V, 85mm f/1.8, ISO 400",
-                    info="카메라 기종, 렌즈, ISO, 셔터 스피드, 조리개, 피사계 심도 등을 설명합니다.",
-                )
                 with gr.Accordion("최종 프롬프트 (Combined Prompt)", open=False):
                     combined_prompt = gr.Textbox(
                         label="최종 프롬프트",
                         value=combine_prompt_sections(
                             DEFAULT_SUBJECT,
+                            DEFAULT_CAMERA,
                             DEFAULT_FACE,
                             DEFAULT_POSE_HEAD,
                             DEFAULT_POSE_FOOT,
-                            DEFAULT_POSE_HAND,
-                            DEFAULT_POSE_ARM,
+                            DEFAULT_FOOTWEAR,
                             DEFAULT_POSE_LEG,
+                            DEFAULT_POSE_ARM,
+                            DEFAULT_POSE_HAND,
                             DEFAULT_POSE_BODY,
                             DEFAULT_HEADWEAR,
                             DEFAULT_TOP,
                             DEFAULT_BOTTOM,
                             DEFAULT_ARMWEAR,
                             DEFAULT_LEGWEAR,
-                            DEFAULT_FOOTWEAR,
                             DEFAULT_SETTING,
                             DEFAULT_LIGHTING,
-                            DEFAULT_CAMERA,
                         ),
                         lines=4,
                         interactive=False,
@@ -714,22 +714,22 @@ def main():
                     )
                 prompt_sections = [
                     prompt_subject,
+                    prompt_camera,
                     prompt_face,
                     prompt_pose_head,
                     prompt_pose_foot,
-                    prompt_pose_hand,
-                    prompt_pose_arm,
+                    prompt_footwear,
                     prompt_pose_leg,
+                    prompt_pose_arm,
+                    prompt_pose_hand,
                     prompt_pose_body,
                     prompt_headwear,
                     prompt_top,
                     prompt_bottom,
                     prompt_armwear,
                     prompt_legwear,
-                    prompt_footwear,
                     prompt_setting,
                     prompt_lighting,
-                    prompt_camera,
                 ]
                 for section in prompt_sections:
                     section.change(
