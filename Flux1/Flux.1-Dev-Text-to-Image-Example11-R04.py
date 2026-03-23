@@ -13,9 +13,9 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-DEFAULT_SUBJECT = "A full body photography of a beautiful young skinny Korean woman standing outdoors wearing sandals, her body and hair completely soaking wet, water dripping down her skin."
+DEFAULT_SUBJECT = "A full body portrait of a beautiful young skinny Korean woman standing outdoors wearing sandals, her body and hair completely soaking wet, water dripping down her skin."
 
-DEFAULT_CAMERA = "35mm lens, full body shot, low angle from hip height looking upward, head to feet in frame, sharp focus, soft bokeh background."
+DEFAULT_CAMERA = "35mm lens, full body shot, chest level view, head to feet in frame, sharp focus, soft bokeh background."
 
 DEFAULT_POSE_FOOT = "Both feet flat on the wet ground, fully visible at the bottom of the frame."
 
@@ -23,15 +23,15 @@ DEFAULT_FOOTWEAR = "White pool slide sandals, simple flat open-toe style, pure w
 
 DEFAULT_FACE = "She has a fair, clear complexion with water droplets glistening on her skin. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is soft and gentle with a subtle faint smile, looking directly at the camera. She has long jet-black hair, soaking wet and clinging to her shoulders and back, strands sticking to her face and neck."
 
-DEFAULT_POSE_HEAD = "Head facing directly forward, eyes gazing straight into the camera, chin slightly lowered, calm and confident."
+DEFAULT_POSE_HEAD = "Head turned slightly toward the camera, eyes gazing into the camera, chin slightly lowered, calm and confident."
+
+DEFAULT_POSE_BODY = "Body in a clear three-quarter pose, torso turned about 45 degrees to the side, shoulders angled away from the camera, hips and waist S-curve clearly visible, only head and gaze directed toward the camera."
 
 DEFAULT_POSE_ARM = "Both arms hanging naturally at her sides, relaxed and straight down."
 
 DEFAULT_POSE_HAND = "Fingers gently relaxed, hands resting loosely beside her legs."
 
 DEFAULT_POSE_LEG = "One leg straight and weight-bearing, the other leg slightly bent at the knee with the foot lightly turned out to the side, classic fashion model leg pose, long slender legs clearly visible, elegant elongated leg line."
-
-DEFAULT_POSE_BODY = "Body turned very slightly to one side, about 15 degrees off-center, hips and waist curves accentuated, relaxed natural posture."
 
 DEFAULT_HEADWEAR = ""
 
@@ -47,9 +47,9 @@ DEFAULT_SETTING = "Luxury hotel swimming pool background, wet white stone floor,
 
 DEFAULT_LIGHTING = "Bright direct summer sunlight, strong warm highlights on the body, vivid and radiant ambiance."
 
-DEFAULT_POSITIVE_PROMPT = "8k, high quality, realistic, detailed, perfect anatomy, ten fingers, ten toes."
+DEFAULT_POSITIVE_PROMPT = "8k, high quality, realistic, detailed, perfect anatomy, three-quarter view, angled pose, ten fingers, ten toes, feet fully visible, sandals visible."
 
-DEFAULT_NEGATIVE_PROMPT = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, extra toes."
+DEFAULT_NEGATIVE_PROMPT = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, extra toes, barefoot, feet cropped, head cropped, frontal pose, facing directly forward."
 
 
 def make_image_grid(images: list) -> Image.Image:
@@ -83,10 +83,10 @@ def combine_prompt_sections(
     footwear,
     face,
     pose_head,
+    pose_body,
     pose_leg,
     pose_arm,
     pose_hand,
-    pose_body,
     headwear,
     top,
     bottom,
@@ -103,10 +103,10 @@ def combine_prompt_sections(
         footwear,
         face,
         pose_head,
+        pose_body,
         pose_leg,
         pose_arm,
         pose_hand,
-        pose_body,
         headwear,
         top,
         bottom,
@@ -609,6 +609,13 @@ def main():
                     placeholder="예: head tilted slightly, gazing off-camera",
                     info="머리와 시선 방향을 설명합니다.",
                 )
+                prompt_pose_body = gr.Textbox(
+                    label="3f. 포즈 - 몸통 (Pose: Body)",
+                    value=DEFAULT_POSE_BODY,
+                    lines=2,
+                    placeholder="예: body angled slightly, leaning forward",
+                    info="몸통 자세와 전체 실루엣을 설명합니다.",
+                )
                 prompt_pose_leg = gr.Textbox(
                     label="3c. 포즈 - 다리 (Pose: Leg)",
                     value=DEFAULT_POSE_LEG,
@@ -629,13 +636,6 @@ def main():
                     lines=1,
                     placeholder="예: one hand gripping the other arm",
                     info="손의 위치와 동작을 설명합니다.",
-                )
-                prompt_pose_body = gr.Textbox(
-                    label="3f. 포즈 - 몸통 (Pose: Body)",
-                    value=DEFAULT_POSE_BODY,
-                    lines=2,
-                    placeholder="예: body angled slightly, leaning forward",
-                    info="몸통 자세와 전체 실루엣을 설명합니다.",
                 )
                 prompt_headwear = gr.Textbox(
                     label="4. 머리 장식 (Headwear)",
@@ -696,10 +696,10 @@ def main():
                             DEFAULT_FOOTWEAR,
                             DEFAULT_FACE,
                             DEFAULT_POSE_HEAD,
+                            DEFAULT_POSE_BODY,
                             DEFAULT_POSE_LEG,
                             DEFAULT_POSE_ARM,
                             DEFAULT_POSE_HAND,
-                            DEFAULT_POSE_BODY,
                             DEFAULT_HEADWEAR,
                             DEFAULT_TOP,
                             DEFAULT_BOTTOM,
@@ -719,10 +719,10 @@ def main():
                     prompt_footwear,
                     prompt_face,
                     prompt_pose_head,
+                    prompt_pose_body,
                     prompt_pose_leg,
                     prompt_pose_arm,
                     prompt_pose_hand,
-                    prompt_pose_body,
                     prompt_headwear,
                     prompt_top,
                     prompt_bottom,
