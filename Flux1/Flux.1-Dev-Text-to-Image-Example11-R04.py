@@ -13,7 +13,7 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-DEFAULT_SUBJECT = "A full body portrait of a beautiful young skinny Korean woman standing barefoot outdoors, her body and hair completely soaking wet, water dripping down her skin."
+DEFAULT_SUBJECT = "A full body landscape photography of a beautiful young skinny Korean woman standing barefoot outdoors, her body and hair completely soaking wet, water dripping down her skin."
 
 DEFAULT_CAMERA = "35mm lens, full body shot, chest level view, head to toes in frame, sharp focus, soft bokeh background."
 
