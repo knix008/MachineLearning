@@ -21,7 +21,7 @@ DEFAULT_POSE_HEAD = ""
 
 DEFAULT_HEADWEAR = ""
 
-DEFAULT_POSE_LEG = "One leg straight and firmly weight-bearing, the other leg slightly bent at the knee, both feet flat on the floor, legs not crossed, not intertwined, side by side, long slender legs clearly visible."
+DEFAULT_POSE_LEG = "Relaxed standing pose, one leg straight as the main weight-bearing leg, the other knee very slightly bent causing a gentle hip tilt, both feet flat on the floor, legs not crossed, not intertwined, side by side, long slender legs clearly visible."
 
 DEFAULT_LEGWEAR = ""
 
@@ -35,7 +35,7 @@ DEFAULT_ARMWEAR = ""
 
 DEFAULT_POSE_HAND = "Both hands loosely relaxed, hanging naturally at her sides."
 
-DEFAULT_POSE_BODY = "Fully frontal toward the camera, hips shifted noticeably to one side, hourglass silhouette clearly visible, waist and hip curve prominently accentuated, relaxed natural posture."
+DEFAULT_POSE_BODY = "Fully frontal toward the camera, hips tilted slightly to one side due to the bent knee, hourglass silhouette clearly visible, waist and hip curve naturally accentuated, relaxed comfortable posture."
 
 DEFAULT_TOP = "Wearing a very tiny light blue triangle bikini top, extremely minimal coverage, thin soft pink string straps, barely covering the chest."
 
@@ -45,7 +45,7 @@ DEFAULT_SETTING = "Luxury hotel outdoor swimming pool, clear turquoise water beh
 
 DEFAULT_LIGHTING = "Soft natural daylight, gentle diffused sunlight, moderate exposure, even illumination without overexposure, subtle reflections from the pool water, natural skin tones preserved, no blown-out highlights."
 
-DEFAULT_CAMERA = "35mm lens, full body shot, low angle from hip height looking slightly upward to elongate the legs, entire body from head to feet in frame, sharp focus, soft bokeh background."
+DEFAULT_CAMERA = "35mm lens, full body shot, camera at chest height, eye-level angle, entire body from head to feet in frame, sharp focus, soft bokeh background."
 
 DEFAULT_POSITIVE_PROMPT = "8k, high quality, photorealistic, perfect anatomy, ten fingers, well formed fingers, well formed toes, ten toes, sharp focus."
 
