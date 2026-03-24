@@ -15,7 +15,7 @@ import gradio as gr
 # Default values for each prompt section
 DEFAULT_SUBJECT = "A full body photography of a beautiful young skinny Korean woman with a soft idol aesthetic standing inside a luxury hotel room, wearing a bikini and pink hotel slippers."
 
-DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous straight jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air."
+DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous wavy jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air."
 
 DEFAULT_POSE_HEAD = ""
 
