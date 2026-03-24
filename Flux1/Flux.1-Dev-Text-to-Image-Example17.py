@@ -13,9 +13,9 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-DEFAULT_SUBJECT = "A full body photography of a beautiful young skinny Korean woman with a soft idol aesthetic standing beside a luxury hotel outdoor swimming pool, wearing a bikini and pool slide sandals."
+DEFAULT_SUBJECT = "A full body photography of a beautiful young skinny Korean woman with a soft idol aesthetic standing inside a luxury hotel room, wearing slippers."
 
-DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous straight jet-black hair with beautiful soft waves and curls, gently flowing, strands moving naturally."
+DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous straight jet-black hair."
 
 DEFAULT_POSE_HEAD = ""
 
@@ -27,7 +27,7 @@ DEFAULT_LEGWEAR = ""
 
 DEFAULT_POSE_FOOT = "Both feet neatly together side by side and closed, flat on the floor, fully visible at the bottom of the frame."
 
-DEFAULT_FOOTWEAR = "Wearing white pool slide sandals, simple flat open-toe slippers on the poolside tiles."
+DEFAULT_FOOTWEAR = "Wearing white hotel room slippers, soft plush indoor slippers, flat and comfortable, on the hotel room floor."
 
 DEFAULT_POSE_ARM = "Both arms slightly bent at the elbow, relaxed at her sides."
 
@@ -35,17 +35,17 @@ DEFAULT_ARMWEAR = ""
 
 DEFAULT_POSE_HAND = "Both hands loosely relaxed, fingers lightly extended and natural."
 
-DEFAULT_POSE_BODY = "Fully frontal toward the camera, hips pushed slightly to one side while upper body remains upright, hourglass silhouette clearly visible, waist and hip curve accentuated."
+DEFAULT_POSE_BODY = "Fully frontal toward the camera, hips tilted and pushed noticeably to one side in a natural S-curve, upper body remains upright, feminine waist-to-hip curve clearly emphasized, hourglass silhouette visible."
 
 DEFAULT_TOP = "Wearing a very tiny pink triangle bikini top, extremely minimal coverage, thin light blue string straps, barely covering the chest."
 
 DEFAULT_BOTTOM = "Wearing a very tiny pink thong bikini bottom, extremely minimal coverage, thin light blue string straps, barely covering the hips."
 
-DEFAULT_SETTING = "Luxury hotel outdoor swimming pool, clear turquoise water behind her, poolside tiles, sunlit open-air environment, soft blue sky in the background."
+DEFAULT_SETTING = "Luxury hotel room interior, elegant furnishings, floor-to-ceiling large window revealing a vast ocean view in the distance, soft natural light streaming through the window, clean and bright modern interior, sophisticated ambiance."
 
-DEFAULT_LIGHTING = "Very bright frontal lighting directly facing the subject, face and entire body brilliantly and evenly illuminated, high key lighting, no shadows on the face or body, no backlight, well-exposed and radiant."
+DEFAULT_LIGHTING = "Very bright indoor lighting, abundant natural light flooding through large windows, high key interior illumination, face and body brilliantly and evenly lit, no shadows, clean and radiant skin tones."
 
-DEFAULT_CAMERA = "35mm lens, full body shot, low angle worm's eye view from below knee level, entire body from head to feet in frame, sharp focus, soft bokeh background."
+DEFAULT_CAMERA = "35mm lens, full body shot, camera at chest height, chest-level angle, entire body from head to feet in frame, sharp focus, soft bokeh background."
 
 DEFAULT_POSITIVE_PROMPT = "8k, high quality, photorealistic, perfect anatomy, ten fingers, ten toes, sharp focus, highly detailed."
 
