@@ -13,7 +13,7 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-DEFAULT_SUBJECT = "A full body photography of a beautiful young skinny Korean woman with a soft idol aesthetic standing inside a luxury hotel room."
+DEFAULT_SUBJECT = "A full body photography of a beautiful young skinny Korean woman with a soft idol aesthetic standing inside a luxury hotel room, wearing a bikini and slippers."
 
 DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous straight jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air."
 
@@ -21,19 +21,19 @@ DEFAULT_POSE_HEAD = ""
 
 DEFAULT_POSE_FOOT = "Both feet flat on the floor, fully visible at the bottom of the frame, not cropped."
 
-DEFAULT_POSE_HAND = "One hand hanging naturally at her side near her leg, fingers gently relaxed. The other hand resting lightly near her waist, wrist softly bent."
+DEFAULT_POSE_HAND = "One hand loosely relaxed at her side. The other hand lightly resting on the waist."
 
-DEFAULT_POSE_ARM = "One arm relaxed and straight down beside her leg. The other arm slightly bent at the elbow, hand resting near the waist."
+DEFAULT_POSE_ARM = "One arm straight down at her side. The other arm bent at the elbow, resting on the waist."
 
-DEFAULT_POSE_LEG = "One leg straight and weight-bearing, the other leg slightly bent at the knee, weight shifted to one side, long slender legs clearly visible, elegant leg line."
+DEFAULT_POSE_LEG = "One leg straight and firmly weight-bearing, the other leg clearly bent at the knee with the foot slightly lifted or shifted, creating a visible contrapposto stance, long slender legs clearly visible."
 
-DEFAULT_POSE_BODY = "Body facing completely and directly toward the camera, fully frontal, torso and shoulders squared to the camera, hips slightly shifted to one side, slender waist visible, relaxed and natural posture."
+DEFAULT_POSE_BODY = "Fully frontal toward the camera, hips shifted to one side in a contrapposto pose, waist curve accentuated, relaxed posture."
 
 DEFAULT_HEADWEAR = ""
 
-DEFAULT_TOP = "Wearing a very tiny light blue swimsuit, minimal coverage, thin straps, soft sky blue color, form-fitting fabric highlighting the body."
+DEFAULT_TOP = "Wearing a very tiny light pink triangle bikini top, extremely minimal coverage, thin string straps, soft pink color, barely covering the chest."
 
-DEFAULT_BOTTOM = ""
+DEFAULT_BOTTOM = "Wearing a very tiny light pink thong bikini bottom, extremely minimal coverage, thin side strings, soft pink color, barely covering the hips."
 
 DEFAULT_LEGWEAR = ""
 
@@ -47,9 +47,9 @@ DEFAULT_LIGHTING = "Bright even frontal lighting with a cool blue tint from the 
 
 DEFAULT_CAMERA = "35mm lens, full body shot, low angle from hip height looking slightly upward to elongate the legs, entire body from head to feet in frame, sharp focus, soft bokeh background."
 
-DEFAULT_POSITIVE_PROMPT = "8k, high quality, realistic, detailed, perfect anatomy, ten fingers, ten toes."
+DEFAULT_POSITIVE_PROMPT = "8k, high quality, realistic, detailed, perfect anatomy, ten fingers."
 
-DEFAULT_NEGATIVE_PROMPT = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, extra toes, barefoot, high heels, stiletto, feet cropped."
+DEFAULT_NEGATIVE_PROMPT = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, extra toes, feet cropped."
 
 
 def make_image_grid(images: list) -> Image.Image:
