@@ -21,11 +21,11 @@ DEFAULT_POSE_HEAD = ""
 
 DEFAULT_HEADWEAR = ""
 
-DEFAULT_POSE_LEG = "One leg straight and firmly weight-bearing, the other leg slightly bent at the knee with the foot still on the floor without crossing, creating a subtle contrapposto stance, long slender legs clearly visible."
+DEFAULT_POSE_LEG = "One leg straight and firmly weight-bearing, the other leg slightly bent at the knee, both feet flat on the floor, legs not crossed, not intertwined, side by side, long slender legs clearly visible."
 
 DEFAULT_LEGWEAR = ""
 
-DEFAULT_POSE_FOOT = "Both feet together, flat on the floor, fully visible at the bottom of the frame, not cropped."
+DEFAULT_POSE_FOOT = "Both feet side by side, flat on the floor, not crossed from the viewer, fully visible at the bottom of the frame, not cropped."
 
 DEFAULT_FOOTWEAR = "Barefoot, bare feet on the poolside tiles, no footwear."
 
@@ -35,7 +35,7 @@ DEFAULT_ARMWEAR = ""
 
 DEFAULT_POSE_HAND = "Both hands loosely relaxed, hanging naturally at her sides."
 
-DEFAULT_POSE_BODY = "Body turned slightly to the side, hips shifted to one side, waist curve accentuated, relaxed posture."
+DEFAULT_POSE_BODY = "Fully frontal toward the camera, hips shifted noticeably to one side, hourglass silhouette clearly visible, waist and hip curve prominently accentuated, relaxed natural posture."
 
 DEFAULT_TOP = "Wearing a very tiny light blue triangle bikini top, extremely minimal coverage, thin soft pink string straps, barely covering the chest."
 
