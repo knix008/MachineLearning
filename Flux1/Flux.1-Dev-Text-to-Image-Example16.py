@@ -45,7 +45,7 @@ DEFAULT_SETTING = "Luxury hotel outdoor swimming pool, clear turquoise water beh
 
 DEFAULT_LIGHTING = "Soft natural daylight, gentle diffused sunlight, moderate exposure, even illumination without overexposure, subtle reflections from the pool water, natural skin tones preserved, no blown-out highlights."
 
-DEFAULT_CAMERA = "35mm lens, full body shot, camera at chest height, eye-level angle, entire body from head to feet in frame, sharp focus, soft bokeh background."
+DEFAULT_CAMERA = "35mm lens, full body shot, camera at chest height, chest-level view, entire body from head to feet in frame, sharp focus, soft bokeh background."
 
 DEFAULT_POSITIVE_PROMPT = "8k, high quality, photorealistic, perfect anatomy, ten fingers, well formed fingers, well formed toes, ten toes, sharp focus."
 
