@@ -13,7 +13,7 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-DEFAULT_SUBJECT = "A full body photography of a beautiful young skinny Korean woman with a soft idol aesthetic standing inside a luxury hotel room, wearing a bikini and slippers."
+DEFAULT_SUBJECT = "A full body photography of a beautiful young skinny Korean woman with a soft idol aesthetic standing inside a luxury hotel room, wearing a bikini and pink hotel slippers."
 
 DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous straight jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air."
 
@@ -21,23 +21,23 @@ DEFAULT_POSE_HEAD = ""
 
 DEFAULT_POSE_FOOT = "Both feet flat on the floor, fully visible at the bottom of the frame, not cropped."
 
-DEFAULT_POSE_HAND = "One hand loosely relaxed at her side. The other hand lightly resting on the waist."
+DEFAULT_POSE_HAND = "One hand loosely relaxed, hanging naturally at her side. The other hand gently holding the tip of her hair."
 
-DEFAULT_POSE_ARM = "One arm straight down at her side. The other arm bent at the elbow, resting on the waist."
+DEFAULT_POSE_ARM = "One arm slightly bent at the elbow, hanging naturally down at her side. The other arm slightly raised, gently holding the tip of her hair."
 
-DEFAULT_POSE_LEG = "One leg straight and firmly weight-bearing, the other leg clearly bent at the knee with the foot slightly lifted or shifted, creating a visible contrapposto stance, long slender legs clearly visible."
+DEFAULT_POSE_LEG = "One leg straight and firmly weight-bearing, the other leg slightly bent at the knee with the foot still on the floor without crossing, creating a subtle contrapposto stance, long slender legs clearly visible."
 
 DEFAULT_POSE_BODY = "Fully frontal toward the camera, hips shifted to one side in a contrapposto pose, waist curve accentuated, relaxed posture."
 
 DEFAULT_HEADWEAR = ""
 
-DEFAULT_TOP = "Wearing a very tiny light pink triangle bikini top, extremely minimal coverage, thin string straps, soft pink color, barely covering the chest."
+DEFAULT_TOP = "Wearing a very tiny light blue triangle bikini top, extremely minimal coverage, thin soft pink string straps, barely covering the chest."
 
-DEFAULT_BOTTOM = "Wearing a very tiny light pink thong bikini bottom, extremely minimal coverage, thin side strings, soft pink color, barely covering the hips."
+DEFAULT_BOTTOM = "Wearing a very tiny light blue thong bikini bottom, extremely minimal coverage, thin soft pink string straps, barely covering the hips."
 
 DEFAULT_LEGWEAR = ""
 
-DEFAULT_FOOTWEAR = "Wearing soft hotel indoor slippers, simple flat open-toe style, clean and minimal."
+DEFAULT_FOOTWEAR = "Wearing soft pink hotel indoor slippers, simple flat open-toe style, clean and minimal."
 
 DEFAULT_ARMWEAR = ""
 
@@ -47,7 +47,7 @@ DEFAULT_LIGHTING = "Bright even frontal lighting with a cool blue tint from the 
 
 DEFAULT_CAMERA = "35mm lens, full body shot, low angle from hip height looking slightly upward to elongate the legs, entire body from head to feet in frame, sharp focus, soft bokeh background."
 
-DEFAULT_POSITIVE_PROMPT = "8k, high quality, realistic, detailed, perfect anatomy, ten fingers."
+DEFAULT_POSITIVE_PROMPT = "8k, high quality, realistic, perfect anatomy, ten fingers, well formed toes, ten toes, masterpiece, best quality, highly detailed, professional lighting, photorealistic, sharp focus, studio photo."
 
 DEFAULT_NEGATIVE_PROMPT = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, extra toes, feet cropped."
 
@@ -100,10 +100,10 @@ def combine_prompt_sections(
         subject,
         face,
         pose_head,
-        pose_foot,
-        pose_hand,
-        pose_arm,
         pose_leg,
+        pose_foot,
+        pose_arm,
+        pose_hand,
         pose_body,
         headwear,
         top,
