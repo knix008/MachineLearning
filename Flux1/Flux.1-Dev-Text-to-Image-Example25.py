@@ -13,7 +13,7 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-DEFAULT_SUBJECT = "A full body photography of a beautiful young skinny Korean woman standing on a sunny beach on a bright summer day."
+DEFAULT_SUBJECT = "A full body photography of a beautiful young skinny Korean woman standing on a sunny beach on a bright summer day, wearing simple white strappy beach sandals on her feet."
 
 DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous straight jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air."
 
@@ -21,7 +21,7 @@ DEFAULT_POSE_HEAD = "Head held upright with elegant posture, facing directly tow
 
 DEFAULT_HEADWEAR = ""
 
-DEFAULT_POSE_LEG = "Both legs close together, feet side by side, side slit of skirt naturally parted revealing bare leg."
+DEFAULT_POSE_LEG = "Both legs close together, feet side by side, bare legs fully visible."
 
 DEFAULT_LEGWEAR = ""
 
@@ -35,21 +35,21 @@ DEFAULT_ARMWEAR = ""
 
 DEFAULT_POSE_HAND = "One hand hanging gracefully at her side with fingers lightly extended, the other hand resting gently on her upper thigh with fingers elegantly spread."
 
-DEFAULT_POSE_BODY = "Standing perfectly still and upright, both feet and legs together, body facing completely straight toward the camera, chest and torso fully frontal, posture tall and elegant, shoulders back."
+DEFAULT_POSE_BODY = "Standing perfectly still and upright, body facing completely straight toward the camera, chest and torso fully frontal, posture tall and elegant, shoulders back."
 
-DEFAULT_TOP = "Light sky blue chiffon sundress with thin spaghetti straps, simple V-neckline, bare shoulders and arms, lightweight and flowy, densely scattered tiny cherry blossom print in soft pink and white, fitted waist, flowing A-line skirt with a side slit from the upper thigh naturally parting to reveal the bare leg, casual summer beach style."
+DEFAULT_TOP = "Tiny pink bikini top with light blue string ties at the neck and back, minimal triangle cups, bare midriff fully exposed."
 
-DEFAULT_BOTTOM = ""
+DEFAULT_BOTTOM = "Tiny pink bikini bottom with light blue string ties at the hips, minimal coverage, bare hips and thighs fully visible."
 
 DEFAULT_SETTING = "Sunny beach, bright white sand, clear turquoise ocean water, gentle waves in the background, open sky with a few light clouds, warm summer day at the seaside."
 
 DEFAULT_LIGHTING = "Bright direct sunlight shining straight onto the face from the front, face fully illuminated and radiant, warm golden sunlight, vivid and bright exposure, no shadows on the face."
 
-DEFAULT_CAMERA = "Full body shot, entire body from head to feet fully in frame, feet and sandals not cropped, slightly low angle to elongate legs, subject facing camera, sharp focus, soft bokeh background."
+DEFAULT_CAMERA = "Full body shot, entire body from head to feet fully in frame, both feet and sandals completely visible and not cropped, camera at chest level angle, subject facing camera, sharp focus on full body including feet, soft bokeh background."
 
 DEFAULT_POSITIVE_PROMPT = "8k, high quality, realistic, detailed, sharp focus, perfect anatomy, ten fingers, beautiful fingers, beautiful toes."
 
-DEFAULT_NEGATIVE_PROMPT = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, one leg forward, staggered legs, walking pose, weight shift, legs apart, stepping, feet apart, spread legs."
+DEFAULT_NEGATIVE_PROMPT = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, one leg forward, staggered legs, walking pose, weight shift, legs apart, stepping, spread legs, cropped feet, missing feet, feet cut off."
 
 def make_image_grid(images: list) -> Image.Image:
     """Arrange PIL images into a grid that fits in one view."""
