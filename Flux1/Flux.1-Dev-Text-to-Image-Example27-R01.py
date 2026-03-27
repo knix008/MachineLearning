@@ -13,44 +13,43 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-DEFAULT_SUBJECT = "A full body photography of a beautiful young skinny Korean woman with a soft idol aesthetic on a university campus."
+DEFAULT_SUBJECT = "A full body photography of a beautiful young skinny Korean woman sitting at a café table."
 
-DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous straight jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air."
+DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is gentle with a soft closed-mouth smile, lips lightly pressed together with a subtle upward curve, looking directly at the camera. She has long, voluminous straight jet-black hair with beautiful soft waves and curls, all swept entirely over and behind both shoulders, flowing down her back, no hair falling in front of the shoulders."
 
-DEFAULT_POSE_HEAD = "Head facing directly forward, eyes gazing straight into the camera, chin slightly lowered, calm and confident."
-
-DEFAULT_POSE_FOOT = "Both feet neatly together, standing with feet closed and aligned, white sneakers fully visible and not cropped."
-
-DEFAULT_POSE_HAND = "Both hands hanging gracefully, fingers lightly extended and relaxed."
-
-DEFAULT_POSE_ARM = "Both arms naturally relaxed, one elbow softly bent."
-
-DEFAULT_POSE_LEG = "Both legs straight and together, standing upright with legs neatly closed, slender leg line."
-
-DEFAULT_POSE_BODY = "Standing gracefully, body fully facing the camera in a frontal view, hips naturally shifted slightly to one side accentuating the feminine curve, slender waist and hip line clearly visible, elegant and relaxed posture."
+DEFAULT_POSE_HEAD = "Head held upright with elegant posture, all hair swept back behind both shoulders, face and neck fully exposed."
 
 DEFAULT_HEADWEAR = ""
 
-DEFAULT_TOP = "Dark navy floral print A-line dress, thin spaghetti straps over the shoulders, bare arms and collarbone exposed, soft loosely draped fabric with delicate flower pattern, relaxed and flowy silhouette, waist lightly tied by a fabric sash bow, skirt hemline above the knee, deep side slit on one side extending up to the upper thigh exposing the leg, light and feminine."
+DEFAULT_POSE_LEG = "Both legs close together, slightly angled to the side, skirt side slit slightly parted open, bare leg clearly visible from mid-thigh downward through the slit."
 
-DEFAULT_BOTTOM = ""
+DEFAULT_LEGWEAR = "Bare legs, smooth and fair skin, leg clearly exposed through the deep side slit of the skirt from mid-thigh to ankle."
 
-DEFAULT_LEGWEAR = "Wearing white ankle socks, clean white fabric, slightly folded cuff at the top."
+DEFAULT_POSE_FOOT = "Both feet side by side, parallel to each other, toes pointing forward, white sneakers clearly shown side by side, feet fully in frame."
 
-DEFAULT_FOOTWEAR = "Wearing white casual sneakers, clean white laces, low-profile sole."
+DEFAULT_FOOTWEAR = "Clean white canvas sneakers."
+
+DEFAULT_POSE_ARM = "One arm resting on the café table, the other arm bent at the elbow lifting a Starbucks cup toward her lips."
 
 DEFAULT_ARMWEAR = ""
 
-DEFAULT_SETTING = "Beautiful university campus, tree-lined walkway, green lawns, classic brick buildings in the background, warm sunny day."
+DEFAULT_POSE_HAND = "One hand resting lightly on the table, the other hand holding a Starbucks cup with fingers elegantly wrapped around it."
 
-DEFAULT_LIGHTING = "Bright natural daylight, soft frontal light, face clearly and brightly lit, no harsh shadows."
+DEFAULT_POSE_BODY = "Sitting upright on a café chair, body facing toward the camera, torso frontal, legs together and slightly angled to the side."
 
-DEFAULT_CAMERA = "Full body shot, entire body from head to toe fully in frame including shoes, feet must not be cropped, natural eye-level angle, sharp focus on the subject, soft bokeh on the background."
+DEFAULT_TOP = "Dark navy chiffon dress with thin spaghetti straps, bare shoulders, small cherry blossoms print in soft pink and white, fitted waist, A-line skirt with a deep side slit from mid-thigh exposing the bare leg."
 
-DEFAULT_POSITIVE_PROMPT = "8k, high quality, realistic, detailed, perfect anatomy, ten fingers."
+DEFAULT_BOTTOM = ""
 
-DEFAULT_NEGATIVE_PROMPT = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, extra toes, barefoot, high heels, stiletto, feet cropped, shoes cropped."
+DEFAULT_SETTING = "Charming outdoor café terrace, small round table with a Starbucks cup, café chairs, cherry blossom trees lining the street with pink petals falling gently, warm sunny spring day."
 
+DEFAULT_LIGHTING = "Bright even spring daylight, soft frontal natural light, face clearly and brightly lit, no harsh shadows."
+
+DEFAULT_CAMERA = "Full body shot, entire body from head to feet fully in frame, feet and sneakers not cropped, eye-level angle, sharp focus, soft bokeh background."
+
+DEFAULT_POSITIVE_PROMPT = "8k, high quality, realistic, detailed, sharp focus, perfect anatomy, beautiful fingers, ten fingers."
+
+DEFAULT_NEGATIVE_PROMPT = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, one leg forward, staggered legs, walking pose, weight shift, legs apart, stepping, feet apart, spread legs."
 
 def make_image_grid(images: list) -> Image.Image:
     """Arrange PIL images into a grid that fits in one view."""
@@ -80,17 +79,17 @@ def combine_prompt_sections(
     subject,
     face,
     pose_head,
-    pose_foot,
-    pose_hand,
-    pose_arm,
-    pose_leg,
-    pose_body,
     headwear,
+    pose_leg,
+    legwear,
+    pose_foot,
+    footwear,
+    pose_arm,
+    armwear,
+    pose_hand,
+    pose_body,
     top,
     bottom,
-    armwear,
-    legwear,
-    footwear,
     setting,
     lighting,
     camera,
@@ -100,17 +99,17 @@ def combine_prompt_sections(
         subject,
         face,
         pose_head,
-        pose_foot,
-        pose_hand,
-        pose_arm,
-        pose_leg,
-        pose_body,
         headwear,
+        pose_leg,
+        legwear,
+        pose_foot,
+        footwear,
+        pose_arm,
+        armwear,
+        pose_hand,
+        pose_body,
         top,
         bottom,
-        armwear,
-        legwear,
-        footwear,
         setting,
         lighting,
         camera,
@@ -400,12 +399,15 @@ def generate_image(
         # Encode negative prompt when true_cfg_scale > 1.0
         negative_prompt_embeds = None
         negative_pooled_prompt_embeds = None
+        neg_token_count = 0
+        neg_clipped = 0
         if true_cfg_scale > 1.0 and negative_prompt and negative_prompt.strip():
-            print(f"네거티브 프롬프트 인코딩 중... (true_cfg_scale={true_cfg_scale})")
             print("=" * 60)
-            print("[네거티브 프롬프트]")
+            print(f"[네거티브 프롬프트] (true_cfg_scale={true_cfg_scale})")
             print(negative_prompt)
             print("=" * 60)
+
+            # Count negative prompt tokens to detect clipping
             neg_raw_ids = pipe.tokenizer_2(negative_prompt, truncation=False, return_tensors="pt")["input_ids"][0]
             neg_token_count = len(neg_raw_ids)
             neg_clipped = max(0, neg_token_count - max_len)
@@ -418,6 +420,7 @@ def generate_image(
                 print("-" * 60)
             else:
                 print(f"✓ 네거티브 T5 토큰 수: {neg_token_count} / {max_len} (잘림 없음)")
+
             neg_inputs = pipe.tokenizer_2(
                 negative_prompt,
                 padding="max_length",
@@ -496,7 +499,7 @@ def generate_image(
             gpu_name = torch.cuda.get_device_name(0)
             gpu_mem = round(torch.cuda.get_device_properties(0).total_memory / (1024**3))
             gpu_label = gpu_name.replace(" ", "").replace("NVIDIA", "").replace("GeForce", "") + f"-{gpu_mem}GB"
-            device_label = f"CUDA-{gpu_label}"
+            device_label = gpu_label
         else:
             device_label = DEVICE.upper()
         base_filename = (
@@ -520,12 +523,16 @@ def generate_image(
             if clipped > 0
             else f"토큰: {raw_token_count}/{max_len}"
         )
-        saved_info = (
-            f"저장됨: {saved_files[0]}"
-            if len(saved_files) == 1
-            else f"{len(saved_files)}장 저장됨: {saved_files[0]} 외"
-        )
-        print(f"이미지 생성 완료! 소요 시간: {elapsed:.1f}초 | {token_info}")
+        neg_token_info = (
+            f"네거티브 토큰: {neg_token_count}/{max_len} → {neg_clipped}개 잘림!"
+            if neg_clipped > 0
+            else f"네거티브 토큰: {neg_token_count}/{max_len}"
+        ) if neg_token_count > 0 else ""
+        saved_info = f"저장됨: {saved_files[0]}" if len(saved_files) == 1 else f"{len(saved_files)}장 저장됨: {saved_files[0]} 외"
+        summary = f"이미지 생성 완료! 소요 시간: {elapsed:.1f}초 | {token_info}"
+        if neg_token_info:
+            summary += f" | {neg_token_info}"
+        print(summary)
         for f in saved_files:
             print(f"이미지가 저장되었습니다 : {f}")
 
@@ -604,19 +611,40 @@ def main():
                     placeholder="예: head tilted slightly, gazing off-camera",
                     info="머리와 시선 방향을 설명합니다.",
                 )
+                prompt_headwear = gr.Textbox(
+                    label="4. 머리 장식 (Headwear)",
+                    value=DEFAULT_HEADWEAR,
+                    lines=1,
+                    placeholder="예: black beret, floral hairpin",
+                    info="모자, 헤어핀, 머리띠 등 머리 장식을 설명합니다.",
+                )
+                prompt_pose_leg = gr.Textbox(
+                    label="3b. 포즈 - 다리 (Pose: Leg)",
+                    value=DEFAULT_POSE_LEG,
+                    lines=1,
+                    placeholder="예: one leg stepping forward, weight on left leg",
+                    info="다리 자세를 설명합니다.",
+                )
+                prompt_legwear = gr.Textbox(
+                    label="8. 레그웨어 (Legwear)",
+                    value=DEFAULT_LEGWEAR,
+                    lines=1,
+                    placeholder="예: thigh-high black stockings, sheer tights",
+                    info="스타킹, 양말, 레깅스 등을 설명합니다.",
+                )
                 prompt_pose_foot = gr.Textbox(
-                    label="3b. 포즈 - 발 (Pose: Foot)",
+                    label="3c. 포즈 - 발 (Pose: Foot)",
                     value=DEFAULT_POSE_FOOT,
                     lines=1,
                     placeholder="예: feet slightly apart, toes pointed forward",
                     info="발의 위치를 설명합니다.",
                 )
-                prompt_pose_hand = gr.Textbox(
-                    label="3c. 포즈 - 손 (Pose: Hand)",
-                    value=DEFAULT_POSE_HAND,
+                prompt_footwear = gr.Textbox(
+                    label="9. 신발 (Footwear)",
+                    value=DEFAULT_FOOTWEAR,
                     lines=1,
-                    placeholder="예: one hand gripping the other arm",
-                    info="손의 위치와 동작을 설명합니다.",
+                    placeholder="예: black stiletto heels, white sneakers",
+                    info="신발, 부츠, 샌들 등을 설명합니다.",
                 )
                 prompt_pose_arm = gr.Textbox(
                     label="3d. 포즈 - 팔 (Pose: Arm)",
@@ -625,12 +653,19 @@ def main():
                     placeholder="예: arms resting across torso",
                     info="팔의 위치와 자세를 설명합니다.",
                 )
-                prompt_pose_leg = gr.Textbox(
-                    label="3e. 포즈 - 다리 (Pose: Leg)",
-                    value=DEFAULT_POSE_LEG,
+                prompt_armwear = gr.Textbox(
+                    label="7. 팔 장식 (Armwear)",
+                    value=DEFAULT_ARMWEAR,
                     lines=1,
-                    placeholder="예: one leg stepping forward, weight on left leg",
-                    info="다리 자세를 설명합니다.",
+                    placeholder="예: black lace gloves, silver bracelet",
+                    info="장갑, 팔찌, 소매 장식 등을 설명합니다.",
+                )
+                prompt_pose_hand = gr.Textbox(
+                    label="3e. 포즈 - 손 (Pose: Hand)",
+                    value=DEFAULT_POSE_HAND,
+                    lines=1,
+                    placeholder="예: one hand gripping the other arm",
+                    info="손의 위치와 동작을 설명합니다.",
                 )
                 prompt_pose_body = gr.Textbox(
                     label="3f. 포즈 - 몸통 (Pose: Body)",
@@ -638,13 +673,6 @@ def main():
                     lines=2,
                     placeholder="예: body angled slightly, leaning forward",
                     info="몸통 자세와 전체 실루엣을 설명합니다.",
-                )
-                prompt_headwear = gr.Textbox(
-                    label="4. 머리 장식 (Headwear)",
-                    value=DEFAULT_HEADWEAR,
-                    lines=1,
-                    placeholder="예: black beret, floral hairpin",
-                    info="모자, 헤어핀, 머리띠 등 머리 장식을 설명합니다.",
                 )
                 prompt_top = gr.Textbox(
                     label="5. 상의 (Top)",
@@ -659,27 +687,6 @@ def main():
                     lines=2,
                     placeholder="예: tiny black panty, mini skirt",
                     info="하의, 속옷 하의 등을 설명합니다.",
-                )
-                prompt_armwear = gr.Textbox(
-                    label="7. 팔 장식 (Armwear)",
-                    value=DEFAULT_ARMWEAR,
-                    lines=1,
-                    placeholder="예: black lace gloves, silver bracelet",
-                    info="장갑, 팔찌, 소매 장식 등을 설명합니다.",
-                )
-                prompt_legwear = gr.Textbox(
-                    label="8. 레그웨어 (Legwear)",
-                    value=DEFAULT_LEGWEAR,
-                    lines=1,
-                    placeholder="예: thigh-high black stockings, sheer tights",
-                    info="스타킹, 양말, 레깅스 등을 설명합니다.",
-                )
-                prompt_footwear = gr.Textbox(
-                    label="9. 신발 (Footwear)",
-                    value=DEFAULT_FOOTWEAR,
-                    lines=1,
-                    placeholder="예: black stiletto heels, white sneakers",
-                    info="신발, 부츠, 샌들 등을 설명합니다.",
                 )
                 prompt_setting = gr.Textbox(
                     label="10. 배경/장소 (Setting & Background)",
@@ -709,17 +716,17 @@ def main():
                             DEFAULT_SUBJECT,
                             DEFAULT_FACE,
                             DEFAULT_POSE_HEAD,
-                            DEFAULT_POSE_FOOT,
-                            DEFAULT_POSE_HAND,
-                            DEFAULT_POSE_ARM,
-                            DEFAULT_POSE_LEG,
-                            DEFAULT_POSE_BODY,
                             DEFAULT_HEADWEAR,
+                            DEFAULT_POSE_LEG,
+                            DEFAULT_LEGWEAR,
+                            DEFAULT_POSE_FOOT,
+                            DEFAULT_FOOTWEAR,
+                            DEFAULT_POSE_ARM,
+                            DEFAULT_ARMWEAR,
+                            DEFAULT_POSE_HAND,
+                            DEFAULT_POSE_BODY,
                             DEFAULT_TOP,
                             DEFAULT_BOTTOM,
-                            DEFAULT_ARMWEAR,
-                            DEFAULT_LEGWEAR,
-                            DEFAULT_FOOTWEAR,
                             DEFAULT_SETTING,
                             DEFAULT_LIGHTING,
                             DEFAULT_CAMERA,
@@ -732,17 +739,17 @@ def main():
                     prompt_subject,
                     prompt_face,
                     prompt_pose_head,
-                    prompt_pose_foot,
-                    prompt_pose_hand,
-                    prompt_pose_arm,
-                    prompt_pose_leg,
-                    prompt_pose_body,
                     prompt_headwear,
+                    prompt_pose_leg,
+                    prompt_legwear,
+                    prompt_pose_foot,
+                    prompt_footwear,
+                    prompt_pose_arm,
+                    prompt_armwear,
+                    prompt_pose_hand,
+                    prompt_pose_body,
                     prompt_top,
                     prompt_bottom,
-                    prompt_armwear,
-                    prompt_legwear,
-                    prompt_footwear,
                     prompt_setting,
                     prompt_lighting,
                     prompt_camera,
@@ -855,13 +862,7 @@ def main():
                 generate_btn = gr.Button("이미지 생성", variant="primary", size="lg")
                 output_grid = gr.Image(label="생성된 이미지 (전체 보기)", height=700)
                 with gr.Accordion("개별 이미지 다운로드", open=False):
-                    output_gallery = gr.Gallery(
-                        label="개별 이미지",
-                        columns=[1, 1, 2, 2],
-                        rows=[1, 1, 1, 2],
-                        object_fit="contain",
-                        allow_preview=True,
-                    )
+                    output_gallery = gr.Gallery(label="개별 이미지", columns=[1, 1, 2, 2], rows=[1, 1, 1, 2], object_fit="contain", allow_preview=True)
                     output_files = gr.Files(label="파일 다운로드")
                 output_message = gr.Textbox(label="상태", interactive=False)
 

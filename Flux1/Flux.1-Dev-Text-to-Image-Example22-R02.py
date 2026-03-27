@@ -15,11 +15,11 @@ import gradio as gr
 # Default values for each prompt section
 DEFAULT_SUBJECT = "A full body photography of a beautiful young skinny Korean woman with a soft idol aesthetic on a university campus."
 
-DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous straight jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air."
+DEFAULT_FACE = "She has a fair, clear complexion, a very slender oval face, sharp slim jawline, narrow chin, high cheekbones, delicate and refined facial structure. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is a gentle soft closed-mouth smile, lips lightly pressed together with a subtle upward curve, mouth completely closed, looking directly at the camera. She has long, voluminous straight jet-black hair, all hair swept entirely behind both shoulders and flowing down her back, no hair covering shoulders, face and neck fully exposed and clearly visible."
 
-DEFAULT_POSE_HEAD = "Head facing directly forward, eyes gazing straight into the camera, chin slightly lowered, calm and confident."
+DEFAULT_POSE_HEAD = "Head facing directly forward, eyes gazing straight into the camera, chin slightly lowered, calm and confident, all hair swept back behind both shoulders."
 
-DEFAULT_POSE_FOOT = "Both feet neatly together, standing with feet closed and aligned, white sneakers fully visible and not cropped."
+DEFAULT_POSE_FOOT = "Both feet neatly together, standing with feet side by side, white sneakers fully visible."
 
 DEFAULT_POSE_HAND = "Both hands hanging gracefully, fingers lightly extended and relaxed."
 
@@ -27,11 +27,11 @@ DEFAULT_POSE_ARM = "Both arms naturally relaxed, one elbow softly bent."
 
 DEFAULT_POSE_LEG = "Both legs straight and together, standing upright with legs neatly closed, slender leg line."
 
-DEFAULT_POSE_BODY = "Standing gracefully, body fully facing the camera in a frontal view, hips naturally shifted slightly to one side accentuating the feminine curve, slender waist and hip line clearly visible, elegant and relaxed posture."
+DEFAULT_POSE_BODY = "Standing gracefully, body fully facing the camera in a frontal view, hips naturally shifted slightly to one side accentuating the feminine curve."
 
 DEFAULT_HEADWEAR = ""
 
-DEFAULT_TOP = "Dark navy floral print A-line dress, thin spaghetti straps over the shoulders, bare arms and collarbone exposed, soft loosely draped fabric with delicate flower pattern, relaxed and flowy silhouette, waist lightly tied by a fabric sash bow, skirt hemline above the knee, deep side slit on one side extending up to the upper thigh exposing the leg, light and feminine."
+DEFAULT_TOP = "Dark navy floral print A-line dress, thin spaghetti straps over the shoulders, bare arms and collarbone exposed, soft loosely draped fabric with delicate flower pattern, relaxed and flowy silhouette, waist lightly tied by a fabric sash bow, skirt hemline above the knee, deep side slit on one side extending up to the upper thigh exposing the leg."
 
 DEFAULT_BOTTOM = ""
 
@@ -45,11 +45,11 @@ DEFAULT_SETTING = "Beautiful university campus, tree-lined walkway, green lawns,
 
 DEFAULT_LIGHTING = "Bright natural daylight, soft frontal light, face clearly and brightly lit, no harsh shadows."
 
-DEFAULT_CAMERA = "Full body shot, entire body from head to toe fully in frame including shoes, feet must not be cropped, natural eye-level angle, sharp focus on the subject, soft bokeh on the background."
+DEFAULT_CAMERA = "Full body shot, entire body from head to toe fully in frame including shoes, feet must not be cropped, natural eye-level angle, sharp focus on the subject."
 
 DEFAULT_POSITIVE_PROMPT = "8k, high quality, realistic, detailed, perfect anatomy, ten fingers."
 
-DEFAULT_NEGATIVE_PROMPT = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, extra toes, barefoot, high heels, stiletto, feet cropped, shoes cropped."
+DEFAULT_NEGATIVE_PROMPT = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, extra toes, extra foot, extra leg, barefoot, high heels, stiletto, feet cropped, shoes cropped."
 
 
 def make_image_grid(images: list) -> Image.Image:
@@ -402,22 +402,6 @@ def generate_image(
         negative_pooled_prompt_embeds = None
         if true_cfg_scale > 1.0 and negative_prompt and negative_prompt.strip():
             print(f"네거티브 프롬프트 인코딩 중... (true_cfg_scale={true_cfg_scale})")
-            print("=" * 60)
-            print("[네거티브 프롬프트]")
-            print(negative_prompt)
-            print("=" * 60)
-            neg_raw_ids = pipe.tokenizer_2(negative_prompt, truncation=False, return_tensors="pt")["input_ids"][0]
-            neg_token_count = len(neg_raw_ids)
-            neg_clipped = max(0, neg_token_count - max_len)
-            if neg_clipped > 0:
-                print(f"✗ 네거티브 T5 토큰 수: {neg_token_count} / {max_len} → {neg_clipped}개 잘림!")
-                neg_truncated_text = pipe.tokenizer_2.decode(neg_raw_ids[max_len:], skip_special_tokens=True)
-                print("-" * 60)
-                print("✗ [잘린 네거티브 텍스트]")
-                print(neg_truncated_text)
-                print("-" * 60)
-            else:
-                print(f"✓ 네거티브 T5 토큰 수: {neg_token_count} / {max_len} (잘림 없음)")
             neg_inputs = pipe.tokenizer_2(
                 negative_prompt,
                 padding="max_length",
