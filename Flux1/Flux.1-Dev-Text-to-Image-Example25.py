@@ -13,7 +13,7 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-DEFAULT_SUBJECT = "A full body photography of a beautiful young skinny Korean woman standing on a sunny beach on a bright summer day, wearing simple white strappy beach sandals on her feet."
+DEFAULT_SUBJECT = "A full body photography from head to toes of a beautiful young skinny Korean woman standing on a sunny beach on a bright summer day, wearing simple white strappy beach sandals on her feet."
 
 DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous straight jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air."
 
