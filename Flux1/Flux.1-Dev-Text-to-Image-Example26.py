@@ -47,7 +47,7 @@ DEFAULT_LIGHTING = "Bright even spring daylight, soft frontal natural light, fac
 
 DEFAULT_CAMERA = "Full body shot, entire body from head to feet fully in frame, feet and sneakers not cropped, eye-level angle, sharp focus, soft bokeh background."
 
-DEFAULT_POSITIVE_PROMPT = "8k, high quality, realistic, detailed, sharp focus, perfect anatomy, ten fingers."
+DEFAULT_POSITIVE_PROMPT = "8k, high quality, realistic, detailed, sharp focus, perfect anatomy, beautiful fingers."
 
 DEFAULT_NEGATIVE_PROMPT = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, one leg forward, staggered legs, walking pose, weight shift, legs apart, stepping, feet apart, spread legs."
 
@@ -399,8 +399,28 @@ def generate_image(
         # Encode negative prompt when true_cfg_scale > 1.0
         negative_prompt_embeds = None
         negative_pooled_prompt_embeds = None
+        neg_token_count = 0
+        neg_clipped = 0
         if true_cfg_scale > 1.0 and negative_prompt and negative_prompt.strip():
-            print(f"네거티브 프롬프트 인코딩 중... (true_cfg_scale={true_cfg_scale})")
+            print("=" * 60)
+            print(f"[네거티브 프롬프트] (true_cfg_scale={true_cfg_scale})")
+            print(negative_prompt)
+            print("=" * 60)
+
+            # Count negative prompt tokens to detect clipping
+            neg_raw_ids = pipe.tokenizer_2(negative_prompt, truncation=False, return_tensors="pt")["input_ids"][0]
+            neg_token_count = len(neg_raw_ids)
+            neg_clipped = max(0, neg_token_count - max_len)
+            if neg_clipped > 0:
+                print(f"✗ 네거티브 T5 토큰 수: {neg_token_count} / {max_len} → {neg_clipped}개 잘림!")
+                neg_truncated_text = pipe.tokenizer_2.decode(neg_raw_ids[max_len:], skip_special_tokens=True)
+                print("-" * 60)
+                print("✗ [잘린 네거티브 텍스트]")
+                print(neg_truncated_text)
+                print("-" * 60)
+            else:
+                print(f"✓ 네거티브 T5 토큰 수: {neg_token_count} / {max_len} (잘림 없음)")
+
             neg_inputs = pipe.tokenizer_2(
                 negative_prompt,
                 padding="max_length",
@@ -503,8 +523,16 @@ def generate_image(
             if clipped > 0
             else f"토큰: {raw_token_count}/{max_len}"
         )
+        neg_token_info = (
+            f"네거티브 토큰: {neg_token_count}/{max_len} → {neg_clipped}개 잘림!"
+            if neg_clipped > 0
+            else f"네거티브 토큰: {neg_token_count}/{max_len}"
+        ) if neg_token_count > 0 else ""
         saved_info = f"저장됨: {saved_files[0]}" if len(saved_files) == 1 else f"{len(saved_files)}장 저장됨: {saved_files[0]} 외"
-        print(f"이미지 생성 완료! 소요 시간: {elapsed:.1f}초 | {token_info}")
+        summary = f"이미지 생성 완료! 소요 시간: {elapsed:.1f}초 | {token_info}"
+        if neg_token_info:
+            summary += f" | {neg_token_info}"
+        print(summary)
         for f in saved_files:
             print(f"이미지가 저장되었습니다 : {f}")
 
