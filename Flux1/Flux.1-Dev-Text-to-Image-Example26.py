@@ -13,43 +13,43 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-DEFAULT_SUBJECT = "A full body photography from head to toes of a beautiful young skinny Korean woman standing on a sunny beach on a bright summer day, wearing simple white strappy beach sandals on her feet."
+DEFAULT_SUBJECT = "A full body photography of a beautiful young skinny Korean woman sitting at a café table."
 
 DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is gentle with a soft closed-mouth smile, lips lightly pressed together with a subtle upward curve, looking directly at the camera. She has long, voluminous straight jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air."
 
-DEFAULT_POSE_HEAD = "Head held upright with elegant posture, facing directly toward the camera."
+DEFAULT_POSE_HEAD = "Head held upright with elegant posture, hair draping naturally over shoulders."
 
 DEFAULT_HEADWEAR = ""
 
-DEFAULT_POSE_LEG = "Both legs close together, feet side by side, bare legs fully visible."
+DEFAULT_POSE_LEG = "Both legs close together, slightly angled to the side, skirt side slit slightly parted open, bare leg clearly visible from mid-thigh downward through the slit."
 
-DEFAULT_LEGWEAR = ""
+DEFAULT_LEGWEAR = "Bare legs, smooth and fair skin, leg clearly exposed through the deep side slit of the skirt from mid-thigh to ankle."
 
-DEFAULT_POSE_FOOT = "Both feet side by side, parallel to each other, toes pointing forward, sandals clearly shown on white sand, feet fully in frame."
+DEFAULT_POSE_FOOT = "Both feet side by side, parallel to each other, toes pointing forward, white sneakers clearly shown side by side, feet fully in frame."
 
-DEFAULT_FOOTWEAR = "Simple white strappy beach sandals, thin straps across the toes and ankle, flat sole."
+DEFAULT_FOOTWEAR = "Clean white canvas sneakers."
 
-DEFAULT_POSE_ARM = "One arm resting elegantly at her side, the other arm slightly bent with elbow relaxed."
+DEFAULT_POSE_ARM = "One arm resting on the café table, the other arm bent at the elbow lifting a Starbucks cup toward her lips."
 
 DEFAULT_ARMWEAR = ""
 
-DEFAULT_POSE_HAND = "One hand hanging gracefully at her side with fingers lightly extended, the other hand resting gently on her upper thigh with fingers elegantly spread."
+DEFAULT_POSE_HAND = "One hand resting lightly on the table, the other hand holding a Starbucks cup with fingers elegantly wrapped around it."
 
-DEFAULT_POSE_BODY = "Standing perfectly still and upright, body facing completely straight toward the camera, chest and torso fully frontal, posture tall and elegant, shoulders back."
+DEFAULT_POSE_BODY = "Sitting upright on a café chair, body facing toward the camera, torso frontal, legs together and slightly angled to the side."
 
-DEFAULT_TOP = "Tiny pink bikini top with light blue string ties at the neck and back, minimal triangle cups, bare midriff fully exposed."
+DEFAULT_TOP = "Dark navy chiffon dress with thin spaghetti straps, bare shoulders, small cherry blossoms print in soft pink and white, fitted waist, A-line skirt with a deep side slit from mid-thigh exposing the bare leg."
 
-DEFAULT_BOTTOM = "Tiny pink bikini bottom with light blue string ties at the hips, minimal coverage, bare hips and thighs fully visible."
+DEFAULT_BOTTOM = ""
 
-DEFAULT_SETTING = "Sunny beach, bright white sand, clear turquoise ocean water, gentle waves in the background, open sky with a few light clouds, warm summer day at the seaside."
+DEFAULT_SETTING = "Charming outdoor café terrace, small round table with a Starbucks cup, café chairs, cherry blossom trees lining the street with pink petals falling gently, warm sunny spring day."
 
-DEFAULT_LIGHTING = "Bright direct sunlight shining straight onto the face from the front, face fully illuminated and radiant, warm golden sunlight, vivid and bright exposure, no shadows on the face."
+DEFAULT_LIGHTING = "Bright even spring daylight, soft frontal natural light, face clearly and brightly lit, no harsh shadows."
 
-DEFAULT_CAMERA = "Full body shot, entire body from head to feet fully in frame, both feet and sandals completely visible and not cropped, camera at chest level angle, subject facing camera, sharp focus on full body including feet, soft bokeh background."
+DEFAULT_CAMERA = "Full body shot, entire body from head to feet fully in frame, feet and sneakers not cropped, eye-level angle, sharp focus, soft bokeh background."
 
-DEFAULT_POSITIVE_PROMPT = "8k, high quality, realistic, detailed, sharp focus, perfect anatomy, ten fingers, beautiful fingers, beautiful toes."
+DEFAULT_POSITIVE_PROMPT = "8k, high quality, realistic, detailed, sharp focus, perfect anatomy, ten fingers."
 
-DEFAULT_NEGATIVE_PROMPT = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, one leg forward, staggered legs, walking pose, weight shift, legs apart, stepping, spread legs, cropped feet, missing feet, feet cut off."
+DEFAULT_NEGATIVE_PROMPT = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, one leg forward, staggered legs, walking pose, weight shift, legs apart, stepping, feet apart, spread legs."
 
 def make_image_grid(images: list) -> Image.Image:
     """Arrange PIL images into a grid that fits in one view."""
