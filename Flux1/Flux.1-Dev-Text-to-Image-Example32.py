@@ -13,7 +13,7 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-DEFAULT_SUBJECT = "A full body photography from head to toes of a beautiful young skinny Korean woman standing on a sunny beach on a bright summer day, wearing simple white strappy beach sandals on her feet."
+DEFAULT_SUBJECT = "A full body photography from head to toes of a beautiful young skinny Korean woman standing with bare feet on a sunny beach on a bright summer day."
 
 DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is gentle with a soft closed-mouth smile, lips lightly pressed together with a subtle upward curve, looking directly at the camera. She has long, voluminous straight jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air."
 
@@ -21,13 +21,13 @@ DEFAULT_POSE_HEAD = "Head held upright with elegant posture, facing directly tow
 
 DEFAULT_HEADWEAR = ""
 
-DEFAULT_POSE_LEG = "Both legs close together, feet side by side, bare legs fully visible."
+DEFAULT_POSE_LEG = "Both legs close together, feet side by side."
 
 DEFAULT_LEGWEAR = ""
 
-DEFAULT_POSE_FOOT = "Both feet side by side, parallel to each other, toes pointing forward, sandals clearly shown on white sand, feet fully in frame."
+DEFAULT_POSE_FOOT = "Both feet side by side, parallel to each other, bare feet standing at the water's edge with shallow ocean water gently touching the feet."
 
-DEFAULT_FOOTWEAR = "Simple white strappy beach sandals, thin straps across the toes and ankle, flat sole."
+DEFAULT_FOOTWEAR = ""
 
 DEFAULT_POSE_ARM = "One arm resting elegantly at her side, the other arm slightly bent with elbow relaxed."
 
@@ -37,17 +37,17 @@ DEFAULT_POSE_HAND = "One hand hanging gracefully at her side with fingers lightl
 
 DEFAULT_POSE_BODY = "Standing perfectly still and upright, body facing completely straight toward the camera, chest and torso fully frontal, posture tall and elegant, shoulders back."
 
-DEFAULT_TOP = "Tiny pink bikini top with light blue string ties at the neck and back, minimal triangle cups, bare midriff fully exposed."
+DEFAULT_TOP = "Tiny sky blue bikini top with light pink string ties at the neck and back, minimal triangle cups, bare midriff fully exposed."
 
 DEFAULT_BOTTOM = "Tiny pink bikini bottom with light blue string ties at the hips, minimal coverage, bare hips and thighs fully visible."
 
-DEFAULT_SETTING = "Sunny beach, bright white sand, clear turquoise ocean water, gentle waves in the background, open sky with a few light clouds, warm summer day at the seaside."
+DEFAULT_SETTING = "Sunny beach at the water's edge, bright white sand, clear shallow turquoise ocean water lapping gently over the bare feet, gentle waves, clear open sky, warm summer day at the seaside."
 
-DEFAULT_LIGHTING = "Bright direct sunlight shining straight onto the face from the front, face fully illuminated and radiant, warm golden sunlight, vivid and bright exposure, no shadows on the face."
+DEFAULT_LIGHTING = "Strong direct sunlight shining straight onto the subject from the front, face and entire body from head to bare feet completely and evenly flooded with bright sunlight, high-key bright exposure, skin luminous and glowing, zero shadows on the face or body, no backlighting."
 
-DEFAULT_CAMERA = "Full body shot, entire body from head to feet fully in frame, both feet and sandals completely visible and not cropped, camera at chest level angle, subject facing camera, sharp focus on full body including feet, soft bokeh background."
+DEFAULT_CAMERA = "35mm lens, full body shot from a sufficient distance, entire body from the top of the head to the bare feet fully in frame with space to spare below the feet, both bare feet flat on the sand completely visible and not cropped, camera at a low angle slightly below waist level, subject facing camera, sharp focus on full body including feet, soft bokeh background."
 
-DEFAULT_POSITIVE_PROMPT = "8k, high quality, realistic, detailed, sharp focus, perfect anatomy, ten fingers, beautiful fingers, beautiful toes."
+DEFAULT_POSITIVE_PROMPT = "8k, high quality, realistic, detailed, sharp focus, perfect anatomy, ten fingers, ten toes, beautiful fingers, beautiful toes."
 
 DEFAULT_NEGATIVE_PROMPT = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, one leg forward, staggered legs, walking pose, weight shift, legs apart, stepping, spread legs, cropped feet, missing feet, feet cut off."
 
@@ -399,6 +399,8 @@ def generate_image(
         # Encode negative prompt when true_cfg_scale > 1.0
         negative_prompt_embeds = None
         negative_pooled_prompt_embeds = None
+        neg_token_count = 0
+        neg_clipped = 0
         if true_cfg_scale > 1.0 and negative_prompt and negative_prompt.strip():
             print(f"네거티브 프롬프트 인코딩 중... (true_cfg_scale={true_cfg_scale})")
             neg_inputs = pipe.tokenizer_2(
@@ -408,6 +410,23 @@ def generate_image(
                 truncation=True,
                 return_tensors="pt",
             )
+            # Count tokens to detect clipping
+            neg_raw_ids = pipe.tokenizer_2(negative_prompt, truncation=False, return_tensors="pt")[
+                "input_ids"
+            ][0]
+            neg_token_count = len(neg_raw_ids)
+            neg_clipped = max(0, neg_token_count - max_len)
+            if neg_clipped > 0:
+                print(f"✗ 네거티브 T5 토큰 수: {neg_token_count} / {max_len} → {neg_clipped}개 잘림!")
+                neg_truncated_text = pipe.tokenizer_2.decode(
+                    neg_raw_ids[max_len:], skip_special_tokens=True
+                )
+                print("-" * 60)
+                print("✗ [네거티브 잘린 텍스트]")
+                print(neg_truncated_text)
+                print("-" * 60)
+            else:
+                print(f"✓ 네거티브 T5 토큰 수: {neg_token_count} / {max_len} (잘림 없음)")
             with torch.inference_mode():
                 negative_prompt_embeds = pipe.text_encoder_2(
                     neg_inputs["input_ids"].to(DEVICE),
@@ -503,8 +522,13 @@ def generate_image(
             if clipped > 0
             else f"토큰: {raw_token_count}/{max_len}"
         )
+        neg_token_info = (
+            f" | 네거티브 토큰: {neg_token_count}/{max_len} → {neg_clipped}개 잘림!"
+            if neg_clipped > 0
+            else (f" | 네거티브 토큰: {neg_token_count}/{max_len}" if neg_token_count > 0 else "")
+        )
         saved_info = f"저장됨: {saved_files[0]}" if len(saved_files) == 1 else f"{len(saved_files)}장 저장됨: {saved_files[0]} 외"
-        print(f"이미지 생성 완료! 소요 시간: {elapsed:.1f}초 | {token_info}")
+        print(f"이미지 생성 완료! 소요 시간: {elapsed:.1f}초 | {token_info}{neg_token_info}")
         for f in saved_files:
             print(f"이미지가 저장되었습니다 : {f}")
 
@@ -513,7 +537,7 @@ def generate_image(
             make_image_grid(images),
             images,
             saved_files,
-            f"✓ 완료! ({elapsed:.1f}초) | {token_info} | {saved_info}",
+            f"✓ 완료! ({elapsed:.1f}초) | {token_info}{neg_token_info} | {saved_info}",
         )
     except Exception as e:
         return None, [], [], f"✗ 오류 발생: {str(e)}"
