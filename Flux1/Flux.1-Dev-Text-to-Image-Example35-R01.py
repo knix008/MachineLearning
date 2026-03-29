@@ -33,7 +33,7 @@ DEFAULT_LEGWEAR = ""
 
 DEFAULT_BOTTOM = "Wearing a dark navy ultra micro mini skirt, extremely short barely covering the upper thighs, white panties slightly peeking out from the bottom hem of the skirt, long slender legs almost entirely exposed."
 
-DEFAULT_TOP = "Wearing a sheer semi-transparent white blouse slightly wet from the rain, thin wet fabric clinging to the body, bra clearly visible through the wet sheer fabric."
+DEFAULT_TOP = "Wearing a white blouse slightly wet from the rain, thin wet fabric clinging to the body, bra subtly visible through the wet fabric."
 
 DEFAULT_HEADWEAR = ""
 
