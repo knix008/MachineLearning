@@ -15,9 +15,9 @@ import gradio as gr
 # Default values for each prompt section
 DEFAULT_SUBJECT = "A full body photography of a beautiful skinny young Korean woman standing on a rainy city street holding a bright yellow umbrella, both legs and feet parallel and side by side."
 
-DEFAULT_POSE_FOOT = "Both feet parallel and side by side, flat on the wet pavement."
+DEFAULT_POSE_FOOT = "Both feet side by side and flat on the wet pavement, angled slightly to match the body direction."
 
-DEFAULT_POSE_LEG = "Both legs straight and parallel, side by side, not crossed, standing upright, long slender legs clearly visible."
+DEFAULT_POSE_LEG = "Both legs straight and side by side, not crossed, standing upright, slightly angled to match the body direction, long slender legs clearly visible."
 
 DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long wavy jet-black hair slightly wet and damp from the rain, strands clinging to her face and neck."
 
@@ -33,7 +33,7 @@ DEFAULT_LEGWEAR = ""
 
 DEFAULT_BOTTOM = "Wearing a dark navy ultra micro mini skirt, extremely short barely covering the upper thighs, white panties slightly peeking out from the bottom hem of the skirt, long slender legs almost entirely exposed."
 
-DEFAULT_TOP = "Wearing a stylish beige trench coat open at the front, belted at the waist, clearly showing a white blouse worn inside the coat."
+DEFAULT_TOP = "Wearing a sheer semi-transparent white blouse slightly wet from the rain, thin wet fabric clinging to the body, bra clearly visible through the wet sheer fabric."
 
 DEFAULT_HEADWEAR = ""
 
