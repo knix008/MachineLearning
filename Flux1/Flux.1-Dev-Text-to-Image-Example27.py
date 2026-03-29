@@ -17,7 +17,9 @@ DEFAULT_SUBJECT = "A full body photography of a beautiful young skinny Korean wo
 
 DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is gentle with a soft closed-mouth smile, lips lightly pressed together with a subtle upward curve, looking directly at the camera. She has long, voluminous straight jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air."
 
-DEFAULT_POSE_HEAD = "Head held upright with elegant posture, hair draping naturally over shoulders."
+DEFAULT_POSE_HEAD = (
+    "Head held upright with elegant posture, hair draping naturally over shoulders."
+)
 
 DEFAULT_HEADWEAR = ""
 
@@ -50,6 +52,7 @@ DEFAULT_CAMERA = "Full body shot, entire body from head to feet fully in frame, 
 DEFAULT_POSITIVE_PROMPT = "8k, high quality, realistic, detailed, sharp focus, perfect anatomy, beautiful fingers, ten fingers."
 
 DEFAULT_NEGATIVE_PROMPT = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, one leg forward, staggered legs, walking pose, weight shift, legs apart, stepping, feet apart, spread legs."
+
 
 def make_image_grid(images: list) -> Image.Image:
     """Arrange PIL images into a grid that fits in one view."""
@@ -408,18 +411,26 @@ def generate_image(
             print("=" * 60)
 
             # Count negative prompt tokens to detect clipping
-            neg_raw_ids = pipe.tokenizer_2(negative_prompt, truncation=False, return_tensors="pt")["input_ids"][0]
+            neg_raw_ids = pipe.tokenizer_2(
+                negative_prompt, truncation=False, return_tensors="pt"
+            )["input_ids"][0]
             neg_token_count = len(neg_raw_ids)
             neg_clipped = max(0, neg_token_count - max_len)
             if neg_clipped > 0:
-                print(f"✗ 네거티브 T5 토큰 수: {neg_token_count} / {max_len} → {neg_clipped}개 잘림!")
-                neg_truncated_text = pipe.tokenizer_2.decode(neg_raw_ids[max_len:], skip_special_tokens=True)
+                print(
+                    f"✗ 네거티브 T5 토큰 수: {neg_token_count} / {max_len} → {neg_clipped}개 잘림!"
+                )
+                neg_truncated_text = pipe.tokenizer_2.decode(
+                    neg_raw_ids[max_len:], skip_special_tokens=True
+                )
                 print("-" * 60)
                 print("✗ [잘린 네거티브 텍스트]")
                 print(neg_truncated_text)
                 print("-" * 60)
             else:
-                print(f"✓ 네거티브 T5 토큰 수: {neg_token_count} / {max_len} (잘림 없음)")
+                print(
+                    f"✓ 네거티브 T5 토큰 수: {neg_token_count} / {max_len} (잘림 없음)"
+                )
 
             neg_inputs = pipe.tokenizer_2(
                 negative_prompt,
@@ -497,8 +508,13 @@ def generate_image(
         ext = "jpg" if image_format == "JPEG" else "png"
         if DEVICE == "cuda" and torch.cuda.is_available():
             gpu_name = torch.cuda.get_device_name(0)
-            gpu_mem = round(torch.cuda.get_device_properties(0).total_memory / (1024**3))
-            gpu_label = gpu_name.replace(" ", "").replace("NVIDIA", "").replace("GeForce", "") + f"-{gpu_mem}GB"
+            gpu_mem = round(
+                torch.cuda.get_device_properties(0).total_memory / (1024**3)
+            )
+            gpu_label = (
+                gpu_name.replace(" ", "").replace("NVIDIA", "").replace("GeForce", "")
+                + f"-{gpu_mem}GB"
+            )
             device_label = gpu_label
         else:
             device_label = DEVICE.upper()
@@ -524,11 +540,19 @@ def generate_image(
             else f"토큰: {raw_token_count}/{max_len}"
         )
         neg_token_info = (
-            f"네거티브 토큰: {neg_token_count}/{max_len} → {neg_clipped}개 잘림!"
-            if neg_clipped > 0
-            else f"네거티브 토큰: {neg_token_count}/{max_len}"
-        ) if neg_token_count > 0 else ""
-        saved_info = f"저장됨: {saved_files[0]}" if len(saved_files) == 1 else f"{len(saved_files)}장 저장됨: {saved_files[0]} 외"
+            (
+                f"네거티브 토큰: {neg_token_count}/{max_len} → {neg_clipped}개 잘림!"
+                if neg_clipped > 0
+                else f"네거티브 토큰: {neg_token_count}/{max_len}"
+            )
+            if neg_token_count > 0
+            else ""
+        )
+        saved_info = (
+            f"저장됨: {saved_files[0]}"
+            if len(saved_files) == 1
+            else f"{len(saved_files)}장 저장됨: {saved_files[0]} 외"
+        )
         summary = f"이미지 생성 완료! 소요 시간: {elapsed:.1f}초 | {token_info}"
         if neg_token_info:
             summary += f" | {neg_token_info}"
@@ -862,7 +886,13 @@ def main():
                 generate_btn = gr.Button("이미지 생성", variant="primary", size="lg")
                 output_grid = gr.Image(label="생성된 이미지 (전체 보기)", height=700)
                 with gr.Accordion("개별 이미지 다운로드", open=False):
-                    output_gallery = gr.Gallery(label="개별 이미지", columns=[1, 1, 2, 2], rows=[1, 1, 1, 2], object_fit="contain", allow_preview=True)
+                    output_gallery = gr.Gallery(
+                        label="개별 이미지",
+                        columns=[1, 1, 2, 2],
+                        rows=[1, 1, 1, 2],
+                        object_fit="contain",
+                        allow_preview=True,
+                    )
                     output_files = gr.Files(label="파일 다운로드")
                 output_message = gr.Textbox(label="상태", interactive=False)
 
