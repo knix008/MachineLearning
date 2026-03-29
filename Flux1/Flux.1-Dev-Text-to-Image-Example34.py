@@ -13,43 +13,44 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-DEFAULT_SUBJECT = "A full body photography from head to toes of a beautiful young skinny Korean woman standing on a sunny beach wearing beach sandals, both sandals clearly visible."
+DEFAULT_SUBJECT = "A full body photography of a beautiful young Korean woman standing on a floor with bare feet side by side."
 
-DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous straight jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air."
+DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long jet-black hair being gathered and tied at the back of her neck with both hands."
 
-DEFAULT_POSE_HEAD = "Head held upright with elegant posture, facing directly toward the camera."
+DEFAULT_POSE_HEAD = ""
 
 DEFAULT_HEADWEAR = ""
 
-DEFAULT_POSE_LEG = "Both legs close together, feet side by side."
+DEFAULT_POSE_LEG = "One leg straight and weight-bearing, the other leg slightly bent at the knee, hip shifted to one side, long slender legs clearly visible."
 
 DEFAULT_LEGWEAR = ""
 
-DEFAULT_POSE_FOOT = "Both feet side by side, parallel to each other, standing at the water's edge with shallow ocean water gently washing over the sandals."
+DEFAULT_POSE_FOOT = "Both feet together, side by side, flat on the floor, bare feet."
 
-DEFAULT_FOOTWEAR = "Wearing beach sandals on both feet, sandals fully visible and clearly shown, shallow ocean water touching and lapping over the sandals."
+DEFAULT_FOOTWEAR = ""
 
-DEFAULT_POSE_ARM = "One arm resting elegantly at her side, the other arm slightly bent with elbow relaxed."
+DEFAULT_POSE_ARM = "Both arms bent sharply at the elbows with hands reaching behind the neck, elbows lifted as high as possible pointing upward and outward to the sides, upper arms raised to ear level or above."
 
 DEFAULT_ARMWEAR = ""
 
-DEFAULT_POSE_HAND = "One hand hanging gracefully at her side with fingers lightly extended, the other hand resting gently on her upper thigh with fingers elegantly spread."
+DEFAULT_POSE_HAND = "Both hands positioned at the back of the neck, fingers gripping and tying the hair into a ponytail at the nape."
 
-DEFAULT_POSE_BODY = "Standing perfectly still and upright, body facing completely straight toward the camera, chest and torso fully frontal, posture tall and elegant, shoulders back."
+DEFAULT_POSE_BODY = "Body turned slightly to the side at a three-quarter angle, hip shifted to accentuate curves, waist and hip line prominently visible, face still looking directly at the camera, sexy and confident posture."
 
-DEFAULT_TOP = "Tiny sky blue bikini top with light pink string ties at the neck and back, minimal triangle cups, bare midriff fully exposed."
+DEFAULT_TOP = "Wearing a very tiny light blue triangle bikini top, extremely minimal coverage with thin soft pink string straps."
 
-DEFAULT_BOTTOM = "Tiny pink thong bikini bottom with light blue string ties at the hips, minimal coverage, bare hips and thighs fully visible."
+DEFAULT_BOTTOM = "Wearing a very tiny light blue thong bikini bottom, extremely minimal coverage with thin soft pink string straps."
 
-DEFAULT_SETTING = "Sunny beach at the water's edge, bright white sand, clear shallow turquoise ocean water lapping gently over the sandals, gentle waves, clear open sky, warm summer day at the seaside."
+DEFAULT_SETTING = "Stylish living room interior with blue floral wallpaper on the wall behind her, elegant sofa and furniture visible."
 
-DEFAULT_LIGHTING = "Strong direct sunlight shining straight onto the subject from the front, face and entire body from head to sandals completely and evenly flooded with bright sunlight, high-key bright exposure, skin luminous and glowing, no backlighting."
+DEFAULT_LIGHTING = "Bright studio-style indoor lighting shining directly onto the subject from the front, face and entire body from head to bare feet completely and evenly illuminated, high-key bright exposure, skin luminous and glowing, zero shadows on the body."
 
-DEFAULT_CAMERA = "Full body shot from a sufficient distance, entire body from the top of the head down to both sandals fully in frame, both sandals must be completely visible with empty space below them, camera positioned low at knee level looking slightly upward, subject facing camera, sharp focus on full body especially the sandals, soft bokeh background."
+DEFAULT_CAMERA = "35mm lens, full body shot, low angle from hip height looking slightly upward, entire body from head to feet in frame, tack sharp focus on the entire body, no motion blur, no depth of field blur."
 
-DEFAULT_POSITIVE_PROMPT = "8k, high quality, realistic, detailed, sharp focus, perfect anatomy, ten fingers, ten toes, beautiful fingers, beautiful toes."
+DEFAULT_POSITIVE_PROMPT = "8k uhd, ultra high resolution, RAW photo, photorealistic, razor sharp focus, ultra crisp, highly detailed, perfect anatomy, ten fingers, well formed fingers, well formed toes, ten toes."
 
-DEFAULT_NEGATIVE_PROMPT = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, one leg forward, staggered legs, walking pose, weight shift, legs apart, stepping, spread legs, cropped feet, missing feet, feet cut off, hidden feet, feet out of frame, feet not visible, partial feet."
+DEFAULT_NEGATIVE_PROMPT = "Blurry, out of focus, soft focus, motion blur, hazy, low sharpness, grainy, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, extra toes, feet cropped."
+
 
 def make_image_grid(images: list) -> Image.Image:
     """Arrange PIL images into a grid that fits in one view."""
@@ -399,8 +400,6 @@ def generate_image(
         # Encode negative prompt when true_cfg_scale > 1.0
         negative_prompt_embeds = None
         negative_pooled_prompt_embeds = None
-        neg_token_count = 0
-        neg_clipped = 0
         if true_cfg_scale > 1.0 and negative_prompt and negative_prompt.strip():
             print(f"네거티브 프롬프트 인코딩 중... (true_cfg_scale={true_cfg_scale})")
             neg_inputs = pipe.tokenizer_2(
@@ -410,23 +409,6 @@ def generate_image(
                 truncation=True,
                 return_tensors="pt",
             )
-            # Count tokens to detect clipping
-            neg_raw_ids = pipe.tokenizer_2(negative_prompt, truncation=False, return_tensors="pt")[
-                "input_ids"
-            ][0]
-            neg_token_count = len(neg_raw_ids)
-            neg_clipped = max(0, neg_token_count - max_len)
-            if neg_clipped > 0:
-                print(f"✗ 네거티브 T5 토큰 수: {neg_token_count} / {max_len} → {neg_clipped}개 잘림!")
-                neg_truncated_text = pipe.tokenizer_2.decode(
-                    neg_raw_ids[max_len:], skip_special_tokens=True
-                )
-                print("-" * 60)
-                print("✗ [네거티브 잘린 텍스트]")
-                print(neg_truncated_text)
-                print("-" * 60)
-            else:
-                print(f"✓ 네거티브 T5 토큰 수: {neg_token_count} / {max_len} (잘림 없음)")
             with torch.inference_mode():
                 negative_prompt_embeds = pipe.text_encoder_2(
                     neg_inputs["input_ids"].to(DEVICE),
@@ -496,8 +478,13 @@ def generate_image(
         ext = "jpg" if image_format == "JPEG" else "png"
         if DEVICE == "cuda" and torch.cuda.is_available():
             gpu_name = torch.cuda.get_device_name(0)
-            gpu_mem = round(torch.cuda.get_device_properties(0).total_memory / (1024**3))
-            gpu_label = gpu_name.replace(" ", "").replace("NVIDIA", "").replace("GeForce", "") + f"-{gpu_mem}GB"
+            gpu_mem = round(
+                torch.cuda.get_device_properties(0).total_memory / (1024**3)
+            )
+            gpu_label = (
+                gpu_name.replace(" ", "").replace("NVIDIA", "").replace("GeForce", "")
+                + f"-{gpu_mem}GB"
+            )
             device_label = gpu_label
         else:
             device_label = DEVICE.upper()
@@ -522,13 +509,12 @@ def generate_image(
             if clipped > 0
             else f"토큰: {raw_token_count}/{max_len}"
         )
-        neg_token_info = (
-            f" | 네거티브 토큰: {neg_token_count}/{max_len} → {neg_clipped}개 잘림!"
-            if neg_clipped > 0
-            else (f" | 네거티브 토큰: {neg_token_count}/{max_len}" if neg_token_count > 0 else "")
+        saved_info = (
+            f"저장됨: {saved_files[0]}"
+            if len(saved_files) == 1
+            else f"{len(saved_files)}장 저장됨: {saved_files[0]} 외"
         )
-        saved_info = f"저장됨: {saved_files[0]}" if len(saved_files) == 1 else f"{len(saved_files)}장 저장됨: {saved_files[0]} 외"
-        print(f"이미지 생성 완료! 소요 시간: {elapsed:.1f}초 | {token_info}{neg_token_info}")
+        print(f"이미지 생성 완료! 소요 시간: {elapsed:.1f}초 | {token_info}")
         for f in saved_files:
             print(f"이미지가 저장되었습니다 : {f}")
 
@@ -537,7 +523,7 @@ def generate_image(
             make_image_grid(images),
             images,
             saved_files,
-            f"✓ 완료! ({elapsed:.1f}초) | {token_info}{neg_token_info} | {saved_info}",
+            f"✓ 완료! ({elapsed:.1f}초) | {token_info} | {saved_info}",
         )
     except Exception as e:
         return None, [], [], f"✗ 오류 발생: {str(e)}"
@@ -780,17 +766,17 @@ def main():
                         label="이미지 너비",
                         minimum=256,
                         maximum=2048,
-                        step=64,
+                        step=32,
                         value=768,
-                        info="이미지 너비 (픽셀). 64의 배수.",
+                        info="이미지 너비 (픽셀). 32의 배수.",
                     )
                     height = gr.Slider(
                         label="이미지 높이",
                         minimum=256,
                         maximum=2048,
-                        step=64,
+                        step=32,
                         value=1536,
-                        info="이미지 높이 (픽셀). 64의 배수.",
+                        info="이미지 높이 (픽셀). 32의 배수.",
                     )
 
                 with gr.Row():
@@ -858,7 +844,13 @@ def main():
                 generate_btn = gr.Button("이미지 생성", variant="primary", size="lg")
                 output_grid = gr.Image(label="생성된 이미지 (전체 보기)", height=700)
                 with gr.Accordion("개별 이미지 다운로드", open=False):
-                    output_gallery = gr.Gallery(label="개별 이미지", columns=[1, 1, 2, 2], rows=[1, 1, 1, 2], object_fit="contain", allow_preview=True)
+                    output_gallery = gr.Gallery(
+                        label="개별 이미지",
+                        columns=[1, 1, 2, 2],
+                        rows=[1, 1, 1, 2],
+                        object_fit="contain",
+                        allow_preview=True,
+                    )
                     output_files = gr.Files(label="파일 다운로드")
                 output_message = gr.Textbox(label="상태", interactive=False)
 
