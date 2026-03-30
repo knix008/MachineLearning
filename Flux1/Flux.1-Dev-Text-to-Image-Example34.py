@@ -47,7 +47,7 @@ DEFAULT_LIGHTING = "Bright studio-style indoor lighting shining directly onto th
 
 DEFAULT_CAMERA = "35mm lens, full body shot, low angle from hip height looking slightly upward, entire body from head to feet in frame, tack sharp focus on the entire body, no motion blur, no depth of field blur."
 
-DEFAULT_POSITIVE_PROMPT = "8k uhd, ultra high resolution, RAW photo, photorealistic, razor sharp focus, ultra crisp, highly detailed, perfect anatomy, ten fingers, well formed fingers, well formed toes, ten toes."
+DEFAULT_POSITIVE_PROMPT = "8k uhd, ultra high resolution, RAW photo, photorealistic, razor sharp focus, ultra crisp, highly detailed, perfect anatomy, ten fingers, well formed fingers, well formed toes, ten toes beautiful toes, beautiful fingers."
 
 DEFAULT_NEGATIVE_PROMPT = "Blurry, out of focus, soft focus, motion blur, hazy, low sharpness, grainy, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, extra toes, feet cropped."
 
