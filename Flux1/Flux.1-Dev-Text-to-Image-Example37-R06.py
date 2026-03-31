@@ -13,19 +13,19 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-DEFAULT_SUBJECT = "A photography of a beautiful skinny young Korean woman standing at a luxury hotel swimming pool wearing a thong bikini, shot from the knees up."
+DEFAULT_SUBJECT = "A photography of a beautiful skinny young Korean woman standing at a luxury hotel swimming pool wearing a thong bikini."
 
 DEFAULT_POSE_FOOT = ""
 
-DEFAULT_POSE_LEG = "Standing with one leg slightly bent at the knee, weight shifted to one side, accentuating the natural curves of the body, long slender legs clearly visible."
+DEFAULT_POSE_LEG = "Standing with one leg slightly bent at the knee, weight shifted to one side, accentuating the natural curves of the body, long slender legs."
 
 DEFAULT_FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous straight jet-black hair, dramatically flowing and billowing in the wind, strands sweeping through the air."
 
 DEFAULT_POSE_BODY = "Body facing slightly to the side in a contrapposto standing posture, hip tilted to one side, natural S-curve silhouette, feminine curves fully accentuated."
 
-DEFAULT_POSE_ARM = "Both arms hanging naturally and relaxed at the sides."
+DEFAULT_POSE_ARM = "Both arms hanging naturally and relaxed at her sides."
 
-DEFAULT_POSE_HAND = "Both hands relaxed with fingers lightly extended, resting naturally at the sides."
+DEFAULT_POSE_HAND = "Both hands relaxed with fingers lightly extended, resting naturally at her sides."
 
 DEFAULT_FOOTWEAR = ""
 
@@ -39,17 +39,17 @@ DEFAULT_HEADWEAR = ""
 
 DEFAULT_ARMWEAR = ""
 
-DEFAULT_POSE_HEAD = "Head held upright, tilted very slightly, glancing toward the camera."
+DEFAULT_POSE_HEAD = "Head held upright, tilted very slightly, facing toward the camera."
 
-DEFAULT_LIGHTING = "Brilliant direct sunlight from the front, entire body from head to bare feet completely and evenly flooded with bright sunlight, skin glowing and luminous, no shadows, no backlighting."
+DEFAULT_LIGHTING = "Brilliant direct sunlight from the front, entire body from head to toe completely and evenly flooded with bright sunlight, every part of the body fully illuminated, skin glowing and luminous, no shadows anywhere on the body, no side shadows, no backlighting, no rim light."
 
 DEFAULT_SETTING = "Luxury hotel swimming pool, glowing blue pool water, elegant poolside deck, sun loungers and palm trees in the background, bright sunny day."
 
-DEFAULT_CAMERA = "35mm lens, three-quarter body shot from sufficient distance, body from head to just above the knees fully in frame, eye-level angle, tack sharp focus."
+DEFAULT_CAMERA = "35mm lens, three-quarter body shot from sufficient distance, chest-level angle, tack sharp focus."
 
-DEFAULT_POSITIVE_PROMPT = "8k, high quality, photorealistic, razor sharp focus, perfect anatomy, ten fingers, beautiful fingers, beautiful hands."
+DEFAULT_POSITIVE_PROMPT = "8k, high quality, photorealistic, razor sharp focus, perfect anatomy, ten fingers, beautiful fingers, beautiful hands, ten toes, beautiful toes, detailed face, detailed toes, beautiful face, masterpiece, best quality, highly detailed, award winning photography, professional lighting, intricate details, elegant composition."
 
-DEFAULT_NEGATIVE_PROMPT = "Blurry, out of focus, soft focus, hazy, low sharpness, grainy, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, deformed hands."
+DEFAULT_NEGATIVE_PROMPT = "Blurry, out of focus, soft focus, hazy, low sharpness, grainy, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, extra toes, deformed hands, deformed feet, deformed toes."
 
 
 def make_image_grid(images: list) -> Image.Image:
