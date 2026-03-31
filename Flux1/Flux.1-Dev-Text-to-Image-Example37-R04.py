@@ -15,7 +15,7 @@ import gradio as gr
 # Default values for each prompt section
 DEFAULT_SUBJECT = "A full body photography of a beautiful skinny young Korean woman walking along a luxury hotel swimming pool wearing a thong bikini, bare feet on the poolside deck."
 
-DEFAULT_POSE_FOOT = "One foot stepping forward, the other foot behind, natural relaxed walking stride on the poolside deck, bare feet."
+DEFAULT_POSE_FOOT = "One foot stepping forward, the other foot behind, natural relaxed walking stride on the poolside deck, bare feet, all ten toes clearly visible, toes separated and distinct."
 
 DEFAULT_POSE_LEG = "Walking pose, one leg stepping forward, the other leg behind, long slender legs clearly visible."
 
@@ -47,9 +47,9 @@ DEFAULT_SETTING = "Luxury hotel swimming pool, glowing blue pool water, elegant 
 
 DEFAULT_CAMERA = "35mm lens, full body shot from sufficient distance, entire body from head to bare feet fully in frame, low angle from knee height looking slightly upward, tack sharp focus."
 
-DEFAULT_POSITIVE_PROMPT = "8k, high quality, photorealistic, razor sharp focus, perfect anatomy, ten fingers. ten toes, beautifull fingers, beautiful toes."
+DEFAULT_POSITIVE_PROMPT = "8k, high quality, photorealistic, razor sharp focus, perfect anatomy, ten fingers, ten toes, beautiful fingers, beautiful toes, all toes visible, detailed feet, detailed toes, anatomically correct feet, feet in full view, no missing toes, no extra toes."
 
-DEFAULT_NEGATIVE_PROMPT = "Blurry, out of focus, soft focus, hazy, low sharpness, grainy, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, extra toes, feet cropped."
+DEFAULT_NEGATIVE_PROMPT = "Blurry, out of focus, soft focus, hazy, low sharpness, grainy, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, extra toes, feet cropped, missing toes, fused toes, webbed toes, distorted toes, toe deformity, toe duplication, toe artifact."
 
 
 def make_image_grid(images: list) -> Image.Image:
