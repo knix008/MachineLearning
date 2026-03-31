@@ -1,1 +1,9 @@
 .gradio
+yolo26n.pt
+yolo26s.pt
+yolo26m.pt
+yolo26l.pt
+yolo26x.pt
+yolo26n.pt.yaml
+yolo26s.pt.yaml
+yolo26m.pt.yaml
