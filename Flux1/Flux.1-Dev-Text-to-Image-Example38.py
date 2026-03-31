@@ -461,7 +461,7 @@ def generate_image(
             "callback_on_step_end": step_callback,
         }
         if negative_embeds is not None:
-            pipe_kwargs["negative_embeds"] = negative_embeds
+            pipe_kwargs["negative_prompt_embeds"] = negative_embeds
             pipe_kwargs["negative_pooled_prompt_embeds"] = negative_pooled_prompt_embeds
             pipe_kwargs["true_cfg_scale"] = true_cfg_scale
 
