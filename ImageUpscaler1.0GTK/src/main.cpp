@@ -5,6 +5,7 @@
 #include <cctype>
 #include <chrono>
 #include <cmath>
+#include <cstdlib>
 #include <cstdio>
 #include <cstring>
 #include <filesystem>
@@ -14,6 +15,7 @@
 #include <thread>
 #include <vector>
 
+#include <curl/curl.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <gio/gio.h>
 #include <glib.h>
@@ -66,6 +68,25 @@ struct UiProgressPayload {
 };
 
 static void StartAutoModelLoad(AppState* st, const std::string& model_path);
+static void PromptDownloadModelIfMissing(AppState* st);
+
+struct DownloadDialogState {
+  AppState* app = nullptr;
+  GtkWindow* window = nullptr;
+  GtkProgressBar* bar = nullptr;
+  GtkLabel* label = nullptr;
+  GtkButton* btn_ok = nullptr;
+  std::atomic<bool> closed{false};
+};
+
+struct DownloadUiPayload {
+  DownloadDialogState* dlg = nullptr;
+  double fraction = -1.0;
+  std::string text;
+  bool done = false;
+  bool success = false;
+  std::string out_path;
+};
 
 static std::filesystem::path GetStateFilePath() {
   const char* cfg = g_get_user_config_dir();
@@ -103,6 +124,7 @@ static std::string LoadModelPathState() {
 }
 
 static void SetStatus(AppState* st, const char* text) {
+  if (!st || !st->label_status) return;
   gtk_label_set_text(GTK_LABEL(st->label_status), text);
 }
 
@@ -629,6 +651,219 @@ static void StartAutoModelLoad(AppState* st, const std::string& model_path) {
   }).detach();
 }
 
+static void StartModelDownload(AppState* st, const std::string& url, const std::string& out_path) {
+  SetBusy(st, true);
+  SetStatus(st, "Downloading default model...");
+
+  auto* dlg = new DownloadDialogState();
+  dlg->app = st;
+  GtkWidget* win = gtk_window_new();
+  dlg->window = GTK_WINDOW(win);
+  gtk_window_set_title(dlg->window, "Downloading Model");
+  gtk_window_set_transient_for(dlg->window, st->window);
+  gtk_window_set_modal(dlg->window, TRUE);
+  gtk_window_set_default_size(dlg->window, 420, 120);
+  GtkWidget* box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
+  gtk_widget_set_margin_top(box, 12);
+  gtk_widget_set_margin_bottom(box, 12);
+  gtk_widget_set_margin_start(box, 12);
+  gtk_widget_set_margin_end(box, 12);
+  GtkWidget* url_label = gtk_label_new(("URL: " + url).c_str());
+  gtk_label_set_xalign(GTK_LABEL(url_label), 0.0f);
+  gtk_label_set_wrap(GTK_LABEL(url_label), TRUE);
+  dlg->label = GTK_LABEL(gtk_label_new("Downloading... 0%"));
+  gtk_label_set_xalign(dlg->label, 0.0f);
+  dlg->bar = GTK_PROGRESS_BAR(gtk_progress_bar_new());
+  gtk_progress_bar_set_show_text(dlg->bar, TRUE);
+  gtk_progress_bar_set_fraction(dlg->bar, 0.0);
+  gtk_progress_bar_set_text(dlg->bar, "0%");
+  dlg->btn_ok = GTK_BUTTON(gtk_button_new_with_label("확인"));
+  gtk_widget_set_sensitive(GTK_WIDGET(dlg->btn_ok), FALSE);
+  g_signal_connect(
+      dlg->btn_ok, "clicked",
+      G_CALLBACK(+[](GtkButton*, gpointer data) {
+        auto* d = static_cast<DownloadDialogState*>(data);
+        d->closed.store(true);
+        gtk_window_destroy(d->window);
+        delete d;
+      }),
+      dlg);
+  gtk_box_append(GTK_BOX(box), url_label);
+  gtk_box_append(GTK_BOX(box), GTK_WIDGET(dlg->label));
+  gtk_box_append(GTK_BOX(box), GTK_WIDGET(dlg->bar));
+  gtk_box_append(GTK_BOX(box), GTK_WIDGET(dlg->btn_ok));
+  gtk_window_set_child(dlg->window, box);
+  gtk_window_present(dlg->window);
+
+  auto post_ui = [](DownloadDialogState* d, double frac, const std::string& text, bool done,
+                    bool success, const std::string& path) {
+    auto* payload = new DownloadUiPayload{d, frac, text, done, success, path};
+    g_idle_add(
+        +[](gpointer data) -> gboolean {
+          std::unique_ptr<DownloadUiPayload> p(static_cast<DownloadUiPayload*>(data));
+          if (!p->dlg || p->dlg->closed.load()) {
+            return G_SOURCE_REMOVE;
+          }
+          if (!p->dlg->label || !GTK_IS_LABEL(p->dlg->label) || !p->dlg->bar ||
+              !GTK_IS_PROGRESS_BAR(p->dlg->bar)) {
+            return G_SOURCE_REMOVE;
+          }
+          if (p->fraction >= 0.0) {
+            const double clamped = std::max(0.0, std::min(1.0, p->fraction));
+            gtk_progress_bar_set_fraction(p->dlg->bar, clamped);
+            const int pct = static_cast<int>(std::lround(clamped * 100.0));
+            gtk_progress_bar_set_text(p->dlg->bar, (std::to_string(pct) + "%").c_str());
+          }
+          if (!p->text.empty()) {
+            gtk_label_set_text(p->dlg->label, p->text.c_str());
+          }
+          if (p->done) {
+            SetBusy(p->dlg->app, false);
+            SetStatus(p->dlg->app, p->text.c_str());
+            if (p->success) {
+              gtk_editable_set_text(GTK_EDITABLE(p->dlg->app->entry_model), p->out_path.c_str());
+              SaveModelPathState(p->out_path);
+              StartAutoModelLoad(p->dlg->app, p->out_path);
+            }
+            if (p->dlg->btn_ok && GTK_IS_BUTTON(p->dlg->btn_ok)) {
+              gtk_widget_set_sensitive(GTK_WIDGET(p->dlg->btn_ok), TRUE);
+            }
+          }
+          return G_SOURCE_REMOVE;
+        },
+        payload);
+  };
+
+  std::thread([url, out_path, dlg, post_ui]() {
+    try {
+      std::filesystem::create_directories(std::filesystem::path(out_path).parent_path());
+    } catch (const std::exception& e) {
+      post_ui(dlg, 0.0, std::string("Model download failed: ") + e.what(), true, false, "");
+      return;
+    }
+
+    FILE* fp = fopen(out_path.c_str(), "wb");
+    if (!fp) {
+      post_ui(dlg, 0.0, "Model download failed: cannot open output file", true, false, "");
+      return;
+    }
+
+    CURL* curl = curl_easy_init();
+    if (!curl) {
+      fclose(fp);
+      post_ui(dlg, 0.0, "Model download failed: curl init failed", true, false, "");
+      return;
+    }
+
+    struct ProgressCtx {
+      DownloadDialogState* dlg;
+      decltype(post_ui) post;
+    } ctx{dlg, post_ui};
+
+    auto write_cb = +[](void* ptr, size_t size, size_t nmemb, void* userdata) -> size_t {
+      FILE* f = static_cast<FILE*>(userdata);
+      return fwrite(ptr, size, nmemb, f);
+    };
+    auto prog_cb = +[](void* user, curl_off_t total, curl_off_t now, curl_off_t, curl_off_t) -> int {
+      auto* c = static_cast<ProgressCtx*>(user);
+      if (total > 0) {
+        const double frac = static_cast<double>(now) / static_cast<double>(total);
+        const int pct = static_cast<int>(std::lround(frac * 100.0));
+        c->post(c->dlg, frac, "Downloading... " + std::to_string(pct) + "%", false, false, "");
+      }
+      return 0;
+    };
+
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_cb);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+    curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
+    curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, prog_cb);
+    curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &ctx);
+    CURLcode rc = curl_easy_perform(curl);
+    long status = 0;
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &status);
+    curl_easy_cleanup(curl);
+    fclose(fp);
+
+    if (rc == CURLE_OK && status >= 200 && status < 300 && std::filesystem::exists(out_path)) {
+      post_ui(dlg, 1.0, "Model downloaded.", true, true, out_path);
+    } else {
+      g_remove(out_path.c_str());
+      std::string why = (rc != CURLE_OK) ? curl_easy_strerror(rc)
+                                         : ("HTTP " + std::to_string(status));
+      post_ui(dlg, 0.0, "Model download failed: " + why, true, false, "");
+    }
+  }).detach();
+}
+
+static void PromptDownloadModelIfMissing(AppState* st) {
+  const std::string target_path = "model/realesrgan-x4.onnx";
+  const char* model_path = gtk_editable_get_text(GTK_EDITABLE(st->entry_model));
+  if (model_path && *model_path && std::filesystem::exists(model_path)) {
+    return;
+  }
+
+  GtkWidget* dialog = gtk_window_new();
+  gtk_window_set_title(GTK_WINDOW(dialog), "Model Not Found");
+  gtk_window_set_transient_for(GTK_WINDOW(dialog), st->window);
+  gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
+  gtk_window_set_default_size(GTK_WINDOW(dialog), 440, 140);
+
+  GtkWidget* root = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+  gtk_widget_set_margin_top(root, 14);
+  gtk_widget_set_margin_bottom(root, 14);
+  gtk_widget_set_margin_start(root, 14);
+  gtk_widget_set_margin_end(root, 14);
+  std::string popup_text =
+      "기본 RealESRGAN ONNX 모델이 없습니다.\n"
+      "다운로드 경로: " +
+      target_path + "\n지금 다운로드하시겠습니까?";
+  GtkWidget* lbl = gtk_label_new(popup_text.c_str());
+  gtk_label_set_xalign(GTK_LABEL(lbl), 0.0f);
+  gtk_label_set_wrap(GTK_LABEL(lbl), TRUE);
+  gtk_box_append(GTK_BOX(root), lbl);
+
+  GtkWidget* row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
+  GtkWidget* btn_cancel = gtk_button_new_with_label("Cancel");
+  GtkWidget* btn_download = gtk_button_new_with_label("Download");
+  gtk_widget_add_css_class(btn_download, "suggested-action");
+  gtk_box_append(GTK_BOX(row), btn_cancel);
+  gtk_box_append(GTK_BOX(row), btn_download);
+  gtk_box_append(GTK_BOX(root), row);
+  gtk_window_set_child(GTK_WINDOW(dialog), root);
+
+  struct DownloadDialogCtx {
+    AppState* app;
+    GtkWindow* dialog;
+    std::string target_path;
+  };
+  auto* ctx = new DownloadDialogCtx{st, GTK_WINDOW(dialog), target_path};
+
+  g_signal_connect(
+      btn_cancel, "clicked",
+      G_CALLBACK(+[](GtkButton*, gpointer data) {
+        auto* c = static_cast<DownloadDialogCtx*>(data);
+        gtk_window_destroy(c->dialog);
+        delete c;
+      }),
+      ctx);
+  g_signal_connect(
+      btn_download, "clicked",
+      G_CALLBACK(+[](GtkButton*, gpointer data) {
+        auto* c = static_cast<DownloadDialogCtx*>(data);
+        gtk_window_destroy(c->dialog);
+        StartModelDownload(
+            c->app,
+            "https://huggingface.co/AXERA-TECH/Real-ESRGAN/resolve/main/onnx/realesrgan-x4.onnx",
+            c->target_path);
+        delete c;
+      }),
+      ctx);
+  gtk_window_present(GTK_WINDOW(dialog));
+}
+
 static GtkWidget* BuildPathRow(const char* label, GtkEntry** out_entry, const char* btn_text,
                                GCallback on_click, AppState* st) {
   GtkWidget* row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
@@ -750,14 +985,15 @@ static void OnActivate(GtkApplication* app, gpointer) {
   gtk_box_append(GTK_BOX(root), BuildPathRow("Output", &st->entry_out, "Browse", G_CALLBACK(OnBrowseOutput), st));
   gtk_box_append(GTK_BOX(root), BuildPathRow("Model", &st->entry_model, "Browse", G_CALLBACK(OnBrowseModel), st));
   g_signal_connect(st->entry_model, "changed", G_CALLBACK(OnModelPathChanged), nullptr);
+  std::string deferred_model_load;
   const std::string saved_model = LoadModelPathState();
   if (!saved_model.empty() && std::filesystem::exists(saved_model)) {
     gtk_editable_set_text(GTK_EDITABLE(st->entry_model), saved_model.c_str());
-    StartAutoModelLoad(st, saved_model);
+    deferred_model_load = saved_model;
   } else if (std::filesystem::exists("model/realesrgan-x4.onnx")) {
     gtk_editable_set_text(GTK_EDITABLE(st->entry_model), "model/realesrgan-x4.onnx");
     SaveModelPathState("model/realesrgan-x4.onnx");
-    StartAutoModelLoad(st, "model/realesrgan-x4.onnx");
+    deferred_model_load = "model/realesrgan-x4.onnx";
   } else if (!saved_model.empty()) {
     gtk_editable_set_text(GTK_EDITABLE(st->entry_model), saved_model.c_str());
     SetStatus(st, "Saved model path restored (file not found).");
@@ -889,6 +1125,10 @@ static void OnActivate(GtkApplication* app, gpointer) {
   g_signal_connect(
       win, "destroy", G_CALLBACK(+[](GtkWidget*, gpointer p) { delete static_cast<AppState*>(p); }), st);
   gtk_window_present(st->window);
+  if (!deferred_model_load.empty()) {
+    StartAutoModelLoad(st, deferred_model_load);
+  }
+  PromptDownloadModelIfMissing(st);
 }
 
 int main(int argc, char** argv) {
