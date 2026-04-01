@@ -37,6 +37,8 @@ struct AppState {
   GtkProgressBar* progress = nullptr;
   GtkPicture* picture_in = nullptr;
   GtkPicture* picture_out = nullptr;
+  GtkLabel* label_in_size = nullptr;
+  GtkLabel* label_out_size = nullptr;
   GtkScrolledWindow* scroll_in = nullptr;
   GtkScrolledWindow* scroll_out = nullptr;
   double drag_base_in_h = 0.0;
@@ -102,6 +104,33 @@ static std::string EnsureOutputExtension(std::string path) {
     path += ".jpg";
   }
   return path;
+}
+
+static void UpdateImageSizeLabel(GtkLabel* label, const char* title, const std::string& path) {
+  if (!label) return;
+  int w = 0;
+  int h = 0;
+  char buf[128];
+  if (gdk_pixbuf_get_file_info(path.c_str(), &w, &h) && w > 0 && h > 0) {
+    std::snprintf(buf, sizeof(buf), "%s: %d x %d", title, w, h);
+  } else {
+    std::snprintf(buf, sizeof(buf), "%s: -", title);
+  }
+  gtk_label_set_text(label, buf);
+}
+
+static double ComputeFitZoom(const std::string& path, GtkScrolledWindow* scroll) {
+  int iw = 0;
+  int ih = 0;
+  if (!gdk_pixbuf_get_file_info(path.c_str(), &iw, &ih) || iw <= 0 || ih <= 0) {
+    return 1.0;
+  }
+  const int vw = std::max(1, gtk_widget_get_width(GTK_WIDGET(scroll)) - 24);
+  const int vh = std::max(1, gtk_widget_get_height(GTK_WIDGET(scroll)) - 24);
+  double z = std::min(static_cast<double>(vw) / static_cast<double>(iw),
+                      static_cast<double>(vh) / static_cast<double>(ih));
+  z = std::max(0.1, std::min(8.0, z));
+  return z;
 }
 
 static void UpdatePreview(GtkPicture* picture, const std::string& path, double zoom) {
@@ -323,8 +352,9 @@ static void FinishJob(AppState* app, const std::string& msg, const std::string& 
         SetStatus(p->app, p->text.c_str());
         if (!p->path.empty()) {
           p->app->last_output_path = p->path;
-          const double zoom = gtk_spin_button_get_value(GTK_SPIN_BUTTON(p->app->spin_zoom_out));
-          UpdatePreview(GTK_PICTURE(p->app->picture_out), p->path, zoom);
+          UpdateImageSizeLabel(p->app->label_out_size, "Output Size", p->path);
+          const double fit = ComputeFitZoom(p->path, p->app->scroll_out);
+          gtk_spin_button_set_value(p->app->spin_zoom_out, fit);
         }
         return G_SOURCE_REMOVE;
       },
@@ -546,9 +576,9 @@ static void OnRunClicked(GtkButton*, gpointer user_data) {
   job->pre_pad = gtk_spin_button_get_value_as_int(st->spin_prepad);
 
   st->last_input_path = pin;
+  UpdateImageSizeLabel(st->label_in_size, "Input Size", st->last_input_path);
   gtk_editable_set_text(GTK_EDITABLE(st->entry_out), job->path_out.c_str());
-  UpdatePreview(st->picture_in, st->last_input_path,
-                gtk_spin_button_get_value(GTK_SPIN_BUTTON(st->spin_zoom_in)));
+  gtk_spin_button_set_value(st->spin_zoom_in, ComputeFitZoom(st->last_input_path, st->scroll_in));
   SetBusy(st, true);
   SetStatus(st, "Upscaling...");
   std::thread(RunUpscaleThread, std::move(job)).detach();
@@ -590,8 +620,9 @@ static void OnBrowseInput(GtkButton*, gpointer user_data) {
           if (p) {
             gtk_editable_set_text(GTK_EDITABLE(s->entry_in), p);
             s->last_input_path = p;
-            UpdatePreview(s->picture_in, s->last_input_path,
-                          gtk_spin_button_get_value(GTK_SPIN_BUTTON(s->spin_zoom_in)));
+            UpdateImageSizeLabel(s->label_in_size, "Input Size", s->last_input_path);
+            gtk_spin_button_set_value(s->spin_zoom_in,
+                                      ComputeFitZoom(s->last_input_path, s->scroll_in));
             g_free(p);
           }
           g_object_unref(f);
@@ -686,6 +717,20 @@ static void OnOutputZoomChanged(GtkSpinButton* spin, gpointer user_data) {
   if (!st->last_output_path.empty()) {
     UpdatePreview(st->picture_out, st->last_output_path, gtk_spin_button_get_value(spin));
   }
+}
+
+static void OnFitInputClicked(GtkButton*, gpointer user_data) {
+  auto* st = static_cast<AppState*>(user_data);
+  if (st->last_input_path.empty()) return;
+  const double z = ComputeFitZoom(st->last_input_path, st->scroll_in);
+  gtk_spin_button_set_value(st->spin_zoom_in, z);
+}
+
+static void OnFitOutputClicked(GtkButton*, gpointer user_data) {
+  auto* st = static_cast<AppState*>(user_data);
+  if (st->last_output_path.empty()) return;
+  const double z = ComputeFitZoom(st->last_output_path, st->scroll_out);
+  gtk_spin_button_set_value(st->spin_zoom_out, z);
 }
 
 static gboolean OnInputPreviewScroll(GtkEventControllerScroll*, double, double dy, gpointer user_data) {
@@ -798,12 +843,29 @@ static void OnActivate(GtkApplication* app, gpointer) {
   gtk_box_append(GTK_BOX(setting_row), GTK_WIDGET(st->spin_prepad));
   gtk_box_append(GTK_BOX(setting_row), gtk_label_new("Input Zoom"));
   gtk_box_append(GTK_BOX(setting_row), GTK_WIDGET(st->spin_zoom_in));
+  GtkWidget* btn_fit_in = gtk_button_new_with_label("Fit In");
+  g_signal_connect(btn_fit_in, "clicked", G_CALLBACK(OnFitInputClicked), st);
+  gtk_box_append(GTK_BOX(setting_row), btn_fit_in);
   gtk_box_append(GTK_BOX(setting_row), gtk_label_new("Output Zoom"));
   gtk_box_append(GTK_BOX(setting_row), GTK_WIDGET(st->spin_zoom_out));
+  GtkWidget* btn_fit_out = gtk_button_new_with_label("Fit Out");
+  g_signal_connect(btn_fit_out, "clicked", G_CALLBACK(OnFitOutputClicked), st);
+  gtk_box_append(GTK_BOX(setting_row), btn_fit_out);
   st->btn_run = GTK_BUTTON(gtk_button_new_with_label("Upscale"));
+  gtk_widget_add_css_class(GTK_WIDGET(st->btn_run), "suggested-action");
+  gtk_widget_add_css_class(GTK_WIDGET(st->btn_run), "upscale-green");
   g_signal_connect(st->btn_run, "clicked", G_CALLBACK(OnRunClicked), st);
   gtk_box_append(GTK_BOX(setting_row), GTK_WIDGET(st->btn_run));
   gtk_box_append(GTK_BOX(root), setting_row);
+
+  GtkWidget* image_info_row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 16);
+  st->label_in_size = GTK_LABEL(gtk_label_new("Input Size: -"));
+  st->label_out_size = GTK_LABEL(gtk_label_new("Output Size: -"));
+  gtk_widget_set_halign(GTK_WIDGET(st->label_in_size), GTK_ALIGN_START);
+  gtk_widget_set_halign(GTK_WIDGET(st->label_out_size), GTK_ALIGN_START);
+  gtk_box_append(GTK_BOX(image_info_row), GTK_WIDGET(st->label_in_size));
+  gtk_box_append(GTK_BOX(image_info_row), GTK_WIDGET(st->label_out_size));
+  gtk_box_append(GTK_BOX(root), image_info_row);
 
   st->progress = GTK_PROGRESS_BAR(gtk_progress_bar_new());
   gtk_progress_bar_set_show_text(st->progress, TRUE);
@@ -861,6 +923,26 @@ static void OnActivate(GtkApplication* app, gpointer) {
   gtk_box_append(GTK_BOX(root), preview);
 
   gtk_window_set_child(st->window, root);
+  {
+    GtkCssProvider* css = gtk_css_provider_new();
+    gtk_css_provider_load_from_string(
+        css,
+        ".upscale-green {"
+        "  background: #b7f774;"
+        "  color: #103300;"
+        "}"
+        ".upscale-green:hover {"
+        "  background: #c8ff8f;"
+        "}"
+        ".upscale-green:disabled {"
+        "  background: #d8e8c6;"
+        "  color: #6a7d57;"
+        "}");
+    gtk_style_context_add_provider_for_display(
+        gdk_display_get_default(), GTK_STYLE_PROVIDER(css),
+        GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    g_object_unref(css);
+  }
   g_signal_connect(
       win, "destroy", G_CALLBACK(+[](GtkWidget*, gpointer p) { delete static_cast<AppState*>(p); }), st);
   gtk_window_present(st->window);
