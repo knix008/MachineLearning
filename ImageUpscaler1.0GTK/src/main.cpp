@@ -28,6 +28,7 @@ struct AppState {
   GtkEntry* entry_model_url = nullptr;
   GtkSpinButton* spin_tile = nullptr;
   GtkSpinButton* spin_overlap = nullptr;
+  GtkSpinButton* spin_prepad = nullptr;
   GtkSpinButton* spin_zoom_in = nullptr;
   GtkSpinButton* spin_zoom_out = nullptr;
   GtkLabel* label_status = nullptr;
@@ -36,6 +37,12 @@ struct AppState {
   GtkProgressBar* progress = nullptr;
   GtkPicture* picture_in = nullptr;
   GtkPicture* picture_out = nullptr;
+  GtkScrolledWindow* scroll_in = nullptr;
+  GtkScrolledWindow* scroll_out = nullptr;
+  double drag_base_in_h = 0.0;
+  double drag_base_in_v = 0.0;
+  double drag_base_out_h = 0.0;
+  double drag_base_out_v = 0.0;
   std::string last_input_path;
   std::string last_output_path;
   std::atomic<bool> busy{false};
@@ -48,6 +55,7 @@ struct JobPayload {
   std::string path_model;
   int tile_lr = 0;
   int overlap_lr = 16;
+  int pre_pad = 0;
 };
 
 struct DownloadPayload {
@@ -62,9 +70,6 @@ struct UiProgressPayload {
   std::string text;
   std::string path;
 };
-
-static void AutoTuneParamsForImage(AppState* st, const std::string& image_path);
-static void NormalizeTileParams(AppState* st, const std::string& image_path);
 
 static void SetStatus(AppState* st, const char* text) {
   gtk_label_set_text(GTK_LABEL(st->label_status), text);
@@ -238,6 +243,59 @@ static GdkPixbuf* RgbFloatToPixbuf(const RgbImage& img, GError** err) {
       +[](guchar* pixels, gpointer) { g_free(pixels); }, nullptr);
 }
 
+static RgbImage PadImageEdge(const RgbImage& in, int pad) {
+  if (pad <= 0) {
+    return in;
+  }
+  RgbImage out;
+  out.width = in.width + pad * 2;
+  out.height = in.height + pad * 2;
+  out.data.assign(static_cast<size_t>(3) * static_cast<size_t>(out.width) *
+                      static_cast<size_t>(out.height),
+                  0.0f);
+
+  for (int ch = 0; ch < 3; ++ch) {
+    for (int y = 0; y < out.height; ++y) {
+      const int sy = std::min(in.height - 1, std::max(0, y - pad));
+      for (int x = 0; x < out.width; ++x) {
+        const int sx = std::min(in.width - 1, std::max(0, x - pad));
+        const size_t si =
+            static_cast<size_t>(ch) * static_cast<size_t>(in.height) * static_cast<size_t>(in.width) +
+            static_cast<size_t>(sy) * static_cast<size_t>(in.width) + static_cast<size_t>(sx);
+        const size_t di =
+            static_cast<size_t>(ch) * static_cast<size_t>(out.height) * static_cast<size_t>(out.width) +
+            static_cast<size_t>(y) * static_cast<size_t>(out.width) + static_cast<size_t>(x);
+        out.data[di] = in.data[si];
+      }
+    }
+  }
+  return out;
+}
+
+static RgbImage CropImage(const RgbImage& in, int x0, int y0, int w, int h) {
+  RgbImage out;
+  if (w <= 0 || h <= 0 || x0 < 0 || y0 < 0 || x0 + w > in.width || y0 + h > in.height) {
+    return out;
+  }
+  out.width = w;
+  out.height = h;
+  out.data.assign(static_cast<size_t>(3) * static_cast<size_t>(w) * static_cast<size_t>(h), 0.0f);
+  for (int ch = 0; ch < 3; ++ch) {
+    for (int y = 0; y < h; ++y) {
+      for (int x = 0; x < w; ++x) {
+        const size_t si =
+            static_cast<size_t>(ch) * static_cast<size_t>(in.height) * static_cast<size_t>(in.width) +
+            static_cast<size_t>(y0 + y) * static_cast<size_t>(in.width) + static_cast<size_t>(x0 + x);
+        const size_t di =
+            static_cast<size_t>(ch) * static_cast<size_t>(h) * static_cast<size_t>(w) +
+            static_cast<size_t>(y) * static_cast<size_t>(w) + static_cast<size_t>(x);
+        out.data[di] = in.data[si];
+      }
+    }
+  }
+  return out;
+}
+
 static gboolean ApplyUiProgress(gpointer user_data) {
   std::unique_ptr<UiProgressPayload> p(static_cast<UiProgressPayload*>(user_data));
   if (p->value >= 0.0) {
@@ -299,9 +357,12 @@ static void RunUpscaleThread(std::unique_ptr<JobPayload> job) {
     }
     g_object_unref(in_pb);
 
+    const int safe_prepad = std::max(0, job->pre_pad);
+    RgbImage infer_in = (safe_prepad > 0) ? PadImageEdge(in, safe_prepad) : in;
+
     std::string infer_err;
-    RgbImage out = engine.upscale(
-        in, job->tile_lr, job->overlap_lr,
+    RgbImage out_full = engine.upscale(
+        infer_in, job->tile_lr, job->overlap_lr,
         [app, started](float progress) {
           const double p = std::max(0.0, std::min(1.0, static_cast<double>(progress)));
           const auto now = std::chrono::steady_clock::now();
@@ -317,6 +378,15 @@ static void RunUpscaleThread(std::unique_ptr<JobPayload> job) {
                              FormatEtaSeconds(eta));
         },
         infer_err);
+
+    RgbImage out = out_full;
+    if (infer_err.empty() && safe_prepad > 0) {
+      const int s = std::max(1, engine.scale());
+      out = CropImage(out_full, safe_prepad * s, safe_prepad * s, in.width * s, in.height * s);
+      if (out.data.empty()) {
+        infer_err = "prepadding crop failed";
+      }
+    }
 
     if (!infer_err.empty()) {
       FinishJob(app, std::string("inference failed: ") + infer_err, "");
@@ -471,10 +541,9 @@ static void OnRunClicked(GtkButton*, gpointer user_data) {
   job->path_in = pin;
   job->path_out = EnsureOutputExtension(pout);
   job->path_model = pmodel;
-  AutoTuneParamsForImage(st, pin);
-  NormalizeTileParams(st, pin);
   job->tile_lr = gtk_spin_button_get_value_as_int(st->spin_tile);
   job->overlap_lr = gtk_spin_button_get_value_as_int(st->spin_overlap);
+  job->pre_pad = gtk_spin_button_get_value_as_int(st->spin_prepad);
 
   st->last_input_path = pin;
   gtk_editable_set_text(GTK_EDITABLE(st->entry_out), job->path_out.c_str());
@@ -521,7 +590,6 @@ static void OnBrowseInput(GtkButton*, gpointer user_data) {
           if (p) {
             gtk_editable_set_text(GTK_EDITABLE(s->entry_in), p);
             s->last_input_path = p;
-            AutoTuneParamsForImage(s, s->last_input_path);
             UpdatePreview(s->picture_in, s->last_input_path,
                           gtk_spin_button_get_value(GTK_SPIN_BUTTON(s->spin_zoom_in)));
             g_free(p);
@@ -620,45 +688,6 @@ static void OnOutputZoomChanged(GtkSpinButton* spin, gpointer user_data) {
   }
 }
 
-static void AutoTuneParamsForImage(AppState* st, const std::string& image_path) {
-  int w = 0;
-  int h = 0;
-  if (!gdk_pixbuf_get_file_info(image_path.c_str(), &w, &h) || w <= 0 || h <= 0) {
-    return;
-  }
-  // Match RealESRGANExample01.py auto-tile behavior:
-  // if max_side > 2048: tile=1024, elif > 1024: tile=512, else tile=0.
-  const int max_side = std::max(w, h);
-  int tile = 0;
-  if (max_side > 2048) {
-    tile = 1024;
-  } else if (max_side > 1024) {
-    tile = 512;
-  }
-  // Example uses tile_pad=10, pre_pad=0. Our closest equivalent is overlap.
-  int overlap = 10;
-
-  gtk_spin_button_set_value(st->spin_tile, tile);
-  gtk_spin_button_set_value(st->spin_overlap, overlap);
-}
-
-static void NormalizeTileParams(AppState* st, const std::string& image_path) {
-  int w = 0;
-  int h = 0;
-  if (!gdk_pixbuf_get_file_info(image_path.c_str(), &w, &h) || w <= 0 || h <= 0) {
-    return;
-  }
-  int tile = gtk_spin_button_get_value_as_int(st->spin_tile);
-  int overlap = gtk_spin_button_get_value_as_int(st->spin_overlap);
-  if (tile <= 0) {
-    return;
-  }
-  tile = std::max(1, std::min(tile, std::min(w, h)));
-  overlap = std::max(0, std::min(overlap, tile / 2 - 1));
-  gtk_spin_button_set_value(st->spin_tile, tile);
-  gtk_spin_button_set_value(st->spin_overlap, overlap);
-}
-
 static gboolean OnInputPreviewScroll(GtkEventControllerScroll*, double, double dy, gpointer user_data) {
   auto* st = static_cast<AppState*>(user_data);
   double v = gtk_spin_button_get_value(st->spin_zoom_in);
@@ -675,6 +704,45 @@ static gboolean OnOutputPreviewScroll(GtkEventControllerScroll*, double, double 
   v = std::max(0.1, std::min(8.0, v));
   gtk_spin_button_set_value(st->spin_zoom_out, v);
   return TRUE;
+}
+
+static void UpdateDragOnScroll(GtkScrolledWindow* scroll, double base_h, double base_v, double dx, double dy) {
+  GtkAdjustment* hadj = gtk_scrolled_window_get_hadjustment(scroll);
+  GtkAdjustment* vadj = gtk_scrolled_window_get_vadjustment(scroll);
+  const double h_lower = gtk_adjustment_get_lower(hadj);
+  const double h_upper = gtk_adjustment_get_upper(hadj) - gtk_adjustment_get_page_size(hadj);
+  const double v_lower = gtk_adjustment_get_lower(vadj);
+  const double v_upper = gtk_adjustment_get_upper(vadj) - gtk_adjustment_get_page_size(vadj);
+  const double next_h = std::max(h_lower, std::min(h_upper, base_h - dx));
+  const double next_v = std::max(v_lower, std::min(v_upper, base_v - dy));
+  gtk_adjustment_set_value(hadj, next_h);
+  gtk_adjustment_set_value(vadj, next_v);
+}
+
+static void OnInputDragBegin(GtkGestureDrag*, double, double, gpointer user_data) {
+  auto* st = static_cast<AppState*>(user_data);
+  GtkAdjustment* hadj = gtk_scrolled_window_get_hadjustment(st->scroll_in);
+  GtkAdjustment* vadj = gtk_scrolled_window_get_vadjustment(st->scroll_in);
+  st->drag_base_in_h = gtk_adjustment_get_value(hadj);
+  st->drag_base_in_v = gtk_adjustment_get_value(vadj);
+}
+
+static void OnInputDragUpdate(GtkGestureDrag*, double dx, double dy, gpointer user_data) {
+  auto* st = static_cast<AppState*>(user_data);
+  UpdateDragOnScroll(st->scroll_in, st->drag_base_in_h, st->drag_base_in_v, dx, dy);
+}
+
+static void OnOutputDragBegin(GtkGestureDrag*, double, double, gpointer user_data) {
+  auto* st = static_cast<AppState*>(user_data);
+  GtkAdjustment* hadj = gtk_scrolled_window_get_hadjustment(st->scroll_out);
+  GtkAdjustment* vadj = gtk_scrolled_window_get_vadjustment(st->scroll_out);
+  st->drag_base_out_h = gtk_adjustment_get_value(hadj);
+  st->drag_base_out_v = gtk_adjustment_get_value(vadj);
+}
+
+static void OnOutputDragUpdate(GtkGestureDrag*, double dx, double dy, gpointer user_data) {
+  auto* st = static_cast<AppState*>(user_data);
+  UpdateDragOnScroll(st->scroll_out, st->drag_base_out_h, st->drag_base_out_v, dx, dy);
 }
 
 static void OnActivate(GtkApplication* app, gpointer) {
@@ -711,9 +779,11 @@ static void OnActivate(GtkApplication* app, gpointer) {
 
   GtkWidget* setting_row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
   st->spin_tile = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 4096, 16));
-  gtk_spin_button_set_value(st->spin_tile, 256);
+  gtk_spin_button_set_value(st->spin_tile, 0);
   st->spin_overlap = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 256, 4));
-  gtk_spin_button_set_value(st->spin_overlap, 16);
+  gtk_spin_button_set_value(st->spin_overlap, 10);
+  st->spin_prepad = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 256, 1));
+  gtk_spin_button_set_value(st->spin_prepad, 0);
   st->spin_zoom_in = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0.1, 8.0, 0.1));
   gtk_spin_button_set_value(st->spin_zoom_in, 1.0);
   st->spin_zoom_out = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0.1, 8.0, 0.1));
@@ -722,8 +792,10 @@ static void OnActivate(GtkApplication* app, gpointer) {
   g_signal_connect(st->spin_zoom_out, "value-changed", G_CALLBACK(OnOutputZoomChanged), st);
   gtk_box_append(GTK_BOX(setting_row), gtk_label_new("Tile"));
   gtk_box_append(GTK_BOX(setting_row), GTK_WIDGET(st->spin_tile));
-  gtk_box_append(GTK_BOX(setting_row), gtk_label_new("Overlap"));
+  gtk_box_append(GTK_BOX(setting_row), gtk_label_new("Padding"));
   gtk_box_append(GTK_BOX(setting_row), GTK_WIDGET(st->spin_overlap));
+  gtk_box_append(GTK_BOX(setting_row), gtk_label_new("Prepadding"));
+  gtk_box_append(GTK_BOX(setting_row), GTK_WIDGET(st->spin_prepad));
   gtk_box_append(GTK_BOX(setting_row), gtk_label_new("Input Zoom"));
   gtk_box_append(GTK_BOX(setting_row), GTK_WIDGET(st->spin_zoom_in));
   gtk_box_append(GTK_BOX(setting_row), gtk_label_new("Output Zoom"));
@@ -755,12 +827,21 @@ static void OnActivate(GtkApplication* app, gpointer) {
       gtk_event_controller_scroll_new(GTK_EVENT_CONTROLLER_SCROLL_VERTICAL);
   g_signal_connect(ctrl_in, "scroll", G_CALLBACK(OnInputPreviewScroll), st);
   gtk_widget_add_controller(GTK_WIDGET(st->picture_in), ctrl_in);
+  GtkGesture* drag_in = gtk_gesture_drag_new();
+  g_signal_connect(drag_in, "drag-begin", G_CALLBACK(OnInputDragBegin), st);
+  g_signal_connect(drag_in, "drag-update", G_CALLBACK(OnInputDragUpdate), st);
+  gtk_widget_add_controller(GTK_WIDGET(st->picture_in), GTK_EVENT_CONTROLLER(drag_in));
   GtkEventController* ctrl_out =
       gtk_event_controller_scroll_new(GTK_EVENT_CONTROLLER_SCROLL_VERTICAL);
   g_signal_connect(ctrl_out, "scroll", G_CALLBACK(OnOutputPreviewScroll), st);
   gtk_widget_add_controller(GTK_WIDGET(st->picture_out), ctrl_out);
+  GtkGesture* drag_out = gtk_gesture_drag_new();
+  g_signal_connect(drag_out, "drag-begin", G_CALLBACK(OnOutputDragBegin), st);
+  g_signal_connect(drag_out, "drag-update", G_CALLBACK(OnOutputDragUpdate), st);
+  gtk_widget_add_controller(GTK_WIDGET(st->picture_out), GTK_EVENT_CONTROLLER(drag_out));
 
   GtkWidget* in_scroll = gtk_scrolled_window_new();
+  st->scroll_in = GTK_SCROLLED_WINDOW(in_scroll);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(in_scroll), GTK_POLICY_AUTOMATIC,
                                  GTK_POLICY_AUTOMATIC);
   gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(in_scroll), GTK_WIDGET(st->picture_in));
@@ -768,6 +849,7 @@ static void OnActivate(GtkApplication* app, gpointer) {
   gtk_frame_set_child(GTK_FRAME(in_frame), in_scroll);
 
   GtkWidget* out_scroll = gtk_scrolled_window_new();
+  st->scroll_out = GTK_SCROLLED_WINDOW(out_scroll);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(out_scroll), GTK_POLICY_AUTOMATIC,
                                  GTK_POLICY_AUTOMATIC);
   gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(out_scroll), GTK_WIDGET(st->picture_out));
