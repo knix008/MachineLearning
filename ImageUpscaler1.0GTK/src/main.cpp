@@ -982,7 +982,8 @@ static void OnActivate(GtkApplication* app, gpointer) {
   gtk_widget_set_margin_end(root, 12);
 
   gtk_box_append(GTK_BOX(root), BuildPathRow("Input", &st->entry_in, "Browse", G_CALLBACK(OnBrowseInput), st));
-  gtk_box_append(GTK_BOX(root), BuildPathRow("Output", &st->entry_out, "Browse", G_CALLBACK(OnBrowseOutput), st));
+  gtk_box_append(GTK_BOX(root), BuildPathRow("Output (JPG)", &st->entry_out, "Browse", G_CALLBACK(OnBrowseOutput), st));
+  gtk_entry_set_placeholder_text(st->entry_out, "upscaled.jpg");
   gtk_box_append(GTK_BOX(root), BuildPathRow("Model", &st->entry_model, "Browse", G_CALLBACK(OnBrowseModel), st));
   g_signal_connect(st->entry_model, "changed", G_CALLBACK(OnModelPathChanged), nullptr);
   std::string deferred_model_load;
