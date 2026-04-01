@@ -1,0 +1,47 @@
+# macOS
+.DS_Store
+
+# Build directories and CMake files
+build/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+compile_commands.json
+cmake_install.cmake
+install_manifest.txt
+
+# Binaries and libraries
+*.o
+*.obj
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+image_upscaler_gtk
+
+# Logs and temp
+*.log
+*.tmp
+*.swp
+*.swo
+
+# IDE
+.idea/
+.vscode/
+
+# Python cache (if helper scripts are added)
+__pycache__/
+*.pyc
+
+# Model and generated assets
+weights/
+models/
+model/
+results/
+outputs/
+*.onnx
+*.pth
+*.jpg
+*.jpeg
+*.png
