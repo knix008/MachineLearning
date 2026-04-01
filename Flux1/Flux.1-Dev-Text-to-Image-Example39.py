@@ -13,41 +13,41 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-SUBJECT = "A full body photography of a beautiful skinny young Korean woman standing at a luxury hotel swimming pool wearing a thong bikini, body fully facing the camera, bare feet on the poolside deck."
+SUBJECT = "A full body photography of a beautiful skinny young Korean woman standing in a park, wearing a casual outfit, body fully facing the camera."
 
-FOOT = "Both feet together, side by side, flat on the poolside deck, bare feet."
+FOOT = "Both feet together, side by side, flat on the ground, wearing white sneakers."
 
-LEG = "Both legs straight and fully extended, close together, not bent, standing upright, long slender legs clearly visible."
+LEG = "Both legs straight and close together, standing upright, long slender legs visible below the skirt hem."
 
 FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, mouth closed with lips lightly pressed together, looking directly at the camera. She has long, voluminous straight jet-black hair, dramatically flowing and billowing in the wind, strands sweeping through the air."
 
-BODY = "Body facing directly and fully toward the camera, chest and torso completely frontal, posture upright and confident."
+BODY = "Body facing directly and fully toward the camera, chest and torso completely frontal, posture upright and relaxed."
 
-ARM = "One arm bent at the elbow with hand resting on the waist, the other arm hanging naturally and relaxed at her thigh."
+ARM = "Both arms hanging naturally and relaxed at her sides."
 
-HAND = "One hand placed on the waist with fingers resting naturally, the other hand relaxed with fingers lightly extended hanging at her side."
+HAND = "Both hands relaxed with fingers lightly extended hanging at her sides."
 
-FOOTWEAR = ""
+FOOTWEAR = "Wearing clean white sneakers."
 
-LEGWEAR = ""
+LEGWEAR = "Wearing white ankle socks, visible above the sneakers."
 
-BOTTOM = "Wearing a tiny light pink thong bikini bottom, minimal coverage, bare hips fully exposed, sky blue string ties at the hips."
+BOTTOM = ""
 
-TOP = "Wearing a tiny light pink triangle bikini top, minimal coverage, thin sky blue string ties at the neck and back, bare midriff fully exposed."
+TOP = "Wearing a loose short-sleeve one-piece dress in light sky blue color, waist cinched and tied with a fabric belt bow at the front, flowing and relaxed silhouette, hem falling mid-thigh, a slight front slit at the hem revealing the legs, long slender legs clearly visible through the slit."
 
 HEADWEAR = ""
 
 ARMWEAR = ""
 
-HEAD = ""
+HEAD = "Head held upright, facing directly toward the camera."
 
-LIGHTING = "Brilliant direct sunlight hitting the subject straight from the front, face and entire body from head to bare feet completely and evenly flooded with bright front light, high-key bright exposure, skin luminous and glowing, absolutely no backlighting, no rim light, no silhouette effect, front-lit only."
+LIGHTING = "Bright direct front lighting illuminating the subject straight from the front, face and entire body from head to feet completely and evenly flooded with bright front light, high-key bright exposure, skin luminous and glowing, zero shadows anywhere on the body or face, absolutely no backlighting, no rim light, no silhouette effect, front-lit only."
 
-SETTING = "Luxury hotel swimming pool, glowing blue pool water, elegant poolside deck, sun loungers and palm trees in the background, bright sunny day."
+SETTING = "A peaceful green park on a bright day, lush trees and grass in the background, soft bokeh, warm natural atmosphere."
 
-CAMERA = "35mm lens, full body shot from sufficient distance, waist-level angle, tack sharp focus."
+CAMERA = "85mm lens, full body shot from sufficient distance, eye-level angle, tack sharp focus."
 
-POSITIVE = "8k, high quality, photorealistic, razor sharp focus, perfect anatomy, ten fingers, beautiful fingers, beautiful hands, ten toes, beautiful toes, detailed toes."
+POSITIVE = "8k, high quality, photorealistic, razor sharp focus, perfect anatomy, ten fingers, beautiful fingers, beautiful hands, ten toes, beautiful toes, detailed face, natural skin texture, casual fashion."
 
 NEGATIVE = "Blurry, out of focus, soft focus, hazy, low sharpness, grainy, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, extra toes, deformed hands, deformed feet, deformed toes."
 
