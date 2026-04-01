@@ -8,12 +8,12 @@
 #include <cstdio>
 #include <cstring>
 #include <filesystem>
+#include <fstream>
 #include <memory>
 #include <string>
 #include <thread>
 #include <vector>
 
-#include <curl/curl.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <gio/gio.h>
 #include <glib.h>
@@ -25,7 +25,6 @@ struct AppState {
   GtkEntry* entry_in = nullptr;
   GtkEntry* entry_out = nullptr;
   GtkEntry* entry_model = nullptr;
-  GtkEntry* entry_model_url = nullptr;
   GtkSpinButton* spin_tile = nullptr;
   GtkSpinButton* spin_overlap = nullptr;
   GtkSpinButton* spin_prepad = nullptr;
@@ -33,7 +32,6 @@ struct AppState {
   GtkSpinButton* spin_zoom_out = nullptr;
   GtkLabel* label_status = nullptr;
   GtkButton* btn_run = nullptr;
-  GtkButton* btn_download = nullptr;
   GtkProgressBar* progress = nullptr;
   GtkPicture* picture_in = nullptr;
   GtkPicture* picture_out = nullptr;
@@ -60,18 +58,49 @@ struct JobPayload {
   int pre_pad = 0;
 };
 
-struct DownloadPayload {
-  AppState* app = nullptr;
-  std::string url;
-  std::string out_path;
-};
-
 struct UiProgressPayload {
   AppState* app = nullptr;
   double value = 0.0;
   std::string text;
   std::string path;
 };
+
+static void StartAutoModelLoad(AppState* st, const std::string& model_path);
+
+static std::filesystem::path GetStateFilePath() {
+  const char* cfg = g_get_user_config_dir();
+  std::filesystem::path dir = cfg ? std::filesystem::path(cfg) : std::filesystem::path(".");
+  dir /= "image_upscaler_gtk";
+  return dir / "state.txt";
+}
+
+static void SaveModelPathState(const std::string& model_path) {
+  if (model_path.empty()) return;
+  try {
+    const auto state_file = GetStateFilePath();
+    std::filesystem::create_directories(state_file.parent_path());
+    std::ofstream ofs(state_file, std::ios::trunc);
+    if (ofs) {
+      ofs << model_path << "\n";
+    }
+  } catch (...) {
+    // Ignore state persistence failures.
+  }
+}
+
+static std::string LoadModelPathState() {
+  try {
+    const auto state_file = GetStateFilePath();
+    std::ifstream ifs(state_file);
+    std::string line;
+    if (ifs && std::getline(ifs, line)) {
+      return line;
+    }
+  } catch (...) {
+    // Ignore state load failures.
+  }
+  return "";
+}
 
 static void SetStatus(AppState* st, const char* text) {
   gtk_label_set_text(GTK_LABEL(st->label_status), text);
@@ -171,7 +200,6 @@ static void UpdatePreview(GtkPicture* picture, const std::string& path, double z
 static void SetBusy(AppState* st, bool busy) {
   st->busy = busy;
   gtk_widget_set_sensitive(GTK_WIDGET(st->btn_run), !busy);
-  gtk_widget_set_sensitive(GTK_WIDGET(st->btn_download), !busy);
   if (!busy) {
     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(st->progress), 0.0);
     gtk_progress_bar_set_text(GTK_PROGRESS_BAR(st->progress), "0%");
@@ -454,105 +482,6 @@ static void RunUpscaleThread(std::unique_ptr<JobPayload> job) {
   }
 }
 
-struct CurlProgressCtx {
-  AppState* app = nullptr;
-  std::chrono::steady_clock::time_point started;
-};
-
-static int CurlXferInfo(void* clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t, curl_off_t) {
-  auto* ctx = static_cast<CurlProgressCtx*>(clientp);
-  if (!ctx || !ctx->app) return 0;
-  if (dltotal > 0) {
-    const double frac = static_cast<double>(dlnow) / static_cast<double>(dltotal);
-    const auto now = std::chrono::steady_clock::now();
-    const double elapsed =
-        std::chrono::duration_cast<std::chrono::duration<double>>(now - ctx->started).count();
-    double eta = -1.0;
-    if (frac > 1e-5) {
-      eta = elapsed * (1.0 - frac) / frac;
-    }
-    const int pct = static_cast<int>(std::lround(frac * 100.0));
-    PostUiProgress(ctx->app, frac,
-                   "Downloading model... " + std::to_string(pct) + "% | ETA " +
-                       FormatEtaSeconds(eta));
-  }
-  return 0;
-}
-
-static size_t CurlWrite(void* ptr, size_t size, size_t nmemb, void* stream) {
-  FILE* f = static_cast<FILE*>(stream);
-  return fwrite(ptr, size, nmemb, f);
-}
-
-static void RunDownloadThread(std::unique_ptr<DownloadPayload> job) {
-  AppState* app = job->app;
-  PostUiProgress(app, 0.0, "Preparing download...");
-
-  try {
-    const std::filesystem::path out_path(job->out_path);
-    const auto parent = out_path.parent_path();
-    if (!parent.empty()) {
-      std::filesystem::create_directories(parent);
-    }
-  } catch (const std::exception& e) {
-    FinishJob(app, std::string("cannot create model directory: ") + e.what(), "");
-    return;
-  }
-
-  CURL* curl = curl_easy_init();
-  if (!curl) {
-    FinishJob(app, "curl init failed", "");
-    return;
-  }
-
-  FILE* fp = fopen(job->out_path.c_str(), "wb");
-  if (!fp) {
-    curl_easy_cleanup(curl);
-    FinishJob(app, "cannot open output model file", "");
-    return;
-  }
-
-  CurlProgressCtx ctx{app, std::chrono::steady_clock::now()};
-  curl_easy_setopt(curl, CURLOPT_URL, job->url.c_str());
-  curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWrite);
-  curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
-  curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
-  curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, CurlXferInfo);
-  curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &ctx);
-
-  const CURLcode rc = curl_easy_perform(curl);
-  fclose(fp);
-
-  if (rc != CURLE_OK) {
-    g_remove(job->out_path.c_str());
-    std::string msg = std::string("download failed: ") + curl_easy_strerror(rc);
-    curl_easy_cleanup(curl);
-    FinishJob(app, msg, "");
-    return;
-  }
-
-  long status = 0;
-  curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &status);
-  curl_easy_cleanup(curl);
-  if (status < 200 || status >= 300) {
-    g_remove(job->out_path.c_str());
-    FinishJob(app, "download failed: HTTP " + std::to_string(status), "");
-    return;
-  }
-
-  auto* payload = new UiProgressPayload{app, 0.0, "Model downloaded.", job->out_path};
-  g_idle_add(
-      +[](gpointer data) -> gboolean {
-        std::unique_ptr<UiProgressPayload> p(static_cast<UiProgressPayload*>(data));
-        gtk_editable_set_text(GTK_EDITABLE(p->app->entry_model), p->path.c_str());
-        SetBusy(p->app, false);
-        SetStatus(p->app, p->text.c_str());
-        return G_SOURCE_REMOVE;
-      },
-      payload);
-}
-
 static void OnRunClicked(GtkButton*, gpointer user_data) {
   auto* st = static_cast<AppState*>(user_data);
   if (st->busy.exchange(true)) return;
@@ -582,28 +511,6 @@ static void OnRunClicked(GtkButton*, gpointer user_data) {
   SetBusy(st, true);
   SetStatus(st, "Upscaling...");
   std::thread(RunUpscaleThread, std::move(job)).detach();
-}
-
-static void OnDownloadClicked(GtkButton*, gpointer user_data) {
-  auto* st = static_cast<AppState*>(user_data);
-  if (st->busy.exchange(true)) return;
-
-  const char* url = gtk_editable_get_text(GTK_EDITABLE(st->entry_model_url));
-  const char* out_model = gtk_editable_get_text(GTK_EDITABLE(st->entry_model));
-  if (!url || !*url || !out_model || !*out_model) {
-    st->busy = false;
-    SetStatus(st, "Fill model URL and model path.");
-    return;
-  }
-
-  auto job = std::make_unique<DownloadPayload>();
-  job->app = st;
-  job->url = url;
-  job->out_path = out_model;
-
-  SetBusy(st, true);
-  SetStatus(st, "Downloading model...");
-  std::thread(RunDownloadThread, std::move(job)).detach();
 }
 
 static void OnBrowseInput(GtkButton*, gpointer user_data) {
@@ -675,6 +582,8 @@ static void OnBrowseModel(GtkButton*, gpointer user_data) {
           char* p = g_file_get_path(f);
           if (p) {
             gtk_editable_set_text(GTK_EDITABLE(s->entry_model), p);
+            SaveModelPathState(p);
+            StartAutoModelLoad(s, p);
             g_free(p);
           }
           g_object_unref(f);
@@ -685,6 +594,39 @@ static void OnBrowseModel(GtkButton*, gpointer user_data) {
         g_object_unref(src);
       },
       st);
+}
+
+static void OnModelPathChanged(GtkEditable* editable, gpointer) {
+  const char* p = gtk_editable_get_text(editable);
+  if (p && *p) {
+    SaveModelPathState(p);
+  }
+}
+
+static void StartAutoModelLoad(AppState* st, const std::string& model_path) {
+  if (model_path.empty()) return;
+  if (!std::filesystem::exists(model_path)) {
+    SetStatus(st, "Model path set (file not found).");
+    return;
+  }
+  SetStatus(st, "Loading model...");
+  std::thread([st, model_path]() {
+    std::string msg;
+    try {
+      OnnxSuperRes test(model_path);
+      msg = "Model loaded: " + model_path;
+    } catch (const std::exception& e) {
+      msg = std::string("Model load failed: ") + e.what();
+    }
+    auto* payload = new UiProgressPayload{st, -1.0, msg, ""};
+    g_idle_add(
+        +[](gpointer data) -> gboolean {
+          std::unique_ptr<UiProgressPayload> p(static_cast<UiProgressPayload*>(data));
+          SetStatus(p->app, p->text.c_str());
+          return G_SOURCE_REMOVE;
+        },
+        payload);
+  }).detach();
 }
 
 static GtkWidget* BuildPathRow(const char* label, GtkEntry** out_entry, const char* btn_text,
@@ -807,20 +749,21 @@ static void OnActivate(GtkApplication* app, gpointer) {
   gtk_box_append(GTK_BOX(root), BuildPathRow("Input", &st->entry_in, "Browse", G_CALLBACK(OnBrowseInput), st));
   gtk_box_append(GTK_BOX(root), BuildPathRow("Output", &st->entry_out, "Browse", G_CALLBACK(OnBrowseOutput), st));
   gtk_box_append(GTK_BOX(root), BuildPathRow("Model", &st->entry_model, "Browse", G_CALLBACK(OnBrowseModel), st));
-  gtk_editable_set_text(GTK_EDITABLE(st->entry_model), "model/realesrgan-x4.onnx");
-
-  st->entry_model_url = GTK_ENTRY(gtk_entry_new());
-  gtk_editable_set_text(
-      GTK_EDITABLE(st->entry_model_url),
-      "https://huggingface.co/AXERA-TECH/Real-ESRGAN/resolve/main/onnx/realesrgan-x4.onnx");
-  GtkWidget* model_url_row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
-  gtk_box_append(GTK_BOX(model_url_row), gtk_label_new("Model URL"));
-  gtk_widget_set_hexpand(GTK_WIDGET(st->entry_model_url), TRUE);
-  gtk_box_append(GTK_BOX(model_url_row), GTK_WIDGET(st->entry_model_url));
-  st->btn_download = GTK_BUTTON(gtk_button_new_with_label("Download Model"));
-  g_signal_connect(st->btn_download, "clicked", G_CALLBACK(OnDownloadClicked), st);
-  gtk_box_append(GTK_BOX(model_url_row), GTK_WIDGET(st->btn_download));
-  gtk_box_append(GTK_BOX(root), model_url_row);
+  g_signal_connect(st->entry_model, "changed", G_CALLBACK(OnModelPathChanged), nullptr);
+  const std::string saved_model = LoadModelPathState();
+  if (!saved_model.empty() && std::filesystem::exists(saved_model)) {
+    gtk_editable_set_text(GTK_EDITABLE(st->entry_model), saved_model.c_str());
+    StartAutoModelLoad(st, saved_model);
+  } else if (std::filesystem::exists("model/realesrgan-x4.onnx")) {
+    gtk_editable_set_text(GTK_EDITABLE(st->entry_model), "model/realesrgan-x4.onnx");
+    SaveModelPathState("model/realesrgan-x4.onnx");
+    StartAutoModelLoad(st, "model/realesrgan-x4.onnx");
+  } else if (!saved_model.empty()) {
+    gtk_editable_set_text(GTK_EDITABLE(st->entry_model), saved_model.c_str());
+    SetStatus(st, "Saved model path restored (file not found).");
+  } else {
+    gtk_editable_set_text(GTK_EDITABLE(st->entry_model), "model/realesrgan-x4.onnx");
+  }
 
   GtkWidget* setting_row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
   st->spin_tile = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 4096, 16));
@@ -928,15 +871,15 @@ static void OnActivate(GtkApplication* app, gpointer) {
     gtk_css_provider_load_from_string(
         css,
         ".upscale-green {"
-        "  background: #b7f774;"
-        "  color: #103300;"
+        "  background: #2f81f7;"
+        "  color: #ffffff;"
         "}"
         ".upscale-green:hover {"
-        "  background: #c8ff8f;"
+        "  background: #58a6ff;"
         "}"
         ".upscale-green:disabled {"
-        "  background: #d8e8c6;"
-        "  color: #6a7d57;"
+        "  background: #a9c4ea;"
+        "  color: #f5f8ff;"
         "}");
     gtk_style_context_add_provider_for_display(
         gdk_display_get_default(), GTK_STYLE_PROVIDER(css),
@@ -949,11 +892,9 @@ static void OnActivate(GtkApplication* app, gpointer) {
 }
 
 int main(int argc, char** argv) {
-  curl_global_init(CURL_GLOBAL_DEFAULT);
   GtkApplication* app = gtk_application_new("com.example.ImageUpscalerGTK", G_APPLICATION_DEFAULT_FLAGS);
   g_signal_connect(app, "activate", G_CALLBACK(OnActivate), nullptr);
   int status = g_application_run(G_APPLICATION(app), argc, argv);
   g_object_unref(app);
-  curl_global_cleanup();
   return status;
 }
