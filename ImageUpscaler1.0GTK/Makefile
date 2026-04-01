@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-TARGET := image_upscaler_gtk
+TARGET := upscaler
 SRC_DIR := src
 BUILD_DIR := build
 SRCS := $(SRC_DIR)/main.cpp $(SRC_DIR)/onnx_sr.cpp
@@ -14,9 +14,9 @@ LDLIBS += $(shell pkg-config --libs gtk4 2>/dev/null) -lcurl
 
 # ONNX Runtime location: prefer ONNXRUNTIME_ROOT, fallback to common prefixes.
 ifeq ($(strip $(ONNXRUNTIME_ROOT)),)
-  ifneq ("$(wildcard /opt/homebrew/opt/onnxruntime/include/onnxruntime_cxx_api.h)","")
+  ifneq ("$(wildcard /opt/homebrew/opt/onnxruntime/include/onnxruntime/onnxruntime_cxx_api.h)","")
     ONNXRUNTIME_ROOT := /opt/homebrew/opt/onnxruntime
-  else ifneq ("$(wildcard /usr/local/opt/onnxruntime/include/onnxruntime_cxx_api.h)","")
+  else ifneq ("$(wildcard /usr/local/opt/onnxruntime/include/onnxruntime/onnxruntime_cxx_api.h)","")
     ONNXRUNTIME_ROOT := /usr/local/opt/onnxruntime
   else ifneq ("$(wildcard /usr/include/onnxruntime/onnxruntime_cxx_api.h)","")
     ONNXRUNTIME_ROOT := /usr
@@ -28,7 +28,7 @@ ifdef ONNXRUNTIME_ROOT
     CPPFLAGS += -I/usr/include/onnxruntime
     LDFLAGS += -L/usr/lib/x86_64-linux-gnu
   else
-    CPPFLAGS += -I$(ONNXRUNTIME_ROOT)/include
+    CPPFLAGS += -I$(ONNXRUNTIME_ROOT)/include/onnxruntime
     LDFLAGS += -L$(ONNXRUNTIME_ROOT)/lib
   endif
 endif

@@ -30,6 +30,8 @@ struct OnnxSuperRes::Impl {
   std::vector<const char*> output_names;
   Ort::MemoryInfo mem_info =
       Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
+  int64_t fixed_in_h = -1;
+  int64_t fixed_in_w = -1;
 };
 
 OnnxSuperRes::OnnxSuperRes(const std::string& model_path) : impl_(std::make_unique<Impl>()) {
@@ -62,10 +64,22 @@ OnnxSuperRes::OnnxSuperRes(const std::string& model_path) : impl_(std::make_uniq
   Ort::TypeInfo in_type = impl_->session->GetInputTypeInfo(0);
   auto tensor_info = in_type.GetTensorTypeAndShapeInfo();
   std::vector<int64_t> in_shape = tensor_info.GetShape();
-  // Expect NCHW; last dim may be dynamic (-1)
-  if (in_shape.size() >= 2 && in_shape[1] > 0) {
-    // Some exports use fixed scale in graph name only; keep default 4
-    (void)in_shape;
+  if (in_shape.size() == 4) {
+    impl_->fixed_in_h = in_shape[2];
+    impl_->fixed_in_w = in_shape[3];
+  }
+
+  // Try to infer scale from static output/input dimensions.
+  Ort::TypeInfo out_type = impl_->session->GetOutputTypeInfo(0);
+  auto out_tensor_info = out_type.GetTensorTypeAndShapeInfo();
+  std::vector<int64_t> out_shape = out_tensor_info.GetShape();
+  if (in_shape.size() == 4 && out_shape.size() == 4 && in_shape[2] > 0 && in_shape[3] > 0 &&
+      out_shape[2] > 0 && out_shape[3] > 0) {
+    const int64_t sh = out_shape[2] / in_shape[2];
+    const int64_t sw = out_shape[3] / in_shape[3];
+    if (sh > 0 && sh == sw) {
+      scale_ = static_cast<int>(sh);
+    }
   }
 }
 
@@ -80,12 +94,32 @@ RgbImage OnnxSuperRes::run_once(const RgbImage& in, std::string& err_out) const 
 
   const int64_t n = 1;
   const int64_t c = 3;
-  const int64_t h = in.height;
-  const int64_t w = in.width;
+  const int64_t h = (impl_->fixed_in_h > 0) ? impl_->fixed_in_h : static_cast<int64_t>(in.height);
+  const int64_t w = (impl_->fixed_in_w > 0) ? impl_->fixed_in_w : static_cast<int64_t>(in.width);
+  if (in.height > h || in.width > w) {
+    err_out = "input tile is larger than model fixed input. Reduce Tile size.";
+    return out_img;
+  }
   std::vector<int64_t> in_dims{n, c, h, w};
 
+  std::vector<float> input_data(static_cast<size_t>(c) * static_cast<size_t>(h) *
+                                static_cast<size_t>(w), 0.0f);
+  for (int ch = 0; ch < 3; ++ch) {
+    for (int y = 0; y < in.height; ++y) {
+      for (int x = 0; x < in.width; ++x) {
+        const size_t src_i =
+            static_cast<size_t>(ch) * static_cast<size_t>(in.height) * static_cast<size_t>(in.width) +
+            static_cast<size_t>(y) * static_cast<size_t>(in.width) + static_cast<size_t>(x);
+        const size_t dst_i =
+            static_cast<size_t>(ch) * static_cast<size_t>(h) * static_cast<size_t>(w) +
+            static_cast<size_t>(y) * static_cast<size_t>(w) + static_cast<size_t>(x);
+        input_data[dst_i] = in.data[src_i];
+      }
+    }
+  }
+
   Ort::Value input_tensor = Ort::Value::CreateTensor<float>(
-      impl_->mem_info, const_cast<float*>(in.data.data()), in.data.size(), in_dims.data(),
+      impl_->mem_info, input_data.data(), input_data.size(), in_dims.data(),
       in_dims.size());
 
   try {
@@ -111,18 +145,45 @@ RgbImage OnnxSuperRes::run_once(const RgbImage& in, std::string& err_out) const 
       err_out = "invalid output shape";
       return out_img;
     }
-    const size_t elems = static_cast<size_t>(out_shape[1]) * static_cast<size_t>(oh) *
-                         static_cast<size_t>(ow);
-    out_img.width = static_cast<int>(ow);
-    out_img.height = static_cast<int>(oh);
-    out_img.data.assign(out_ptr, out_ptr + elems);
+    const int out_w = static_cast<int>(ow);
+    const int out_h = static_cast<int>(oh);
+    const int scale_w = (w > 0) ? static_cast<int>(ow / w) : scale_;
+    const int scale_h = (h > 0) ? static_cast<int>(oh / h) : scale_;
+    if (scale_w <= 0 || scale_h <= 0 || scale_w != scale_h) {
+      err_out = "invalid output/input scale from model";
+      return RgbImage{};
+    }
+    const int crop_w = in.width * scale_w;
+    const int crop_h = in.height * scale_h;
+    if (crop_w <= 0 || crop_h <= 0 || crop_w > out_w || crop_h > out_h) {
+      err_out = "invalid cropped output size";
+      return RgbImage{};
+    }
+    out_img.width = crop_w;
+    out_img.height = crop_h;
+    out_img.data.assign(static_cast<size_t>(3) * static_cast<size_t>(crop_h) *
+                            static_cast<size_t>(crop_w),
+                        0.0f);
+    for (int ch = 0; ch < 3; ++ch) {
+      for (int y = 0; y < crop_h; ++y) {
+        for (int x = 0; x < crop_w; ++x) {
+          const size_t src_i =
+              static_cast<size_t>(ch) * static_cast<size_t>(out_h) * static_cast<size_t>(out_w) +
+              static_cast<size_t>(y) * static_cast<size_t>(out_w) + static_cast<size_t>(x);
+          const size_t dst_i =
+              static_cast<size_t>(ch) * static_cast<size_t>(crop_h) * static_cast<size_t>(crop_w) +
+              static_cast<size_t>(y) * static_cast<size_t>(crop_w) + static_cast<size_t>(x);
+          out_img.data[dst_i] = out_ptr[src_i];
+        }
+      }
+    }
     if (static_cast<int>(out_shape[1]) != 3) {
       err_out = "expected 3-channel output";
       out_img = RgbImage{};
       return out_img;
     }
   } catch (const Ort::Exception& e) {
-    err_out = e.what();
+    err_out = std::string("onnxruntime: ") + e.what();
   }
   return out_img;
 }

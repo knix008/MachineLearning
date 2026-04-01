@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <atomic>
 #include <cctype>
+#include <chrono>
 #include <cmath>
 #include <cstdio>
 #include <cstring>
@@ -37,7 +38,6 @@ struct AppState {
   GtkPicture* picture_out = nullptr;
   std::string last_input_path;
   std::string last_output_path;
-  guint pulse_timer = 0;
   std::atomic<bool> busy{false};
 };
 
@@ -102,7 +102,17 @@ static void UpdatePreview(GtkPicture* picture, const std::string& path, double z
   if (!scaled) {
     return;
   }
-  GdkTexture* tex = gdk_texture_new_for_pixbuf(scaled);
+  const int rowstride = gdk_pixbuf_get_rowstride(scaled);
+  const int n_channels = gdk_pixbuf_get_n_channels(scaled);
+  const int height = gdk_pixbuf_get_height(scaled);
+  const gsize byte_len = static_cast<gsize>(rowstride) * static_cast<gsize>(height);
+  const guchar* pixels = gdk_pixbuf_get_pixels(scaled);
+  guchar* pixels_copy = static_cast<guchar*>(g_memdup2(pixels, byte_len));
+  GBytes* bytes = g_bytes_new_take(pixels_copy, byte_len);
+  GdkMemoryFormat fmt = (n_channels == 4) ? GDK_MEMORY_R8G8B8A8 : GDK_MEMORY_R8G8B8;
+  GdkTexture* tex =
+      gdk_memory_texture_new(zw, zh, fmt, bytes, static_cast<gsize>(rowstride));
+  g_bytes_unref(bytes);
   g_object_unref(scaled);
   gtk_picture_set_paintable(picture, GDK_PAINTABLE(tex));
   g_object_unref(tex);
@@ -112,28 +122,28 @@ static void SetBusy(AppState* st, bool busy) {
   st->busy = busy;
   gtk_widget_set_sensitive(GTK_WIDGET(st->btn_run), !busy);
   gtk_widget_set_sensitive(GTK_WIDGET(st->btn_download), !busy);
-  if (busy) {
-    if (st->pulse_timer == 0) {
-      st->pulse_timer = g_timeout_add(
-          100,
-          +[](gpointer data) -> gboolean {
-            auto* s = static_cast<AppState*>(data);
-            if (!s->busy.load()) {
-              s->pulse_timer = 0;
-              return G_SOURCE_REMOVE;
-            }
-            gtk_progress_bar_pulse(GTK_PROGRESS_BAR(s->progress));
-            return G_SOURCE_CONTINUE;
-          },
-          st);
-    }
-  } else {
-    if (st->pulse_timer != 0) {
-      g_source_remove(st->pulse_timer);
-      st->pulse_timer = 0;
-    }
+  if (!busy) {
     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(st->progress), 0.0);
+    gtk_progress_bar_set_text(GTK_PROGRESS_BAR(st->progress), "0%");
   }
+}
+
+static std::string FormatEtaSeconds(double seconds) {
+  if (seconds < 0.0 || !std::isfinite(seconds)) {
+    return "--:--";
+  }
+  int s = static_cast<int>(std::lround(seconds));
+  int h = s / 3600;
+  s %= 3600;
+  int m = s / 60;
+  s %= 60;
+  char buf[32];
+  if (h > 0) {
+    std::snprintf(buf, sizeof(buf), "%d:%02d:%02d", h, m, s);
+  } else {
+    std::snprintf(buf, sizeof(buf), "%02d:%02d", m, s);
+  }
+  return std::string(buf);
 }
 
 static bool PixbufToRgbFloat(GdkPixbuf* pb, RgbImage& out, GError** err) {
@@ -215,16 +225,18 @@ static GdkPixbuf* RgbFloatToPixbuf(const RgbImage& img, GError** err) {
 static gboolean ApplyUiProgress(gpointer user_data) {
   std::unique_ptr<UiProgressPayload> p(static_cast<UiProgressPayload*>(user_data));
   if (p->value >= 0.0) {
-    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(p->app->progress), p->value);
+    const double frac = std::max(0.0, std::min(1.0, p->value));
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(p->app->progress), frac);
   }
   if (!p->text.empty()) {
     SetStatus(p->app, p->text.c_str());
+    gtk_progress_bar_set_text(GTK_PROGRESS_BAR(p->app->progress), p->text.c_str());
   }
   return G_SOURCE_REMOVE;
 }
 
 static void PostUiProgress(AppState* app, double value, const std::string& text) {
-  auto* payload = new UiProgressPayload{app, value, text};
+  auto* payload = new UiProgressPayload{app, value, text, ""};
   g_idle_add(ApplyUiProgress, payload);
 }
 
@@ -248,7 +260,8 @@ static void FinishJob(AppState* app, const std::string& msg, const std::string& 
 static void RunUpscaleThread(std::unique_ptr<JobPayload> job) {
   AppState* app = job->app;
   try {
-    PostUiProgress(app, 0.05, "Loading model...");
+    auto started = std::chrono::steady_clock::now();
+    PostUiProgress(app, 0.02, "Loading model... ETA --:--");
     OnnxSuperRes engine(job->path_model);
 
     GError* err = nullptr;
@@ -273,8 +286,19 @@ static void RunUpscaleThread(std::unique_ptr<JobPayload> job) {
     std::string infer_err;
     RgbImage out = engine.upscale(
         in, job->tile_lr, job->overlap_lr,
-        [app](float progress) {
-          PostUiProgress(app, std::max(0.0f, std::min(1.0f, progress)), "Upscaling...");
+        [app, started](float progress) {
+          const double p = std::max(0.0, std::min(1.0, static_cast<double>(progress)));
+          const auto now = std::chrono::steady_clock::now();
+          const double elapsed =
+              std::chrono::duration_cast<std::chrono::duration<double>>(now - started).count();
+          double eta = -1.0;
+          if (p > 1e-5) {
+            eta = elapsed * (1.0 - p) / p;
+          }
+          const int pct = static_cast<int>(std::lround(p * 100.0));
+          PostUiProgress(app, p,
+                         "Upscaling... " + std::to_string(pct) + "% | ETA " +
+                             FormatEtaSeconds(eta));
         },
         infer_err);
 
@@ -283,7 +307,7 @@ static void RunUpscaleThread(std::unique_ptr<JobPayload> job) {
       return;
     }
 
-    PostUiProgress(app, 0.95, "Saving output...");
+    PostUiProgress(app, 0.98, "Saving output... ETA 00:00");
     GError* save_err = nullptr;
     GdkPixbuf* out_pb = RgbFloatToPixbuf(out, &save_err);
     if (!out_pb) {
@@ -316,6 +340,7 @@ static void RunUpscaleThread(std::unique_ptr<JobPayload> job) {
 
 struct CurlProgressCtx {
   AppState* app = nullptr;
+  std::chrono::steady_clock::time_point started;
 };
 
 static int CurlXferInfo(void* clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t, curl_off_t) {
@@ -323,7 +348,17 @@ static int CurlXferInfo(void* clientp, curl_off_t dltotal, curl_off_t dlnow, cur
   if (!ctx || !ctx->app) return 0;
   if (dltotal > 0) {
     const double frac = static_cast<double>(dlnow) / static_cast<double>(dltotal);
-    PostUiProgress(ctx->app, frac, "Downloading model...");
+    const auto now = std::chrono::steady_clock::now();
+    const double elapsed =
+        std::chrono::duration_cast<std::chrono::duration<double>>(now - ctx->started).count();
+    double eta = -1.0;
+    if (frac > 1e-5) {
+      eta = elapsed * (1.0 - frac) / frac;
+    }
+    const int pct = static_cast<int>(std::lround(frac * 100.0));
+    PostUiProgress(ctx->app, frac,
+                   "Downloading model... " + std::to_string(pct) + "% | ETA " +
+                       FormatEtaSeconds(eta));
   }
   return 0;
 }
@@ -361,7 +396,7 @@ static void RunDownloadThread(std::unique_ptr<DownloadPayload> job) {
     return;
   }
 
-  CurlProgressCtx ctx{app};
+  CurlProgressCtx ctx{app, std::chrono::steady_clock::now()};
   curl_easy_setopt(curl, CURLOPT_URL, job->url.c_str());
   curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWrite);
@@ -420,6 +455,7 @@ static void OnRunClicked(GtkButton*, gpointer user_data) {
   job->path_in = pin;
   job->path_out = pout;
   job->path_model = pmodel;
+  AutoTuneParamsForImage(st, pin);
   job->tile_lr = gtk_spin_button_get_value_as_int(st->spin_tile);
   job->overlap_lr = gtk_spin_button_get_value_as_int(st->spin_overlap);
 
@@ -455,63 +491,81 @@ static void OnDownloadClicked(GtkButton*, gpointer user_data) {
 
 static void OnBrowseInput(GtkButton*, gpointer user_data) {
   auto* st = static_cast<AppState*>(user_data);
-  GtkFileChooserNative* chooser = gtk_file_chooser_native_new(
-      "Select Input Image", st->window, GTK_FILE_CHOOSER_ACTION_OPEN, "Open", "Cancel");
-  int response = gtk_native_dialog_run(GTK_NATIVE_DIALOG(chooser));
-  if (response == GTK_RESPONSE_ACCEPT) {
-    GFile* f = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(chooser));
-    if (f) {
-      char* p = g_file_get_path(f);
-      if (p) {
-        gtk_editable_set_text(GTK_EDITABLE(st->entry_in), p);
-            st->last_input_path = p;
-            UpdatePreview(st->picture_in, st->last_input_path,
-                          gtk_spin_button_get_value(GTK_SPIN_BUTTON(st->spin_zoom_in)));
-        g_free(p);
-      }
-      g_object_unref(f);
-    }
-  }
-  g_object_unref(chooser);
+  GtkFileDialog* d = gtk_file_dialog_new();
+  gtk_file_dialog_open(
+      d, st->window, nullptr,
+      +[](GObject* src, GAsyncResult* res, gpointer ud) {
+        auto* s = static_cast<AppState*>(ud);
+        GError* err = nullptr;
+        GFile* f = gtk_file_dialog_open_finish(GTK_FILE_DIALOG(src), res, &err);
+        if (f) {
+          char* p = g_file_get_path(f);
+          if (p) {
+            gtk_editable_set_text(GTK_EDITABLE(s->entry_in), p);
+            s->last_input_path = p;
+            AutoTuneParamsForImage(s, s->last_input_path);
+            UpdatePreview(s->picture_in, s->last_input_path,
+                          gtk_spin_button_get_value(GTK_SPIN_BUTTON(s->spin_zoom_in)));
+            g_free(p);
+          }
+          g_object_unref(f);
+        }
+        if (err) {
+          g_error_free(err);
+        }
+        g_object_unref(src);
+      },
+      st);
 }
 
 static void OnBrowseOutput(GtkButton*, gpointer user_data) {
   auto* st = static_cast<AppState*>(user_data);
-  GtkFileChooserNative* chooser = gtk_file_chooser_native_new(
-      "Select Output Image", st->window, GTK_FILE_CHOOSER_ACTION_SAVE, "Save", "Cancel");
-  gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(chooser), "upscaled.jpg");
-  int response = gtk_native_dialog_run(GTK_NATIVE_DIALOG(chooser));
-  if (response == GTK_RESPONSE_ACCEPT) {
-    GFile* f = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(chooser));
-    if (f) {
-      char* p = g_file_get_path(f);
-      if (p) {
-        gtk_editable_set_text(GTK_EDITABLE(st->entry_out), p);
-        g_free(p);
-      }
-      g_object_unref(f);
-    }
-  }
-  g_object_unref(chooser);
+  GtkFileDialog* d = gtk_file_dialog_new();
+  gtk_file_dialog_save(
+      d, st->window, nullptr,
+      +[](GObject* src, GAsyncResult* res, gpointer ud) {
+        auto* s = static_cast<AppState*>(ud);
+        GError* err = nullptr;
+        GFile* f = gtk_file_dialog_save_finish(GTK_FILE_DIALOG(src), res, &err);
+        if (f) {
+          char* p = g_file_get_path(f);
+          if (p) {
+            gtk_editable_set_text(GTK_EDITABLE(s->entry_out), p);
+            g_free(p);
+          }
+          g_object_unref(f);
+        }
+        if (err) {
+          g_error_free(err);
+        }
+        g_object_unref(src);
+      },
+      st);
 }
 
 static void OnBrowseModel(GtkButton*, gpointer user_data) {
   auto* st = static_cast<AppState*>(user_data);
-  GtkFileChooserNative* chooser = gtk_file_chooser_native_new(
-      "Select ONNX Model", st->window, GTK_FILE_CHOOSER_ACTION_OPEN, "Open", "Cancel");
-  int response = gtk_native_dialog_run(GTK_NATIVE_DIALOG(chooser));
-  if (response == GTK_RESPONSE_ACCEPT) {
-    GFile* f = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(chooser));
-    if (f) {
-      char* p = g_file_get_path(f);
-      if (p) {
-        gtk_editable_set_text(GTK_EDITABLE(st->entry_model), p);
-        g_free(p);
-      }
-      g_object_unref(f);
-    }
-  }
-  g_object_unref(chooser);
+  GtkFileDialog* d = gtk_file_dialog_new();
+  gtk_file_dialog_open(
+      d, st->window, nullptr,
+      +[](GObject* src, GAsyncResult* res, gpointer ud) {
+        auto* s = static_cast<AppState*>(ud);
+        GError* err = nullptr;
+        GFile* f = gtk_file_dialog_open_finish(GTK_FILE_DIALOG(src), res, &err);
+        if (f) {
+          char* p = g_file_get_path(f);
+          if (p) {
+            gtk_editable_set_text(GTK_EDITABLE(s->entry_model), p);
+            g_free(p);
+          }
+          g_object_unref(f);
+        }
+        if (err) {
+          g_error_free(err);
+        }
+        g_object_unref(src);
+      },
+      st);
 }
 
 static GtkWidget* BuildPathRow(const char* label, GtkEntry** out_entry, const char* btn_text,
@@ -544,6 +598,58 @@ static void OnOutputZoomChanged(GtkSpinButton* spin, gpointer user_data) {
   if (!st->last_output_path.empty()) {
     UpdatePreview(st->picture_out, st->last_output_path, gtk_spin_button_get_value(spin));
   }
+}
+
+static void AutoTuneParamsForImage(AppState* st, const std::string& image_path) {
+  int w = 0;
+  int h = 0;
+  if (!gdk_pixbuf_get_file_info(image_path.c_str(), &w, &h) || w <= 0 || h <= 0) {
+    return;
+  }
+  const long long pixels = static_cast<long long>(w) * static_cast<long long>(h);
+  int tile = 128;
+  int overlap = 12;
+
+  if (pixels <= 1280LL * 720LL) {
+    tile = 512;
+    overlap = 24;
+  } else if (pixels <= 1920LL * 1080LL) {
+    tile = 384;
+    overlap = 20;
+  } else if (pixels <= 2560LL * 1440LL) {
+    tile = 320;
+    overlap = 20;
+  } else if (pixels <= 3840LL * 2160LL) {
+    tile = 256;
+    overlap = 16;
+  } else if (pixels <= 6000LL * 4000LL) {
+    tile = 192;
+    overlap = 16;
+  } else {
+    tile = 128;
+    overlap = 12;
+  }
+
+  gtk_spin_button_set_value(st->spin_tile, tile);
+  gtk_spin_button_set_value(st->spin_overlap, overlap);
+}
+
+static gboolean OnInputPreviewScroll(GtkEventControllerScroll*, double, double dy, gpointer user_data) {
+  auto* st = static_cast<AppState*>(user_data);
+  double v = gtk_spin_button_get_value(st->spin_zoom_in);
+  v = (dy < 0.0) ? (v * 1.1) : (v / 1.1);
+  v = std::max(0.1, std::min(8.0, v));
+  gtk_spin_button_set_value(st->spin_zoom_in, v);
+  return TRUE;
+}
+
+static gboolean OnOutputPreviewScroll(GtkEventControllerScroll*, double, double dy, gpointer user_data) {
+  auto* st = static_cast<AppState*>(user_data);
+  double v = gtk_spin_button_get_value(st->spin_zoom_out);
+  v = (dy < 0.0) ? (v * 1.1) : (v / 1.1);
+  v = std::max(0.1, std::min(8.0, v));
+  gtk_spin_button_set_value(st->spin_zoom_out, v);
+  return TRUE;
 }
 
 static void OnActivate(GtkApplication* app, gpointer) {
@@ -603,6 +709,8 @@ static void OnActivate(GtkApplication* app, gpointer) {
   gtk_box_append(GTK_BOX(root), setting_row);
 
   st->progress = GTK_PROGRESS_BAR(gtk_progress_bar_new());
+  gtk_progress_bar_set_show_text(st->progress, TRUE);
+  gtk_progress_bar_set_text(st->progress, "0%");
   gtk_box_append(GTK_BOX(root), GTK_WIDGET(st->progress));
 
   st->label_status = GTK_LABEL(gtk_label_new("Ready."));
@@ -614,6 +722,14 @@ static void OnActivate(GtkApplication* app, gpointer) {
   st->picture_out = GTK_PICTURE(gtk_picture_new());
   gtk_picture_set_can_shrink(st->picture_in, TRUE);
   gtk_picture_set_can_shrink(st->picture_out, TRUE);
+  GtkEventController* ctrl_in =
+      gtk_event_controller_scroll_new(GTK_EVENT_CONTROLLER_SCROLL_VERTICAL);
+  g_signal_connect(ctrl_in, "scroll", G_CALLBACK(OnInputPreviewScroll), st);
+  gtk_widget_add_controller(GTK_WIDGET(st->picture_in), ctrl_in);
+  GtkEventController* ctrl_out =
+      gtk_event_controller_scroll_new(GTK_EVENT_CONTROLLER_SCROLL_VERTICAL);
+  g_signal_connect(ctrl_out, "scroll", G_CALLBACK(OnOutputPreviewScroll), st);
+  gtk_widget_add_controller(GTK_WIDGET(st->picture_out), ctrl_out);
 
   GtkWidget* in_frame = gtk_frame_new("Input Preview");
   gtk_frame_set_child(GTK_FRAME(in_frame), GTK_WIDGET(st->picture_in));
