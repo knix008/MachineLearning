@@ -197,6 +197,21 @@ RgbImage OnnxSuperRes::upscale(const RgbImage& input, int tile_lr, int overlap_l
                                std::function<void(float)> progress_cb,
                                std::string& err_out) const {
   err_out.clear();
+  const int iw = input.width;
+  const int ih = input.height;
+  if (iw <= 0 || ih <= 0) {
+    err_out = "empty input image";
+    return RgbImage{};
+  }
+
+  // If the model has fixed input size and full-image mode is requested,
+  // auto-switch to tiled mode so we avoid invalid dimension errors.
+  if (tile_lr <= 0 && impl_->fixed_in_h > 0 && impl_->fixed_in_w > 0 &&
+      (iw > impl_->fixed_in_w || ih > impl_->fixed_in_h)) {
+    tile_lr = static_cast<int>(std::min(impl_->fixed_in_w, impl_->fixed_in_h));
+    overlap_lr = std::min(overlap_lr, std::max(0, tile_lr / 8));
+  }
+
   if (tile_lr <= 0) {
     if (progress_cb) {
       progress_cb(0.1f);
@@ -208,8 +223,12 @@ RgbImage OnnxSuperRes::upscale(const RgbImage& input, int tile_lr, int overlap_l
     return out;
   }
 
-  const int iw = input.width;
-  const int ih = input.height;
+  // Clamp tile to safe limits based on image/model size.
+  tile_lr = std::max(1, tile_lr);
+  tile_lr = std::min(tile_lr, std::min(iw, ih));
+  if (impl_->fixed_in_h > 0 && impl_->fixed_in_w > 0) {
+    tile_lr = std::min(tile_lr, static_cast<int>(std::min(impl_->fixed_in_h, impl_->fixed_in_w)));
+  }
   const int s = scale_;
   overlap_lr = std::max(0, std::min(overlap_lr, tile_lr / 2 - 1));
   const int stride = std::max(1, tile_lr - 2 * overlap_lr);

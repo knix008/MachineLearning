@@ -18,7 +18,7 @@ install_manifest.txt
 *.dylib
 *.dll
 *.exe
-image_upscaler_gtk
+upscaler
 
 # Logs and temp
 *.log

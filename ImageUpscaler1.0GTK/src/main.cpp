@@ -63,6 +63,9 @@ struct UiProgressPayload {
   std::string path;
 };
 
+static void AutoTuneParamsForImage(AppState* st, const std::string& image_path);
+static void NormalizeTileParams(AppState* st, const std::string& image_path);
+
 static void SetStatus(AppState* st, const char* text) {
   gtk_label_set_text(GTK_LABEL(st->label_status), text);
 }
@@ -82,6 +85,18 @@ static const char* SaveFormatFromPath(const std::string& path) {
     return "jpeg";
   }
   return "jpeg";
+}
+
+static std::string EnsureOutputExtension(std::string path) {
+  const auto low = ToLower(path);
+  const auto dot = low.find_last_of('.');
+  const auto slash = low.find_last_of("/\\");
+  const bool has_ext = (dot != std::string::npos) &&
+                       (slash == std::string::npos || dot > slash);
+  if (!has_ext) {
+    path += ".jpg";
+  }
+  return path;
 }
 
 static void UpdatePreview(GtkPicture* picture, const std::string& path, double zoom) {
@@ -115,6 +130,7 @@ static void UpdatePreview(GtkPicture* picture, const std::string& path, double z
   g_bytes_unref(bytes);
   g_object_unref(scaled);
   gtk_picture_set_paintable(picture, GDK_PAINTABLE(tex));
+  gtk_widget_set_size_request(GTK_WIDGET(picture), zw, zh);
   g_object_unref(tex);
 }
 
@@ -453,13 +469,15 @@ static void OnRunClicked(GtkButton*, gpointer user_data) {
   auto job = std::make_unique<JobPayload>();
   job->app = st;
   job->path_in = pin;
-  job->path_out = pout;
+  job->path_out = EnsureOutputExtension(pout);
   job->path_model = pmodel;
   AutoTuneParamsForImage(st, pin);
+  NormalizeTileParams(st, pin);
   job->tile_lr = gtk_spin_button_get_value_as_int(st->spin_tile);
   job->overlap_lr = gtk_spin_button_get_value_as_int(st->spin_overlap);
 
   st->last_input_path = pin;
+  gtk_editable_set_text(GTK_EDITABLE(st->entry_out), job->path_out.c_str());
   UpdatePreview(st->picture_in, st->last_input_path,
                 gtk_spin_button_get_value(GTK_SPIN_BUTTON(st->spin_zoom_in)));
   SetBusy(st, true);
@@ -521,6 +539,7 @@ static void OnBrowseInput(GtkButton*, gpointer user_data) {
 static void OnBrowseOutput(GtkButton*, gpointer user_data) {
   auto* st = static_cast<AppState*>(user_data);
   GtkFileDialog* d = gtk_file_dialog_new();
+  gtk_file_dialog_set_initial_name(d, "upscaled.jpg");
   gtk_file_dialog_save(
       d, st->window, nullptr,
       +[](GObject* src, GAsyncResult* res, gpointer ud) {
@@ -530,7 +549,8 @@ static void OnBrowseOutput(GtkButton*, gpointer user_data) {
         if (f) {
           char* p = g_file_get_path(f);
           if (p) {
-            gtk_editable_set_text(GTK_EDITABLE(s->entry_out), p);
+            std::string out = EnsureOutputExtension(p);
+            gtk_editable_set_text(GTK_EDITABLE(s->entry_out), out.c_str());
             g_free(p);
           }
           g_object_unref(f);
@@ -606,30 +626,35 @@ static void AutoTuneParamsForImage(AppState* st, const std::string& image_path) 
   if (!gdk_pixbuf_get_file_info(image_path.c_str(), &w, &h) || w <= 0 || h <= 0) {
     return;
   }
-  const long long pixels = static_cast<long long>(w) * static_cast<long long>(h);
-  int tile = 128;
-  int overlap = 12;
-
-  if (pixels <= 1280LL * 720LL) {
+  // Match RealESRGANExample01.py auto-tile behavior:
+  // if max_side > 2048: tile=1024, elif > 1024: tile=512, else tile=0.
+  const int max_side = std::max(w, h);
+  int tile = 0;
+  if (max_side > 2048) {
+    tile = 1024;
+  } else if (max_side > 1024) {
     tile = 512;
-    overlap = 24;
-  } else if (pixels <= 1920LL * 1080LL) {
-    tile = 384;
-    overlap = 20;
-  } else if (pixels <= 2560LL * 1440LL) {
-    tile = 320;
-    overlap = 20;
-  } else if (pixels <= 3840LL * 2160LL) {
-    tile = 256;
-    overlap = 16;
-  } else if (pixels <= 6000LL * 4000LL) {
-    tile = 192;
-    overlap = 16;
-  } else {
-    tile = 128;
-    overlap = 12;
   }
+  // Example uses tile_pad=10, pre_pad=0. Our closest equivalent is overlap.
+  int overlap = 10;
 
+  gtk_spin_button_set_value(st->spin_tile, tile);
+  gtk_spin_button_set_value(st->spin_overlap, overlap);
+}
+
+static void NormalizeTileParams(AppState* st, const std::string& image_path) {
+  int w = 0;
+  int h = 0;
+  if (!gdk_pixbuf_get_file_info(image_path.c_str(), &w, &h) || w <= 0 || h <= 0) {
+    return;
+  }
+  int tile = gtk_spin_button_get_value_as_int(st->spin_tile);
+  int overlap = gtk_spin_button_get_value_as_int(st->spin_overlap);
+  if (tile <= 0) {
+    return;
+  }
+  tile = std::max(1, std::min(tile, std::min(w, h)));
+  overlap = std::max(0, std::min(overlap, tile / 2 - 1));
   gtk_spin_button_set_value(st->spin_tile, tile);
   gtk_spin_button_set_value(st->spin_overlap, overlap);
 }
@@ -720,8 +745,12 @@ static void OnActivate(GtkApplication* app, gpointer) {
   GtkWidget* preview = gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
   st->picture_in = GTK_PICTURE(gtk_picture_new());
   st->picture_out = GTK_PICTURE(gtk_picture_new());
-  gtk_picture_set_can_shrink(st->picture_in, TRUE);
-  gtk_picture_set_can_shrink(st->picture_out, TRUE);
+  gtk_picture_set_can_shrink(st->picture_in, FALSE);
+  gtk_picture_set_can_shrink(st->picture_out, FALSE);
+  gtk_widget_set_hexpand(GTK_WIDGET(st->picture_in), FALSE);
+  gtk_widget_set_vexpand(GTK_WIDGET(st->picture_in), FALSE);
+  gtk_widget_set_hexpand(GTK_WIDGET(st->picture_out), FALSE);
+  gtk_widget_set_vexpand(GTK_WIDGET(st->picture_out), FALSE);
   GtkEventController* ctrl_in =
       gtk_event_controller_scroll_new(GTK_EVENT_CONTROLLER_SCROLL_VERTICAL);
   g_signal_connect(ctrl_in, "scroll", G_CALLBACK(OnInputPreviewScroll), st);
@@ -731,10 +760,19 @@ static void OnActivate(GtkApplication* app, gpointer) {
   g_signal_connect(ctrl_out, "scroll", G_CALLBACK(OnOutputPreviewScroll), st);
   gtk_widget_add_controller(GTK_WIDGET(st->picture_out), ctrl_out);
 
+  GtkWidget* in_scroll = gtk_scrolled_window_new();
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(in_scroll), GTK_POLICY_AUTOMATIC,
+                                 GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(in_scroll), GTK_WIDGET(st->picture_in));
   GtkWidget* in_frame = gtk_frame_new("Input Preview");
-  gtk_frame_set_child(GTK_FRAME(in_frame), GTK_WIDGET(st->picture_in));
+  gtk_frame_set_child(GTK_FRAME(in_frame), in_scroll);
+
+  GtkWidget* out_scroll = gtk_scrolled_window_new();
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(out_scroll), GTK_POLICY_AUTOMATIC,
+                                 GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(out_scroll), GTK_WIDGET(st->picture_out));
   GtkWidget* out_frame = gtk_frame_new("Output Preview");
-  gtk_frame_set_child(GTK_FRAME(out_frame), GTK_WIDGET(st->picture_out));
+  gtk_frame_set_child(GTK_FRAME(out_frame), out_scroll);
   gtk_paned_set_start_child(GTK_PANED(preview), in_frame);
   gtk_paned_set_end_child(GTK_PANED(preview), out_frame);
   gtk_widget_set_vexpand(preview, TRUE);
