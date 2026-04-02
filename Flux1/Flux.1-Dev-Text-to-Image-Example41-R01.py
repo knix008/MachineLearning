@@ -31,9 +31,9 @@ FOOTWEAR = ""
 
 LEGWEAR = ""
 
-BOTTOM = "Tiny sky-blue thong bikini bottom, minimal coverage, bare hips, thin pink string ties at the hips."
+BOTTOM = "Tiny sky-blue thong bikini bottom, minimal coverage, bare hips, thin string ties at the hips with soft pink tips at the ends."
 
-TOP = "Matching sky-blue triangle bikini top, thin pink string ties at neck and back, bare midriff and slim waist exposed."
+TOP = "Matching sky-blue triangle bikini top, thin string ties at neck and back with soft pink tips at the ends, bare midriff and slim waist exposed."
 
 HEADWEAR = ""
 
@@ -783,7 +783,7 @@ def main():
                     guidance_scale = gr.Slider(
                         label="Guidance Scale (프롬프트 강도)",
                         minimum=1.0,
-                        maximum=10.0,
+                        maximum=20.0,
                         step=0.5,
                         value=3.5,
                         info="프롬프트 준수도. 낮으면 창의적, 높으면 정확. Flux.1 Dev 권장: 3.5",
@@ -794,7 +794,7 @@ def main():
                         maximum=50,
                         step=1,
                         value=28,
-                        info="생성 단계 수. 높으면 품질 향상, 시간 증가. 권장: 25-40",
+                        info="생성 단계 수. 높으면 품질 향상, 시간 증가. 권장: 20-30",
                     )
 
                 with gr.Row():

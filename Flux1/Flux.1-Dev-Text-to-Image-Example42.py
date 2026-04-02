@@ -13,27 +13,27 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-SUBJECT = "A full body photograph of a beautiful skinny young Korean woman standing, body turned slightly to the side in a natural three-quarter pose, bare feet."
+SUBJECT = "A full body photograph of a beautiful skinny young Korean woman standing in a navy blue one-piece dress with a side slit, fully loose and flowing silhouette with soft billowy drape, with an elastic waistband and stretchy fabric that hugs the waist, clearly showing the waistline, body turned slightly to the side in a natural three-quarter pose, holding a small ivory handbag, wearing black high heels, one leg visible through the slit opening."
 
-FOOT = "Both feet bare, one foot flat bearing full weight, the other with only the toes lightly touching the floor."
+FOOT = "Both feet wearing black high heels, one foot flat bearing full weight, the other with only the toes lightly touching the floor."
 
-LEG = "Bare legs strikingly long in proportion, slender and visually elongated, leggy look, one leg straight, the other slightly bent at the knee in a relaxed asymmetric stance."
+LEG = "Bare legs strikingly long in proportion, slender and visually elongated, leggy look, one leg straight, the other slightly bent at the knee in a relaxed asymmetric stance, one leg visible through the dress side slit."
 
 FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, mouth closed with lips lightly pressed together, looking directly at the camera. She has long, voluminous wavy jet-black hair naturally flowing down."
 
-BODY = "Torso and hips in a gentle three-quarter view to the camera, not square-on, one shoulder slightly closer to the lens, subtle S-curve through waist and hip, slender hourglass silhouette, full body contour clearly defined."
+BODY = "Torso and hips in a gentle three-quarter view to the camera, not square-on, one shoulder slightly closer to the lens, subtle S-curve with a form-fitting elastic waistline, slender hourglass silhouette with clearly defined waist, full body contour clearly defined."
 
-ARM = "Both arms relaxed and hanging naturally at her sides, elbows soft and slightly bent, shoulders easy and unforced."
+ARM = "One arm relaxed and slightly bent at the elbow holding a small handbag by its handle near her hip, the other arm hanging naturally at her side with a soft bend."
 
-HAND = "Both hands resting naturally beside the hips, fingers gently curved in a calm, relaxed resting pose."
+HAND = "One hand holding the small handbag handle, the other hand resting naturally near her thigh with fingers gently relaxed."
 
-FOOTWEAR = ""
+FOOTWEAR = "black high heels, elegant stiletto pumps."
 
 LEGWEAR = ""
 
-BOTTOM = "Tiny sky-blue thong bikini bottom, minimal coverage, bare hips, thin pink string ties at the hips."
+BOTTOM = "Navy blue one-piece dress with tiny micro cherry blossom motifs densely packed as an all-over repeated pattern across the whole dress, fully loose and flowing silhouette with billowy drape, featuring an elastic waistband with stretchy fabric that hugs the waist and clearly shows the waistline, with a side slit opening showing one bare leg."
 
-TOP = "Matching sky-blue triangle bikini top, thin pink string ties at neck and back, bare midriff and slim waist exposed."
+TOP = ""
 
 HEADWEAR = ""
 
@@ -45,11 +45,11 @@ LIGHTING = "Bright front lighting, skin luminous and glowing."
 
 SETTING = "Elegant luxury hotel interior, spacious bright room, polished marble floor, soft neutral walls, large floor-to-ceiling windows, abundant natural light."
 
-CAMERA = "35mm lens, entire figure from head to bare feet in frame, low angle from knee height looking slightly upward to emphasize long legs, tack sharp focus."
+CAMERA = "35mm lens, entire figure from head to black high heels in frame, low angle from knee height looking slightly upward to emphasize long legs, tack sharp focus."
 
-POSITIVE = "8k, high quality, photorealistic, perfect anatomy, ten fingers, ten toes, all toes visible, detailed toes, natural skin texture."
+POSITIVE = "8k, high quality, photorealistic, perfect anatomy, ten fingers, natural skin texture."
 
-NEGATIVE = "Blurry, soft focus, hazy, low sharpness, grainy, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, extra toes, deformed hands, deformed feet, deformed toes."
+NEGATIVE = "Blurry, soft focus, hazy, low sharpness, grainy, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, extra toes, deformed hands, anime, manga, cartoon, comics, illustration, anime style, cel shading, lineart, 2d, painterly, ghibli"
 
 
 def make_image_grid(images: list) -> Image.Image:
@@ -120,6 +120,99 @@ def combine_prompt_sections(
     return combined
 
 
+def combine_prompt_sections_dual(
+    subject,
+    foot,
+    leg,
+    face,
+    body,
+    arm,
+    hand,
+    footwear,
+    legwear,
+    bottom,
+    top,
+    headwear,
+    armwear,
+    head,
+    lighting,
+    setting,
+    camera,
+):
+    """
+    Build two prompt strings for FLUX.1 dual encoders.
+
+    - First is used as CLIP prompt (`prompt`)
+    - Second is used as T5 prompt (`prompt_2`)
+    """
+    # CLIP(prompt): subject만 담당하고, positive는 generate_image에서 추가합니다.
+    clip_prompt = normalize_spacing(subject) if subject else ""
+
+    # T5(prompt_2): subject 포함 + 나머지 섹션 담당합니다.
+    t5_prompt = combine_prompt_sections(
+        subject,
+        foot,
+        leg,
+        face,
+        body,
+        arm,
+        hand,
+        footwear,
+        legwear,
+        bottom,
+        top,
+        headwear,
+        armwear,
+        head,
+        lighting,
+        setting,
+        camera,
+    )
+    return clip_prompt, t5_prompt
+
+
+def combine_prompt_sections_clip_only(
+    subject,
+    foot,
+    leg,
+    face,
+    body,
+    arm,
+    hand,
+    footwear,
+    legwear,
+    bottom,
+    top,
+    headwear,
+    armwear,
+    head,
+    lighting,
+    setting,
+    camera,
+):
+    """CLIP용 프롬프트만 생성합니다. (T5는 subject를 포함하지 않게 분리)"""
+    clip_prompt, _t5_prompt = combine_prompt_sections_dual(
+        subject,
+        foot,
+        leg,
+        face,
+        body,
+        arm,
+        hand,
+        footwear,
+        legwear,
+        bottom,
+        top,
+        headwear,
+        armwear,
+        head,
+        lighting,
+        setting,
+        camera,
+    )
+    return clip_prompt
+
+
 def get_device_and_dtype():
     """Detect the best available device and appropriate data type."""
     if torch.cuda.is_available():
@@ -138,6 +231,8 @@ def get_device_and_dtype():
 DEVICE, DTYPE = get_device_and_dtype()
 pipe = None
 interface = None
+VERBOSE_CLI = False  # True로 바꾸면 프롬프트/토큰/진행 로그가 CLI에 출력됩니다.
+CLI_PROGRESS = True  # 진행률(스텝 진행 바)만 CLI에 출력할지 여부
 
 
 def get_available_devices():
@@ -158,56 +253,40 @@ def get_available_devices():
 
 
 def print_hardware_info():
-    """Print detailed hardware specifications."""
+    """Print compact hardware summary (CLI)."""
     print("=" * 60)
-    print("하드웨어 사양")
+    print("하드웨어 사양(요약)")
     print("=" * 60)
 
-    # OS 정보
-    print(f"OS: {platform.system()} {platform.release()}")
-    print(f"OS 버전: {platform.version()}")
-    print(f"아키텍처: {platform.machine()}")
+    # OS / Python / PyTorch
+    print(
+        f"OS: {platform.system()} {platform.release()} ({platform.machine()}) | "
+        f"Python: {platform.python_version()} | PyTorch: {torch.__version__}"
+    )
 
-    # Python 정보
-    print(f"Python: {platform.python_version()}")
-    print(f"PyTorch: {torch.__version__}")
+    # CPU
+    cpu_physical = psutil.cpu_count(logical=False)
+    cpu_logical = psutil.cpu_count(logical=True)
+    print(f"CPU: {cpu_physical} physical / {cpu_logical} logical cores")
 
-    # CPU 정보
-    print("-" * 60)
-    print("CPU 정보")
-    print("-" * 60)
-    print(f"프로세서: {platform.processor()}")
-    print(f"물리 코어: {psutil.cpu_count(logical=False)}")
-    print(f"논리 코어: {psutil.cpu_count(logical=True)}")
-
-    # 메모리 정보
+    # RAM
     mem = psutil.virtual_memory()
-    print("-" * 60)
-    print("메모리 정보")
-    print("-" * 60)
-    print(f"총 RAM: {mem.total / (1024**3):.1f} GB")
-    print(f"사용 가능: {mem.available / (1024**3):.1f} GB")
-    print(f"사용률: {mem.percent}%")
+    print(
+        f"RAM: {mem.total / (1024**3):.1f} GB (available {mem.available / (1024**3):.1f} GB)"
+    )
 
-    # GPU 정보
-    print("-" * 60)
-    print("GPU 정보")
-    print("-" * 60)
+    # GPU / MPS / CPU
     if torch.cuda.is_available():
-        print("CUDA 사용 가능: 예")
-        print(f"CUDA 버전: {torch.version.cuda}")
-        print(f"cuDNN 버전: {torch.backends.cudnn.version()}")
-        for i in range(torch.cuda.device_count()):
-            props = torch.cuda.get_device_properties(i)
-            print(f"GPU {i}: {props.name}")
-            print(f"  - VRAM: {props.total_memory / (1024**3):.1f} GB")
-            print(f"  - Compute Capability: {props.major}.{props.minor}")
-            print(f"  - 멀티프로세서: {props.multi_processor_count}")
+        gpu_count = torch.cuda.device_count()
+        print(f"CUDA: yes | GPUs: {gpu_count} | CUDA: {torch.version.cuda}")
+        if gpu_count > 0:
+            props0 = torch.cuda.get_device_properties(0)
+            vram0 = props0.total_memory / (1024**3)
+            print(f"GPU0: {props0.name} | VRAM: {vram0:.1f} GB")
     elif torch.backends.mps.is_available():
-        print("MPS (Apple Silicon) 사용 가능: 예")
-        print(f"디바이스: {platform.processor()}")
+        print(f"MPS: yes | device: {platform.processor()}")
     else:
-        print("GPU 사용 불가 (CPU 모드)")
+        print("Device: CPU only")
 
     print("=" * 60)
 
@@ -215,12 +294,14 @@ def print_hardware_info():
 def cleanup():
     """Release all resources and clear memory."""
     global pipe, interface
-    print("\n리소스 정리 중...")
+    if VERBOSE_CLI:
+        print("\n리소스 정리 중...")
 
     if interface is not None:
         try:
             interface.close()
-            print("Gradio 서버 종료됨")
+            if VERBOSE_CLI:
+                print("Gradio 서버 종료됨")
         except Exception:
             pass
         interface = None
@@ -228,24 +309,33 @@ def cleanup():
     if pipe is not None:
         del pipe
         pipe = None
-        print("모델 해제됨")
+        if VERBOSE_CLI:
+            print("모델 해제됨")
 
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
         torch.cuda.synchronize()
-        print("CUDA 캐시 정리됨")
+        if VERBOSE_CLI:
+            print("CUDA 캐시 정리됨")
     elif torch.backends.mps.is_available():
         torch.mps.empty_cache()
-        print("MPS 캐시 정리됨")
+        if VERBOSE_CLI:
+            print("MPS 캐시 정리됨")
 
     gc.collect()
-    print("메모리 정리 완료")
+    if VERBOSE_CLI:
+        print("메모리 정리 완료")
 
 
 def signal_handler(_sig, _frame):
     """Handle keyboard interrupt signal."""
+    global VERBOSE_CLI
+    prev_verbose = VERBOSE_CLI
+    # CTRL+C 상황에서는 원래처럼 메시지를 표시합니다.
+    VERBOSE_CLI = True
     print("\n\n키보드 인터럽트 감지됨 (Ctrl+C)")
     cleanup()
+    VERBOSE_CLI = prev_verbose
     sys.exit(0)
 
 
@@ -263,7 +353,8 @@ def load_model(device_name=None):
 
     # Release previous model if loaded
     if pipe is not None:
-        print("기존 모델 해제 중...")
+        if VERBOSE_CLI:
+            print("기존 모델 해제 중...")
         del pipe
         pipe = None
         gc.collect()
@@ -272,12 +363,11 @@ def load_model(device_name=None):
         elif torch.backends.mps.is_available():
             torch.mps.empty_cache()
 
-    print(f"모델 로딩 중... (Device: {DEVICE}, dtype: {DTYPE})")
-    print("T5-XXL 텍스트 인코더만 사용합니다. (CLIP 비활성화)")
+    if VERBOSE_CLI:
+        print(f"모델 로딩 중... (Device: {DEVICE}, dtype: {DTYPE})")
+        print("CLIP + T5 듀얼 텍스트 인코더를 사용합니다.")
     pipe = FluxPipeline.from_pretrained(
         "black-forest-labs/FLUX.1-dev",
-        text_encoder=None,
-        tokenizer=None,
         torch_dtype=DTYPE,
     )
     pipe.to(DEVICE)
@@ -287,16 +377,18 @@ def load_model(device_name=None):
         pipe.enable_model_cpu_offload()
         pipe.enable_attention_slicing()
         pipe.enable_sequential_cpu_offload()
-        print(
-            "메모리 최적화 적용: sequential CPU offload, model CPU offload, attention slicing (CUDA)"
-        )
+        if VERBOSE_CLI:
+            print(
+                "메모리 최적화 적용: sequential CPU offload, model CPU offload, attention slicing (CUDA)"
+            )
     elif DEVICE == "cpu":
         pipe.enable_model_cpu_offload()
         pipe.enable_attention_slicing()
         pipe.enable_sequential_cpu_offload()
-        print(
-            "메모리 최적화 적용: sequential CPU offload, model CPU offload, attention slicing (CPU)"
-        )
+        if VERBOSE_CLI:
+            print(
+                "메모리 최적화 적용: sequential CPU offload, model CPU offload, attention slicing (CPU)"
+            )
     elif DEVICE == "mps":
         pipe.enable_attention_slicing()
         # channels_last memory format for better MPS performance
@@ -304,14 +396,19 @@ def load_model(device_name=None):
             pipe.transformer.to(memory_format=torch.channels_last)
         elif hasattr(pipe, "unet"):
             pipe.unet.to(memory_format=torch.channels_last)
-        print("메모리 최적화 적용: attention slicing, VAE slicing, VAE tiling (MPS)")
+        if VERBOSE_CLI:
+            print(
+                "메모리 최적화 적용: attention slicing, VAE slicing, VAE tiling (MPS)"
+            )
 
-    print(f"모델 로딩 완료! (Device: {DEVICE})")
+    if VERBOSE_CLI:
+        print(f"모델 로딩 완료! (Device: {DEVICE})")
     return f"모델 로딩 완료! (Device: {DEVICE}, dtype: {DTYPE})"
 
 
 def generate_image(
-    prompt,
+    prompt_clip,
+    prompt_t5,
     positive,
     negative,
     width,
@@ -335,32 +432,96 @@ def generate_image(
             "오류: 모델이 로드되지 않았습니다. '모델 로드' 버튼을 먼저 눌러주세요.",
         )
 
-    if not prompt:
-        return None, [], [], "오류: 프롬프트를 입력해주세요."
+    if not prompt_clip or not prompt_t5:
+        return (
+            None,
+            [],
+            [],
+            "오류: CLIP 프롬프트(prompt)와 T5 프롬프트(prompt_2)를 입력해주세요.",
+        )
 
     try:
         steps = int(num_inference_steps)
         start_time = time.time()
 
-        # Append positive prompt to main prompt
+        # Append positive prompt to both CLIP and T5 prompts.
         if positive and positive.strip():
-            prompt = prompt.rstrip() + " " + positive.strip()
+            prompt_clip = prompt_clip.rstrip() + " " + positive.strip()
+            prompt_t5 = prompt_t5.rstrip() + " " + positive.strip()
 
         progress(0.0, desc="프롬프트 인코딩 중...")
-        print("프롬프트 인코딩 중...")
-        print("=" * 60)
-        print("[입력 프롬프트]")
-        print(prompt)
-        print("=" * 60)
+        if VERBOSE_CLI:
+            print("프롬프트 인코딩 중...")
+            print("=" * 60)
+            print("[입력 CLIP 프롬프트]")
+            print(prompt_clip)
+            print("-" * 60)
+            print("[입력 T5 프롬프트]")
+            print(prompt_t5)
+            print("=" * 60)
 
         # Setup generator (MPS doesn't support Generator directly, use CPU)
         generator_device = "cpu" if DEVICE == "mps" else DEVICE
         generator = torch.Generator(device=generator_device).manual_seed(int(seed))
 
-        # Encode prompt using T5-XXL only
+        # ---- Encode CLIP (pooled_prompt_embeds) ----
+        clip_max_len = getattr(pipe, "tokenizer_max_length", None)
+        if (
+            clip_max_len is None
+            and hasattr(pipe, "tokenizer")
+            and pipe.tokenizer is not None
+        ):
+            clip_max_len = getattr(pipe.tokenizer, "model_max_length", None)
+        clip_max_len = int(clip_max_len) if clip_max_len is not None else 77
+
+        clip_inputs = pipe.tokenizer(
+            prompt_clip,
+            padding="max_length",
+            max_length=clip_max_len,
+            truncation=True,
+            return_tensors="pt",
+        )
+
+        # Count tokens to detect clipping
+        raw_clip_ids = pipe.tokenizer(
+            prompt_clip, truncation=False, return_tensors="pt"
+        )["input_ids"][0]
+        raw_clip_token_count = len(raw_clip_ids)
+        clipped_clip = max(0, raw_clip_token_count - clip_max_len)
+        if clipped_clip > 0:
+            print(
+                f"✗ CLIP 토큰 수: {raw_clip_token_count} / {clip_max_len} → {clipped_clip}개 잘림!"
+            )
+            # CLIP 잘린(초과) 부분을 텍스트로도 표시
+            try:
+                tail_ids = raw_clip_ids[clip_max_len:]
+                if hasattr(tail_ids, "tolist"):
+                    tail_ids = tail_ids.tolist()
+                truncated_clip_text = pipe.tokenizer.decode(
+                    tail_ids, skip_special_tokens=True
+                )
+                print("-" * 60)
+                print("✗ [잘린 CLIP 텍스트]")
+                print(truncated_clip_text)
+                print("-" * 60)
+            except Exception as e:
+                print(f"✗ [잘린 CLIP 텍스트 디코드 실패: {e}]")
+        else:
+            print(
+                f"✓ CLIP 토큰 수: {raw_clip_token_count} / {clip_max_len} (잘림 없음)"
+            )
+
+        with torch.inference_mode():
+            clip_out = pipe.text_encoder(
+                clip_inputs["input_ids"].to(DEVICE),
+                output_hidden_states=False,
+            )
+        pooled_prompt_embeds = clip_out.pooler_output.to(dtype=DTYPE)
+
+        # ---- Encode T5 (prompt_embeds) ----
         max_len = int(max_sequence_length)
         text_inputs = pipe.tokenizer_2(
-            prompt,
+            prompt_t5,
             padding="max_length",
             max_length=max_len,
             truncation=True,
@@ -368,18 +529,20 @@ def generate_image(
         )
 
         # Count tokens to detect clipping
-        raw_ids = pipe.tokenizer_2(prompt, truncation=False, return_tensors="pt")[
+        raw_ids = pipe.tokenizer_2(prompt_t5, truncation=False, return_tensors="pt")[
             "input_ids"
         ][0]
         raw_token_count = len(raw_ids)
         clipped = max(0, raw_token_count - max_len)
         if clipped > 0:
-            print(f"✗ T5 토큰 수: {raw_token_count} / {max_len} → {clipped}개 잘림!")
+            print(
+                f"✗ T5 토큰 수: {raw_token_count} / {max_len} → {clipped}개 잘림!"
+            )
             truncated_text = pipe.tokenizer_2.decode(
                 raw_ids[max_len:], skip_special_tokens=True
             )
             print("-" * 60)
-            print("✗ [잘린 텍스트]")
+            print("✗ [잘린 T5 텍스트]")
             print(truncated_text)
             print("-" * 60)
         else:
@@ -392,35 +555,52 @@ def generate_image(
             )[0]
         prompt_embeds = prompt_embeds.to(dtype=DTYPE)
 
-        # Zero pooled embeddings (CLIP disabled)
-        pooled_prompt_embeds = torch.zeros(
-            1, 768, dtype=DTYPE, device=prompt_embeds.device
-        )
-
         # Encode negative prompt when true_cfg_scale > 1.0
-        negative_embeds = None
-        negative_pooled_prompt_embeds = None
+        # - T5 embeddings 변수는 여기서 기본값을 미리 선언합니다.
+        # - CLIP pooled 변수는 아래 CLIP negative 인코딩 블록에서 선언합니다. (요청: 선언 위치 분리)
+        negative_t5_embeds = None
         if true_cfg_scale > 1.0 and negative and negative.strip():
-            print(f"네거티브 프롬프트 인코딩 중... (true_cfg_scale={true_cfg_scale})")
+            if VERBOSE_CLI:
+                print(
+                    f"네거티브 프롬프트 인코딩 중... (true_cfg_scale={true_cfg_scale})"
+                )
+            neg_clip_text = negative
+            neg_t5_text = negative
+
+            # Negative CLIP pooled embedding
+            negative_clip_pooled_prompt_embeds = None
+            neg_clip_inputs = pipe.tokenizer(
+                neg_clip_text,
+                padding="max_length",
+                max_length=clip_max_len,
+                truncation=True,
+                return_tensors="pt",
+            )
+            with torch.inference_mode():
+                neg_clip_out = pipe.text_encoder(
+                    neg_clip_inputs["input_ids"].to(DEVICE),
+                    output_hidden_states=False,
+                )
+            negative_clip_pooled_prompt_embeds = neg_clip_out.pooler_output.to(
+                dtype=DTYPE
+            )
+
+            # Negative T5 token embeddings
             neg_inputs = pipe.tokenizer_2(
-                negative,
+                neg_t5_text,
                 padding="max_length",
                 max_length=max_len,
                 truncation=True,
                 return_tensors="pt",
             )
             with torch.inference_mode():
-                negative_embeds = pipe.text_encoder_2(
+                negative_t5_embeds = pipe.text_encoder_2(
                     neg_inputs["input_ids"].to(DEVICE),
                     output_hidden_states=False,
                 )[0]
-            negative_embeds = negative_embeds.to(dtype=DTYPE)
-            negative_pooled_prompt_embeds = torch.zeros(
-                1, 768, dtype=DTYPE, device=negative_embeds.device
-            )
+            negative_t5_embeds = negative_t5_embeds.to(dtype=DTYPE)
 
         progress(0.05, desc="추론 시작...")
-        print("추론 시작...")
 
         # Callback to report each inference step to Gradio progress bar and CLI status bar
         def step_callback(_pipe, step_index, _timestep, callback_kwargs):
@@ -460,9 +640,11 @@ def generate_image(
             "generator": generator,
             "callback_on_step_end": step_callback,
         }
-        if negative_embeds is not None:
-            pipe_kwargs["negative_prompt_embeds"] = negative_embeds
-            pipe_kwargs["negative_pooled_prompt_embeds"] = negative_pooled_prompt_embeds
+        if negative_t5_embeds is not None:
+            pipe_kwargs["negative_prompt_embeds"] = negative_t5_embeds
+            pipe_kwargs["negative_pooled_prompt_embeds"] = (
+                negative_clip_pooled_prompt_embeds
+            )
             pipe_kwargs["true_cfg_scale"] = true_cfg_scale
 
         # Run the pipeline
@@ -505,9 +687,10 @@ def generate_image(
             saved_files.append(filename)
 
         token_info = (
-            f"토큰: {raw_token_count}/{max_len} → {clipped}개 잘림!"
-            if clipped > 0
-            else f"토큰: {raw_token_count}/{max_len}"
+            f"T5 토큰: {raw_token_count}/{max_len} → {clipped}개 잘림! | "
+            f"CLIP 토큰: {raw_clip_token_count}/{clip_max_len} → {clipped_clip}개 잘림!"
+            if clipped > 0 or clipped_clip > 0
+            else f"T5 토큰: {raw_token_count}/{max_len} | CLIP 토큰: {raw_clip_token_count}/{clip_max_len}"
         )
         saved_info = (
             f"저장됨: {saved_files[0]}"
@@ -515,8 +698,6 @@ def generate_image(
             else f"{len(saved_files)}장 저장됨: {saved_files[0]} 외"
         )
         print(f"이미지 생성 완료! 소요 시간: {elapsed:.1f}초 | {token_info}")
-        for f in saved_files:
-            print(f"이미지가 저장되었습니다 : {f}")
 
         progress(1.0, desc="완료!")
         return (
@@ -536,7 +717,6 @@ def main():
     print_hardware_info()
 
     # Auto-load model on startup with detected device
-    print(f"\n자동으로 감지된 디바이스: {DEVICE} (dtype: {DTYPE})")
     load_model()
 
     # Create Gradio interface
@@ -691,9 +871,16 @@ def main():
                     placeholder="예: Sony A7R V, 85mm f/1.8, ISO 400",
                     info="카메라 기종, 렌즈, ISO, 셔터 스피드, 조리개, 피사계 심도 등을 설명합니다.",
                 )
-                with gr.Accordion("최종 프롬프트 (Combined Prompt)", open=False):
-                    combined_prompt = gr.Textbox(
-                        label="최종 프롬프트",
+                with gr.Accordion("최종 프롬프트 (Dual Encoders)", open=False):
+                    prompt_clip = gr.Textbox(
+                        label="CLIP 프롬프트 (prompt)",
+                        value=SUBJECT,
+                        lines=4,
+                        interactive=True,
+                        info="CLIP용 프롬프트입니다. 기본값은 `subject`만 들어가며, `positive`는 생성 시 여기에 함께 추가됩니다. (negative는 별도 박스에서 처리)",
+                    )
+                    prompt_t5 = gr.Textbox(
+                        label="T5 프롬프트 (prompt_2)",
                         value=combine_prompt_sections(
                             SUBJECT,
                             FOOT,
@@ -714,8 +901,8 @@ def main():
                             CAMERA,
                         ),
                         lines=4,
-                        interactive=False,
-                        info="위 섹션들이 자동으로 합쳐진 최종 프롬프트입니다.",
+                        interactive=True,
+                        info="T5용 프롬프트입니다. 기본값은 `subject`를 제외한 나머지 섹션이고, `positive`는 생성 시 여기에 함께 추가됩니다. (T5 토큰은 max_sequence_length까지)",
                     )
                 prompt_sections = [
                     prompt_subject,
@@ -738,25 +925,26 @@ def main():
                 ]
                 for section in prompt_sections:
                     section.change(
-                        fn=combine_prompt_sections,
+                        fn=combine_prompt_sections_dual,
                         inputs=prompt_sections,
-                        outputs=[combined_prompt],
+                        outputs=[prompt_clip, prompt_t5],
                     )
 
-                positive_box = gr.Textbox(
-                    label="포지티브 프롬프트 (Positive Prompt)",
-                    value=POSITIVE,
-                    lines=2,
-                    placeholder="예: masterpiece, best quality, highly detailed",
-                    info="최종 프롬프트 뒤에 추가로 덧붙일 키워드를 입력합니다.",
-                )
-                negative_box = gr.Textbox(
-                    label="네거티브 프롬프트 (Negative Prompt)",
-                    value=NEGATIVE,
-                    lines=2,
-                    placeholder="예: blurry, deformed hands, bad anatomy",
-                    info="True CFG Scale > 1.0일 때 적용됩니다.",
-                )
+                with gr.Accordion("포지티브/네거티브 프롬프트", open=False):
+                    positive_box = gr.Textbox(
+                        label="포지티브 프롬프트 (Positive Prompt)",
+                        value=POSITIVE,
+                        lines=2,
+                        placeholder="예: masterpiece, best quality, highly detailed",
+                        info="최종 프롬프트 뒤에 추가로 덧붙일 키워드를 입력합니다.",
+                    )
+                    negative_box = gr.Textbox(
+                        label="네거티브 프롬프트 (Negative Prompt)",
+                        value=NEGATIVE,
+                        lines=2,
+                        placeholder="예: blurry, deformed hands, bad anatomy",
+                        info="True CFG Scale > 1.0일 때 CLIP/T5 모두에 공통으로 사용됩니다.",
+                    )
 
             # Right column: Parameters (top) + Image generation (bottom)
             with gr.Column(scale=1):
@@ -785,8 +973,8 @@ def main():
                         minimum=1.0,
                         maximum=10.0,
                         step=0.5,
-                        value=3.5,
-                        info="프롬프트 준수도. 낮으면 창의적, 높으면 정확. Flux.1 Dev 권장: 3.5",
+                        value=7.5,
+                        info="프롬프트 준수도. 낮으면 창의적, 높으면 정확. Flux.1 Dev 권장: 3.5~8",
                     )
                     num_inference_steps = gr.Slider(
                         label="추론 스텝",
@@ -872,7 +1060,8 @@ def main():
         generate_btn.click(
             fn=generate_image,
             inputs=[
-                combined_prompt,
+                prompt_clip,
+                prompt_t5,
                 positive_box,
                 negative_box,
                 width,
