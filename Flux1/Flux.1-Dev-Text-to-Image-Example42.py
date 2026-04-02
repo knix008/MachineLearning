@@ -13,7 +13,7 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-SUBJECT = "A full body photograph of a beautiful skinny young Korean woman standing in a navy blue one-piece dress with a side slit, fully loose and flowing silhouette with soft billowy drape, with an elastic waistband and stretchy fabric that hugs the waist, clearly showing the waistline, body turned slightly to the side in a natural three-quarter pose, holding a small ivory handbag, wearing black high heels, one leg visible through the slit opening."
+SUBJECT = "A full body photograph of a beautiful skinny young Korean woman standing in a navy blue one-piece dress with a side slit, clearly showing the waistline, body turned slightly to the side in a natural three-quarter pose, holding a small ivory handbag, wearing black high heels."
 
 FOOT = "Both feet wearing black high heels, one foot flat bearing full weight, the other with only the toes lightly touching the floor."
 
@@ -21,17 +21,17 @@ LEG = "Bare legs strikingly long in proportion, slender and visually elongated, 
 
 FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, mouth closed with lips lightly pressed together, looking directly at the camera. She has long, voluminous wavy jet-black hair naturally flowing down."
 
-BODY = "Torso and hips in a gentle three-quarter view to the camera, not square-on, one shoulder slightly closer to the lens, subtle S-curve with a form-fitting elastic waistline, slender hourglass silhouette with clearly defined waist, full body contour clearly defined."
+BODY = "Torso and hips in a gentle three-quarter view to the camera, one shoulder slightly closer to the lens, subtle S-curve with a form-fitting elastic waistline, slender hourglass silhouette with clearly defined waist, full body contour clearly defined."
 
 ARM = "One arm relaxed and slightly bent at the elbow holding a small handbag by its handle near her hip, the other arm hanging naturally at her side with a soft bend."
 
-HAND = "One hand holding the small handbag handle, the other hand resting naturally near her thigh with fingers gently relaxed."
+HAND = "One hand holding the small handbag handle, the other hand resting naturally near her thigh."
 
 FOOTWEAR = "black high heels, elegant stiletto pumps."
 
 LEGWEAR = ""
 
-BOTTOM = "Navy blue one-piece dress with tiny micro cherry blossom motifs densely packed as an all-over repeated pattern across the whole dress, fully loose and flowing silhouette with billowy drape, featuring an elastic waistband with stretchy fabric that hugs the waist and clearly shows the waistline, with a side slit opening showing one bare leg."
+BOTTOM = "Light blue one-piece dress with tiny micro cherry blossom motifs densely packed as an all-over repeated pattern across the whole dress, fully loose and flowing silhouette with billowy drape, featuring an elastic waistband with stretchy fabric that hugs the waist and clearly shows the waistline, with a side slit opening showing one bare leg."
 
 TOP = ""
 
@@ -535,9 +535,7 @@ def generate_image(
         raw_token_count = len(raw_ids)
         clipped = max(0, raw_token_count - max_len)
         if clipped > 0:
-            print(
-                f"✗ T5 토큰 수: {raw_token_count} / {max_len} → {clipped}개 잘림!"
-            )
+            print(f"✗ T5 토큰 수: {raw_token_count} / {max_len} → {clipped}개 잘림!")
             truncated_text = pipe.tokenizer_2.decode(
                 raw_ids[max_len:], skip_special_tokens=True
             )
