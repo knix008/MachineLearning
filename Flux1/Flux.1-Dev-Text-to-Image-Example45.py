@@ -13,43 +13,41 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-POSITIVE = "8k, high quality, photorealistic, perfect anatomy, ten fingers, natural skin texture, ten toes, beautiful toes, ultra sharp details, bright well-lit subject, luminous skin, subject clearly brighter than the background."
-
-SETTING = "Spacious luxury living room, not a bedroom, elegant interior, blue wallpaper with a delicate floral pattern covering the walls, refined sofa and coffee table, large window with soft daylight, warm residential atmosphere."
-
-SUBJECT = "A full body photograph of a beautiful young skinny Korean woman standing in a luxury living room, wearing a very small bikini swimsuit, body fully facing the camera, with bare feet on the floor."
-
-LIGHTING = "Brilliantly bright white indoor lighting flooding the entire room and shining directly onto the front of the subject, face and entire body from head to bare feet completely and evenly flooded with intense front light, high-key bright exposure, subject standing out brightly and evenly lit, fair white skin luminous and radiant and glowing, skin texture clearly visible, zero harsh shadows on the body or face, no backlighting, front-lit only."
-
-CAMERA = "35mm lens, entire figure from head to feet in frame with both feet clearly visible near the bottom of the frame, camera positioned at waist level, slight upward perspective to lengthen the legs, tack sharp focus."
+SUBJECT = "A full body photograph of a beautiful young skinny Korean woman with a soft idol aesthetic standing in a luxury living room, wearing a very small bikini swimsuit, with bare feet on the floor."
 
 FOOT = "Both feet together, side by side, flat on the floor, bare feet fully visible including toes and both ankles."
 
-LEG = "Both legs straight and close together, standing upright, long slender legs clearly visible."
+LEG = "One leg slightly bent at the knee while the other leg supports her weight, natural standing pose with long slender legs clearly visible."
 
 FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, mouth closed with lips lightly pressed together, looking directly at the camera. She has long, voluminous wavy jet-black hair naturally flowing down."
 
-BODY = "Torso and hips facing almost frontally toward the camera, hips shifted slightly to one side creating a natural subtle S-curve, slender hourglass silhouette with clearly defined waist and clearly visible natural body curves."
+BODY = "Torso turned only slightly to the side while still mostly facing the camera, hips shifted slightly to one side creating a natural subtle S-curve, slender hourglass silhouette with clearly defined waist and clearly visible natural body curves."
 
 ARM = "Both arms hanging naturally and relaxed straight down at her sides."
 
-HAND = (
-    "Both hands relaxed with fingers lightly extended, hanging naturally at her sides."
-)
+HAND = "Both hands relaxed with fingers lightly extended, hanging naturally at her sides."
 
 FOOTWEAR = ""
 
 LEGWEAR = ""
 
-BOTTOM = "Very tiny bright red thong bikini bottom with a clean minimal design and smooth stretch fabric with minimal coverage, bare hips fully exposed."
+BOTTOM = "Very tiny pink thong bikini bottom with a clean minimal design and smooth stretch fabric with minimal coverage, bare hips fully exposed."
 
-TOP = "Very tiny bright red triangle bikini top with a clean minimal design and smooth stretch fabric with minimal coverage, bare midriff fully exposed."
+TOP = "Very tiny pink triangle bikini top with a clean minimal design and smooth stretch fabric with minimal coverage, bare midriff fully exposed."
 
 HEADWEAR = ""
 
 ARMWEAR = ""
 
 HEAD = "Head slightly tilted."
+
+SETTING = "Spacious luxury living room, not a bedroom, elegant interior, blue wallpaper with a delicate floral pattern covering the walls, refined sofa and coffee table, large window with soft daylight, warm residential atmosphere."
+
+LIGHTING = "Brilliantly bright white indoor lighting flooding the entire room and shining directly onto the front of the subject, face and entire body from head to bare feet completely and evenly flooded with intense front light, high-key bright exposure, subject standing out brightly and evenly lit, fair white skin luminous and radiant and glowing, skin texture clearly visible, zero harsh shadows on the body or face, front-lit only."
+
+CAMERA = "35mm lens, entire figure from head to feet in frame with both feet clearly visible near the bottom of the frame, camera positioned at waist level, slight upward perspective to lengthen the legs, tack sharp focus."
+
+POSITIVE = "8k, high quality, photorealistic, perfect anatomy, ten fingers, natural skin texture, ten toes, beautiful fingers,beautiful toes."
 
 NEGATIVE = "Blurry, soft focus, hazy, low sharpness, grainy, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, extra toes, deformed hands, high angle shot, overhead shot, bird's-eye view, anime, manga, cartoon, comics, illustration, dark, dim, underexposed, shadowy, moody lighting, dark background"
 
@@ -78,10 +76,17 @@ def normalize_spacing(text: str) -> str:
     return text.strip()
 
 
+def format_clip_preview(subject: str, positive: str) -> str:
+    """CLIP 미리보기: Subject 뒤에 Positive (둘 다 있으면 공백으로 연결)."""
+    s = normalize_spacing(subject) if subject and subject.strip() else ""
+    p = normalize_spacing(positive) if positive and positive.strip() else ""
+    if s and p:
+        return s + " " + p
+    return s or p
+
+
 def combine_t5_prompt_sections(
     subject,
-    lighting,
-    camera,
     foot,
     leg,
     face,
@@ -95,106 +100,16 @@ def combine_t5_prompt_sections(
     headwear,
     armwear,
     head,
+    setting,
+    lighting,
+    camera,
 ):
     """Combine separate prompt sections into the T5 (prompt_2) string.
 
-    Setting/background는 CLIP(positive+setting) 전용이므로 T5에는 넣지 않습니다.
-    Order: subject -> lighting -> camera -> pose/clothing/head.
+    Order: subject -> pose/clothing/head -> setting -> lighting -> camera (맨 뒤).
     """
     sections = [
         subject,
-        lighting,
-        camera,
-        foot,
-        leg,
-        face,
-        body,
-        arm,
-        hand,
-        footwear,
-        legwear,
-        bottom,
-        top,
-        headwear,
-        armwear,
-        head,
-    ]
-    combined = " ".join(normalize_spacing(s) for s in sections if s and s.strip())
-    return combined
-
-
-def combine_prompt_sections_dual(
-    subject,
-    lighting,
-    camera,
-    foot,
-    leg,
-    face,
-    body,
-    arm,
-    hand,
-    footwear,
-    legwear,
-    bottom,
-    top,
-    headwear,
-    armwear,
-    head,
-    setting,
-):
-    """
-    Build two prompt strings for FLUX.1 dual encoders.
-
-    - CLIP prompt: setting only (positive is prepended at generation time)
-    - T5 prompt:   subject -> lighting -> camera -> ... -> head (setting 제외)
-    """
-    clip_prompt = normalize_spacing(setting) if setting and setting.strip() else ""
-
-    t5_prompt = combine_t5_prompt_sections(
-        subject,
-        lighting,
-        camera,
-        foot,
-        leg,
-        face,
-        body,
-        arm,
-        hand,
-        footwear,
-        legwear,
-        bottom,
-        top,
-        headwear,
-        armwear,
-        head,
-    )
-    return clip_prompt, t5_prompt
-
-
-def combine_prompt_sections_clip_only(
-    subject,
-    lighting,
-    camera,
-    foot,
-    leg,
-    face,
-    body,
-    arm,
-    hand,
-    footwear,
-    legwear,
-    bottom,
-    top,
-    headwear,
-    armwear,
-    head,
-    setting,
-):
-    """CLIP용 프롬프트만 생성합니다."""
-    clip_prompt, _t5_prompt = combine_prompt_sections_dual(
-        subject,
-        lighting,
-        camera,
         foot,
         leg,
         face,
@@ -209,8 +124,61 @@ def combine_prompt_sections_clip_only(
         armwear,
         head,
         setting,
+        lighting,
+        camera,
+    ]
+    combined = " ".join(normalize_spacing(s) for s in sections if s and s.strip())
+    return combined
+
+
+def combine_prompt_sections_dual(
+    subject,
+    foot,
+    leg,
+    face,
+    body,
+    arm,
+    hand,
+    footwear,
+    legwear,
+    bottom,
+    top,
+    headwear,
+    armwear,
+    head,
+    setting,
+    lighting,
+    camera,
+    positive,
+):
+    """
+    Build two prompt strings for FLUX.1 dual encoders.
+
+    - CLIP 미리보기: Subject -> Positive 순서 (`format_clip_preview`). T5에는 Positive 없음.
+    - T5 prompt:   subject -> ... -> head -> setting -> lighting -> camera
+    """
+    clip_prompt = format_clip_preview(subject, positive)
+
+    t5_prompt = combine_t5_prompt_sections(
+        subject,
+        foot,
+        leg,
+        face,
+        body,
+        arm,
+        hand,
+        footwear,
+        legwear,
+        bottom,
+        top,
+        headwear,
+        armwear,
+        head,
+        setting,
+        lighting,
+        camera,
     )
-    return clip_prompt
+    return clip_prompt, t5_prompt
 
 
 def get_device_and_dtype():
@@ -409,7 +377,6 @@ def load_model(device_name=None):
 def generate_image(
     prompt_clip,
     prompt_t5,
-    positive,
     negative,
     width,
     height,
@@ -432,21 +399,29 @@ def generate_image(
             "오류: 모델이 로드되지 않았습니다. '모델 로드' 버튼을 먼저 눌러주세요.",
         )
 
-    if not prompt_clip or not prompt_t5:
-        return (
-            None,
-            [],
-            [],
-            "오류: CLIP 프롬프트(prompt)와 T5 프롬프트(prompt_2)를 입력해주세요.",
-        )
-
     try:
         steps = int(num_inference_steps)
         start_time = time.time()
 
-        # Prepend positive prompt to CLIP only. T5 handles semantic content as-is.
-        if positive and positive.strip():
-            prompt_clip = positive.strip() + " " + prompt_clip.lstrip()
+        # CLIP: 미리보기란 = Subject → Positive 순으로 합친 문자열(수동 편집 가능). T5에는 Positive 없음.
+        prompt_clip = (prompt_clip or "").strip()
+        if not prompt_clip:
+            return (
+                None,
+                [],
+                [],
+                "오류: CLIP 프롬프트(미리보기)가 비어 있습니다.",
+            )
+
+        prompt_t5 = (prompt_t5 or "").strip()
+
+        if not prompt_t5:
+            return (
+                None,
+                [],
+                [],
+                "오류: T5 프롬프트(prompt_2)를 입력해주세요.",
+            )
 
         progress(0.0, desc="프롬프트 인코딩 중...")
         print("프롬프트 인코딩 중...")
@@ -749,147 +724,171 @@ def main():
 
                 gr.Markdown(
                     "### 프롬프트 구성\n"
-                    "- **CLIP**: 생성 시 **Positive + Setting** 만 사용합니다.\n"
-                    "- **T5**: **Subject → Lighting → Camera** → 포즈·의상·세부 (Setting 제외).\n"
+                    "**T5 결합 순서 (아래 ① → ② → ③ 블록 순서와 동일)**  \n"
+                    "`① Subject` → `② 발~머리 (2~14)` → `③ Setting → Lighting → Camera (15~17, 맨 뒤)`\n\n"
+                    "- **CLIP 미리보기**: **Subject → Positive** 순으로 붙입니다. 인코딩 시 그대로 사용합니다. **Positive는 T5에 넣지 않습니다.**\n"
                     "- **Negative**: `True CFG > 1.0`일 때 CLIP/T5에 동일 문자열로 인코딩됩니다."
                 )
-                with gr.Accordion(
-                    "① T5 핵심 (순서: Subject → Lighting → Camera)",
-                    open=True,
-                ):
-                    prompt_subject = gr.Textbox(
-                        label="1. 주제/대상 (Subject) [T5 먼저]",
-                        value=SUBJECT,
+                with gr.Accordion("포지티브 프롬프트 (Positive · CLIP에만 사용, T5 제외)", open=False):
+                    positive_box = gr.Textbox(
+                        label="포지티브 프롬프트 (Positive Prompt)",
+                        value=POSITIVE,
                         lines=2,
-                        placeholder="예: 1girl, young woman, a cat",
-                        info="이미지의 주된 주제나 대상을 설명합니다. T5 프롬프트의 첫 번째 블록입니다.",
+                        placeholder="예: masterpiece, best quality, highly detailed",
+                        info="CLIP 인코딩에만 쓰입니다. T5 프롬프트에는 포함되지 않습니다.",
                     )
-                    prompt_lighting = gr.Textbox(
-                        label="2. 조명 (Lighting) [T5]",
-                        value=LIGHTING,
+                with gr.Accordion("네거티브 프롬프트 (Negative · True CFG)", open=False):
+                    negative_box = gr.Textbox(
+                        label="네거티브 프롬프트 (Negative Prompt)",
+                        value=NEGATIVE,
                         lines=2,
-                        placeholder="예: golden hour, city glow, cinematic rim light",
-                        info="조명 조건, 빛의 방향, 분위기를 설명합니다. T5에서 Subject 다음에 옵니다.",
+                        placeholder="예: blurry, deformed hands, bad anatomy",
+                        info="True CFG Scale > 1.0일 때 CLIP/T5 모두에 공통으로 사용됩니다.",
                     )
-                    prompt_camera = gr.Textbox(
-                        label="3. 카메라 설정 (Camera Settings) [T5]",
-                        value=CAMERA,
-                        lines=2,
-                        placeholder="예: Sony A7R V, 85mm f/1.8, ISO 400",
-                        info="카메라 기종, 렌즈, ISO, 셔터 스피드, 조리개, 피사계 심도 등을 설명합니다. T5에서 Lighting 다음에 옵니다.",
+                with gr.Group():
+                    gr.Markdown(
+                        "#### T5 입력 (①②③ = 위에서 아래로, 프롬프트 앞에서 뒤로 이어 붙음)"
                     )
-                with gr.Accordion(
-                    "② 포즈 · 의상 · 세부 (T5에서 Camera 다음)", open=True
-                ):
-                    prompt_foot = gr.Textbox(
-                        label="4. 포즈 - 발 (Pose: Foot)",
-                        value=FOOT,
-                        lines=1,
-                        placeholder="예: feet slightly apart, toes pointed forward",
-                        info="발의 위치를 설명합니다.",
-                    )
-                    prompt_leg = gr.Textbox(
-                        label="5. 포즈 - 다리 (Pose: Leg)",
-                        value=LEG,
-                        lines=1,
-                        placeholder="예: one leg stepping forward, weight on left leg",
-                        info="다리 자세를 설명합니다.",
-                    )
-                    prompt_face = gr.Textbox(
-                        label="6. 얼굴/외모 (Face)",
-                        value=FACE,
-                        lines=2,
-                        placeholder="예: fair complexion, blue contact lenses, soft smile",
-                        info="얼굴, 피부, 눈, 표정, 머리카락 등을 설명합니다.",
-                    )
-                    prompt_body = gr.Textbox(
-                        label="7. 포즈 - 몸통 (Pose: Body)",
-                        value=BODY,
-                        lines=2,
-                        placeholder="예: body angled slightly, leaning forward",
-                        info="몸통 자세와 전체 실루엣을 설명합니다.",
-                    )
-                    prompt_arm = gr.Textbox(
-                        label="8. 포즈 - 팔 (Pose: Arm)",
-                        value=ARM,
-                        lines=1,
-                        placeholder="예: arms resting across torso",
-                        info="팔의 위치와 자세를 설명합니다.",
-                    )
-                    prompt_hand = gr.Textbox(
-                        label="9. 포즈 - 손 (Pose: Hand)",
-                        value=HAND,
-                        lines=1,
-                        placeholder="예: one hand gripping the other arm",
-                        info="손의 위치와 동작을 설명합니다.",
-                    )
-                    prompt_footwear = gr.Textbox(
-                        label="10. 신발 (Footwear)",
-                        value=FOOTWEAR,
-                        lines=1,
-                        placeholder="예: black stiletto heels, white sneakers",
-                        info="신발, 부츠, 샌들 등을 설명합니다.",
-                    )
-                    prompt_legwear = gr.Textbox(
-                        label="11. 레그웨어 (Legwear)",
-                        value=LEGWEAR,
-                        lines=1,
-                        placeholder="예: thigh-high black stockings, sheer tights",
-                        info="스타킹, 양말, 레깅스 등을 설명합니다.",
-                    )
-                    prompt_bottom = gr.Textbox(
-                        label="12. 하의 (Bottom)",
-                        value=BOTTOM,
-                        lines=2,
-                        placeholder="예: tiny black panty, mini skirt",
-                        info="하의, 속옷 하의 등을 설명합니다.",
-                    )
-                    prompt_top = gr.Textbox(
-                        label="13. 상의 (Top)",
-                        value=TOP,
-                        lines=2,
-                        placeholder="예: sheer black button-up shirt, tiny black bra",
-                        info="상의, 속옷 상의 등을 설명합니다.",
-                    )
-                    prompt_headwear = gr.Textbox(
-                        label="14. 머리 장식 (Headwear)",
-                        value=HEADWEAR,
-                        lines=1,
-                        placeholder="예: black beret, floral hairpin",
-                        info="모자, 헤어핀, 머리띠 등 머리 장식을 설명합니다.",
-                    )
-                    prompt_armwear = gr.Textbox(
-                        label="15. 팔 장식 (Armwear)",
-                        value=ARMWEAR,
-                        lines=1,
-                        placeholder="예: black lace gloves, silver bracelet",
-                        info="장갑, 팔찌, 소매 장식 등을 설명합니다.",
-                    )
-                    prompt_head = gr.Textbox(
-                        label="16. 포즈 - 머리 (Pose: Head)",
-                        value=HEAD,
-                        lines=1,
-                        placeholder="예: head tilted slightly, gazing off-camera",
-                        info="머리와 시선 방향을 설명합니다.",
-                    )
-                with gr.Accordion(
-                    "③ 배경 / Setting (CLIP 전용 · Positive와 함께 인코딩)",
-                    open=True,
-                ):
-                    prompt_setting = gr.Textbox(
-                        label="17. 배경/장소 (Setting & Background)",
-                        value=SETTING,
-                        lines=2,
-                        placeholder="예: rooftop terrace at twilight, city skyline",
-                        info="배경, 장소, 환경, 계절 등을 설명합니다. CLIP에만 들어가며(생성 시 앞에 Positive가 붙음), T5 프롬프트에는 포함되지 않습니다.",
-                    )
+                    with gr.Accordion("① 주제 (Subject)", open=True):
+                        prompt_subject = gr.Textbox(
+                            label="1. 주제/대상 (Subject) [T5 첫 블록 · CLIP은 Subject→Positive 순]",
+                            value=SUBJECT,
+                            lines=2,
+                            placeholder="예: 1girl, young woman, a cat",
+                            info="T5 프롬프트 맨 앞에 붙습니다. CLIP 미리보기는 Subject → Positive 순으로 합쳐집니다.",
+                        )
+                    with gr.Accordion(
+                        "② 포즈 · 의상 · 세부 (T5에서 Subject 직후 · 항목 2~14)",
+                        open=True,
+                    ):
+                        prompt_foot = gr.Textbox(
+                            label="2. 포즈 - 발 (Pose: Foot)",
+                            value=FOOT,
+                            lines=1,
+                            placeholder="예: feet slightly apart, toes pointed forward",
+                            info="발의 위치를 설명합니다.",
+                        )
+                        prompt_leg = gr.Textbox(
+                            label="3. 포즈 - 다리 (Pose: Leg)",
+                            value=LEG,
+                            lines=1,
+                            placeholder="예: one leg stepping forward, weight on left leg",
+                            info="다리 자세를 설명합니다.",
+                        )
+                        prompt_face = gr.Textbox(
+                            label="4. 얼굴/외모 (Face)",
+                            value=FACE,
+                            lines=2,
+                            placeholder="예: fair complexion, blue contact lenses, soft smile",
+                            info="얼굴, 피부, 눈, 표정, 머리카락 등을 설명합니다.",
+                        )
+                        prompt_body = gr.Textbox(
+                            label="5. 포즈 - 몸통 (Pose: Body)",
+                            value=BODY,
+                            lines=2,
+                            placeholder="예: body angled slightly, leaning forward",
+                            info="몸통 자세와 전체 실루엣을 설명합니다.",
+                        )
+                        prompt_arm = gr.Textbox(
+                            label="6. 포즈 - 팔 (Pose: Arm)",
+                            value=ARM,
+                            lines=1,
+                            placeholder="예: arms resting across torso",
+                            info="팔의 위치와 자세를 설명합니다.",
+                        )
+                        prompt_hand = gr.Textbox(
+                            label="7. 포즈 - 손 (Pose: Hand)",
+                            value=HAND,
+                            lines=1,
+                            placeholder="예: one hand gripping the other arm",
+                            info="손의 위치와 동작을 설명합니다.",
+                        )
+                        prompt_footwear = gr.Textbox(
+                            label="8. 신발 (Footwear)",
+                            value=FOOTWEAR,
+                            lines=1,
+                            placeholder="예: black stiletto heels, white sneakers",
+                            info="신발, 부츠, 샌들 등을 설명합니다.",
+                        )
+                        prompt_legwear = gr.Textbox(
+                            label="9. 레그웨어 (Legwear)",
+                            value=LEGWEAR,
+                            lines=1,
+                            placeholder="예: thigh-high black stockings, sheer tights",
+                            info="스타킹, 양말, 레깅스 등을 설명합니다.",
+                        )
+                        prompt_bottom = gr.Textbox(
+                            label="10. 하의 (Bottom)",
+                            value=BOTTOM,
+                            lines=2,
+                            placeholder="예: tiny black panty, mini skirt",
+                            info="하의, 속옷 하의 등을 설명합니다.",
+                        )
+                        prompt_top = gr.Textbox(
+                            label="11. 상의 (Top)",
+                            value=TOP,
+                            lines=2,
+                            placeholder="예: sheer black button-up shirt, tiny black bra",
+                            info="상의, 속옷 상의 등을 설명합니다.",
+                        )
+                        prompt_headwear = gr.Textbox(
+                            label="12. 머리 장식 (Headwear)",
+                            value=HEADWEAR,
+                            lines=1,
+                            placeholder="예: black beret, floral hairpin",
+                            info="모자, 헤어핀, 머리띠 등 머리 장식을 설명합니다.",
+                        )
+                        prompt_armwear = gr.Textbox(
+                            label="13. 팔 장식 (Armwear)",
+                            value=ARMWEAR,
+                            lines=1,
+                            placeholder="예: black lace gloves, silver bracelet",
+                            info="장갑, 팔찌, 소매 장식 등을 설명합니다.",
+                        )
+                        prompt_head = gr.Textbox(
+                            label="14. 포즈 - 머리 (Pose: Head)",
+                            value=HEAD,
+                            lines=1,
+                            placeholder="예: head tilted slightly, gazing off-camera",
+                            info="머리와 시선 방향을 설명합니다.",
+                        )
+                    with gr.Accordion(
+                        "③ 배경 · 조명 · 카메라 (T5 맨 끝에만 붙음 · 항목 15~17 · 순서: Setting → Lighting → Camera)",
+                        open=True,
+                    ):
+                        prompt_setting = gr.Textbox(
+                            label="15. 배경/장소 (Setting & Background) [T5 맨 끝 세 블록 중 첫 번째]",
+                            value=SETTING,
+                            lines=2,
+                            placeholder="예: rooftop terrace at twilight, city skyline",
+                            info="배경·장소. T5 문자열에서 포즈·머리 블록 다음, 조명·카메라 앞에 붙습니다. CLIP에는 포함되지 않습니다.",
+                        )
+                        prompt_lighting = gr.Textbox(
+                            label="16. 조명 (Lighting) [T5 맨 끝 세 블록 중 두 번째]",
+                            value=LIGHTING,
+                            lines=2,
+                            placeholder="예: golden hour, city glow, cinematic rim light",
+                            info="조명 조건. T5에서 Setting 다음, Camera 앞에 붙습니다.",
+                        )
+                        prompt_camera = gr.Textbox(
+                            label="17. 카메라 설정 (Camera Settings) [T5 맨 끝 세 블록 중 마지막]",
+                            value=CAMERA,
+                            lines=2,
+                            placeholder="예: Sony A7R V, 85mm f/1.8, ISO 400",
+                            info="카메라·렌즈. T5 프롬프트의 마지막 블록입니다.",
+                        )
                 with gr.Accordion("최종 프롬프트 (Dual Encoders)", open=False):
                     prompt_clip = gr.Textbox(
-                        label="CLIP 프롬프트 (prompt)",
-                        value=combine_prompt_sections_clip_only(
+                        label="CLIP 미리보기 (Subject → Positive 순)",
+                        value=format_clip_preview(SUBJECT, POSITIVE),
+                        lines=4,
+                        interactive=True,
+                        info="자동: ① Subject + 위 포지티브를 이 순서로 붙입니다. 인코딩 시 이 문자열을 그대로 사용합니다.",
+                    )
+                    prompt_t5 = gr.Textbox(
+                        label="T5 프롬프트 (prompt_2)",
+                        value=combine_t5_prompt_sections(
                             SUBJECT,
-                            LIGHTING,
-                            CAMERA,
                             FOOT,
                             LEG,
                             FACE,
@@ -904,39 +903,15 @@ def main():
                             ARMWEAR,
                             HEAD,
                             SETTING,
-                        ),
-                        lines=4,
-                        interactive=True,
-                        info="CLIP용 프롬프트입니다. positive + setting이 들어갑니다. (positive는 생성 시 맨 앞에 추가)",
-                    )
-                    prompt_t5 = gr.Textbox(
-                        label="T5 프롬프트 (prompt_2)",
-                        value=combine_t5_prompt_sections(
-                            SUBJECT,
                             LIGHTING,
                             CAMERA,
-                            FOOT,
-                            LEG,
-                            FACE,
-                            BODY,
-                            ARM,
-                            HAND,
-                            FOOTWEAR,
-                            LEGWEAR,
-                            BOTTOM,
-                            TOP,
-                            HEADWEAR,
-                            ARMWEAR,
-                            HEAD,
                         ),
                         lines=4,
                         interactive=True,
-                        info="T5용 프롬프트입니다. 순서: Subject → Lighting → Camera → 포즈·의상·머리 (Setting 제외).",
+                        info="T5용 프롬프트입니다. 순서: Subject → 포즈·의상·머리 → Setting → Lighting → Camera(맨 끝).",
                     )
                 prompt_sections = [
                     prompt_subject,
-                    prompt_lighting,
-                    prompt_camera,
                     prompt_foot,
                     prompt_leg,
                     prompt_face,
@@ -951,6 +926,9 @@ def main():
                     prompt_armwear,
                     prompt_head,
                     prompt_setting,
+                    prompt_lighting,
+                    prompt_camera,
+                    positive_box,
                 ]
                 for section in prompt_sections:
                     section.change(
@@ -959,25 +937,17 @@ def main():
                         outputs=[prompt_clip, prompt_t5],
                     )
 
-                with gr.Accordion("포지티브/네거티브 프롬프트", open=False):
-                    positive_box = gr.Textbox(
-                        label="포지티브 프롬프트 (Positive Prompt)",
-                        value=POSITIVE,
-                        lines=2,
-                        placeholder="예: masterpiece, best quality, highly detailed",
-                        info="최종 프롬프트 뒤에 추가로 덧붙일 키워드를 입력합니다.",
-                    )
-                    negative_box = gr.Textbox(
-                        label="네거티브 프롬프트 (Negative Prompt)",
-                        value=NEGATIVE,
-                        lines=2,
-                        placeholder="예: blurry, deformed hands, bad anatomy",
-                        info="True CFG Scale > 1.0일 때 CLIP/T5 모두에 공통으로 사용됩니다.",
-                    )
-
             # Right column: Parameters (top) + Image generation (bottom)
             with gr.Column(scale=1):
                 gr.Markdown("### 파라미터 설정")
+                with gr.Accordion("T5 결합 순서 (왼쪽 패널과 동일)", open=False):
+                    gr.Markdown(
+                        "왼쪽 **① → ② → ③** 순서가 곧 `prompt_2`(T5)에 붙는 순서입니다.\n\n"
+                        "1. **Subject** (T5 맨 앞; CLIP 미리보기는 **Subject → Positive** 순)  \n"
+                        "2. **발 ~ 머리** (항목 2~14)  \n"
+                        "3. **Setting → Lighting → Camera** (항목 15~17, 문자열 **맨 끝**)\n\n"
+                        "**Positive**는 T5에 넣지 않고, CLIP에만 씁니다."
+                    )
                 with gr.Row():
                     width = gr.Slider(
                         label="이미지 너비",
@@ -1091,7 +1061,6 @@ def main():
             inputs=[
                 prompt_clip,
                 prompt_t5,
-                positive_box,
                 negative_box,
                 width,
                 height,
