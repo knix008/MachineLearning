@@ -14,7 +14,7 @@ import gradio as gr
 
 # Default values for each prompt section
 # CLIP는 ~77토큰(Subject+Positive), 네거티브도 동일 한도. T5는 섹션 합+Positive가 max_sequence_length(기본 512) 이내여야 함.
-SUBJECT = "Full-length vertical shot, head to bare feet and ten toes fully in frame on the pool deck, young skinny Korean woman, barefoot with feet kept together side by side, no gap between feet, tiny bikini."
+SUBJECT = "Full-length vertical shot, head to bare feet and ten toes fully in frame on the pool deck, young skinny Korean woman, barefoot with feet kept together side by side, no gap between feet, toes visible, tiny bikini."
 
 FOOT = "Both bare feet gathered and closed together on the deck, side by side parallel, ankles touching or nearly touching, feet never spread apart, toes and soles visible, lower frame, deck texture, not cropped."
 
