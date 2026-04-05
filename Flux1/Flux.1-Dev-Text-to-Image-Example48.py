@@ -13,27 +13,27 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-SUBJECT = "A full body photography of a beautiful young skinny Korean woman with a soft idol aesthetics standing on a casual spring outing in Seoul."
+SUBJECT = "A full body photography of a beautiful young skinny Korean woman standing at a luxury hotel swimming pool wearing a tiny sky blue bikini with pink trim, bare feet on the poolside deck."
 
-FOOT = "Both feet pressed firmly together with ankles touching, inner sides of both feet in contact, toes pointing straight forward, white sneakers clearly visible side by side, feet entirely in frame and not cropped."
+FOOT = "Both bare feet pressed firmly together, both feet entirely in frame, not cropped at all, feet fully visible at the very bottom of the image, toes clearly visible, extra empty space below the feet."
 
-LEG = "Both legs straight and pressed firmly together, knees touching, thighs together, no gap between legs."
+LEG = "One leg straight and bearing the weight, the other leg slightly bent at the knee and relaxed, knees close together, thighs together, no gap between legs."
 
-FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long wavy voluminous jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air."
+FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long wavy voluminous jet-black hair with beautiful soft waves and curls, draping naturally and calmly over her shoulders and back."
 
-BODY = "Standing perfectly still and upright, both feet and legs together, body facing completely straight toward the camera, chest and torso fully frontal, posture tall and elegant, shoulders back."
+BODY = "Standing upright with both feet together, body turned very slightly to a three-quarter angle, hips shifted and tilted to one side creating a natural subtle S-curve, waist and hip line clearly visible, slender hourglass silhouette, posture tall and elegant, shoulders back."
 
 ARM = "Both arms hanging naturally and relaxed at her sides."
 
 HAND = "Both hands hanging gracefully at her sides with fingers lightly extended."
 
-FOOTWEAR = "Clean white canvas sneakers, simple and casual."
+FOOTWEAR = ""
 
-LEGWEAR = "Bare legs, smooth and fair skin visible as the wind blows the skirt slit open, legs themselves pressed together."
+LEGWEAR = ""
 
-BOTTOM = ""
+BOTTOM = "Wearing a very tiny sky blue thong bikini bottom with pink trim edges, minimal coverage, pink string ties at the hips."
 
-TOP = "Dark navy chiffon one-piece dress with thin spaghetti straps, simple neckline, bare shoulders and arms, mostly opaque with only a slight translucency, densely scattered tiny cherry blossom print in soft pink and white, fitted waist, flowing A-line skirt with a side slit parted by a gentle breeze to one side revealing the bare leg, skirt hem lifted softly by the wind to one side only while both legs remain firmly pressed together, casual spring outing style."
+TOP = "Wearing a very tiny sky blue triangle bikini top with pink trim edges, minimal coverage, thin pink string ties at the neck and back."
 
 HEADWEAR = ""
 
@@ -41,15 +41,15 @@ ARMWEAR = ""
 
 HEAD = "Head tilted very slightly to one side, gentle and relaxed posture, hair draping naturally over shoulders."
 
-SETTING = "Bright spring street in Seoul, cherry blossom trees lining the sidewalk with pink petals falling gently, warm sunny day, clean pavement."
+SETTING = "Luxury hotel outdoor swimming pool, glowing blue pool water, elegant poolside deck, sun loungers and palm trees in the background, bright sunny day."
 
-LIGHTING = "Bright even spring daylight, soft frontal natural light, face clearly and brightly lit, no harsh shadows."
+LIGHTING = "Brilliant direct sunlight from the front, entire body from head to bare feet completely and evenly flooded with bright sunlight."
 
-CAMERA = "Full body shot, entire body from head to feet fully in frame, feet and sneakers not cropped, eye level angle, subject facing camera, sharp focus, soft bokeh background."
+CAMERA = "Full body shot, entire body from head to bare feet fully in frame, feet and toes completely visible and not cropped at all, generous empty space below the feet, low camera angle slightly below waist level, soft bokeh background."
 
-POSITIVE = "8k, high quality, realistic, detailed, sharp focus, perfect anatomy, ten fingers."
+POSITIVE = "8k, high quality, realistic, sharp focus, perfect anatomy, ten fingers, ten toes, beautiful toes, no extra toes, no extra fingers."
 
-NEGATIVE = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, one leg forward, staggered legs, walking pose, weight shift, legs apart, stepping, feet apart, spread legs, gap between feet, gap between legs, wide stance."
+NEGATIVE = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, extra toes, feet cropped, missing feet, missing toes, fused toes, webbed toes, distorted toes, one leg forward, staggered legs, walking pose, weight shift, legs apart, stepping, feet apart, spread legs, gap between feet, gap between legs, wide stance."
 
 
 def make_image_grid(images: list) -> Image.Image:
@@ -101,6 +101,7 @@ def combine_t5_prompt_sections(
     setting,
     lighting,
     camera,
+    positive,
 ):
     """Combine separate prompt sections into the T5 (prompt_2) string."""
     sections = [
@@ -121,6 +122,7 @@ def combine_t5_prompt_sections(
         setting,
         lighting,
         camera,
+        positive,
     ]
     combined = " ".join(normalize_spacing(s) for s in sections if s and s.strip())
     return combined
@@ -151,7 +153,7 @@ def combine_prompt_sections_dual(
     t5_prompt = combine_t5_prompt_sections(
         subject, foot, leg, face, body, arm, hand,
         footwear, legwear, bottom, top, headwear, armwear,
-        head, setting, lighting, camera,
+        head, setting, lighting, camera, positive,
     )
     return clip_prompt, t5_prompt
 
@@ -601,8 +603,8 @@ def main():
 
                 gr.Markdown(
                     "### 프롬프트 구성\n"
-                    "- **CLIP**: Subject → Positive 순. Positive는 T5에 포함되지 않습니다.\n"
-                    "- **T5**: Subject → 포즈·의상·머리 → Setting → Lighting → Camera 순.\n"
+                    "- **CLIP**: Subject → Positive 순.\n"
+                    "- **T5**: Subject → 포즈·의상·머리 → Setting → Lighting → Camera → Positive 순.\n"
                     "- **Negative**: True CFG > 1.0일 때 CLIP/T5 공통 적용."
                 )
                 with gr.Accordion("프롬프트 섹션 (Subject · 포즈 · 의상 · 배경 · 조명 · 카메라)", open=True):
@@ -739,19 +741,19 @@ def main():
                         value=combine_t5_prompt_sections(
                             SUBJECT, FOOT, LEG, FACE, BODY, ARM, HAND,
                             FOOTWEAR, LEGWEAR, BOTTOM, TOP, HEADWEAR, ARMWEAR,
-                            HEAD, SETTING, LIGHTING, CAMERA,
+                            HEAD, SETTING, LIGHTING, CAMERA, POSITIVE,
                         ),
                         lines=5,
                         interactive=True,
-                        info="Subject → 포즈·의상·머리 → Setting → Lighting → Camera 순으로 자동 결합됩니다.",
+                        info="Subject → 포즈·의상·머리 → Setting → Lighting → Camera → Positive 순으로 자동 결합됩니다.",
                     )
-                with gr.Accordion("포지티브 프롬프트 (Positive · CLIP에만 사용, T5 제외)", open=False):
+                with gr.Accordion("포지티브 프롬프트 (Positive · CLIP · T5 공통 사용)", open=False):
                     positive_box = gr.Textbox(
                         label="포지티브 프롬프트 (Positive Prompt)",
                         value=POSITIVE,
                         lines=2,
                         placeholder="예: masterpiece, best quality, highly detailed",
-                        info="CLIP 인코딩에만 쓰입니다. T5 프롬프트에는 포함되지 않습니다.",
+                        info="CLIP과 T5 프롬프트 모두에 포함됩니다.",
                     )
                 with gr.Accordion("네거티브 프롬프트 (Negative · True CFG)", open=False):
                     negative_box = gr.Textbox(
