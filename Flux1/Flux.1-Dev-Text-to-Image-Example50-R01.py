@@ -14,15 +14,15 @@ import gradio as gr
 
 # Default values for each prompt section
 # CLIP는 ~77토큰(Subject+Positive), 네거티브도 동일 한도. T5는 섹션 합+Positive가 max_sequence_length(기본 512) 이내여야 함.
-SUBJECT = "Full-length vertical shot, head to bare feet and ten toes fully in frame on the pool deck, young skinny Korean woman, barefoot with feet kept together side by side, no gap between feet, tiny bikini."
+SUBJECT = "Full-length vertical shot, head to bare feet and ten toes fully in frame on the pool deck, young skinny Korean woman, body turned slightly sideways in a gentle three-quarter angle, bare feet kept together side by side, one knee slightly bent, tiny bikini."
 
-FOOT = "Both bare feet gathered and closed together on the deck, side by side parallel, ankles touching or nearly touching, feet never spread apart, toes and soles visible, lower frame, deck texture, not cropped."
+FOOT = "Both bare feet gathered and closed together on the deck, side by side parallel, ankles touching or nearly touching, feet never spread apart, toes and soles visible, not cropped."
 
 LEG = "Feet stay gathered side by side; weight on one straight supporting leg; the other knee bent only a little, minimal flex, soft subtle contrapposto; thighs and knees close, no stride or wide stance."
 
-FACE = "She has a fair, clear complexion with soft idol aesthetic. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her mouth is closed with a soft slight smile, lips gently curved, warm innocent look, looking directly at the camera. She has long wavy voluminous jet-black hair with beautiful soft waves and curls, draping naturally and calmly over her shoulders and back."
+FACE = "She has a fair, clear complexion with soft idol aesthetic. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her mouth is closed with a soft slight smile, warm innocent look, looking directly at the camera. She has long wavy voluminous jet-black hair with beautiful soft waves and curls, draping naturally and calmly over her shoulders and back."
 
-BODY = "Standing upright on the deck, feet together, one knee subtly flexed while feet remain closed, hips tilted slightly to one side, weight on one leg, subtle S-curve, full legs and feet visible, slight three-quarter turn, slim hourglass waist."
+BODY = "Standing upright on the deck, feet together, torso and hips angled slightly to the side toward a soft three-quarter view, shoulders not square-on to the camera, one knee subtly flexed while feet remain closed, hips tilted slightly, weight on one leg, subtle S-curve, slim hourglass waist."
 
 ARM = "Arms relaxed straight down at her sides."
 
@@ -32,7 +32,7 @@ FOOTWEAR = ""
 
 LEGWEAR = ""
 
-BOTTOM = "Tiny sky-blue thong bikini bottom, pink trim, string ties at hips."
+BOTTOM = "Tiny sky-blue thong bikini bottom, pink trim, string ties at waist."
 
 TOP = "Tiny sky-blue triangle bikini top, pink trim, thin ties at neck and back."
 
@@ -40,15 +40,15 @@ HEADWEAR = ""
 
 ARMWEAR = ""
 
-HEAD = "Chin lifted slightly upward, subtle proud neck line, head relaxed; hair on shoulders."
+HEAD = "Chin lifted slightly upward, head relaxed."
 
-SETTING = "Hotel pool, blue water, pool deck, loungers, palms, bright sunny day."
+SETTING = "Hotel pool, blue water, pool deck, loungers, palms."
 
-LIGHTING = "Bright sun shining in front of the subject, strong frontal daylight, face and torso fully front-lit, even exposure head to bare feet."
+LIGHTING = "Bright sun shining from straight from the camera to the subject, strong frontal daylight, face and torso fully front-lit, even exposure head to bare feet."
 
-CAMERA = "Wide establishing shot, camera stepped well back, entire figure head to toes in frame with margin, feet and deck at bottom of image, camera height at chest level, soft bokeh."
+CAMERA = "Wide establishing shot, camera stepped well back, entire figure head to toes in frame with margin, feet and deck at bottom of image, camera height at waist level, soft bokeh."
 
-POSITIVE = "8k, photorealistic, sharp, perfect anatomy, ten fingers, ten toes, well formed fingers and toes."
+POSITIVE = "8k, photorealistic, perfect anatomy, ten fingers, ten toes, well formed fingers and toes."
 
 NEGATIVE = "blurry, lowres, deformed, bad anatomy, watermark, text, extra limbs, cropped feet, missing toes, ankles cut off, feet out of frame, knee-up or waist-up crop, walking mid-step, wide stance, legs wide apart, feet far apart, heavy backlight, silhouette, underexposed face"
 
