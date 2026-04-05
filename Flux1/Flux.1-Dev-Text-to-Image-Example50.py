@@ -13,43 +13,44 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-SUBJECT = "A full body photography of a beautiful young skinny Korean woman standing at a luxury hotel swimming pool wearing a tiny sky blue bikini with pink trim, bare feet on the poolside deck."
+# CLIP는 ~77토큰(Subject+Positive), 네거티브도 동일 한도. T5는 섹션 합+Positive가 max_sequence_length(기본 512) 이내여야 함.
+SUBJECT = "Full-length vertical shot, head to bare feet and ten toes fully in frame on the pool deck, young skinny Korean woman, luxury hotel pool, barefoot with feet together, tiny bikini."
 
-FOOT = "Both bare feet pressed firmly together, both feet entirely in frame, not cropped at all, feet fully visible at the very bottom of the image, toes clearly visible, extra empty space below the feet."
+FOOT = "Both bare feet gathered on the deck inside the image, side by side, toes and soles clearly visible, lower part of the frame, deck texture around feet, not cropped or hidden by legs."
 
-LEG = "One leg straight and bearing the weight, the other leg slightly bent at the knee and relaxed, knees close together, thighs together, no gap between legs."
+LEG = "Both legs straight and close together, feet gathered, thighs together, even weight on both feet, no staggered or split stance."
 
-FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long wavy voluminous jet-black hair with beautiful soft waves and curls, draping naturally and calmly over her shoulders and back."
+FACE = "She has a fair, clear complexion with soft idol aesthetic. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her mouth is closed with a soft slight smile, lips gently curved, warm innocent look, looking directly at the camera. She has long wavy voluminous jet-black hair with beautiful soft waves and curls, draping naturally and calmly over her shoulders and back."
 
-BODY = "Standing upright with both feet together, body turned very slightly to a three-quarter angle, hips shifted and tilted to one side creating a natural subtle S-curve, waist and hip line clearly visible, slender hourglass silhouette, posture tall and elegant, shoulders back."
+BODY = "Standing upright with both feet together on the deck, full legs and feet visible, slight three-quarter turn, subtle hip tilt and S-curve, slim hourglass waist."
 
-ARM = "Both arms hanging naturally and relaxed at her sides."
+ARM = "Arms relaxed straight down at her sides."
 
-HAND = "Both hands hanging gracefully at her sides with fingers lightly extended."
+HAND = "Hands relaxed, fingers softly extended."
 
 FOOTWEAR = ""
 
 LEGWEAR = ""
 
-BOTTOM = "Wearing a very tiny sky blue thong bikini bottom with pink trim edges, minimal coverage, pink string ties at the hips."
+BOTTOM = "Tiny sky-blue thong bikini bottom, pink trim, string ties at hips."
 
-TOP = "Wearing a very tiny sky blue triangle bikini top with pink trim edges, minimal coverage, thin pink string ties at the neck and back."
+TOP = "Tiny sky-blue triangle bikini top, pink trim, thin ties at neck and back."
 
 HEADWEAR = ""
 
 ARMWEAR = ""
 
-HEAD = "Head tilted very slightly to one side, gentle and relaxed posture, hair draping naturally over shoulders."
+HEAD = "Chin lifted slightly upward, subtle proud neck line, head relaxed; hair on shoulders."
 
-SETTING = "Luxury hotel outdoor swimming pool, glowing blue pool water, elegant poolside deck, sun loungers and palm trees in the background, bright sunny day."
+SETTING = "Hotel pool, blue water, pool deck, loungers, palms, bright sunny day."
 
-LIGHTING = "Brilliant direct sunlight from the front, entire body from head to bare feet completely and evenly flooded with bright sunlight."
+LIGHTING = "Bright sun shining from straight in front of the camera onto the subject, strong frontal daylight, face and torso fully front-lit, even exposure head to bare feet, no backlight or rim-only light, toes visible."
 
-CAMERA = "Full body shot, entire body from head to bare feet fully in frame, feet and toes completely visible and not cropped at all, generous empty space below the feet, low camera angle slightly below waist level, soft bokeh background."
+CAMERA = "Wide establishing shot, camera stepped well back, entire figure head to toes in frame with margin, feet and deck at bottom of image, camera height at chest level, soft bokeh, not close-up, not knee-up or waist-up crop."
 
-POSITIVE = "8k, high quality, realistic, sharp focus, perfect anatomy, ten fingers, ten toes, beautiful toes, no extra toes, no extra fingers."
+POSITIVE = "8k, photorealistic, sharp, wide full-body shot, feet and toes in frame, front sunlight on subject, ten fingers, ten toes, beautiful toes, well formed fingers and toes."
 
-NEGATIVE = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, extra toes, feet cropped, missing feet, missing toes, fused toes, webbed toes, distorted toes, one leg forward, staggered legs, walking pose, weight shift, legs apart, stepping, feet apart, spread legs, gap between feet, gap between legs, wide stance."
+NEGATIVE = "blurry, lowres, deformed, bad anatomy, watermark, text, extra limbs, cropped feet, missing toes, ankles cut off, feet out of frame, knee-up or waist-up crop, walking, legs apart, feet apart, staggered stance, split stance, heavy backlight, silhouette, underexposed face"
 
 
 def make_image_grid(images: list) -> Image.Image:

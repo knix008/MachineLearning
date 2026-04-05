@@ -13,43 +13,48 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-SUBJECT = "A full body photography of a beautiful young skinny Korean woman standing at a luxury hotel swimming pool wearing a tiny sky blue bikini with pink trim, bare feet on the poolside deck."
+# CLIP는 ~77토큰(Subject+Positive), 네거티브도 동일 한도. T5는 섹션 합+Positive가 max_sequence_length(기본 512) 이내여야 함.
+SUBJECT = "Full-length photo, young skinny Korean woman with soft idol aesthetic at a luxury hotel pool, tiny sky-blue bikini with pink trim, barefoot on deck, full figure head to toes visible in frame."
 
-FOOT = "Both bare feet pressed firmly together, both feet entirely in frame, not cropped at all, feet fully visible at the very bottom of the image, toes clearly visible, extra empty space below the feet."
+FOOT = (
+    "Bare feet together on the deck, toes visible, soles down, not cropped or hidden."
+)
 
-LEG = "One leg straight and bearing the weight, the other leg slightly bent at the knee and relaxed, knees close together, thighs together, no gap between legs."
+LEG = (
+    "Weight on one straight leg, other knee slightly bent, thighs together, no leg gap."
+)
 
 FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long wavy voluminous jet-black hair with beautiful soft waves and curls, draping naturally and calmly over her shoulders and back."
 
-BODY = "Standing upright with both feet together, body turned very slightly to a three-quarter angle, hips shifted and tilted to one side creating a natural subtle S-curve, waist and hip line clearly visible, slender hourglass silhouette, posture tall and elegant, shoulders back."
+BODY = "Upright, slight three-quarter turn, subtle hip tilt and S-curve, slim hourglass waist."
 
-ARM = "Both arms hanging naturally and relaxed at her sides."
+ARM = "Arms relaxed straight down at her sides."
 
-HAND = "Both hands hanging gracefully at her sides with fingers lightly extended."
+HAND = "Hands relaxed, fingers softly extended."
 
 FOOTWEAR = ""
 
 LEGWEAR = ""
 
-BOTTOM = "Wearing a very tiny sky blue thong bikini bottom with pink trim edges, minimal coverage, pink string ties at the hips."
+BOTTOM = "Tiny sky-blue thong bikini bottom, pink trim, string ties at hips."
 
-TOP = "Wearing a very tiny sky blue triangle bikini top with pink trim edges, minimal coverage, thin pink string ties at the neck and back."
+TOP = "Tiny sky-blue triangle bikini top, pink trim, thin ties at neck and back."
 
 HEADWEAR = ""
 
 ARMWEAR = ""
 
-HEAD = "Head tilted very slightly to one side, gentle and relaxed posture, hair draping naturally over shoulders."
+HEAD = "Head tilted slightly, relaxed; hair on shoulders."
 
-SETTING = "Luxury hotel outdoor swimming pool, glowing blue pool water, elegant poolside deck, sun loungers and palm trees in the background, bright sunny day."
+SETTING = "Hotel pool, blue water, pool deck, loungers, palms, bright sunny day."
 
-LIGHTING = "Brilliant direct sunlight from the front, entire body from head to bare feet completely and evenly flooded with bright sunlight."
+LIGHTING = "Bright frontal sunlight, even exposure head to feet."
 
-CAMERA = "Full body shot, entire body from head to bare feet fully in frame, feet and toes completely visible and not cropped at all, generous empty space below the feet, low camera angle slightly below waist level, soft bokeh background."
+CAMERA = "Wide full-body shot, camera stepped back, head-to-toe in frame with margin, feet low in frame on visible deck, eye-level, soft bokeh; not knee-up or waist-up crop."
 
-POSITIVE = "8k, high quality, realistic, sharp focus, perfect anatomy, ten fingers, ten toes, beautiful toes, no extra toes, no extra fingers."
+POSITIVE = "8k, photorealistic, sharp focus, full body in frame, feet and toes visible, correct finger and toe count."
 
-NEGATIVE = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, extra toes, feet cropped, missing feet, missing toes, fused toes, webbed toes, distorted toes, one leg forward, staggered legs, walking pose, weight shift, legs apart, stepping, feet apart, spread legs, gap between feet, gap between legs, wide stance."
+NEGATIVE = "blurry, lowres, deformed, bad anatomy, watermark, text, extra limbs, cropped or missing feet, bad toes, knee-up or waist-up crop, walking, legs apart"
 
 
 def make_image_grid(images: list) -> Image.Image:
@@ -874,7 +879,7 @@ def main():
                         minimum=1.0,
                         maximum=10.0,
                         step=0.5,
-                        value=7.5,
+                        value=3.5,
                         info="프롬프트 준수도. 낮으면 창의적, 높으면 정확. Flux.1 Dev 권장: 3.5~8",
                     )
                     num_inference_steps = gr.Slider(
