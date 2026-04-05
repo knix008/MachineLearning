@@ -175,51 +175,32 @@ def get_available_devices():
 
 
 def print_hardware_info():
-    """Print detailed hardware specifications."""
+    """Print compact hardware summary (CLI)."""
     print("=" * 60)
-    print("하드웨어 사양")
+    print("하드웨어 사양(요약)")
     print("=" * 60)
-
-    print(f"OS: {platform.system()} {platform.release()}")
-    print(f"OS 버전: {platform.version()}")
-    print(f"아키텍처: {platform.machine()}")
-    print(f"Python: {platform.python_version()}")
-    print(f"PyTorch: {torch.__version__}")
-
-    print("-" * 60)
-    print("CPU 정보")
-    print("-" * 60)
-    print(f"프로세서: {platform.processor()}")
-    print(f"물리 코어: {psutil.cpu_count(logical=False)}")
-    print(f"논리 코어: {psutil.cpu_count(logical=True)}")
-
+    print(
+        f"OS: {platform.system()} {platform.release()} ({platform.machine()}) | "
+        f"Python: {platform.python_version()} | PyTorch: {torch.__version__}"
+    )
+    cpu_physical = psutil.cpu_count(logical=False)
+    cpu_logical = psutil.cpu_count(logical=True)
+    print(f"CPU: {cpu_physical} physical / {cpu_logical} logical cores")
     mem = psutil.virtual_memory()
-    print("-" * 60)
-    print("메모리 정보")
-    print("-" * 60)
-    print(f"총 RAM: {mem.total / (1024**3):.1f} GB")
-    print(f"사용 가능: {mem.available / (1024**3):.1f} GB")
-    print(f"사용률: {mem.percent}%")
-
-    print("-" * 60)
-    print("GPU 정보")
-    print("-" * 60)
+    print(
+        f"RAM: {mem.total / (1024**3):.1f} GB (available {mem.available / (1024**3):.1f} GB)"
+    )
     if torch.cuda.is_available():
-        print("CUDA 사용 가능: 예")
-        print(f"CUDA 버전: {torch.version.cuda}")
-        print(f"cuDNN 버전: {torch.backends.cudnn.version()}")
-        for i in range(torch.cuda.device_count()):
-            props = torch.cuda.get_device_properties(i)
-            print(f"GPU {i}: {props.name}")
-            print(f"  - VRAM: {props.total_memory / (1024**3):.1f} GB")
-            print(f"  - Compute Capability: {props.major}.{props.minor}")
-            print(f"  - 멀티프로세서: {props.multi_processor_count}")
+        gpu_count = torch.cuda.device_count()
+        print(f"CUDA: yes | GPUs: {gpu_count} | CUDA: {torch.version.cuda}")
+        if gpu_count > 0:
+            props0 = torch.cuda.get_device_properties(0)
+            vram0 = props0.total_memory / (1024**3)
+            print(f"GPU0: {props0.name} | VRAM: {vram0:.1f} GB")
     elif torch.backends.mps.is_available():
-        print("MPS (Apple Silicon) 사용 가능: 예")
-        print(f"디바이스: {platform.processor()}")
+        print(f"MPS: yes | device: {platform.processor()}")
     else:
-        print("GPU 사용 불가 (CPU 모드)")
-
+        print("Device: CPU only")
     print("=" * 60)
 
 
