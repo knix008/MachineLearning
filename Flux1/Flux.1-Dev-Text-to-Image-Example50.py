@@ -20,7 +20,7 @@ FOOT = "Both bare feet gathered and closed together on the deck, side by side pa
 
 LEG = "Feet stay gathered side by side; weight on one straight supporting leg; the other knee bent only a little, minimal flex, soft subtle contrapposto; thighs and knees close, no stride or wide stance."
 
-FACE = "She has a fair, clear complexion with soft idol aesthetic. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her mouth is closed with a soft slight smile, lips gently curved, warm innocent look, looking directly at the camera. She has long wavy voluminous jet-black hair with beautiful soft waves and curls, draping naturally and calmly over her shoulders and back."
+FACE = "She has a fair, clear complexion with soft idol aesthetic. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her mouth is closed with a soft slight smile, lips gently curved, warm innocent look, looking directly at the camera. She has long wavy voluminous jet-black hair with beautiful soft waves and curls, draping naturally and calmly over her back."
 
 BODY = "Standing upright on the deck, feet together, one knee subtly flexed while feet remain closed, hips tilted slightly to one side, weight on one leg, subtle S-curve, full legs and feet visible, slight three-quarter turn, slim hourglass waist."
 
@@ -40,13 +40,13 @@ HEADWEAR = ""
 
 ARMWEAR = ""
 
-HEAD = "Chin lifted slightly upward, subtle proud neck line, head relaxed; hair on shoulders."
+HEAD = "Chin lifted slightly upward, subtle proud neck line, head relaxed, hair on shoulders."
 
 SETTING = "Hotel pool, blue water, pool deck, loungers, palms, bright sunny day."
 
 LIGHTING = "Bright sun shining in front of the subject, strong frontal daylight, face and torso fully front-lit, even exposure head to bare feet."
 
-CAMERA = "Wide establishing shot, camera stepped well back, entire figure head to toes in frame with margin, feet and deck at bottom of image, camera height at chest level, soft bokeh."
+CAMERA = "Wide establishing shot, camera stepped well back, entire figure head to toes in frame with margin, feet and deck at bottom of image, camera height at waist level, soft bokeh."
 
 POSITIVE = "8k, photorealistic, sharp, perfect anatomy, ten fingers, ten toes, well formed fingers and toes."
 

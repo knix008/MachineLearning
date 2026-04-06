@@ -14,13 +14,13 @@ import gradio as gr
 
 # Default values for each prompt section
 # CLIP는 ~77토큰(Subject+Positive), 네거티브도 동일 한도. T5는 섹션 합+Positive가 max_sequence_length(기본 512) 이내여야 함.
-SUBJECT = "A full body photography of a beautiful young skinny Korean woman with a soft idol aesthetics standing on a casual spring outing in Seoul."
+SUBJECT = "A full body photography of a beautiful young skinny Korean woman with soft idol aesthetics standing on a casual spring outing in Seoul."
 
 FOOT = "Both feet pressed firmly together with ankles touching, inner sides of both feet in contact, toes pointing straight forward, white sneakers clearly visible side by side, feet entirely in frame and not cropped."
 
 LEG = "Both legs straight and pressed firmly together, knees touching, thighs together, no gap between legs."
 
-FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long wavy voluminous jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air."
+FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long wavy voluminous jet-black hair with beautiful soft waves and curls, strands sweeping through the air."
 
 BODY = "Standing perfectly still and upright, both feet and legs together, body facing completely straight toward the camera, chest and torso fully frontal, posture tall and elegant, shoulders back."
 
@@ -30,7 +30,7 @@ HAND = "Both hands hanging gracefully at her sides with fingers lightly extended
 
 FOOTWEAR = "Clean white canvas sneakers, simple and casual."
 
-LEGWEAR = "Bare legs, smooth and fair skin visible as the wind blows the skirt slit open, legs themselves pressed together."
+LEGWEAR = "Bare legs, smooth and fair skin visible through the skirt slit, legs themselves pressed together."
 
 BOTTOM = ""
 
@@ -875,7 +875,7 @@ def main():
                         minimum=1.0,
                         maximum=10.0,
                         step=0.5,
-                        value=7.5,
+                        value=3.5,
                         info="프롬프트 준수도. 낮으면 창의적, 높으면 정확. Flux.1 Dev 권장: 3.5~8",
                     )
                     num_inference_steps = gr.Slider(
