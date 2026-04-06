@@ -14,13 +14,13 @@ import gradio as gr
 
 # Default values for each prompt section
 # CLIP는 ~77토큰(Subject+Positive), 네거티브도 동일 한도. T5는 섹션 합+Positive가 max_sequence_length(기본 512) 이내여야 함.
-SUBJECT = "A full body photography of a beautiful young skinny Korean woman with soft idol aesthetics standing on a casual spring outing in Seoul, wearing a sneeker and a long dress."
+SUBJECT = "A full body photography of a beautiful young skinny Korean woman with soft idol aesthetics standing on a casual spring outing in Seoul."
 
 FOOT = "Both feet pressed firmly together with ankles touching, inner sides of both feet in contact, toes pointing straight forward, white sneakers clearly visible side by side, feet entirely in frame and not cropped."
 
 LEG = "Both legs straight and pressed firmly together, knees touching, thighs together, no gap between legs."
 
-FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious in the eyes, but her mouth is neutral and relaxed with lips softly closed, looking directly at the camera. She has long wavy voluminous jet-black hair with beautiful soft waves and curls, hair entirely on the back not draped forward over the chest or in front of the body."
+FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious in the eyes, with a faint soft smile and lips gently closed, looking directly at the camera. She has long wavy voluminous jet-black hair with beautiful soft waves and curls, hair entirely on the back."
 
 BODY = "Standing perfectly still and upright, both feet and legs together, body facing completely straight toward the camera, chest and torso fully frontal, posture tall and elegant, shoulders back."
 
@@ -34,7 +34,7 @@ LEGWEAR = "Bare legs, smooth and fair skin visible through the skirt slit, legs 
 
 BOTTOM = ""
 
-TOP = "Dark navy chiffon one-piece dress with thin spaghetti straps, simple neckline, bare shoulders and arms, mostly opaque with only a slight translucency, densely scattered tiny cherry blossom print in soft pink and white, fitted waist, flowing A-line skirt with a side slit slightly opened by a very calm light breeze, skirt hem and fabric lifted only a little on one side, subtle flutter, revealing the bare leg while both legs remain firmly pressed together, casual spring outing style."
+TOP = "Dark navy chiffon long one-piece dress with thin spaghetti straps, simple neckline, bare shoulders and arms, mostly opaque with only a slight translucency, densely scattered tiny cherry blossom print in soft pink and white, fitted waist, flowing A-line skirt with a side slit slightly opened by a very calm light breeze, skirt hem and fabric lifted only a little on one side, subtle flutter, revealing the bare leg while both legs remain firmly pressed together."
 
 HEADWEAR = ""
 
