@@ -14,13 +14,13 @@ import gradio as gr
 
 # Default values for each prompt section
 # CLIP는 ~77토큰(Subject+Positive), 네거티브도 동일 한도. T5는 섹션 합+Positive가 max_sequence_length(기본 512) 이내여야 함.
-SUBJECT = "A full body photography of a beautiful young skinny Korean woman with soft idol aesthetics standing on a casual spring outing in Seoul."
+SUBJECT = "A full body photography of a beautiful young skinny Korean woman with soft idol aesthetics standing on a casual spring outing in Seoul, wearing a sneeker and a long dress."
 
 FOOT = "Both feet pressed firmly together with ankles touching, inner sides of both feet in contact, toes pointing straight forward, white sneakers clearly visible side by side, feet entirely in frame and not cropped."
 
 LEG = "Both legs straight and pressed firmly together, knees touching, thighs together, no gap between legs."
 
-FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long wavy voluminous jet-black hair with beautiful soft waves and curls, draped to her back."
+FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious in the eyes, but her mouth is neutral and relaxed with lips softly closed, looking directly at the camera. She has long wavy voluminous jet-black hair with beautiful soft waves and curls, hair entirely on the back not draped forward over the chest or in front of the body."
 
 BODY = "Standing perfectly still and upright, both feet and legs together, body facing completely straight toward the camera, chest and torso fully frontal, posture tall and elegant, shoulders back."
 
@@ -34,23 +34,23 @@ LEGWEAR = "Bare legs, smooth and fair skin visible through the skirt slit, legs 
 
 BOTTOM = ""
 
-TOP = "Dark navy chiffon one-piece dress with thin spaghetti straps, simple neckline, bare shoulders and arms, mostly opaque with only a slight translucency, densely scattered tiny cherry blossom print in soft pink and white, fitted waist, flowing A-line skirt with a side slit parted by a gentle breeze to one side revealing the bare leg, skirt hem lifted softly by the wind to one side only while both legs remain firmly pressed together."
+TOP = "Dark navy chiffon one-piece dress with thin spaghetti straps, simple neckline, bare shoulders and arms, mostly opaque with only a slight translucency, densely scattered tiny cherry blossom print in soft pink and white, fitted waist, flowing A-line skirt with a side slit slightly opened by a very calm light breeze, skirt hem and fabric lifted only a little on one side, subtle flutter, revealing the bare leg while both legs remain firmly pressed together, casual spring outing style."
 
 HEADWEAR = ""
 
 ARMWEAR = ""
 
-HEAD = "Head tilted very slightly to one side, gentle and relaxed posture, hair draping naturally over shoulders."
+HEAD = "Head tilted slightly to one side, gentle and relaxed posture."
 
 SETTING = "Bright spring street in Seoul, cherry blossom trees lining the sidewalk with pink petals falling gently, warm sunny day, clean pavement."
 
 LIGHTING = "Bright even spring daylight, soft frontal natural light, face clearly and brightly lit, no harsh shadows."
 
-CAMERA = "Full body shot, entire body from head to feet fully in frame, feet and sneakers not cropped, eye level angle, subject facing camera, sharp focus, soft bokeh background."
+CAMERA = "Full body shot, entire body from head to feet fully in frame, feet and sneakers not cropped, waist level angle, subject facing camera, sharp focus, soft bokeh background."
 
 POSITIVE = "8k, high quality, realistic, detailed, sharp focus, perfect anatomy, ten fingers."
 
-NEGATIVE = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, one leg forward, staggered legs, walking pose, weight shift, legs apart, stepping, feet apart, spread legs, gap between feet, gap between legs, wide stance."
+NEGATIVE = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, one leg forward, staggered legs, walking pose, weight shift, legs apart, stepping, feet apart, spread legs, gap between feet, gap between legs, wide stance, smile, smiling, grin, grinning, laugh, laughing, cheerful expression, happy mouth, teeth showing in a smile."
 
 
 def make_image_grid(images: list) -> Image.Image:
@@ -674,7 +674,7 @@ def main():
                         label="4. 얼굴/외모 (Face)",
                         value=FACE,
                         lines=2,
-                        placeholder="예: fair complexion, blue contact lenses, soft smile",
+                        placeholder="예: fair complexion, blue contact lenses, neutral mouth no smile",
                         info="얼굴, 피부, 눈, 표정, 머리카락 등을 설명합니다.",
                     )
                     prompt_body = gr.Textbox(
@@ -875,7 +875,7 @@ def main():
                         minimum=1.0,
                         maximum=10.0,
                         step=0.5,
-                        value=3.5,
+                        value=7.5,
                         info="프롬프트 준수도. 낮으면 창의적, 높으면 정확. Flux.1 Dev 권장: 3.5~8",
                     )
                     num_inference_steps = gr.Slider(
