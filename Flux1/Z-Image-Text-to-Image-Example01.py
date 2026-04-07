@@ -768,7 +768,7 @@ def main():
                         minimum=1,
                         maximum=50,
                         step=1,
-                        value=25, # 50 for original code.
+                        value=50, # 50 for original code.
                         info="공식 권장 28–50. 기본 50 (README 예제와 동일, 품질 우선).",
                     )
 
