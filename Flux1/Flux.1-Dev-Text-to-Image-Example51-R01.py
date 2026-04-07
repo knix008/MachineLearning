@@ -34,7 +34,7 @@ LEGWEAR = "Bare legs, smooth and fair skin visible through the skirt slit, legs 
 
 BOTTOM = ""
 
-TOP = "Dark navy chiffon long one-piece dress with thin spaghetti straps, simple neckline, bare shoulders and arms, mostly opaque with only a slight translucency, densely scattered tiny cherry blossom print in soft pink and white, fitted waist, flowing A-line skirt with a side slit slightly opened by a very calm light breeze, skirt hem and fabric lifted only a little on one side, subtle flutter, revealing the bare leg while both legs remain firmly pressed together."
+TOP = "Long dark navy chiffon long one-piece dress with thin spaghetti straps, simple neckline, bare shoulders and arms, mostly opaque with only a slight translucency, densely scattered tiny cherry blossom print in soft pink and white, fitted waist, flowing A-line skirt with a side slit slightly opened by a very calm light breeze, skirt hem and fabric lifted only a little on one side, subtle flutter, revealing the bare leg while both legs remain firmly pressed together."
 
 HEADWEAR = ""
 
