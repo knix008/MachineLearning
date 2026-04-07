@@ -203,6 +203,31 @@ def get_device_and_dtype():
     return device, dtype
 
 
+def get_device_tag_for_filename(device: str) -> str:
+    """Return a human-readable device tag for output filename."""
+    if device == "cuda" and torch.cuda.is_available():
+        try:
+            current_idx = torch.cuda.current_device()
+            gpu_name = torch.cuda.get_device_name(current_idx).strip()
+            props = torch.cuda.get_device_properties(current_idx)
+            vram_gb = props.total_memory / (1024**3)
+            vram_tag = f"{vram_gb:.1f}".rstrip("0").rstrip(".") + "GB"
+            # Keep the original GPU name as much as possible, but avoid path-breaking chars.
+            clean_name = re.sub(r"\bgeforce\b", "", gpu_name, flags=re.IGNORECASE)
+            clean_name = (
+                clean_name.replace("/", "-")
+                .replace(":", "-")
+                .replace(" ", "_")
+                .strip("_- ")
+            )
+            return f"{clean_name}_{vram_tag}"
+        except Exception:
+            return "CUDA"
+    if device == "mps":
+        return "MPS"
+    return str(device).upper()
+
+
 # Global variables
 DEVICE, DTYPE = get_device_and_dtype()
 pipe = None
@@ -444,8 +469,9 @@ def generate_image(
         elapsed = time.time() - start_time
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         script_name = os.path.splitext(os.path.basename(__file__))[0]
+        device_tag = get_device_tag_for_filename(DEVICE)
         filename = (
-            f"{script_name}_{timestamp}_{DEVICE.upper()}_{width}x{height}"
+            f"{script_name}_{timestamp}_{device_tag}_{width}x{height}"
             f"_gs{guidance_scale}_step{steps}_cfgnorm{cfg_normalization}_seed{int(seed)}.png"
         )
 
@@ -737,7 +763,7 @@ def main():
                         minimum=1,
                         maximum=50,
                         step=1,
-                        value=50,
+                        value=25, # 50 for original code.
                         info="공식 권장 28–50. 기본 50 (README 예제와 동일, 품질 우선).",
                     )
 
