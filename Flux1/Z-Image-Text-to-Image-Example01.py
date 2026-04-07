@@ -381,6 +381,7 @@ def generate_image(
     seed,
     cfg_normalization,
     max_sequence_length,
+    image_format,
     progress=gr.Progress(track_tqdm=True),
 ):
     global pipe
@@ -470,14 +471,18 @@ def generate_image(
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         script_name = os.path.splitext(os.path.basename(__file__))[0]
         device_tag = get_device_tag_for_filename(DEVICE)
+        ext = "jpg" if image_format == "JPEG" else "png"
         filename = (
             f"{script_name}_{timestamp}_{device_tag}_{width}x{height}"
-            f"_gs{guidance_scale}_step{steps}_cfgnorm{cfg_normalization}_seed{int(seed)}.png"
+            f"_gs{guidance_scale}_step{steps}_cfgnorm{cfg_normalization}_seed{int(seed)}.{ext}"
         )
 
         print(f"이미지 생성 완료! 소요 시간: {elapsed:.1f}초")
         print(f"이미지가 저장되었습니다 : {filename}")
-        image.save(filename)
+        if image_format == "JPEG":
+            image.save(filename, format="JPEG", quality=100, subsampling=0)
+        else:
+            image.save(filename)
 
         progress(1.0, desc="완료!")
         status_tail = f" | {trunc_short}" if trunc_short else ""
@@ -798,6 +803,12 @@ def main():
 
                 gr.Markdown("---")
                 gr.Markdown("### 이미지 생성")
+                image_format = gr.Radio(
+                    label="이미지 포맷",
+                    choices=["JPEG", "PNG"],
+                    value="JPEG",
+                    info="JPEG: 용량 작음 (권장), PNG: 무손실",
+                )
                 generate_btn = gr.Button("이미지 생성", variant="primary", size="lg")
                 output_image = gr.Image(label="생성된 이미지", height=700)
                 output_message = gr.Textbox(label="상태", interactive=False)
@@ -850,6 +861,7 @@ def main():
                 seed,
                 cfg_normalization,
                 max_sequence_length,
+                image_format,
             ],
             outputs=[output_image, output_message],
         )
