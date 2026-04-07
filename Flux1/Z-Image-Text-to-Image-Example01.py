@@ -39,7 +39,7 @@ HEADWEAR = ""
 
 ARMWEAR = ""
 
-HEAD = "Head tilted slightly to one side, gentle and relaxed posture."
+HEAD = "Head tilted very slightly to one side, gentle and relaxed posture."
 
 SETTING = "Bright spring street in Seoul, cherry blossom trees lining the sidewalk with pink petals falling gently, warm sunny day, clean pavement."
 
