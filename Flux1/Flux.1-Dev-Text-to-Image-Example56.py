@@ -55,7 +55,7 @@ LIGHTING = "Very bright indoor lighting, warm white overhead lights fully on, en
 
 CAMERA = "Wide full-body shot, camera far from subject, long shot distance, subject appears small within the frame, wide room visible, waist level angle, slight upward tilt, elongated leg perspective, head to toe with ample margin on all sides, bare feet fully visible."
 
-POSITIVE = "8k, photorealistic, sharp focus, perfect anatomy, ten fingers, ten toes, full body, no extra limbs, well formed fingers and toes."
+POSITIVE = "8k, photorealistic, sharp focus, perfect anatomy, ten fingers, ten toes, no extra limbs, well formed fingers and toes, beautiful fingers and toes."
 
 NEGATIVE = "Blurry, low quality, deformed, bad anatomy, extra limbs, watermark, text, extra fingers, awkward pose, twisted torso, slouching, walking, running, sitting, cropped feet, feet out of frame, dark, dim, underexposed."
 
