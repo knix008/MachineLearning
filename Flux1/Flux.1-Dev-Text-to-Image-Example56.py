@@ -23,9 +23,9 @@ T5_MODEL_MAX_LENGTH = 512
 
 SUBJECT = "Full-body portrait photography of a young beautiful skinny Korean woman with a soft idol look, standing on the floor, relaxed natural pose with bare feet, indoors in a bright modern bedroom."
 
-FOOT = "Both bare feet pressed together, inner edges of feet touching, no gap between feet, both nearly facing forward with only a very slight angle, no cropping of feet, full bare feet in frame."
+FOOT = "Both bare feet placed side by side and parallel, inner edges of both feet touching, toes pointing straight forward, feet never crossed or overlapping, no gap between feet, full bare feet in frame, not cropped."
 
-LEG = "One leg straight bearing body weight, other knee softly bent, feet remain together, subtle hip tilt from weight shift."
+LEG = "One leg straight bearing body weight, other knee softly bent, both feet remain side by side and parallel never crossed, subtle hip tilt from weight shift."
 
 FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is soft, relaxed and natural with a gentle gaze toward the camera. She has long wavy voluminous jet-black hair with beautiful soft waves and curls."
 
@@ -53,11 +53,11 @@ SETTING = "Bright modern bedroom, blue floral wallpaper covering the walls, deli
 
 LIGHTING = "Very bright indoor lighting, warm white overhead lights fully on, entire room brightly lit, face and body evenly and brightly illuminated."
 
-CAMERA = "Wide full-body shot, camera far from subject, long shot distance, subject appears small within the frame, wide room visible, waist level angle, slight upward tilt, elongated leg perspective, head to toe with ample margin on all sides, bare feet fully visible."
+CAMERA = "Wide full-body shot, waist level angle, slight upward tilt, elongated leg perspective, head to toe with ample margin on all sides, bare feet fully visible."
 
 POSITIVE = "8k, photorealistic, sharp focus, perfect anatomy, ten fingers, ten toes, no extra limbs, well formed fingers and toes, beautiful fingers and toes."
 
-NEGATIVE = "Blurry, low quality, deformed, bad anatomy, extra limbs, watermark, text, extra fingers, awkward pose, twisted torso, slouching, walking, running, sitting, cropped feet, feet out of frame, dark, dim, underexposed."
+NEGATIVE = "Blurry, low quality, deformed, bad anatomy, extra limbs, watermark, text, extra fingers, awkward pose, twisted torso, slouching, walking, running, sitting, cropped feet, feet out of frame, dark, dim, underexposed, crossed feet, crossed legs, one foot in front of the other, feet overlapping, feet apart, wide stance, gap between feet."
 
 
 def make_image_grid(images: list) -> Image.Image:
