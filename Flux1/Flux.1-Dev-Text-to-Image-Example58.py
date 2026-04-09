@@ -23,19 +23,19 @@ import gradio as gr
 # CLIP ~77토큰(Subject+Positive), 네거티브 동일. T5는 FLUX.1-dev 기준 최대 512토큰(모델·diffusers 한도, 초과 시 잘림).
 T5_MODEL_MAX_LENGTH = 512
 
-SUBJECT = "Upper-body portrait of a young beautiful Korean female astronaut in a white space suit standing on the surface of the Moon, Korean flag already planted beside her, face clearly and fully visible."
+SUBJECT = "A full-body portrait of a young korean skinny woman with a soft idol aesthetic, lying in a white vintage-style bathtub filled with clear water and scattered pink and red rose petals."
 
 FOOT = ""
 
 LEG = ""
 
-FACE = "Young beautiful Korean woman, fair clear complexion, bright confident eyes wearing a striking blue contact lenses, determined and proud expression, face fully visible inside the open helmet, short hair tucked neatly inside the suit collar."
+FACE = "She has dark hair tied up in a loose bun, with soft bangs framing her face. She is wearing a striking bright blue contact lenses. Her expression is innocent and curious, looking directly at the camera."
 
-BODY = "Body facing the camera, upright proud heroic posture, shoulders back."
+BODY = "Lying in the bathtub, full figure visible, elegant and tranquil posture."
 
-ARM = "Both arms relaxed and hanging naturally at sides, left arm clearly visible showing the Taegukgi patch on the upper arm."
+ARM = "One arm raised with hand reaching up toward her hair, other arm resting along the side of the bathtub with hand placed on her leg."
 
-HAND = "Both gloved hands relaxed at sides, fingers gently closed."
+HAND = "One hand gently touching her hair, other hand resting softly on her leg."
 
 FOOTWEAR = ""
 
@@ -43,23 +43,23 @@ LEGWEAR = ""
 
 BOTTOM = ""
 
-TOP = "Realistic near-future EVA spacesuit, white and light gray pressurized suit with segmented joints at shoulders and elbows, visible suit seams and pressure layers, life support backpack attached to the back, mission patch on chest, realistic practical design similar to Axiom or Artemis suit."
+TOP = "She is wearing a red, strapless wrap that accentuates her figure, with a large bow detail at the front."
 
-HEADWEAR = "Realistic astronaut helmet with visor fully open and raised, hard shell white helmet, clear polycarbonate inner ring frame visible around the face, face completely exposed and clearly visible."
+HEADWEAR = ""
 
-ARMWEAR = "South Korean Taegukgi flag patch prominently sewn on the upper left arm, white rectangular background with red and blue Taeguk symbol and four black trigrams, patch clearly readable."
+ARMWEAR = ""
 
-HEAD = "Head slightly raised with proud and determined gaze toward the camera, face fully visible."
+HEAD = "Head resting comfortably, soft bangs framing her face, loose bun hairstyle."
 
-SETTING = "Barren gray lunar surface, fine dust and craters, pitch black sky filled with bright stars, Earth clearly visible in the distant background as a large vivid blue and white marble, Earth prominently placed in the upper portion of the frame."
+SETTING = "The bathtub is placed in an outdoor setting, surrounded by a pebbled stone floor with a mix of white and gray stones. A golden faucet and shower handle are attached to the wall next to the bathtub, adding an elegant touch. Green foliage slightly enters the frame from the upper right, enhancing the natural atmosphere."
 
-LIGHTING = "Harsh directional sunlight from the side casting sharp shadows on the lunar surface, deep black shadows, high contrast, brilliant highlights on white suit."
+LIGHTING = "The lighting is soft and natural, creating a serene and romantic mood."
 
-CAMERA = "Upper-body portrait shot, framed from waist to above head, face prominently centered and fully visible, left arm visible to show Taegukgi patch clearly, Korean flag visible beside her, heroic low angle, starry black sky and Earth in background."
+CAMERA = "The composition captures her full figure, the bathtub, and the detailed background, emphasizing elegance and tranquility."
 
-POSITIVE = "8k, photorealistic, cinematic, sharp focus, perfect anatomy, dramatic, heroic, highly detailed space suit, face clearly visible and sharp."
+POSITIVE = "8k, photorealistic, sharp focus, highly detailed, cinematic, serene, romantic, ten fingers, ten toes, well formed toes, beautiful toes."
 
-NEGATIVE = "Blurry, low quality, deformed, bad anatomy, watermark, cartoon, illustration, closed visor, covered face, hidden face, masked face, full body shot, legs visible, boots visible, missing Earth, bright sky, blue sky, daytime sky, American flag, US flag, NASA logo, futuristic sci-fi suit, Iron Man suit, fantasy suit."
+NEGATIVE = "Blurry, low quality, deformed, bad anatomy, watermark, text, cartoon, illustration, dark, dim, ugly, distorted."
 
 
 def make_image_grid(images: list) -> Image.Image:

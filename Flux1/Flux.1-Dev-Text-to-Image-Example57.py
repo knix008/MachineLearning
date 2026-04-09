@@ -21,7 +21,7 @@ import gradio as gr
 # CLIP ~77토큰(Subject+Positive), 네거티브 동일. T5는 FLUX.1-dev 기준 최대 512토큰(모델·diffusers 한도, 초과 시 잘림).
 T5_MODEL_MAX_LENGTH = 512
 
-SUBJECT = "Full-body photo of a young beautiful Korean female astronaut in a white space suit standing heroically on the surface of the Moon."
+SUBJECT = "Full-body photo of a young beautiful Korean woman in a white space exploration suit representing South Korea, standing heroically on the surface of the Moon, wearing the Taegukgi Korean flag patch on both arms."
 
 FOOT = "Both boots planted firmly on the lunar surface, wide stable stance, full boots visible in frame, uncropped."
 
@@ -31,7 +31,7 @@ FACE = "Young beautiful Korean woman, fair clear complexion, bright confident ey
 
 BODY = "Body fully facing the camera, upright proud heroic posture, shoulders back, chest open."
 
-ARM = "Both arms relaxed and hanging naturally at sides, left arm clearly visible showing the Taegukgi patch on the upper arm."
+ARM = "Both arms relaxed and hanging naturally at sides, both upper arms clearly visible each showing a South Korean Taegukgi flag patch."
 
 HAND = "Both gloved hands relaxed at sides, fingers gently closed."
 
@@ -41,23 +41,23 @@ LEGWEAR = "Full white pressurized space suit legs with segmented joints."
 
 BOTTOM = "Full white pressurized astronaut suit lower body, thick insulated material."
 
-TOP = "Full white pressurized astronaut suit upper body, NASA-style with mission patches and life support backpack (PLSS) on the back."
+TOP = "Full white pressurized space suit upper body with mission patch on chest, life support backpack on the back."
 
 HEADWEAR = "White astronaut helmet with visor fully open and raised, face completely exposed and clearly visible, helmet frame visible around the face."
 
-ARMWEAR = "South Korean flag patch (Taegukgi) sewn on the upper left arm of the space suit, clearly visible with white background, red and blue Taeguk symbol, and black trigrams."
+ARMWEAR = "South Korean Taegukgi flag patch on each upper arm, white background with red and blue Taeguk symbol and black trigrams."
 
 HEAD = "Head slightly raised with proud and determined gaze toward the camera, face fully visible."
 
-SETTING = "Barren gray lunar surface, fine dust and craters, pitch black sky filled with bright stars, Earth clearly visible in the distant background as a large vivid blue and white marble, Earth prominently placed in the upper portion of the frame."
+SETTING = "Gray lunar surface, black starry sky, Earth visible in background, South Korean Taegukgi flag on a pole planted in the lunar surface beside her."
 
 LIGHTING = "Harsh directional sunlight from the side casting sharp shadows on the lunar surface, deep black shadows, high contrast, brilliant highlights on white suit."
 
-CAMERA = "Wide full-body dramatic shot, low angle looking up slightly, heroic perspective, full astronaut visible, lunar surface in foreground, starry black sky and Earth in background."
+CAMERA = "Wide full-body dramatic shot, low angle looking up slightly, heroic perspective, full astronaut visible, South Korean Taegukgi flag on pole planted in lunar surface visible beside her, lunar surface in foreground, starry black sky and Earth in background."
 
-POSITIVE = "8k, photorealistic, cinematic, sharp focus, perfect anatomy, highly detailed space suit."
+POSITIVE = "8k, photorealistic, cinematic, sharp focus, perfect anatomy, highly detailed space suit, South Korean flag patch on both arms, Taegukgi patch, Korean flag."
 
-NEGATIVE = "Blurry, low quality, deformed, bad anatomy, watermark, text, cartoon, illustration, closed visor, covered face, hidden face, masked face, flag pole, flag in hands, planted flag, missing Earth, bright sky, blue sky, daytime sky."
+NEGATIVE = "Blurry, low quality, deformed, bad anatomy, watermark, cartoon, illustration, closed visor, covered face, hidden face, masked face, flag in hands, missing Earth, bright sky, blue sky, daytime sky, American flag, US flag, NASA logo, NASA patch, NASA insignia, stars and stripes, red white and blue stripes, striped flag, United States flag, Apollo suit, Artemis suit, SpaceX suit."
 
 
 def make_image_grid(images: list) -> Image.Image:
