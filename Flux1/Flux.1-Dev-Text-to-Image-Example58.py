@@ -3,6 +3,8 @@ import os
 # Hub: Windows symlink 안내 숨김, 다운로드 타임아웃 완화 (import diffusers 전에 설정)
 os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
 os.environ.setdefault("HF_HUB_DOWNLOAD_TIMEOUT", "120")
+os.environ["HF_HUB_OFFLINE"] = "1"
+
 
 import re
 import torch
@@ -21,19 +23,19 @@ import gradio as gr
 # CLIP ~77토큰(Subject+Positive), 네거티브 동일. T5는 FLUX.1-dev 기준 최대 512토큰(모델·diffusers 한도, 초과 시 잘림).
 T5_MODEL_MAX_LENGTH = 512
 
-SUBJECT = "Full-body portrait photography of a young beautiful skinny Korean woman with a soft idol look, standing on the floor, relaxed natural pose, bare feet, indoors in a bright modern bedroom."
-r
-FOOT = "Both bare feet pressed together, inner edges of feet touching, no gap between feet, both pointing forward; full bare feet in frame, uncropped."
+SUBJECT = "Upper-body portrait of a young beautiful Korean female astronaut in a white space suit standing on the surface of the Moon, Korean flag already planted beside her, face clearly and fully visible."
 
-LEG = "Weight fully on one straight supporting leg, other knee gently bent with foot still beside the supporting foot, subtle hip tilt from weight shift."
+FOOT = ""
 
-FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is soft, relaxed and natural with a gentle gaze toward the camera. She has long wavy voluminous jet-black hair with beautiful soft waves and curls."
+LEG = ""
 
-BODY = "Body fully facing the camera, front-facing torso, natural weight shift creating subtle hip tilt, clean body contour silhouette visible."
+FACE = "Young beautiful Korean woman, fair clear complexion, bright confident eyes wearing a striking blue contact lenses, determined and proud expression, face fully visible inside the open helmet, short hair tucked neatly inside the suit collar."
 
-ARM = "Both arms relaxed and hanging naturally at sides, no hands on hips, elbows slightly soft, arms close to body."
+BODY = "Body facing the camera, upright proud heroic posture, shoulders back."
 
-HAND = "Both hands hanging naturally at sides, fingers relaxed and gently curved."
+ARM = "Both arms relaxed and hanging naturally at sides, left arm clearly visible showing the Taegukgi patch on the upper arm."
+
+HAND = "Both gloved hands relaxed at sides, fingers gently closed."
 
 FOOTWEAR = ""
 
@@ -41,23 +43,23 @@ LEGWEAR = ""
 
 BOTTOM = ""
 
-TOP = "Short ivory satin slip dress, thin spaghetti straps, ultra-thin semi-sheer silky fabric, fabric clings softly to body, tiny black bra and tiny black thong panties faintly visible through the sheer fabric, hem at mid-thigh, delicate thin gold necklace visible at neckline."
+TOP = "Realistic near-future EVA spacesuit, white and light gray pressurized suit with segmented joints at shoulders and elbows, visible suit seams and pressure layers, life support backpack attached to the back, mission patch on chest, realistic practical design similar to Axiom or Artemis suit."
 
-HEADWEAR = ""
+HEADWEAR = "Realistic astronaut helmet with visor fully open and raised, hard shell white helmet, clear polycarbonate inner ring frame visible around the face, face completely exposed and clearly visible."
 
-ARMWEAR = "Delicate chain bracelet on one wrist."
+ARMWEAR = "South Korean Taegukgi flag patch prominently sewn on the upper left arm, white rectangular background with red and blue Taeguk symbol and four black trigrams, patch clearly readable."
 
-HEAD = "Chin slightly up, soft natural head tilt, hair loosely falling over shoulders."
+HEAD = "Head slightly raised with proud and determined gaze toward the camera, face fully visible."
 
-SETTING = "Bright modern bedroom, large floor-to-ceiling window with soft natural light streaming in, neatly made white bed with pillows visible in background, clean white walls."
+SETTING = "Barren gray lunar surface, fine dust and craters, pitch black sky filled with bright stars, Earth clearly visible in the distant background as a large vivid blue and white marble, Earth prominently placed in the upper portion of the frame."
 
-LIGHTING = "Very bright indoor lighting, warm white overhead lights fully on, entire room brightly lit, face and body evenly and brightly illuminated, no shadows."
+LIGHTING = "Harsh directional sunlight from the side casting sharp shadows on the lunar surface, deep black shadows, high contrast, brilliant highlights on white suit."
 
-CAMERA = "Wide full-body shot, camera far from subject, long shot distance, subject appears small within the frame, wide room visible, waist level angle, slight upward tilt, elongated leg perspective, head to toe with ample margin on all sides, bare feet fully visible, bedroom background with bed and large window clearly visible."
+CAMERA = "Upper-body portrait shot, framed from waist to above head, face prominently centered and fully visible, left arm visible to show Taegukgi patch clearly, Korean flag visible beside her, heroic low angle, starry black sky and Earth in background."
 
-POSITIVE = "8k, photorealistic, sharp focus, perfect anatomy, ten fingers, full body, no extra limbs, no missing limbs, no distorted limbs, well formed fingers, bright exposure, perfect body proportions."
+POSITIVE = "8k, photorealistic, cinematic, sharp focus, perfect anatomy, dramatic, heroic, highly detailed space suit, face clearly visible and sharp."
 
-NEGATIVE = "Blurry, low quality, deformed, bad anatomy, extra limbs, watermark, text, extra fingers, awkward pose, twisted torso, slouching, walking, running, sitting, cropped feet, feet out of frame, dark, dim, underexposed."
+NEGATIVE = "Blurry, low quality, deformed, bad anatomy, watermark, cartoon, illustration, closed visor, covered face, hidden face, masked face, full body shot, legs visible, boots visible, missing Earth, bright sky, blue sky, daytime sky, American flag, US flag, NASA logo, futuristic sci-fi suit, Iron Man suit, fantasy suit."
 
 
 def make_image_grid(images: list) -> Image.Image:
