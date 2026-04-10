@@ -57,7 +57,7 @@ LIGHTING = "The lighting is soft and natural, creating a serene and romantic moo
 
 CAMERA = "The composition captures her full figure, the bathtub, and the detailed background, emphasizing elegance and tranquility."
 
-POSITIVE = "8k, photorealistic, sharp focus, highly detailed, cinematic, serene, romantic, ten fingers, ten toes, well formed toes, beautiful toes."
+POSITIVE = "8k, photorealistic, perfect anatomy, well formed legs, sharp focus, highly detailed, cinematic, serene, romantic, ten fingers, ten toes, well formed toes, beautiful toes."
 
 NEGATIVE = "Blurry, low quality, deformed, bad anatomy, watermark, text, cartoon, illustration, dark, dim, ugly, distorted."
 
