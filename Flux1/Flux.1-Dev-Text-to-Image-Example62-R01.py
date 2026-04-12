@@ -19,7 +19,7 @@ FOOT = "Both feet pressed firmly together, inner edges of both shoes touching, h
 
 LEG = "Both legs fully straight and pressed firmly together, knees touching each other, inner thighs touching, no gap between legs from thigh to ankle, long legs completely closed, not crossing."
 
-FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious with a very subtle soft smile, mouth gently closed, lips together, looking directly at the camera. She has long straight voluminous jet-black hair draping naturally over her shoulders."
+FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious with mouth gently closed, lips together, looking directly at the camera. She has long straight voluminous jet-black hair draping naturally over her shoulders."
 
 BODY = "Weight shifted onto one straight supporting leg with a subtle hip shift, creating a soft S-curve; both legs straight and together; body facing completely straight toward the camera, chest and torso fully frontal."
 
