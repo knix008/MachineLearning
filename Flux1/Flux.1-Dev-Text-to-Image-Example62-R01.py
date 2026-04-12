@@ -17,7 +17,7 @@ SUBJECT = "A full body photography of a beautiful young skinny Korean woman with
 
 FOOT = "Both feet pressed firmly together, inner edges of both shoes touching, heels touching, no gap between feet, feet perfectly parallel side by side, entire shoes fully visible from toe to heel tip."
 
-LEG = "Both legs fully straight and pressed firmly together, knees touching each other, inner thighs touching, no gap between legs from thigh to ankle, legs completely closed, not crossed."
+LEG = "Both legs fully straight and pressed firmly together, knees touching each other, inner thighs touching, no gap between legs from thigh to ankle, long legs completely closed, not crossing."
 
 FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious with a very subtle soft smile, mouth gently closed, lips together, looking directly at the camera. She has long straight voluminous jet-black hair draping naturally over her shoulders."
 
@@ -45,7 +45,7 @@ SETTING = "Bright spring street in Seoul, cherry blossom trees lining the sidewa
 
 LIGHTING = "Bright even spring daylight, soft frontal natural light, face clearly and brightly lit, no harsh shadows."
 
-CAMERA = "Full body shot, head to heel tips fully in frame, extra space above head and below heels, ankle level angle, sharp focus, soft bokeh background."
+CAMERA = "Full body shot, head to heel tips fully in frame, extra space above head and below heels, waist level angle, sharp focus, soft bokeh background."
 
 POSITIVE = "8k, high quality, realistic, perfect anatomy, ten fingers, detailed high heels fully visible, stiletto spike heels clearly shown, full body visible, legs and feet in frame."
 
