@@ -17,7 +17,7 @@ SUBJECT = "A full body photography of a beautiful young skinny Korean woman with
 
 FOOT = "Both feet pressed firmly together, inner edges of both shoes touching, heels touching, no gap between feet, feet perfectly parallel side by side, entire shoes fully visible from toe to heel tip."
 
-LEG = "Both legs fully straight and pressed firmly together, knees touching each other, inner thighs touching, no gap between legs from thigh to ankle, legs completely closed, not crossed."
+LEG = "Both legs fully straight and pressed firmly together, knees touching each other, inner thighs touching, no gap between legs from thigh to ankle, legs completely closed."
 
 FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark black hair. Her expression is innocent and curious with a very subtle soft smile, mouth gently closed, lips together, looking directly at the camera. She has long wavy voluminous jet-black hair with beautiful soft waves and curls."
 
@@ -49,7 +49,7 @@ CAMERA = "Full body shot, head to heel tips fully in frame, extra space above he
 
 POSITIVE = "8k, high quality, realistic, perfect anatomy, ten fingers, detailed high heels fully visible, stiletto spike heels clearly shown, full body visible, legs and feet in frame."
 
-NEGATIVE = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, one leg forward, staggered legs, walking pose, legs apart, feet apart, gap between feet, gap between knees, gap between legs, space between legs, open legs, wide stance, crossed legs, equal weight on both legs, flat silhouette, no hip shift, heels cropped, heel tips hidden, heels not visible, feet cropped, missing feet, missing shoes, shoes cropped, bikini, swimsuit."
+NEGATIVE = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, one leg forward, staggered legs, walking pose, legs apart, feet apart, gap between feet, gap between knees, gap between legs, space between legs, open legs, wide stance, crossed legs, equal weight on both legs, flat silhouette, no hip shift, heels cropped, heel tips hidden, heels not visible, feet cropped, missing feet, missing shoes, shoes cropped, bikini, swimsuit, crossing legs, overlapping legs."
 
 
 def make_image_grid(images: list) -> Image.Image:
