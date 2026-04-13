@@ -15,11 +15,11 @@ import gradio as gr
 # Default values for each prompt section
 SUBJECT = "A full body photography of a beautiful young skinny Korean woman with soft idol aesthetics standing on a casual spring outing in Seoul, wearing black stiletto high heels and a black bodycon mini dress."
 
-FOOT = "Both feet pressed firmly together, inner edges of both shoes touching, heels touching, no gap between feet, feet perfectly parallel side by side, entire shoes fully visible from toe to heel tip."
+FOOT = "Both feet pressed firmly together and touching each other, inner edges of both shoes in full contact, heels touching, toes touching, no gap between feet whatsoever, feet completely closed side by side, both feet parallel and flat on the ground, entire shoes fully visible from toe to heel tip."
 
-LEG = "Both legs fully straight and pressed firmly together, knees touching each other, inner thighs touching, no gap between legs from thigh to ankle, long legs completely closed, not crossing and not overlapping each other."
+LEG = "Both long legs fully straight and pressed firmly together side by side, knees touching each other, inner thighs touching, no gap between legs from thigh to ankle, both legs parallel and side by side, legs completely closed, each leg clearly distinct."
 
-FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is a subtle gentle closed-lip smile, lips softly curved upward, mouth fully closed, teeth not showing, looking directly at the camera. She has long straight voluminous jet-black hair draping naturally over her shoulders."
+FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark black hair. Her expression is innocent and curious, looking directly at the camera. She has long straight voluminous jet-black hair."
 
 BODY = "Weight shifted onto one straight supporting leg with a subtle hip shift, creating a soft S-curve; both legs straight and together, body facing completely straight toward the camera, chest and torso fully frontal."
 
@@ -43,13 +43,13 @@ HEAD = "Head tilted slightly to one side at a very gentle angle, soft and relaxe
 
 SETTING = "Bright spring street in Seoul, cherry blossom trees lining the sidewalk with pink petals falling gently, warm sunny day, clean pavement."
 
-LIGHTING = "Bright even spring daylight, soft frontal natural light, face clearly and brightly lit, no harsh shadows."
+LIGHTING = "Bright even spring daylight, soft frontal natural light, no harsh shadows."
 
 CAMERA = "Full body shot, head to heel tips fully in frame, extra space above head and below heels, waist level angle, sharp focus, soft bokeh background."
 
 POSITIVE = "8k, high quality, realistic, perfect anatomy, ten fingers, detailed high heels fully visible, stiletto spike heels clearly shown, full body visible, legs and feet in frame."
 
-NEGATIVE = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, one leg forward, staggered legs, walking pose, legs apart, feet apart, gap between feet, gap between knees, gap between legs, space between legs, open legs, wide stance, crossed legs, equal weight on both legs, flat silhouette, no hip shift, heels cropped, heel tips hidden, heels not visible, feet cropped, missing feet, missing shoes, shoes cropped, bikini, swimsuit, crossing legs, overlapping legs, open mouth, teeth showing, laughing, wide smile."
+NEGATIVE = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, one leg forward, staggered legs, walking pose, legs apart, feet apart, feet spread, feet separated, gap between feet, gap between knees, gap between legs, space between legs, open legs, wide stance, crossed legs, equal weight on both legs, flat silhouette, no hip shift, heels cropped, heel tips hidden, heels not visible, feet cropped, missing feet, missing shoes, shoes cropped, bikini, swimsuit, crossing legs, overlapping legs, legs overlapping each other, one leg in front of the other, legs not parallel, open mouth, teeth showing, laughing, wide smile."
 
 
 def make_image_grid(images: list) -> Image.Image:
