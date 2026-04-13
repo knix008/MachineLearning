@@ -19,13 +19,13 @@ FOOT = "Both feet pressed firmly together, inner edges of both shoes touching, h
 
 LEG = "Both legs fully straight and pressed firmly together, knees touching each other, inner thighs touching, no gap between legs from thigh to ankle, long legs completely closed."
 
-FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is smiling and cheerful with mouth gently closed, lips together, looking directly at the camera. She has long straight voluminous jet-black hair draping naturally over her shoulders."
+FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is a subtle gentle closed-lip smile, lips softly curved upward, mouth fully closed, teeth not showing, looking directly at the camera. She has long straight voluminous jet-black hair draping naturally over her shoulders."
 
-BODY = "Weight shifted onto one straight supporting leg with a subtle hip shift, creating a soft S-curve; both legs straight and together; body facing completely straight toward the camera, chest and torso fully frontal."
+BODY = "Weight shifted onto one straight supporting leg with a subtle hip shift, creating a soft S-curve; both legs straight and together, body facing completely straight toward the camera, chest and torso fully frontal."
 
 ARM = "Both arms hanging naturally and relaxed at her sides."
 
-HAND = "Both hands hanging gracefully at her sides."
+HAND = ""
 
 FOOTWEAR = "Black pointed-toe stiletto pumps with high-gloss patent leather finish, mirror-like reflective surface clearly visible on the shoes, light and surroundings reflected on the glossy black surface, thin spike heels clearly visible, both shoes entirely visible from toe to heel tip."
 
@@ -39,7 +39,7 @@ HEADWEAR = ""
 
 ARMWEAR = "Delicate gold chain necklace clearly visible at the neckline, delicate gold chain bracelet on one wrist."
 
-HEAD = "Head tilted just slightly to one side at a very gentle angle, soft and relaxed posture."
+HEAD = "Head tilted slightly to one side at a very gentle angle, soft and relaxed posture."
 
 SETTING = "Bright spring street in Seoul, cherry blossom trees lining the sidewalk with pink petals falling gently, warm sunny day, clean pavement."
 
@@ -49,7 +49,7 @@ CAMERA = "Full body shot, head to heel tips fully in frame, extra space above he
 
 POSITIVE = "8k, high quality, realistic, perfect anatomy, ten fingers, detailed high heels fully visible, stiletto spike heels clearly shown, full body visible, legs and feet in frame."
 
-NEGATIVE = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, one leg forward, staggered legs, walking pose, legs apart, feet apart, gap between feet, gap between knees, gap between legs, space between legs, open legs, wide stance, crossed legs, equal weight on both legs, flat silhouette, no hip shift, heels cropped, heel tips hidden, heels not visible, feet cropped, missing feet, missing shoes, shoes cropped, bikini, swimsuit, crossing legs, overlapping legs."
+NEGATIVE = "Blurry, low quality, deformed, bad anatomy, extra limbs, ugly, watermark, text, signature, extra fingers, one leg forward, staggered legs, walking pose, legs apart, feet apart, gap between feet, gap between knees, gap between legs, space between legs, open legs, wide stance, crossed legs, equal weight on both legs, flat silhouette, no hip shift, heels cropped, heel tips hidden, heels not visible, feet cropped, missing feet, missing shoes, shoes cropped, bikini, swimsuit, crossing legs, overlapping legs, open mouth, teeth showing, laughing, wide smile."
 
 
 def make_image_grid(images: list) -> Image.Image:
