@@ -132,7 +132,8 @@ def get_device_and_dtype():
 
 
 # Global variables
-DEVICE, DTYPE = get_device_and_dtype()
+#DEVICE, DTYPE = get_device_and_dtype() # Not runnnable in my pc.
+DEVICE, DTYPE = "cpu", torch.float32
 pipe = None
 interface = None
 
