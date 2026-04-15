@@ -13,7 +13,7 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-SUBJECT = "A full body photography of a beautiful young skinny Korean woman with soft idol aesthetics standing on a sunny beach, wearing a very tiny white thong bikini."
+SUBJECT = "A full body photography of a beautiful young skinny Korean woman with soft idol aesthetics standing on a sunny beach with bare feet, wearing a very small and tiny white thong bikini."
 
 FOOT = "Both bare feet pressed firmly together on the sand, inner edges of both feet touching, heels touching, no gap between feet, feet completely closed side by side, both feet flat on the sand, entire feet fully visible from toes to heels."
 
@@ -37,19 +37,19 @@ TOP = "Very tiny white triangle bikini top with minimal coverage, thin shoulder 
 
 HEADWEAR = ""
 
-ARMWEAR = "Delicate gold chain necklace clearly visible at the neckline, delicate gold chain bracelet on the wrist of the arm hanging at her side."
+ARMWEAR = ""
 
 HEAD = "Head tilted just slightly to one side at a very gentle angle, soft and relaxed posture."
 
-SETTING = "Sunny tropical beach, clear turquoise ocean water in the background, white sandy beach, gentle waves, blue sky with a few light clouds."
+SETTING = "Sunny tropical beach, white sandy beach, blue sky with a few light clouds."
 
-LIGHTING = "Bright warm summer sunlight coming directly from the front, strong frontal light illuminating the entire body evenly, face and body clearly and brightly lit, shadow cast behind her on the sand, no shadows falling on the front of the body."
+LIGHTING = "Bright warm summer sunlight coming directly from the front, strong frontal light illuminating the entire body evenly, face and body clear and bright."
 
-CAMERA = "Full body shot, head to toes fully in frame, extra space above head and below feet, waist level angle, tack-sharp focus on the subject, shallow depth of field with strongly blurred ocean background, 85mm portrait lens at f/1.8."
+CAMERA = "Full body shot, entire body from top of head to tips of toes fully in frame, generous empty space above head and below feet, camera positioned at low angle below knee level pointing slightly upward, subject in perfect tack-sharp focus from head to toes, maximum sharpness throughout the entire subject, every detail crisp and clear, ocean background softly blurred with bokeh, 35mm lens at f/8, feet and toes must be fully visible at the bottom of the frame."
 
-POSITIVE = "8k, high quality, realistic, perfect anatomy, ten fingers, full body visible, legs and bare feet in frame, detailed toes, well formed toes, beautiful fingers and toes."
+POSITIVE = "RAW photo, DSLR, 8k uhd, photorealistic, ultra sharp, tack sharp, in focus, crisp details, high resolution, perfect anatomy, ten fingers, ten toes, beautifully detailed toes, well formed toes."
 
-NEGATIVE = "Blurry, low quality, deformed, bad anatomy, extra limbs, watermark, text, extra fingers, legs apart, wide stance, crossed legs, overlapping legs, walking pose, gap between legs, feet apart, feet cropped, missing feet, arms cropped, dressed, shoes, open mouth, laughing."
+NEGATIVE = "Blurry, blurry subject, out of focus, soft focus, motion blur, unfocused, hazy, low quality, deformed, bad anatomy, extra limbs, watermark, text, extra fingers, legs apart, wide stance, crossed legs, overlapping legs, walking pose, gap between legs, feet apart, feet cropped, missing feet, cut off feet, ankles cropped, partial body, body cut off at bottom, arms cropped, dressed, shoes, open mouth, laughing."
 
 
 def make_image_grid(images: list) -> Image.Image:
@@ -796,7 +796,7 @@ def main():
                     )
                     height = gr.Slider(
                         label="이미지 높이",
-                        minimum=256, maximum=2048, step=32, value=1536,
+                        minimum=256, maximum=2048, step=32, value=1792,
                         info="이미지 높이 (픽셀). 32의 배수.",
                     )
                 with gr.Row():
@@ -807,7 +807,7 @@ def main():
                     )
                     num_inference_steps = gr.Slider(
                         label="추론 스텝",
-                        minimum=10, maximum=50, step=1, value=28,
+                        minimum=10, maximum=50, step=1, value=35,
                         info="생성 단계 수. 높으면 품질 향상, 시간 증가. 권장: 25-40",
                     )
                 with gr.Row():
