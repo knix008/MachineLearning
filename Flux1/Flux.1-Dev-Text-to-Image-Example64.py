@@ -13,7 +13,7 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-SUBJECT = "A full body photography of a beautiful young skinny Korean woman with soft idol aesthetics standing on a sunny beach with bare feet, wearing a very small and tiny white thong bikini."
+SUBJECT = "A full body photography of a beautiful young skinny Korean woman with soft idol aesthetics standing on a sunny white sand beach with well formed bare feet, wearing very tiny white bikini."
 
 FOOT = "Both bare feet pressed firmly together on the sand, inner edges of both feet touching, heels touching, no gap between feet, feet completely closed side by side, both feet flat on the sand, entire feet fully visible from toes to heels."
 
@@ -47,7 +47,7 @@ LIGHTING = "Bright warm summer sunlight coming directly from the front, strong f
 
 CAMERA = "Full body shot, entire body from top of head to tips of toes fully in frame, generous empty space above head and below feet, camera positioned at low angle below knee level pointing slightly upward, subject in perfect tack-sharp focus from head to toes, maximum sharpness throughout the entire subject, every detail crisp and clear, ocean background softly blurred with bokeh, 35mm lens at f/8, feet and toes must be fully visible at the bottom of the frame."
 
-POSITIVE = "RAW photo, DSLR, 8k uhd, photorealistic, ultra sharp, tack sharp, in focus, crisp details, high resolution, perfect anatomy, ten fingers, ten toes, beautifully detailed toes, well formed toes."
+POSITIVE = "8k, photorealistic, ultra sharp, tack sharp, in focus, crisp details, high resolution, perfect anatomy, ten fingers, ten toes, beautifully detailed toes, well formed toes."
 
 NEGATIVE = "Blurry, blurry subject, out of focus, soft focus, motion blur, unfocused, hazy, low quality, deformed, bad anatomy, extra limbs, watermark, text, extra fingers, legs apart, wide stance, crossed legs, overlapping legs, walking pose, gap between legs, feet apart, feet cropped, missing feet, cut off feet, ankles cropped, partial body, body cut off at bottom, arms cropped, dressed, shoes, open mouth, laughing."
 
