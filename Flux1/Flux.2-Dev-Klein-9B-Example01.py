@@ -1,9 +1,7 @@
 import re
-import inspect
 import torch
 import platform
-import logging
-from diffusers import ErnieImagePipeline
+from diffusers import Flux2KleinPipeline
 from datetime import datetime
 from PIL import Image
 import os
@@ -14,47 +12,44 @@ import psutil
 import time
 import gradio as gr
 
-# Suppress harmless type-mismatch warnings from diffusers
-logging.getLogger("diffusers").setLevel(logging.ERROR)
-
 # Default values for each prompt section
-SUBJECT = "A photorealistic full-body portrait of a beautiful slender young Korean woman with soft idol-like features. She stands upright on a sunny beach wearing a very tiny white thong bikini, her entire body from head to bare feet fully visible in frame."
+SUBJECT = "Photorealistic full body photo of a beautiful young skinny Korean woman standing on a sunny white sand beach, wearing a black and white checkered houndstooth pattern bikini."
 
-FACE = "She has a fair glowing complexion with a light sun-kissed warmth, striking bright blue contact lenses, and long straight jet-black hair falling naturally over her shoulders. Her lips form a soft gentle smile as she looks directly into the camera."
+FOOT = ""
 
-HEAD = "Her head is held upright with a very slight tilt to one side."
+LEG = "Both legs straight, standing firmly on the sand."
 
-BODY = "She stands fully upright facing the camera with a subtle S-curve posture, her weight shifted onto one straight leg. Her slim waist and flat stomach are clearly visible."
+FACE = "She has a fair, clear complexion. Her expression is relaxed and confident with mouth gently closed, lips softly together, gazing slightly off to the side away from the camera. She has long dark brown-black hair flowing loosely in the wind."
 
-TOP = "She wears a very tiny white triangle bikini top with thin shoulder straps and minimal coverage."
+BODY = "Body turned slightly to the side, not fully frontal, subtle hip shift, slim toned figure, bare midriff fully visible."
 
-BOTTOM = "She wears a very tiny white thong bikini bottom with minimal coverage."
+ARM = "Both arms bent with elbows slightly out, confident pose."
 
-HEADWEAR = ""
-
-ARMWEAR = "A delicate gold chain necklace rests at her neckline. A thin gold bracelet adorns one wrist."
-
-ARM = "Both her arms hang naturally and relaxed at her sides."
-
-HAND = "Her hands are relaxed at her sides with fingers gently extended."
-
-LEGWEAR = ""
-
-LEG = "Both her long straight legs are pressed firmly together, with inner thighs and knees touching and no gap between her legs."
-
-FOOT = "Both her bare feet rest flat on the sand with heels and inner edges touching, all ten toes clearly visible."
+HAND = "Both hands resting lightly on hips and waist area."
 
 FOOTWEAR = ""
 
-SETTING = "The background shows a sunny tropical beach with a clear turquoise ocean, white sandy ground, and a bright blue sky with a few soft clouds."
+LEGWEAR = ""
 
-LIGHTING = "Bright warm frontal sunlight evenly illuminates her entire body, with her face and torso clearly lit and no shadows falling on the front."
+BOTTOM = "Black and white checkered houndstooth pattern bikini bottom, high-cut sides, thin black side-tie string straps on both hips."
 
-CAMERA = "Full-body shot from head to toes using an 85mm portrait lens at f/1.8, tack-sharp focus on the subject, softly blurred ocean background."
+TOP = "Black and white checkered houndstooth pattern triangle bikini top, thin halter neck tie straps, black trim piping along the edges, minimal coverage."
 
-POSITIVE = "Ultra-photorealistic, 8K, perfect anatomy, complete full body visible from head to bare toes."
+HEADWEAR = ""
 
-NEGATIVE = "blurry, low quality, bad anatomy, extra limbs, missing limbs, cropped feet, cropped body, watermark, text, shoes."
+ARMWEAR = ""
+
+HEAD = "Head tilted very slightly, gaze directed gently off to the side, natural and confident posture, hair blowing in the breeze."
+
+SETTING = "Sunny tropical beach, bright white sand, clear blue ocean in the background, vivid blue sky with large fluffy white clouds, warm summer day, open beach with no crowd."
+
+LIGHTING = "Bright warm outdoor sunlight, strong natural daylight illuminating the body, slight side lighting from the sun, vivid colors, no harsh shadows on the face."
+
+CAMERA = "Upper body shot from head to upper thigh, slight low angle looking slightly upward, sharp focus on subject, background slightly blurred, 50mm lens."
+
+POSITIVE = "8k, photorealistic, ultra sharp, tack sharp, in focus, high resolution, perfect anatomy, ten fingers, well formed fingers, beautiful fingers, beach setting, wind in hair, checkered bikini."
+
+MAX_SEQUENCE_LENGTH = 512
 
 
 def make_image_grid(images: list) -> Image.Image:
@@ -81,52 +76,58 @@ def normalize_spacing(text: str) -> str:
 
 def combine_prompt_sections(
     subject,
-    foot,
-    leg,
     face,
-    body,
-    arm,
-    hand,
-    footwear,
-    legwear,
-    bottom,
-    top,
+    pose_head,
+    pose_body,
+    pose_arm,
+    pose_hand,
+    pose_leg,
+    pose_foot,
     headwear,
+    top,
+    bottom,
+    legwear,
+    footwear,
     armwear,
-    head,
     setting,
     lighting,
     camera,
-    positive,
 ):
-    """Combine all prompt sections into a single ERNIE prompt string.
-
-    Order: Subject → Face → Head → Body → Top → Bottom → Headwear → Armwear
-           → Arm → Hand → Legwear → Leg → Foot → Footwear → Setting → Lighting → Camera → Positive
-    (위에서 아래로, 중심에서 주변부 순서로 자연스럽게 읽히도록 배치)
-    """
+    """Combine separate prompt sections into one final prompt string."""
     sections = [
         subject,
         face,
-        head,
-        body,
+        pose_head,
+        pose_body,
+        pose_arm,
+        pose_hand,
+        pose_leg,
+        pose_foot,
+        headwear,
         top,
         bottom,
-        headwear,
-        armwear,
-        arm,
-        hand,
         legwear,
-        leg,
-        foot,
         footwear,
+        armwear,
         setting,
         lighting,
         camera,
-        positive,
     ]
-    combined = " ".join(normalize_spacing(s) for s in sections if s and s.strip())
+    combined = ", ".join(normalize_spacing(s) for s in sections if s and s.strip())
     return combined
+
+
+def round_to_16(value: int) -> int:
+    """Round value to the nearest multiple of 16, minimum 256."""
+    return max(256, round(value / 16) * 16)
+
+
+def get_image_dimensions(image):
+    """Read uploaded image size and return width/height rounded to 16."""
+    if image is None:
+        return 768, 1536
+    w, h = image.size
+    return round_to_16(w), round_to_16(h)
 
 
 def get_device_and_dtype():
@@ -150,6 +151,7 @@ interface = None
 
 
 def get_available_devices():
+    """Return list of available device choices."""
     devices = []
     if torch.cuda.is_available():
         devices.append("cuda")
@@ -228,12 +230,11 @@ def signal_handler(_sig, _frame):
     sys.exit(0)
 
 
-# Register signal handler
 signal.signal(signal.SIGINT, signal_handler)
 
 
 def load_model(device_name=None):
-    """Load and initialize the ERNIE model with optimizations."""
+    """Load and initialize the Flux2Klein model with optimizations."""
     global pipe, DEVICE, DTYPE
 
     if device_name is not None:
@@ -251,100 +252,66 @@ def load_model(device_name=None):
             torch.mps.empty_cache()
 
     print(f"모델 로딩 중... (Device: {DEVICE}, dtype: {DTYPE})")
-    pretrained_kwargs = {"torch_dtype": DTYPE}
-    try:
-        pipe = ErnieImagePipeline.from_pretrained(
-            "Baidu/ERNIE-Image",
-            local_files_only=True,
-            **pretrained_kwargs,
-        )
-        print("캐시에서 모델 로드됨 (다운로드 없음)")
-    except Exception:
-        print("캐시된 모델 없음 — HuggingFace Hub에서 다운로드 중...")
-        pipe = ErnieImagePipeline.from_pretrained(
-            "Baidu/ERNIE-Image",
-            **pretrained_kwargs,
-        )
-        print("다운로드 및 캐싱 완료")
-    pipe.to(DEVICE)
+    pipe = Flux2KleinPipeline.from_pretrained(
+        "black-forest-labs/FLUX.2-klein-9B",
+        torch_dtype=DTYPE,
+    )
 
-    if DEVICE == "cuda":
-        # enable_model_cpu_offload 만 사용: sequential_cpu_offload는 _execution_device를
-        # cpu로 바꿔 PE/text_encoder의 input_ids device 불일치 경고를 유발함.
+    if DEVICE == "cuda" or DEVICE == "cpu":
+        pipe.to(DEVICE)
         pipe.enable_model_cpu_offload()
         pipe.enable_attention_slicing()
         pipe.enable_sequential_cpu_offload()
-        print("메모리 최적화 적용: model CPU offload, attention slicing (CUDA)")
-    elif DEVICE == "cpu":
-        pipe.enable_model_cpu_offload()
-        pipe.enable_attention_slicing()
-        pipe.enable_sequential_cpu_offload()
-        print("메모리 최적화 적용: attention slicing (CPU)")
+        print(
+            "메모리 최적화 적용: sequential CPU offload, model CPU offload, attention slicing"
+        )
     elif DEVICE == "mps":
+        pipe.to(DEVICE)
         pipe.enable_attention_slicing()
-        if hasattr(pipe, "transformer"):
-            pipe.transformer.to(memory_format=torch.channels_last)
-        elif hasattr(pipe, "unet"):
-            pipe.unet.to(memory_format=torch.channels_last)
         print("메모리 최적화 적용: attention slicing (MPS)")
 
-    # ---- 파이프라인에서 권장값 읽기 ----
-    sig = inspect.signature(pipe.__call__)
+    print(f"모델 로딩 완료! (Device: {DEVICE})")
+    return f"모델 로딩 완료! (Device: {DEVICE}, dtype: {DTYPE})"
 
-    def _default(name, fallback):
-        p = sig.parameters.get(name)
-        return p.default if (p and p.default is not inspect.Parameter.empty) else fallback
 
-    rec_width        = _default("width", 1024)
-    rec_height       = _default("height", 1024)
-    rec_guidance     = _default("guidance_scale", 4.0)
-    rec_steps        = _default("num_inference_steps", 50)
-    rec_num_images   = _default("num_images_per_prompt", 1)
-    # PE is designed for short prompts; detailed section prompts work better without it
-    rec_use_pe       = False
-
-    vae_sf  = pipe.vae_scale_factor
-    tok_max = getattr(pipe.tokenizer, "model_max_length", None) or 2048
-    rec_max_seq = min(tok_max, 1024)
-
-    param_info_text = (
-        f"- **이미지 크기**: **{vae_sf}의 배수** (VAE scale factor = {vae_sf}). "
-        f"권장: {rec_width}×{rec_height} (정방형), 848×1264 (세로), 1264×848 (가로).\n"
-        f"- **최대 시퀀스 길이**: 토크나이저 최대 = **{tok_max}** 토큰. "
-        f"슬라이더 범위(64~512) 내에서 설정. 초과 토큰은 잘림."
-    )
-
-    status = (
-        f"모델 로딩 완료! (Device: {DEVICE}, dtype: {DTYPE}) | "
-        f"VAE scale: {vae_sf} | 토크나이저 최대: {tok_max} 토큰"
-    )
-    print(status)
-    return (
-        status,
-        gr.update(value=rec_width,   step=vae_sf),
-        gr.update(value=rec_height,  step=vae_sf),
-        gr.update(value=rec_guidance),
-        gr.update(value=rec_steps),
-        gr.update(value=rec_num_images),
-        gr.update(value=rec_use_pe),
-        gr.update(value=rec_max_seq, maximum=tok_max),
-        gr.update(value=rec_max_seq, maximum=tok_max),
-        param_info_text,
-    )
+def on_base_image_upload(image):
+    """기본 이미지 업로드 시 출력 크기 자동 설정."""
+    if image is None:
+        return 768, 1536, "이미지를 업로드하면 원본 크기가 표시됩니다."
+    if not isinstance(image, Image.Image):
+        image = Image.fromarray(image)
+    w, h = image.size
+    rw, rh = round_to_16(w), round_to_16(h)
+    info = f"기본 이미지: {w} × {h} px  →  출력 크기: {rw} × {rh} px (16 배수로 반올림)"
+    return rw, rh, info
 
 
 def generate_image(
-    prompt,
-    negative,
+    base_image,
+    prompt_subject,
+    prompt_face,
+    prompt_pose_head,
+    prompt_pose_body,
+    prompt_pose_arm,
+    prompt_pose_hand,
+    prompt_pose_leg,
+    prompt_pose_foot,
+    prompt_headwear,
+    prompt_top,
+    prompt_bottom,
+    prompt_legwear,
+    prompt_footwear,
+    prompt_armwear,
+    prompt_setting,
+    prompt_lighting,
+    prompt_camera,
     width,
     height,
-    guidance_scale,
     num_inference_steps,
     num_images_per_prompt,
     seed,
-    use_pe,
+    positive_prompt,
     max_sequence_length,
-    neg_max_sequence_length,
     image_format,
     progress=gr.Progress(track_tqdm=True),
 ):
@@ -358,69 +325,84 @@ def generate_image(
             "오류: 모델이 로드되지 않았습니다. '모델 로드' 버튼을 먼저 눌러주세요.",
         )
 
+    # --- 기본 이미지 준비 (선택사항) ---
+    if base_image is not None and not isinstance(base_image, Image.Image):
+        base_image = Image.fromarray(base_image)
+
+
+    # --- 프롬프트 섹션 합치기 ---
+    prompt = combine_prompt_sections(
+        prompt_subject,
+        prompt_face,
+        prompt_pose_head,
+        prompt_pose_body,
+        prompt_pose_arm,
+        prompt_pose_hand,
+        prompt_pose_leg,
+        prompt_pose_foot,
+        prompt_headwear,
+        prompt_top,
+        prompt_bottom,
+        prompt_legwear,
+        prompt_footwear,
+        prompt_armwear,
+        prompt_setting,
+        prompt_lighting,
+        prompt_camera,
+    )
+    if not prompt:
+        return None, [], [], "오류: 프롬프트를 입력해주세요."
+
+    # Append positive prompt
+    if positive_prompt and positive_prompt.strip():
+        prompt = prompt.rstrip() + " " + positive_prompt.strip()
+
     try:
-        steps     = int(num_inference_steps)
-        max_len   = int(max_sequence_length)
-        neg_max_len = int(neg_max_sequence_length)
+        out_w, out_h = int(width), int(height)
+        steps = int(num_inference_steps)
         start_time = time.time()
 
-        prompt = (prompt or "").strip()
-        if not prompt:
-            return None, [], [], "오류: 프롬프트가 비어 있습니다."
-
-        progress(0.0, desc="프롬프트 인코딩 중...")
+        progress(0.0, desc="프롬프트 준비 중...")
         print("=" * 60)
         print("[입력 프롬프트]")
         print(prompt)
-        neg_text = (negative or "").strip()
-        if neg_text:
-            print("-" * 60)
-            print("[네거티브 프롬프트]")
-            print(neg_text)
         print("=" * 60)
 
-        # ---- 토큰 수 확인 (포지티브) ----
-        raw_ids = pipe.tokenizer(
-            prompt, truncation=False, add_special_tokens=True, return_tensors="pt"
-        )["input_ids"][0]
-        raw_token_count = len(raw_ids)
-        clipped = max(0, raw_token_count - max_len)
-        if clipped > 0:
-            print(f"✗ 토큰 수: {raw_token_count} / {max_len} → {clipped}개 잘림!")
-            try:
-                print("✗ [잘린 텍스트]")
-                print(pipe.tokenizer.decode(raw_ids[max_len:].tolist(), skip_special_tokens=True))
-            except Exception as e:
-                print(f"✗ [잘린 텍스트 디코드 실패: {e}]")
-        else:
-            print(f"✓ 토큰 수: {raw_token_count} / {max_len} (잘림 없음)")
-
-        # ---- 토큰 수 확인 (네거티브) ----
-        neg_token_count = 0
-        neg_clipped = 0
-        if neg_text:
-            neg_raw_ids = pipe.tokenizer(
-                neg_text, truncation=False, add_special_tokens=True, return_tensors="pt"
-            )["input_ids"][0]
-            neg_token_count = len(neg_raw_ids)
-            neg_clipped = max(0, neg_token_count - neg_max_len)
-            if neg_clipped > 0:
-                print(f"✗ 네거티브 토큰 수: {neg_token_count} / {neg_max_len} → {neg_clipped}개 잘림!")
-                try:
-                    print("✗ [잘린 네거티브 텍스트]")
-                    print(pipe.tokenizer.decode(neg_raw_ids[neg_max_len:].tolist(), skip_special_tokens=True))
-                except Exception as e:
-                    print(f"✗ [잘린 네거티브 텍스트 디코드 실패: {e}]")
+        # --- Qwen 토큰 카운트 확인 ---
+        max_len = int(max_sequence_length)
+        if hasattr(pipe, "tokenizer") and pipe.tokenizer is not None:
+            raw_ids = pipe.tokenizer(prompt, truncation=False, return_tensors="pt")[
+                "input_ids"
+            ][0]
+            raw_token_count = len(raw_ids)
+            clipped = max(0, raw_token_count - max_len)
+            if clipped > 0:
+                print(
+                    f"✗ Qwen 토큰 수: {raw_token_count} / {max_len} → {clipped}개 잘림!"
+                )
+                truncated_text = pipe.tokenizer.decode(
+                    raw_ids[max_len:], skip_special_tokens=True
+                )
+                print(f"✗ [잘린 텍스트] {truncated_text}")
             else:
-                print(f"✓ 네거티브 토큰 수: {neg_token_count} / {neg_max_len} (잘림 없음)")
+                print(f"✓ Qwen 토큰 수: {raw_token_count} / {max_len} (잘림 없음)")
 
-        # ---- 토크나이저 max_length 임시 적용 ----
-        orig_max = pipe.tokenizer.model_max_length
-        pipe.tokenizer.model_max_length = max_len
+        # Note: Klein uses Qwen3-8B encoder. true_cfg_scale not supported (is_distilled=True).
+        print("=" * 60)
 
-        generator = torch.Generator(device="cpu").manual_seed(int(seed))
+        # --- 이미지 준비 (없으면 텍스트-투-이미지로 동작) ---
+        if base_image is not None:
+            input_images = [base_image.resize((out_w, out_h), Image.LANCZOS).convert("RGB")]
+            print("이미지 합성 모드: 기본 이미지 1개 전달")
+        else:
+            input_images = None
+            print("텍스트-투-이미지 모드: 이미지 입력 없음")
+
+        generator_device = "cpu" if DEVICE == "mps" else DEVICE
+        generator = torch.Generator(device=generator_device).manual_seed(int(seed))
 
         progress(0.05, desc="추론 시작...")
+        print("추론 시작...")
 
         def step_callback(_pipe, step_index, _timestep, callback_kwargs):
             current = step_index + 1
@@ -428,7 +410,8 @@ def generate_image(
             ratio = current / steps
             progress_val = 0.05 + ratio * 0.90
             progress(
-                progress_val, desc=f"추론 스텝 {current}/{steps} ({elapsed:.1f}초 경과)"
+                progress_val,
+                desc=f"추론 스텝 {current}/{steps} ({elapsed:.1f}초 경과)",
             )
             bar_len = 30
             filled = int(bar_len * ratio)
@@ -446,22 +429,19 @@ def generate_image(
 
         pipe_kwargs = {
             "prompt": prompt,
-            "width": width,
-            "height": height,
-            "guidance_scale": guidance_scale,
+            "image": input_images,  # None이면 텍스트-투-이미지로 동작
+            "width": out_w,
+            "height": out_h,
+            "guidance_scale": 1.0,  # distilled 모델: CFG 미사용, 경고 방지용
             "num_inference_steps": steps,
             "num_images_per_prompt": int(num_images_per_prompt),
+            "max_sequence_length": max_len,
             "generator": generator,
-            "use_pe": use_pe,
             "callback_on_step_end": step_callback,
         }
-        if neg_text:
-            pipe_kwargs["negative_prompt"] = neg_text
 
         with torch.inference_mode():
             images = pipe(**pipe_kwargs).images
-
-        pipe.tokenizer.model_max_length = orig_max
 
         progress(0.95, desc="이미지 저장 중...")
 
@@ -469,22 +449,9 @@ def generate_image(
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         script_name = os.path.splitext(os.path.basename(__file__))[0]
         ext = "jpg" if image_format == "JPEG" else "png"
-        if DEVICE == "cuda" and torch.cuda.is_available():
-            gpu_name = torch.cuda.get_device_name(0)
-            gpu_mem = round(
-                torch.cuda.get_device_properties(0).total_memory / (1024**3)
-            )
-            gpu_label = (
-                gpu_name.replace(" ", "").replace("NVIDIA", "").replace("GeForce", "")
-                + f"-{gpu_mem}GB"
-            )
-            device_label = gpu_label
-        else:
-            device_label = DEVICE.upper()
         base_filename = (
-            f"{script_name}_{timestamp}_{device_label}_{width}x{height}"
-            f"_gs{guidance_scale}_step{steps}_seed{int(seed)}"
-            f"_pe{int(use_pe)}_n{int(num_images_per_prompt)}"
+            f"{script_name}_{timestamp}_{DEVICE.upper()}_{out_w}x{out_h}"
+            f"_step{steps}_seed{int(seed)}_n{int(num_images_per_prompt)}"
         )
 
         saved_files = []
@@ -496,30 +463,23 @@ def generate_image(
             else:
                 image.save(filename)
             saved_files.append(filename)
+            print(f"이미지가 저장되었습니다 : {filename}")
 
         saved_info = (
             f"저장됨: {saved_files[0]}"
             if len(saved_files) == 1
             else f"{len(saved_files)}장 저장됨: {saved_files[0]} 외"
         )
-
-        token_warn = clipped > 0 or neg_clipped > 0
-        token_info = (
-            f"토큰: {raw_token_count}/{max_len}"
-            + (f" → {clipped}개 잘림!" if clipped > 0 else "")
-            + (f" | 네거티브: {neg_token_count}/{neg_max_len}" if neg_token_count else "")
-            + (f" → {neg_clipped}개 잘림!" if neg_clipped > 0 else "")
-        )
-        print(f"이미지 생성 완료! 소요 시간: {elapsed:.1f}초 | {token_info}")
+        print(f"이미지 생성 완료! 소요 시간: {elapsed:.1f}초")
 
         progress(1.0, desc="완료!")
-        status_prefix = "⚠ 완료 (토큰 잘림)" if token_warn else "✓ 완료"
         return (
             make_image_grid(images),
             images,
             saved_files,
-            f"{status_prefix} ({elapsed:.1f}초) | {token_info} | {saved_info}",
+            f"✓ 완료! ({elapsed:.1f}초) | {saved_info}",
         )
+
     except Exception as e:
         return None, [], [], f"✗ 오류 발생: {str(e)}"
 
@@ -528,16 +488,23 @@ def main():
     global interface
 
     print_hardware_info()
+
+    print(f"\n자동으로 감지된 디바이스: {DEVICE} (dtype: {DTYPE})")
     load_model()
 
-    with gr.Blocks(title="ERNIE Text-to-Image Generator") as interface:
-        gr.Markdown("# ERNIE Text-to-Image Generator")
+    _default_img = None
+    _init_w, _init_h = 768, 1536
+    _default_info = "이미지를 업로드하면 원본 크기가 표시됩니다."
+
+    with gr.Blocks(title="Flux.2 Klein 9B Text-to-Image") as interface:
+        gr.Markdown("# Flux.2 Klein 9B Text-to-Image")
         gr.Markdown(
-            f"AI를 사용하여 텍스트에서 이미지를 생성합니다."
+            f"텍스트 프롬프트로 이미지를 생성합니다. 기본 이미지를 업로드하면 이미지 합성 모드로 동작합니다."
             f" (Device: **{DEVICE.upper()}**)"
         )
 
         with gr.Row():
+            # ── 왼쪽 컬럼: 모델 설정 + 이미지 입력 + 프롬프트 ──
             with gr.Column(scale=1):
                 gr.Markdown("### 모델 설정")
                 device_selector = gr.Radio(
@@ -557,11 +524,23 @@ def main():
                     interactive=False,
                 )
 
+                with gr.Accordion("기본 이미지 (Base Image, 선택사항)", open=False):
+                    base_image = gr.Image(
+                        label="기본 이미지 (없으면 텍스트-투-이미지로 동작)",
+                        type="pil",
+                        sources=["upload", "clipboard"],
+                        height=400,
+                        value=_default_img,
+                    )
+                    image_info = gr.Textbox(
+                        label="이미지 정보",
+                        value=_default_info,
+                        interactive=False,
+                    )
+
                 gr.Markdown(
                     "### 프롬프트 구성\n"
-                    "- **프롬프트**: Subject → 포즈·의상·머리 → Setting → Lighting → Camera → Positive 순으로 결합됩니다.\n"
-                    "- **Negative**: 네거티브 프롬프트는 별도로 인코딩됩니다.\n"
-                    "- **Prompt Enhancer (PE)**: ERNIE의 프롬프트 자동 개선 기능입니다."
+                    "- **Positive**: 최종 프롬프트 뒤에 추가됩니다."
                 )
                 with gr.Accordion(
                     "프롬프트 섹션 (Subject · 포즈 · 의상 · 배경 · 조명 · 카메라)",
@@ -572,16 +551,16 @@ def main():
                         value=SUBJECT,
                         lines=2,
                         placeholder="예: 1girl, young woman, a cat",
-                        info="프롬프트 맨 앞에 배치됩니다.",
+                        info="이미지의 주된 주제나 대상을 설명합니다.",
                     )
-                    prompt_foot = gr.Textbox(
+                    prompt_pose_foot = gr.Textbox(
                         label="2. 포즈 - 발 (Foot)",
                         value=FOOT,
                         lines=1,
                         placeholder="예: feet slightly apart, toes pointed forward",
                         info="발의 위치를 설명합니다.",
                     )
-                    prompt_leg = gr.Textbox(
+                    prompt_pose_leg = gr.Textbox(
                         label="3. 포즈 - 다리 (Leg)",
                         value=LEG,
                         lines=1,
@@ -595,21 +574,21 @@ def main():
                         placeholder="예: fair complexion, blue contact lenses, soft smile",
                         info="얼굴, 피부, 눈, 표정, 머리카락 등을 설명합니다.",
                     )
-                    prompt_body = gr.Textbox(
+                    prompt_pose_body = gr.Textbox(
                         label="5. 포즈 - 몸통 (Body)",
                         value=BODY,
                         lines=2,
                         placeholder="예: body angled slightly, leaning forward",
                         info="몸통 자세와 전체 실루엣을 설명합니다.",
                     )
-                    prompt_arm = gr.Textbox(
+                    prompt_pose_arm = gr.Textbox(
                         label="6. 포즈 - 팔 (Arm)",
                         value=ARM,
                         lines=1,
                         placeholder="예: arms resting across torso",
                         info="팔의 위치와 자세를 설명합니다.",
                     )
-                    prompt_hand = gr.Textbox(
+                    prompt_pose_hand = gr.Textbox(
                         label="7. 포즈 - 손 (Hand)",
                         value=HAND,
                         lines=1,
@@ -658,7 +637,7 @@ def main():
                         placeholder="예: black lace gloves, silver bracelet",
                         info="장갑, 팔찌, 소매 장식 등을 설명합니다.",
                     )
-                    prompt_head = gr.Textbox(
+                    prompt_pose_head = gr.Textbox(
                         label="14. 포즈 - 머리 (Head)",
                         value=HEAD,
                         lines=1,
@@ -686,114 +665,96 @@ def main():
                         placeholder="예: Sony A7R V, 85mm f/1.8, ISO 400",
                         info="카메라 기종, 렌즈, ISO, 셔터 스피드 등을 설명합니다.",
                     )
-                    positive_box = gr.Textbox(
+                    positive_prompt_box = gr.Textbox(
                         label="18. 포지티브 프롬프트 (Positive)",
                         value=POSITIVE,
                         lines=2,
                         placeholder="예: masterpiece, best quality, highly detailed",
-                        info="프롬프트 끝에 추가됩니다.",
+                        info="최종 프롬프트 뒤에 추가로 덧붙일 키워드를 입력합니다.",
                     )
-                    negative_box = gr.Textbox(
-                        label="19. 네거티브 프롬프트 (Negative)",
-                        value=NEGATIVE,
-                        lines=2,
-                        placeholder="예: blurry, deformed hands, bad anatomy",
-                        info="별도 네거티브 인코딩에 사용됩니다.",
-                    )
-                with gr.Accordion("결합된 프롬프트 (전체 섹션)", open=False):
-                    prompt_combined = gr.Textbox(
-                        label="결합 프롬프트",
+                with gr.Accordion("최종 프롬프트 (Combined Prompt)", open=False):
+                    combined_prompt = gr.Textbox(
+                        label="최종 프롬프트",
                         value=combine_prompt_sections(
                             SUBJECT,
-                            FOOT,
-                            LEG,
                             FACE,
+                            HEAD,
                             BODY,
                             ARM,
                             HAND,
-                            FOOTWEAR,
-                            LEGWEAR,
-                            BOTTOM,
-                            TOP,
+                            LEG,
+                            FOOT,
                             HEADWEAR,
+                            TOP,
+                            BOTTOM,
+                            LEGWEAR,
+                            FOOTWEAR,
                             ARMWEAR,
-                            HEAD,
                             SETTING,
                             LIGHTING,
                             CAMERA,
-                            POSITIVE,
                         ),
-                        lines=6,
-                        interactive=True,
-                        info="Subject → Face → Head → Body → 의상 → 장식 → Arm/Hand → Leg → Foot → Setting → Lighting → Camera → Positive 순으로 자동 결합됩니다.",
+                        lines=4,
+                        interactive=False,
+                        info="위 섹션들이 자동으로 합쳐진 최종 프롬프트입니다.",
                     )
                 prompt_sections = [
                     prompt_subject,
-                    prompt_foot,
-                    prompt_leg,
                     prompt_face,
-                    prompt_body,
-                    prompt_arm,
-                    prompt_hand,
-                    prompt_footwear,
-                    prompt_legwear,
-                    prompt_bottom,
-                    prompt_top,
+                    prompt_pose_head,
+                    prompt_pose_body,
+                    prompt_pose_arm,
+                    prompt_pose_hand,
+                    prompt_pose_leg,
+                    prompt_pose_foot,
                     prompt_headwear,
+                    prompt_top,
+                    prompt_bottom,
+                    prompt_legwear,
+                    prompt_footwear,
                     prompt_armwear,
-                    prompt_head,
                     prompt_setting,
                     prompt_lighting,
                     prompt_camera,
-                    positive_box,
                 ]
                 for section in prompt_sections:
                     section.change(
                         fn=combine_prompt_sections,
                         inputs=prompt_sections,
-                        outputs=[prompt_combined],
+                        outputs=[combined_prompt],
                     )
 
+            # ── 오른쪽 컬럼: 파라미터 + 생성 ──
             with gr.Column(scale=1):
                 gr.Markdown("### 파라미터 설정")
-                param_info = gr.Markdown(
-                    "- **이미지 크기**: 16의 배수여야 합니다 (VAE scale factor = 16).\n"
-                    "- **최대 시퀀스 길이**: 모델 로드 후 토크나이저 최대값이 표시됩니다."
-                )
                 with gr.Row():
                     width = gr.Slider(
-                        label="이미지 너비",
+                        label="출력 너비",
                         minimum=256,
                         maximum=2048,
                         step=16,
-                        value=1024,
-                        info="이미지 너비 (픽셀). 반드시 16의 배수. 권장: 1024.",
+                        value=_init_w,
+                        info="출력 이미지 너비 (픽셀).",
                     )
                     height = gr.Slider(
-                        label="이미지 높이",
+                        label="출력 높이",
                         minimum=256,
                         maximum=2048,
                         step=16,
-                        value=1024,
-                        info="이미지 높이 (픽셀). 반드시 16의 배수. 권장: 1024.",
+                        value=_init_h,
+                        info="출력 이미지 높이 (픽셀).",
                     )
+
                 with gr.Row():
-                    guidance_scale = gr.Slider(
-                        label="Guidance Scale (프롬프트 강도)",
-                        minimum=1.0,
-                        maximum=10.0,
-                        step=0.5,
-                        value=4.0,
-                        info="프롬프트 준수도. 낮으면 창의적, 높으면 정확. ERNIE 권장: 4.0",
-                    )
                     num_inference_steps = gr.Slider(
                         label="추론 스텝",
-                        minimum=10,
-                        maximum=100,
+                        minimum=1,
+                        maximum=20,
                         step=1,
-                        value=50,
-                        info="생성 단계 수. 높으면 품질 향상, 시간 증가. ERNIE 권장: 50",
+                        value=4,
+                        info="Klein distilled 권장: 4~8 스텝.",
                     )
+
                 with gr.Row():
                     num_images_per_prompt = gr.Slider(
                         label="생성 이미지 수",
@@ -809,40 +770,26 @@ def main():
                         precision=0,
                         info="난수 시드. 같은 값이면 같은 결과.",
                     )
+
                 with gr.Row():
                     max_sequence_length = gr.Slider(
-                        label="포지티브 최대 시퀀스 길이",
+                        label="최대 시퀀스 길이",
                         minimum=64,
-                        maximum=2048,
-                        step=64,
-                        value=1024,
-                        info="포지티브 프롬프트 토큰 한도 (model_max_length = 2048). 초과 토큰은 잘림.",
-                    )
-                    neg_max_sequence_length = gr.Slider(
-                        label="네거티브 최대 시퀀스 길이",
-                        minimum=64,
-                        maximum=2048,
-                        step=64,
-                        value=1024,
-                        info="네거티브 프롬프트 토큰 한도 (model_max_length = 2048). 초과 토큰은 잘림.",
-                    )
-                with gr.Row():
-                    use_pe = gr.Checkbox(
-                        label="Prompt Enhancer (PE) 사용",
-                        value=False,
-                        info="ERNIE 내장 프롬프트 개선 기능. 짧은 프롬프트에 최적화되어 있어 상세한 섹션 프롬프트를 사용할 때는 비활성화를 권장합니다.",
+                        maximum=512,
+                        step=16,
+                        value=MAX_SEQUENCE_LENGTH,
+                        info="텍스트 인코더 최대 길이. 긴 프롬프트는 높은 값 필요.",
                     )
                     image_format = gr.Radio(
                         label="이미지 포맷",
                         choices=["JPEG", "PNG"],
                         value="JPEG",
-                        info="JPEG: quality 100 (4:4:4), PNG: 무손실 압축.",
+                        info="JPEG: quality 100, PNG: 무손실.",
                     )
 
-                gr.Markdown("---")
                 gr.Markdown("### 이미지 생성")
                 generate_btn = gr.Button("이미지 생성", variant="primary", size="lg")
-                output_grid = gr.Image(label="생성된 이미지 (전체 보기)", height=700)
+                output_grid = gr.Image(label="생성된 이미지 (전체 보기)", height=800)
                 with gr.Accordion("개별 이미지 다운로드", open=False):
                     output_gallery = gr.Gallery(
                         label="개별 이미지",
@@ -854,37 +801,54 @@ def main():
                     output_files = gr.Files(label="파일 다운로드")
                 output_message = gr.Textbox(label="상태", interactive=False)
 
-        _model_outputs = [
-            device_status,
-            width, height,
-            guidance_scale, num_inference_steps, num_images_per_prompt,
-            use_pe, max_sequence_length, neg_max_sequence_length,
-            param_info,
-        ]
+        # ── 이벤트 연결 ──
+        base_image.change(
+            fn=on_base_image_upload,
+            inputs=[base_image],
+            outputs=[width, height, image_info],
+        )
+
         load_model_btn.click(
             fn=load_model,
             inputs=[device_selector],
-            outputs=_model_outputs,
+            outputs=[device_status],
         )
+
         device_selector.change(
             fn=load_model,
             inputs=[device_selector],
-            outputs=_model_outputs,
+            outputs=[device_status],
         )
+
+        # 이미지 생성 버튼
         generate_btn.click(
             fn=generate_image,
             inputs=[
-                prompt_combined,
-                negative_box,
+                base_image,
+                prompt_subject,
+                prompt_face,
+                prompt_pose_head,
+                prompt_pose_body,
+                prompt_pose_arm,
+                prompt_pose_hand,
+                prompt_pose_leg,
+                prompt_pose_foot,
+                prompt_headwear,
+                prompt_top,
+                prompt_bottom,
+                prompt_legwear,
+                prompt_footwear,
+                prompt_armwear,
+                prompt_setting,
+                prompt_lighting,
+                prompt_camera,
                 width,
                 height,
-                guidance_scale,
                 num_inference_steps,
                 num_images_per_prompt,
                 seed,
-                use_pe,
+                positive_prompt_box,
                 max_sequence_length,
-                neg_max_sequence_length,
                 image_format,
             ],
             outputs=[output_grid, output_gallery, output_files, output_message],
@@ -892,6 +856,7 @@ def main():
 
     interface.launch(
         inbrowser=True,
+        allowed_paths=[os.path.dirname(os.path.abspath(__file__))],
         js="document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();}})",
     )
 
