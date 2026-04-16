@@ -749,7 +749,7 @@ def main():
                     num_inference_steps = gr.Slider(
                         label="추론 스텝",
                         minimum=1,
-                        maximum=20,
+                        maximum=10,
                         step=1,
                         value=4,
                         info="Klein distilled 권장: 4~8 스텝.",
