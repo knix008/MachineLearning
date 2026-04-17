@@ -29,7 +29,9 @@ HAND = "Both hands hanging gracefully at her sides with fingers lightly extended
 
 FOOTWEAR = ""
 
-LEGWEAR = "Bare legs, smooth and fair skin fully visible, long slender legs clearly exposed."
+LEGWEAR = (
+    "Bare legs, smooth and fair skin fully visible, long slender legs clearly exposed."
+)
 
 BOTTOM = "Wearing a very tiny white thong bikini bottom, minimal coverage, bare hips fully exposed, string ties at the hips."
 
@@ -332,7 +334,6 @@ def generate_image(
     if base_image is not None and not isinstance(base_image, Image.Image):
         base_image = Image.fromarray(base_image)
 
-
     # --- 프롬프트 섹션 합치기 ---
     prompt = combine_prompt_sections(
         prompt_subject,
@@ -395,7 +396,9 @@ def generate_image(
 
         # --- 이미지 준비 (없으면 텍스트-투-이미지로 동작) ---
         if base_image is not None:
-            input_images = [base_image.resize((out_w, out_h), Image.LANCZOS).convert("RGB")]
+            input_images = [
+                base_image.resize((out_w, out_h), Image.LANCZOS).convert("RGB")
+            ]
             print("이미지 합성 모드: 기본 이미지 1개 전달")
         else:
             input_images = None
@@ -533,7 +536,9 @@ def main():
                     interactive=False,
                 )
 
-                with gr.Accordion("기본 이미지 (Base Image, 선택사항)", open=_default_img is not None):
+                with gr.Accordion(
+                    "기본 이미지 (Base Image, 선택사항)", open=_default_img is not None
+                ):
                     base_image = gr.Image(
                         label="기본 이미지 (없으면 텍스트-투-이미지로 동작)",
                         type="pil",
