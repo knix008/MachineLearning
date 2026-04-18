@@ -1,0 +1,10 @@
+# Upstream RAGFlow clone (large; fetch via scripts/bootstrap).
+# If you use git submodule for RAG/ragflow, delete the line below and commit the submodule.
+ragflow/
+
+# Local env overrides (never commit real secrets)
+config/env.override
+
+# Local overrides / secrets (keep examples only in repo)
+.env
+*.local.yml
