@@ -46,6 +46,34 @@ CAMERA = "Waist level angle shot, long legs."
 POSITIVE = "Masterpiece, best quality, highly detailed, sharp focus, natural lighting, photorealistic, faithful to the reference image, anatomically correct hands and feet, five fingers per hand, five toes per foot, clearly separated fingers and toes."
 NEGATIVE = "Low quality, worst quality, blurry, out of focus, jpeg artifacts, distorted, deformed, bad anatomy, watermark, text, logo, extra fingers, missing fingers, fused fingers, malformed hands, wrong finger count, extra toes, missing toes, fused toes, malformed feet, wrong toe count, mitten hands, claw hands, deformed nails"
 
+# diffusers FLUX / FluxKontextPipeline: width·height must be divisible by 8 (pipeline check_inputs).
+KONTEXT_SPATIAL_MULTIPLE = 8
+KONTEXT_SIZE_MIN = 256
+KONTEXT_SIZE_MAX = 2048
+
+
+def round_to_kontext_spatial(
+    value: float | int,
+    minimum: int = KONTEXT_SIZE_MIN,
+    maximum: int = KONTEXT_SIZE_MAX,
+    multiple: int = KONTEXT_SPATIAL_MULTIPLE,
+) -> int:
+    """Clamp to [minimum, maximum] and round to the nearest supported pixel multiple."""
+    v = int(round(float(value)))
+    m = int(multiple)
+    v = max(int(minimum), min(int(maximum), v))
+    if m <= 1:
+        return v
+    r = int(round(v / m) * m)
+    r = max(int(minimum), min(int(maximum), r))
+    if r % m != 0:
+        r = (r // m) * m
+    if r < int(minimum):
+        r = (int(minimum) + m - 1) // m * m
+    if r > int(maximum):
+        r = int(maximum) // m * m
+    return max(m, r)
+
 
 def make_image_grid(images: list) -> Image.Image:
     """Arrange PIL images into a grid that fits in one view."""
@@ -407,7 +435,15 @@ def generate_image(
         else:
             print(f"✓ T5 토큰 수: {raw_token_count} / {max_len} (잘림 없음)")
 
-        resized_input = input_image.resize((width, height), Image.LANCZOS)
+        w_px = round_to_kontext_spatial(width)
+        h_px = round_to_kontext_spatial(height)
+        if w_px != int(width) or h_px != int(height):
+            print(
+                f"이미지 크기를 Kontext 지원 해상도({KONTEXT_SPATIAL_MULTIPLE}px 배수)로 맞춤: "
+                f"{int(width)}x{int(height)} → {w_px}x{h_px}"
+            )
+
+        resized_input = input_image.resize((w_px, h_px), Image.LANCZOS)
 
         def step_callback(_pipe, step_index, _timestep, callback_kwargs):
             current = step_index + 1
@@ -435,8 +471,8 @@ def generate_image(
             "image": resized_input,
             "prompt": clip_prompt_text,
             "prompt_2": t5_prompt_text,
-            "width": int(width),
-            "height": int(height),
+            "width": w_px,
+            "height": h_px,
             "guidance_scale": float(guidance_scale),
             "num_inference_steps": steps,
             "num_images_per_prompt": int(num_images_per_prompt),
@@ -477,7 +513,7 @@ def generate_image(
         else:
             device_label = DEVICE.upper()
         base_filename = (
-            f"{script_name}_{timestamp}_{device_label}_{width}x{height}"
+            f"{script_name}_{timestamp}_{device_label}_{w_px}x{h_px}"
             f"_gs{guidance_scale}_step{steps}_seed{int(seed)}"
             f"_cfg{true_cfg_scale}_n{int(num_images_per_prompt)}_msl{int(max_sequence_length)}"
             f"_ma{int(max_area)}_ar{1 if kontext_auto_resize else 0}"
@@ -505,12 +541,24 @@ def generate_image(
         )
         print(f"이미지 생성 완료! 소요 시간: {elapsed:.1f}초 | {token_info}")
 
+        try:
+            w_in = int(round(float(width)))
+            h_in = int(round(float(height)))
+        except (TypeError, ValueError):
+            w_in, h_in = w_px, h_px
+        snap_msg = ""
+        if w_in != w_px or h_in != h_px:
+            snap_msg = (
+                f" | 해상도 {w_in}×{h_in} → {w_px}×{h_px} "
+                f"({KONTEXT_SPATIAL_MULTIPLE}px 배수로 보정)"
+            )
+
         progress(1.0, desc="완료!")
         return (
             make_image_grid(images),
             images,
             saved_files,
-            f"✓ 완료! ({elapsed:.1f}초) | {token_info} | {saved_info}",
+            f"✓ 완료! ({elapsed:.1f}초) | {token_info} | {saved_info}{snap_msg}",
         )
     except Exception as e:
         return None, [], [], f"✗ 오류 발생: {str(e)}"
@@ -770,19 +818,25 @@ def main():
                 with gr.Row():
                     width = gr.Slider(
                         label="이미지 너비",
-                        minimum=256,
-                        maximum=2048,
-                        step=32,
+                        minimum=KONTEXT_SIZE_MIN,
+                        maximum=KONTEXT_SIZE_MAX,
+                        step=KONTEXT_SPATIAL_MULTIPLE,
                         value=768,
-                        info="이미지 너비 (픽셀). 32의 배수.",
+                        info=(
+                            f"픽셀. FLUX Kontext(diffusers)는 가로·세로가 "
+                            f"{KONTEXT_SPATIAL_MULTIPLE}의 배수여야 합니다."
+                        ),
                     )
                     height = gr.Slider(
                         label="이미지 높이",
-                        minimum=256,
-                        maximum=2048,
-                        step=32,
+                        minimum=KONTEXT_SIZE_MIN,
+                        maximum=KONTEXT_SIZE_MAX,
+                        step=KONTEXT_SPATIAL_MULTIPLE,
                         value=1536,
-                        info="이미지 높이 (픽셀). 32의 배수.",
+                        info=(
+                            f"픽셀. FLUX Kontext(diffusers)는 가로·세로가 "
+                            f"{KONTEXT_SPATIAL_MULTIPLE}의 배수여야 합니다."
+                        ),
                     )
                 with gr.Row():
                     guidance_scale = gr.Slider(
