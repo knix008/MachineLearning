@@ -1,7 +1,10 @@
 import re
 import torch
 import platform
-from diffusers import FluxImg2ImgPipeline
+from diffusers import FluxKontextPipeline
+
+# Open-weights image editing model (non-commercial license; HF gated).
+MODEL_ID = "black-forest-labs/FLUX.1-Kontext-dev"
 from datetime import datetime
 from PIL import Image
 import os
@@ -14,24 +17,34 @@ import gradio as gr
 
 # Default values for each prompt section
 SUBJECT = ""
-FOOT = ""
-LEG = ""
+FOOT = (
+    "Both feet close together in a narrow stance, parallel feet, "
+    "heels and toes gathered without a wide spread"
+)
+LEG = (
+    "One knee slightly bent, body weight supported on one leg, "
+    "the other leg relaxed with a soft bend at the knee"
+)
 FACE = ""
 BODY = ""
 ARM = ""
 HAND = ""
-FOOTWEAR = ""
+FOOTWEAR = "Wearing a black high heel sandals."
 LEGWEAR = ""
 BOTTOM = ""
 TOP = ""
 HEADWEAR = ""
 ARMWEAR = ""
 HEAD = ""
-SETTING = ""
+SETTING = (
+    "Five-star luxury hotel outdoor swimming pool, upscale resort pool deck, "
+    "refined lounge chairs and tiles, sparkling clear water, "
+    "standing pose at the poolside on the deck near the water's edge"
+)
 LIGHTING = ""
-CAMERA = ""
-POSITIVE = "She is standing in the luxury hotel pool, looking directly at the camera."
-NEGATIVE = ""
+CAMERA = "Waist level angle shot, long legs."
+POSITIVE = "Masterpiece, best quality, highly detailed, sharp focus, natural lighting, photorealistic, faithful to the reference image, anatomically correct hands and feet, five fingers per hand, five toes per foot, clearly separated fingers and toes."
+NEGATIVE = "Low quality, worst quality, blurry, out of focus, jpeg artifacts, distorted, deformed, bad anatomy, watermark, text, logo, extra fingers, missing fingers, fused fingers, malformed hands, wrong finger count, extra toes, missing toes, fused toes, malformed feet, wrong toe count, mitten hands, claw hands, deformed nails"
 
 
 def make_image_grid(images: list) -> Image.Image:
@@ -130,7 +143,7 @@ def combine_prompt_sections_dual(
     camera,
     positive,
 ):
-    """Build CLIP and T5 prompt strings for FLUX.1 dual encoders."""
+    """Build CLIP / T5 문자열 (FluxKontextPipeline의 prompt / prompt_2에 그대로 전달)."""
     clip_prompt = format_clip_preview(subject, positive)
     t5_prompt = combine_t5_prompt_sections(
         subject,
@@ -259,7 +272,7 @@ signal.signal(signal.SIGINT, signal_handler)
 
 
 def load_model(device_name=None):
-    """Load and initialize the Flux model with optimizations."""
+    """Load FLUX.1-Kontext-dev (FluxKontextPipeline) with memory optimizations."""
     global pipe, DEVICE, DTYPE
 
     if device_name is not None:
@@ -277,9 +290,9 @@ def load_model(device_name=None):
             torch.mps.empty_cache()
 
     print(f"모델 로딩 중... (Device: {DEVICE}, dtype: {DTYPE})")
-    print("CLIP + T5 듀얼 텍스트 인코더를 사용합니다.")
-    pipe = FluxImg2ImgPipeline.from_pretrained(
-        "black-forest-labs/FLUX.1-dev",
+    print(f"FLUX.1-Kontext-dev 이미지 편집 파이프라인 로드: {MODEL_ID}")
+    pipe = FluxKontextPipeline.from_pretrained(
+        MODEL_ID,
         torch_dtype=DTYPE,
     )
     pipe.to(DEVICE)
@@ -312,10 +325,10 @@ def load_model(device_name=None):
 
 def generate_image(
     input_image,
-    strength,
     prompt_clip,
     prompt_t5,
     negative,
+    negative_prompt_2,
     width,
     height,
     guidance_scale,
@@ -324,6 +337,8 @@ def generate_image(
     num_images_per_prompt,
     seed,
     max_sequence_length,
+    max_area,
+    kontext_auto_resize,
     image_format,
     progress=gr.Progress(track_tqdm=True),
 ):
@@ -348,92 +363,36 @@ def generate_image(
         steps = int(num_inference_steps)
         start_time = time.time()
 
-        prompt_clip = (prompt_clip or "").strip()
-        if not prompt_clip:
-            return None, [], [], "오류: CLIP 프롬프트(미리보기)가 비어 있습니다."
+        pc = (prompt_clip or "").strip()
+        pt = (prompt_t5 or "").strip()
+        if not pc and not pt:
+            return (
+                None,
+                [],
+                [],
+                "오류: CLIP 프롬프트 또는 T5 프롬프트 중 하나 이상을 입력해 주세요.",
+            )
 
-        prompt_t5 = (prompt_t5 or "").strip()
-        if not prompt_t5:
-            return None, [], [], "오류: T5 프롬프트(prompt_2)를 입력해주세요."
+        clip_prompt_text = pc if pc else pt
+        t5_prompt_text = pt if pt else pc
 
-        progress(0.0, desc="프롬프트 인코딩 중...")
-        print("프롬프트 인코딩 중...")
+        progress(0.0, desc="프롬프트 분석 · 추론 준비...")
+        print("FLUX.1-Kontext-dev 편집 호출")
         print("=" * 60)
-        print("[입력 CLIP 프롬프트]")
-        print(prompt_clip)
+        print("[prompt → CLIP / pooled]")
+        print(clip_prompt_text)
         print("-" * 60)
-        print("[입력 T5 프롬프트]")
-        print(prompt_t5)
+        print("[prompt_2 → T5]")
+        print(t5_prompt_text)
         print("=" * 60)
 
         generator_device = "cpu" if DEVICE == "mps" else DEVICE
         generator = torch.Generator(device=generator_device).manual_seed(int(seed))
 
-        # ---- Encode CLIP ----
-        clip_max_len = getattr(pipe, "tokenizer_max_length", None)
-        if (
-            clip_max_len is None
-            and hasattr(pipe, "tokenizer")
-            and pipe.tokenizer is not None
-        ):
-            clip_max_len = getattr(pipe.tokenizer, "model_max_length", None)
-        clip_max_len = int(clip_max_len) if clip_max_len is not None else 77
-
-        clip_inputs = pipe.tokenizer(
-            prompt_clip,
-            padding="max_length",
-            max_length=clip_max_len,
-            truncation=True,
-            return_tensors="pt",
-        )
-
-        raw_clip_ids = pipe.tokenizer(
-            prompt_clip, truncation=False, return_tensors="pt"
-        )["input_ids"][0]
-        raw_clip_token_count = len(raw_clip_ids)
-        clipped_clip = max(0, raw_clip_token_count - clip_max_len)
-        if clipped_clip > 0:
-            print(
-                f"✗ CLIP 토큰 수: {raw_clip_token_count} / {clip_max_len} → {clipped_clip}개 잘림!"
-            )
-            try:
-                tail_ids = raw_clip_ids[clip_max_len:]
-                if hasattr(tail_ids, "tolist"):
-                    tail_ids = tail_ids.tolist()
-                truncated_clip_text = pipe.tokenizer.decode(
-                    tail_ids, skip_special_tokens=True
-                )
-                print("-" * 60)
-                print("✗ [잘린 CLIP 텍스트]")
-                print(truncated_clip_text)
-                print("-" * 60)
-            except Exception as e:
-                print(f"✗ [잘린 CLIP 텍스트 디코드 실패: {e}]")
-        else:
-            print(
-                f"✓ CLIP 토큰 수: {raw_clip_token_count} / {clip_max_len} (잘림 없음)"
-            )
-
-        with torch.inference_mode():
-            clip_out = pipe.text_encoder(
-                clip_inputs["input_ids"].to(DEVICE),
-                output_hidden_states=False,
-            )
-        pooled_prompt_embeds = clip_out.pooler_output.to(dtype=DTYPE)
-
-        # ---- Encode T5 ----
         max_len = int(max_sequence_length)
-        text_inputs = pipe.tokenizer_2(
-            prompt_t5,
-            padding="max_length",
-            max_length=max_len,
-            truncation=True,
-            return_tensors="pt",
-        )
-
-        raw_ids = pipe.tokenizer_2(prompt_t5, truncation=False, return_tensors="pt")[
-            "input_ids"
-        ][0]
+        raw_ids = pipe.tokenizer_2(
+            t5_prompt_text, truncation=False, return_tensors="pt"
+        )["input_ids"][0]
         raw_token_count = len(raw_ids)
         clipped = max(0, raw_token_count - max_len)
         if clipped > 0:
@@ -448,52 +407,7 @@ def generate_image(
         else:
             print(f"✓ T5 토큰 수: {raw_token_count} / {max_len} (잘림 없음)")
 
-        with torch.inference_mode():
-            prompt_embeds = pipe.text_encoder_2(
-                text_inputs["input_ids"].to(DEVICE),
-                output_hidden_states=False,
-            )[0]
-        prompt_embeds = prompt_embeds.to(dtype=DTYPE)
-
-        # Encode negative prompt when true_cfg_scale > 1.0
-        negative_t5_embeds = None
-        if true_cfg_scale > 1.0 and negative and negative.strip():
-            print(f"네거티브 프롬프트 인코딩 중... (true_cfg_scale={true_cfg_scale})")
-            neg_clip_text = negative
-            neg_t5_text = negative
-
-            negative_clip_pooled_prompt_embeds = None
-            neg_clip_inputs = pipe.tokenizer(
-                neg_clip_text,
-                padding="max_length",
-                max_length=clip_max_len,
-                truncation=True,
-                return_tensors="pt",
-            )
-            with torch.inference_mode():
-                neg_clip_out = pipe.text_encoder(
-                    neg_clip_inputs["input_ids"].to(DEVICE),
-                    output_hidden_states=False,
-                )
-            negative_clip_pooled_prompt_embeds = neg_clip_out.pooler_output.to(
-                dtype=DTYPE
-            )
-
-            neg_inputs = pipe.tokenizer_2(
-                neg_t5_text,
-                padding="max_length",
-                max_length=max_len,
-                truncation=True,
-                return_tensors="pt",
-            )
-            with torch.inference_mode():
-                negative_t5_embeds = pipe.text_encoder_2(
-                    neg_inputs["input_ids"].to(DEVICE),
-                    output_hidden_states=False,
-                )[0]
-            negative_t5_embeds = negative_t5_embeds.to(dtype=DTYPE)
-
-        progress(0.05, desc="추론 시작...")
+        resized_input = input_image.resize((width, height), Image.LANCZOS)
 
         def step_callback(_pipe, step_index, _timestep, callback_kwargs):
             current = step_index + 1
@@ -517,28 +431,29 @@ def generate_image(
                 print()
             return callback_kwargs
 
-        # 입력 이미지를 출력 크기에 맞게 리사이즈
-        resized_input = input_image.resize((width, height), Image.LANCZOS)
-
         pipe_kwargs = {
             "image": resized_input,
-            "strength": float(strength),
-            "prompt_embeds": prompt_embeds,
-            "pooled_prompt_embeds": pooled_prompt_embeds,
-            "width": width,
-            "height": height,
-            "guidance_scale": guidance_scale,
+            "prompt": clip_prompt_text,
+            "prompt_2": t5_prompt_text,
+            "width": int(width),
+            "height": int(height),
+            "guidance_scale": float(guidance_scale),
             "num_inference_steps": steps,
             "num_images_per_prompt": int(num_images_per_prompt),
             "generator": generator,
             "callback_on_step_end": step_callback,
+            "max_sequence_length": max_len,
+            "max_area": int(max_area),
+            "_auto_resize": bool(kontext_auto_resize),
         }
-        if negative_t5_embeds is not None:
-            pipe_kwargs["negative_prompt_embeds"] = negative_t5_embeds
-            pipe_kwargs["negative_pooled_prompt_embeds"] = (
-                negative_clip_pooled_prompt_embeds
-            )
-            pipe_kwargs["true_cfg_scale"] = true_cfg_scale
+        neg = (negative or "").strip()
+        neg2 = (negative_prompt_2 or "").strip()
+        if float(true_cfg_scale) > 1.0 and neg:
+            pipe_kwargs["negative_prompt"] = neg
+            pipe_kwargs["negative_prompt_2"] = neg2 if neg2 else neg
+            pipe_kwargs["true_cfg_scale"] = float(true_cfg_scale)
+
+        progress(0.05, desc="추론 시작...")
 
         with torch.inference_mode():
             images = pipe(**pipe_kwargs).images
@@ -565,6 +480,7 @@ def generate_image(
             f"{script_name}_{timestamp}_{device_label}_{width}x{height}"
             f"_gs{guidance_scale}_step{steps}_seed{int(seed)}"
             f"_cfg{true_cfg_scale}_n{int(num_images_per_prompt)}_msl{int(max_sequence_length)}"
+            f"_ma{int(max_area)}_ar{1 if kontext_auto_resize else 0}"
         )
 
         saved_files = []
@@ -578,10 +494,9 @@ def generate_image(
             saved_files.append(filename)
 
         token_info = (
-            f"T5 토큰: {raw_token_count}/{max_len} → {clipped}개 잘림! | "
-            f"CLIP 토큰: {raw_clip_token_count}/{clip_max_len} → {clipped_clip}개 잘림!"
-            if clipped > 0 or clipped_clip > 0
-            else f"T5 토큰: {raw_token_count}/{max_len} | CLIP 토큰: {raw_clip_token_count}/{clip_max_len}"
+            f"T5 토큰: {raw_token_count}/{max_len} → {clipped}개 잘림!"
+            if clipped > 0
+            else f"T5 토큰: {raw_token_count}/{max_len}"
         )
         saved_info = (
             f"저장됨: {saved_files[0]}"
@@ -607,14 +522,14 @@ def main():
     print_hardware_info()
     load_model()
 
-    with gr.Blocks(title="Flux.1-dev Image Edit") as interface:
-        gr.Markdown("# Flux.1-dev Image Edit")
+    with gr.Blocks(title="Flux.1-Kontext-dev Image Edit") as interface:
+        gr.Markdown("# Flux.1-Kontext-dev Image Edit")
         gr.Markdown(
-            f"입력 이미지를 프롬프트에 맞게 편집합니다. Strength가 낮을수록 원본에 가깝고, 높을수록 크게 변경됩니다."
-            f" (Device: **{DEVICE.upper()}**)\n\n"
-            "**참고:** `FLUX.1-dev` + img2img는 **텍스트→이미지 가중** 모델을 노이즈 재생성으로 쓰는 방식이라, "
-            "Kontext 등 **전용 편집 모델**만큼 \"이 부분만 바꿔\" 수준의 지시 준수는 기대하기 어렵습니다. "
-            "원하는 변화는 **Subject·T5 쪽에 구체적으로** 적고, **Strength**(약 0.55~0.9)와 **Guidance**를 조절해 보세요."
+            f"`{MODEL_ID}` — 텍스트 지시로 **입력 이미지를 편집**합니다. "
+            "diffusers는 `prompt`→CLIP(pooled), `prompt_2`→T5 순으로 인코딩합니다. "
+            "공식 예시와 같이 **Guidance 2.5~3.5**, **약 28 스텝**부터 맞춰 보세요. "
+            "고급 옵션은 오른쪽 **FluxKontext 전용** 아코디언(`max_area`, `_auto_resize`, `negative_prompt_2`)을 참고하세요. "
+            f"(Device: **{DEVICE.upper()}**)"
         )
 
         with gr.Row():
@@ -647,9 +562,9 @@ def main():
 
                 gr.Markdown(
                     "### 프롬프트 구성\n"
-                    "- **CLIP**: Subject → Positive 순.\n"
-                    "- **T5**: Subject → 포즈·의상·머리 → Setting → Lighting → Camera → **Positive** 순.\n"
-                    "- **Negative**: True CFG > 1.0일 때 CLIP/T5 공통 적용."
+                    "- **CLIP 미리보기** → 파이프라인 `prompt` (짧은 태그·요약에 적합, ~77 토큰).\n"
+                    "- **T5 미리보기** → 파이프라인 `prompt_2` (편집 지시·세부 묘사, 최대 시퀀스 길이까지).\n"
+                    "- **Negative**: `True CFG > 1.0` 이고 네거티브가 비어 있지 않을 때 `negative_prompt` / `negative_prompt_2`로 전달."
                 )
                 with gr.Accordion(
                     "프롬프트 섹션 (Subject · 포즈 · 의상 · 배경 · 조명 · 카메라)",
@@ -782,11 +697,11 @@ def main():
                         info="CLIP과 T5 모두에 포함됩니다. 편집 지시는 Subject/T5와 함께 여기에 두면 반응이 좋아질 수 있습니다.",
                     )
                     negative_box = gr.Textbox(
-                        label="19. 네거티브 프롬프트 (Negative)",
+                        label="19. 네거티브 프롬프트 (negative_prompt)",
                         value=NEGATIVE,
                         lines=2,
                         placeholder="예: blurry, deformed hands, bad anatomy",
-                        info="True CFG Scale > 1.0일 때 CLIP/T5 모두에 공통으로 사용됩니다.",
+                        info="True CFG > 1.0일 때 CLIP 쪽 네거티브. T5 전용 문구는 오른쪽 Kontext 섹션의 negative_prompt_2.",
                     )
                 with gr.Accordion("CLIP 프롬프트 (Subject → Positive)", open=False):
                     prompt_clip = gr.Textbox(
@@ -870,30 +785,21 @@ def main():
                         info="이미지 높이 (픽셀). 32의 배수.",
                     )
                 with gr.Row():
-                    strength = gr.Slider(
-                        label="Strength (편집 강도)",
-                        minimum=0.1,
-                        maximum=1.0,
-                        step=0.05,
-                        value=0.75,
-                        info="낮을수록 원본 유지, 높을수록 크게 변경. 권장: 0.5~0.85",
-                    )
-                with gr.Row():
                     guidance_scale = gr.Slider(
                         label="Guidance Scale (프롬프트 강도)",
                         minimum=1.0,
                         maximum=10.0,
                         step=0.5,
                         value=7.5,
-                        info="프롬프트 준수도. 낮으면 창의적, 높으면 정확. Flux.1 Dev 권장: 3.5~8",
+                        info="Kontext 공식 예시: ~2.5~3.5. 높이면 지시 준수↑, 과하면 아티팩트 가능.",
                     )
                     num_inference_steps = gr.Slider(
                         label="추론 스텝",
                         minimum=10,
                         maximum=50,
                         step=1,
-                        value=37,
-                        info="생성 단계 수. 높으면 품질 향상, 시간 증가. 권장: 25-40",
+                        value=28,
+                        info="공식 예시: 28. 품질 우선 시 40~50 (시간 증가).",
                     )
                 with gr.Row():
                     true_cfg_scale = gr.Slider(
@@ -935,6 +841,35 @@ def main():
                         info="JPEG: quality 100 (4:4:4), PNG: 무손실 압축.",
                     )
 
+                with gr.Accordion(
+                    "FluxKontext 전용 (diffusers `FluxKontextPipeline`)", open=False
+                ):
+                    gr.Markdown(
+                        "`max_area`: 출력 해상도(너비·높이 슬라이더 비율 유지)의 **픽셀 면적 상한**. "
+                        "`_auto_resize`: 입력 이미지를 **학습에 쓰인 권장 해상도** 중 하나로 맞춤. "
+                        "`negative_prompt_2`: **T5 전용** 네거티브(비우면 `negative_prompt`와 동일)."
+                    )
+                    max_area = gr.Slider(
+                        label="max_area (최대 픽셀 수, width×height 상한의 기준)",
+                        minimum=262144,
+                        maximum=4194304,
+                        step=65536,
+                        value=1048576,
+                        info="기본 1024². 비율은 좌측 너비/높이 슬라이더에 맞춰 조정됩니다.",
+                    )
+                    kontext_auto_resize = gr.Checkbox(
+                        label="_auto_resize (권장 해상도로 입력 이미지 정렬)",
+                        value=True,
+                        info="켜면 파이프라인이 Kontext 학습 해상도 목록에 맞춰 입력을 리사이즈합니다.",
+                    )
+                    negative_prompt_2_box = gr.Textbox(
+                        label="negative_prompt_2 (T5 전용, 선택)",
+                        value="",
+                        lines=2,
+                        placeholder="비우면 negative_prompt(19번)와 동일하게 전달",
+                        info="True CFG > 1.0 이고 네거티브가 있을 때만 의미가 있습니다.",
+                    )
+
                 gr.Markdown("---")
                 gr.Markdown("### 이미지 생성")
                 generate_btn = gr.Button("이미지 생성", variant="primary", size="lg")
@@ -964,10 +899,10 @@ def main():
             fn=generate_image,
             inputs=[
                 input_image,
-                strength,
                 prompt_clip,
                 prompt_t5,
                 negative_box,
+                negative_prompt_2_box,
                 width,
                 height,
                 guidance_scale,
@@ -976,6 +911,8 @@ def main():
                 num_images_per_prompt,
                 seed,
                 max_sequence_length,
+                max_area,
+                kontext_auto_resize,
                 image_format,
             ],
             outputs=[output_grid, output_gallery, output_files, output_message],
