@@ -29,7 +29,7 @@ FACE = ""
 BODY = ""
 ARM = ""
 HAND = ""
-FOOTWEAR = "Wearing a black high heel sandals."
+FOOTWEAR = ""
 LEGWEAR = ""
 BOTTOM = ""
 TOP = ""
@@ -50,6 +50,54 @@ NEGATIVE = "Low quality, worst quality, blurry, out of focus, jpeg artifacts, di
 KONTEXT_SPATIAL_MULTIPLE = 8
 KONTEXT_SIZE_MIN = 256
 KONTEXT_SIZE_MAX = 2048
+# 입력 이미지가 없을 때·슬라이더 초기값 (8의 배수)
+DEFAULT_OUTPUT_WIDTH = 768
+DEFAULT_OUTPUT_HEIGHT = 1536
+
+# gr.Radio value — 출력 크기 모드
+OUTPUT_SIZE_MODE_SLIDER = "slider"
+OUTPUT_SIZE_MODE_INPUT_PIXELS = "input_pixels"
+OUTPUT_SIZE_MODE_INPUT_ASPECT = "input_aspect"
+DEFAULT_OUTPUT_SIZE_MODE = OUTPUT_SIZE_MODE_INPUT_PIXELS
+
+# OpenCLIP / SD-style text encoder used with Flux Kontext: hard limit 77 tokens.
+CLIP_MAX_TOKENS = 77
+
+
+def truncate_text_for_clip(tokenizer, text: str, label: str = "prompt") -> tuple[str, bool]:
+    """CLIP 경로용: 77토큰 초과 시 truncation=True로 잘라 인덱싱 오류·경고를 막음."""
+    if not (text or "").strip():
+        return text, False
+    text = text.strip()
+    max_len = getattr(tokenizer, "model_max_length", CLIP_MAX_TOKENS) or CLIP_MAX_TOKENS
+    if max_len > CLIP_MAX_TOKENS:
+        max_len = CLIP_MAX_TOKENS
+    enc_full = tokenizer(text, truncation=False, add_special_tokens=True)
+    ids = enc_full["input_ids"]
+    if hasattr(ids, "tolist"):
+        ids = ids[0].tolist()
+    else:
+        ids = list(ids[0]) if ids and isinstance(ids[0], (list, tuple)) else list(ids)
+    n = len(ids)
+    if n <= max_len:
+        return text, False
+    enc_t = tokenizer(
+        text, truncation=True, max_length=max_len, add_special_tokens=True
+    )
+    row = enc_t["input_ids"]
+    if hasattr(row, "tolist"):
+        row = row[0].tolist()
+    else:
+        row = list(row[0])
+    shortened = tokenizer.decode(row, skip_special_tokens=True).strip()
+    tail_ids = ids[max_len:]
+    tail = tokenizer.decode(tail_ids, skip_special_tokens=True).strip()
+    print(
+        f"✗ CLIP({label}) 토큰 수 {n} > {max_len}, 잘림. 잘린 끝: … [{tail}]"
+        if tail
+        else f"✗ CLIP({label}) 토큰 수 {n} > {max_len}, 잘림."
+    )
+    return shortened, True
 
 
 def round_to_kontext_spatial(
@@ -73,6 +121,62 @@ def round_to_kontext_spatial(
     if r > int(maximum):
         r = int(maximum) // m * m
     return max(m, r)
+
+
+def output_size_from_input_image(img: Image.Image) -> tuple[int, int]:
+    """입력 PIL 크기에 맞춰 Kontext용 (w, h) 픽셀."""
+    rw, rh = img.size
+    return round_to_kontext_spatial(rw), round_to_kontext_spatial(rh)
+
+
+def output_size_fit_input_aspect(
+    iw: int,
+    ih: int,
+    box_w: float | int,
+    box_h: float | int,
+) -> tuple[int, int]:
+    """입력 가로세로 비율 유지, (box_w, box_h) 안에 들어가도록 스케일 후 Kontext 격자."""
+    if iw <= 0 or ih <= 0:
+        return (
+            round_to_kontext_spatial(box_w),
+            round_to_kontext_spatial(box_h),
+        )
+    bw = round_to_kontext_spatial(box_w)
+    bh = round_to_kontext_spatial(box_h)
+    scale = min(bw / iw, bh / ih)
+    for _ in range(64):
+        nw = round_to_kontext_spatial(iw * scale)
+        nh = round_to_kontext_spatial(ih * scale)
+        if (
+            nw <= bw
+            and nh <= bh
+            and nw >= KONTEXT_SIZE_MIN
+            and nh >= KONTEXT_SIZE_MIN
+        ):
+            return nw, nh
+        scale *= 0.985
+    nw = round_to_kontext_spatial(iw * scale)
+    nh = round_to_kontext_spatial(ih * scale)
+    return (
+        max(KONTEXT_SPATIAL_MULTIPLE, min(bw, nw)),
+        max(KONTEXT_SPATIAL_MULTIPLE, min(bh, nh)),
+    )
+
+
+def sync_sliders_to_input_size(img, output_size_mode: str):
+    """입력 없으면 기본 해상도. '입력 픽셀' 모드일 때만 업로드 시 슬라이더를 입력 크기로 맞춤."""
+    if img is None:
+        return (
+            gr.update(value=DEFAULT_OUTPUT_WIDTH),
+            gr.update(value=DEFAULT_OUTPUT_HEIGHT),
+        )
+    if output_size_mode != OUTPUT_SIZE_MODE_INPUT_PIXELS:
+        return gr.update(), gr.update()
+    if not isinstance(img, Image.Image):
+        img = Image.fromarray(img)
+    img = img.convert("RGB")
+    w, h = output_size_from_input_image(img)
+    return gr.update(value=w), gr.update(value=h)
 
 
 def make_image_grid(images: list) -> Image.Image:
@@ -355,6 +459,8 @@ def generate_image(
     input_image,
     prompt_clip,
     prompt_t5,
+    prompt_subject,
+    positive_box,
     negative,
     negative_prompt_2,
     width,
@@ -367,6 +473,7 @@ def generate_image(
     max_sequence_length,
     max_area,
     kontext_auto_resize,
+    output_size_mode,
     image_format,
     progress=gr.Progress(track_tqdm=True),
 ):
@@ -393,25 +500,43 @@ def generate_image(
 
         pc = (prompt_clip or "").strip()
         pt = (prompt_t5 or "").strip()
-        if not pc and not pt:
+        # CLIP(`prompt`): Subject + Positive 섹션만 (수동 CLIP 박스는 보조 폴백).
+        clip_prompt_text = format_clip_preview(prompt_subject, positive_box).strip()
+        if not clip_prompt_text:
+            clip_prompt_text = pc
+        if not clip_prompt_text:
+            clip_prompt_text = pt
+        t5_prompt_text = pt if pt else clip_prompt_text
+        if not clip_prompt_text and not pt:
             return (
                 None,
                 [],
                 [],
-                "오류: CLIP 프롬프트 또는 T5 프롬프트 중 하나 이상을 입력해 주세요.",
+                "오류: CLIP용(Subject/Positive) 또는 T5 프롬프트 중 하나 이상을 입력해 주세요.",
             )
 
-        clip_prompt_text = pc if pc else pt
-        t5_prompt_text = pt if pt else pc
+        clip_prompt_text, clip_truncated = truncate_text_for_clip(
+            pipe.tokenizer, clip_prompt_text, "prompt"
+        )
+
+        neg = (negative or "").strip()
+        neg2 = (negative_prompt_2 or "").strip()
+        t5_neg = neg2 if neg2 else neg
 
         progress(0.0, desc="프롬프트 분석 · 추론 준비...")
         print("FLUX.1-Kontext-dev 편집 호출")
         print("=" * 60)
-        print("[prompt → CLIP / pooled]")
+        print("[prompt → CLIP / pooled] (Subject + Positive만)")
         print(clip_prompt_text)
         print("-" * 60)
         print("[prompt_2 → T5]")
         print(t5_prompt_text)
+        if float(true_cfg_scale) > 1.0 and t5_neg:
+            print("-" * 60)
+            print(
+                "[True CFG] negative_prompt='' (CLIP 미사용), "
+                "negative_prompt_2 → T5만"
+            )
         print("=" * 60)
 
         generator_device = "cpu" if DEVICE == "mps" else DEVICE
@@ -435,13 +560,39 @@ def generate_image(
         else:
             print(f"✓ T5 토큰 수: {raw_token_count} / {max_len} (잘림 없음)")
 
-        w_px = round_to_kontext_spatial(width)
-        h_px = round_to_kontext_spatial(height)
-        if w_px != int(width) or h_px != int(height):
+        raw_w, raw_h = input_image.size
+        mode = (output_size_mode or OUTPUT_SIZE_MODE_SLIDER).strip()
+        if mode not in (
+            OUTPUT_SIZE_MODE_SLIDER,
+            OUTPUT_SIZE_MODE_INPUT_PIXELS,
+            OUTPUT_SIZE_MODE_INPUT_ASPECT,
+        ):
+            mode = OUTPUT_SIZE_MODE_SLIDER
+
+        if mode == OUTPUT_SIZE_MODE_INPUT_PIXELS:
+            w_px, h_px = output_size_from_input_image(input_image)
+            if w_px != raw_w or h_px != raw_h:
+                print(
+                    f"출력 크기: 입력 픽셀 → Kontext 격자({KONTEXT_SPATIAL_MULTIPLE}px): "
+                    f"{raw_w}x{raw_h} → {w_px}x{h_px}"
+                )
+            else:
+                print(f"출력 크기: 입력과 동일 픽셀 {w_px}x{h_px}")
+        elif mode == OUTPUT_SIZE_MODE_INPUT_ASPECT:
+            w_px, h_px = output_size_fit_input_aspect(raw_w, raw_h, width, height)
+            bw = round_to_kontext_spatial(width)
+            bh = round_to_kontext_spatial(height)
             print(
-                f"이미지 크기를 Kontext 지원 해상도({KONTEXT_SPATIAL_MULTIPLE}px 배수)로 맞춤: "
-                f"{int(width)}x{int(height)} → {w_px}x{h_px}"
+                f"출력 크기: 입력 비율 {raw_w}:{raw_h} 유지, 슬라이더 박스 최대 {bw}x{bh} → {w_px}x{h_px}"
             )
+        else:
+            w_px = round_to_kontext_spatial(width)
+            h_px = round_to_kontext_spatial(height)
+            if w_px != int(width) or h_px != int(height):
+                print(
+                    f"이미지 크기를 Kontext 지원 해상도({KONTEXT_SPATIAL_MULTIPLE}px 배수)로 맞춤: "
+                    f"{int(width)}x{int(height)} → {w_px}x{h_px}"
+                )
 
         resized_input = input_image.resize((w_px, h_px), Image.LANCZOS)
 
@@ -482,11 +633,10 @@ def generate_image(
             "max_area": int(max_area),
             "_auto_resize": bool(kontext_auto_resize),
         }
-        neg = (negative or "").strip()
-        neg2 = (negative_prompt_2 or "").strip()
-        if float(true_cfg_scale) > 1.0 and neg:
-            pipe_kwargs["negative_prompt"] = neg
-            pipe_kwargs["negative_prompt_2"] = neg2 if neg2 else neg
+        if float(true_cfg_scale) > 1.0 and t5_neg:
+            # 네거티브는 T5에만 전달(CLIP 경로에는 넣지 않음). T5 길이는 max_sequence_length에서 처리.
+            pipe_kwargs["negative_prompt"] = ""
+            pipe_kwargs["negative_prompt_2"] = t5_neg
             pipe_kwargs["true_cfg_scale"] = float(true_cfg_scale)
 
         progress(0.05, desc="추론 시작...")
@@ -534,6 +684,8 @@ def generate_image(
             if clipped > 0
             else f"T5 토큰: {raw_token_count}/{max_len}"
         )
+        if clip_truncated:
+            token_info += " | CLIP(prompt): 77토큰 초과 구간 잘림(콘솔 참고)"
         saved_info = (
             f"저장됨: {saved_files[0]}"
             if len(saved_files) == 1
@@ -541,13 +693,28 @@ def generate_image(
         )
         print(f"이미지 생성 완료! 소요 시간: {elapsed:.1f}초 | {token_info}")
 
-        try:
-            w_in = int(round(float(width)))
-            h_in = int(round(float(height)))
-        except (TypeError, ValueError):
-            w_in, h_in = w_px, h_px
+        if mode == OUTPUT_SIZE_MODE_INPUT_PIXELS:
+            w_in, h_in = raw_w, raw_h
+        elif mode == OUTPUT_SIZE_MODE_INPUT_ASPECT:
+            try:
+                w_in = int(round(float(width)))
+                h_in = int(round(float(height)))
+            except (TypeError, ValueError):
+                w_in, h_in = w_px, h_px
+        else:
+            try:
+                w_in = int(round(float(width)))
+                h_in = int(round(float(height)))
+            except (TypeError, ValueError):
+                w_in, h_in = w_px, h_px
         snap_msg = ""
-        if w_in != w_px or h_in != h_px:
+        if mode == OUTPUT_SIZE_MODE_INPUT_ASPECT:
+            if w_px != w_in or h_px != h_in:
+                snap_msg = (
+                    f" | 비율 유지 박스 {w_in}×{h_in} → 출력 {w_px}×{h_px} "
+                    f"({KONTEXT_SPATIAL_MULTIPLE}px 격자)"
+                )
+        elif w_in != w_px or h_in != h_px:
             snap_msg = (
                 f" | 해상도 {w_in}×{h_in} → {w_px}×{h_px} "
                 f"({KONTEXT_SPATIAL_MULTIPLE}px 배수로 보정)"
@@ -577,6 +744,7 @@ def main():
             "diffusers는 `prompt`→CLIP(pooled), `prompt_2`→T5 순으로 인코딩합니다. "
             "공식 예시와 같이 **Guidance 2.5~3.5**, **약 28 스텝**부터 맞춰 보세요. "
             "고급 옵션은 오른쪽 **FluxKontext 전용** 아코디언(`max_area`, `_auto_resize`, `negative_prompt_2`)을 참고하세요. "
+            "**출력 크기**: 입력과 동일 픽셀 / 입력 비율+슬라이더 박스 / 슬라이더만 — 중 선택(8px 격자·클램프). "
             f"(Device: **{DEVICE.upper()}**)"
         )
 
@@ -610,9 +778,9 @@ def main():
 
                 gr.Markdown(
                     "### 프롬프트 구성\n"
-                    "- **CLIP 미리보기** → 파이프라인 `prompt` (짧은 태그·요약에 적합, ~77 토큰).\n"
-                    "- **T5 미리보기** → 파이프라인 `prompt_2` (편집 지시·세부 묘사, 최대 시퀀스 길이까지).\n"
-                    "- **Negative**: `True CFG > 1.0` 이고 네거티브가 비어 있지 않을 때 `negative_prompt` / `negative_prompt_2`로 전달."
+                    "- **CLIP(`prompt`)** → 생성 시 **1번 Subject + 18번 Positive**만 사용(최대 **77 토큰**, 초과 시 잘림). CLIP 미리보기 박스는 폴백용입니다.\n"
+                    "- **T5(`prompt_2`)** → T5 미리보기 문자열(전체 섹션 결합).\n"
+                    "- **Negative**: `True CFG > 1.0`이고 네거티브가 있을 때 **`negative_prompt_2`(T5)만** 사용합니다. CLIP `negative_prompt`는 넘기지 않습니다."
                 )
                 with gr.Accordion(
                     "프롬프트 섹션 (Subject · 포즈 · 의상 · 배경 · 조명 · 카메라)",
@@ -623,7 +791,7 @@ def main():
                         value=SUBJECT,
                         lines=2,
                         placeholder="예: 1girl, young woman, a cat",
-                        info="T5 프롬프트 맨 앞. CLIP은 Subject → Positive 순.",
+                        info="T5 프롬프트 맨 앞. CLIP `prompt`에는 Subject+Positive만 반영됩니다.",
                     )
                     prompt_foot = gr.Textbox(
                         label="2. 포즈 - 발 (Foot)",
@@ -742,22 +910,22 @@ def main():
                         value=POSITIVE,
                         lines=2,
                         placeholder="예: masterpiece, best quality, highly detailed",
-                        info="CLIP과 T5 모두에 포함됩니다. 편집 지시는 Subject/T5와 함께 여기에 두면 반응이 좋아질 수 있습니다.",
+                        info="T5 전체 프롬프트에 포함됩니다. CLIP 경로에는 Subject와 함께만 전달됩니다.",
                     )
                     negative_box = gr.Textbox(
-                        label="19. 네거티브 프롬프트 (negative_prompt)",
+                        label="19. 네거티브 프롬프트 (T5 / negative_prompt_2)",
                         value=NEGATIVE,
                         lines=2,
                         placeholder="예: blurry, deformed hands, bad anatomy",
-                        info="True CFG > 1.0일 때 CLIP 쪽 네거티브. T5 전용 문구는 오른쪽 Kontext 섹션의 negative_prompt_2.",
+                        info="True CFG > 1.0일 때 T5 네거티브로만 전달됩니다. `negative_prompt_2`가 비어 있으면 여기 내용이 사용됩니다.",
                     )
                 with gr.Accordion("CLIP 프롬프트 (Subject → Positive)", open=False):
                     prompt_clip = gr.Textbox(
-                        label="CLIP 프롬프트",
+                        label="CLIP 프롬프트 (미리보기)",
                         value=format_clip_preview(SUBJECT, POSITIVE),
                         lines=3,
                         interactive=True,
-                        info="Subject + Positive 순으로 자동 결합됩니다.",
+                        info="생성 시에는 1·18번 섹션만 CLIP에 씁니다. 섹션이 비었을 때만 이 박스 내용이 폴백됩니다.",
                     )
                 with gr.Accordion("T5 프롬프트 (전체 섹션 결합)", open=False):
                     prompt_t5 = gr.Textbox(
@@ -815,16 +983,35 @@ def main():
 
             with gr.Column(scale=1):
                 gr.Markdown("### 파라미터 설정")
+                output_size_mode = gr.Radio(
+                    label="출력 이미지 크기",
+                    choices=[
+                        ("입력과 동일 (픽셀)", OUTPUT_SIZE_MODE_INPUT_PIXELS),
+                        (
+                            "입력 비율 유지 · 슬라이더를 최대 박스로",
+                            OUTPUT_SIZE_MODE_INPUT_ASPECT,
+                        ),
+                        ("슬라이더만 (고정 해상도)", OUTPUT_SIZE_MODE_SLIDER),
+                    ],
+                    value=DEFAULT_OUTPUT_SIZE_MODE,
+                    info=(
+                        "「동일 픽셀」: 업로드 해상도(보정)로 출력. "
+                        "「비율+박스」: 입력 가로세로 비율을 유지한 채 너비·높이 슬라이더 직사각형 안에 맞춤. "
+                        "「슬라이더만」: 슬라이더 값이 출력 크기. "
+                        f"입력 이미지가 없을 때 슬라이더는 {DEFAULT_OUTPUT_WIDTH}×{DEFAULT_OUTPUT_HEIGHT}로 초기화됩니다."
+                    ),
+                )
                 with gr.Row():
                     width = gr.Slider(
                         label="이미지 너비",
                         minimum=KONTEXT_SIZE_MIN,
                         maximum=KONTEXT_SIZE_MAX,
                         step=KONTEXT_SPATIAL_MULTIPLE,
-                        value=768,
+                        value=DEFAULT_OUTPUT_WIDTH,
                         info=(
-                            f"픽셀. FLUX Kontext(diffusers)는 가로·세로가 "
-                            f"{KONTEXT_SPATIAL_MULTIPLE}의 배수여야 합니다."
+                            f"픽셀 ({KONTEXT_SPATIAL_MULTIPLE}의 배수). "
+                            "「비율+박스」에서는 최대 가로. "
+                            "「동일 픽셀」에서는 업로드 시 입력 가로로 동기화됩니다."
                         ),
                     )
                     height = gr.Slider(
@@ -832,10 +1019,11 @@ def main():
                         minimum=KONTEXT_SIZE_MIN,
                         maximum=KONTEXT_SIZE_MAX,
                         step=KONTEXT_SPATIAL_MULTIPLE,
-                        value=1536,
+                        value=DEFAULT_OUTPUT_HEIGHT,
                         info=(
-                            f"픽셀. FLUX Kontext(diffusers)는 가로·세로가 "
-                            f"{KONTEXT_SPATIAL_MULTIPLE}의 배수여야 합니다."
+                            f"픽셀 ({KONTEXT_SPATIAL_MULTIPLE}의 배수). "
+                            "「비율+박스」에서는 최대 세로. "
+                            "「동일 픽셀」에서는 업로드 시 입력 세로로 동기화됩니다."
                         ),
                     )
                 with gr.Row():
@@ -901,7 +1089,7 @@ def main():
                     gr.Markdown(
                         "`max_area`: 출력 해상도(너비·높이 슬라이더 비율 유지)의 **픽셀 면적 상한**. "
                         "`_auto_resize`: 입력 이미지를 **학습에 쓰인 권장 해상도** 중 하나로 맞춤. "
-                        "`negative_prompt_2`: **T5 전용** 네거티브(비우면 `negative_prompt`와 동일)."
+                        "`negative_prompt_2`: **T5 전용** 네거티브. 비우면 19번 칸과 동일 문자열이 T5 네거티브로 전달됩니다(CLIP 네거티브는 사용하지 않음)."
                     )
                     max_area = gr.Slider(
                         label="max_area (최대 픽셀 수, width×height 상한의 기준)",
@@ -920,8 +1108,8 @@ def main():
                         label="negative_prompt_2 (T5 전용, 선택)",
                         value="",
                         lines=2,
-                        placeholder="비우면 negative_prompt(19번)와 동일하게 전달",
-                        info="True CFG > 1.0 이고 네거티브가 있을 때만 의미가 있습니다.",
+                        placeholder="비우면 19번 네거티브와 동일 문자열이 T5에만 전달",
+                        info="True CFG > 1.0이고(19번 또는 여기) 네거티브가 있을 때 T5에만 적용됩니다.",
                     )
 
                 gr.Markdown("---")
@@ -949,12 +1137,24 @@ def main():
             inputs=[device_selector],
             outputs=[device_status],
         )
+        input_image.change(
+            fn=sync_sliders_to_input_size,
+            inputs=[input_image, output_size_mode],
+            outputs=[width, height],
+        )
+        output_size_mode.change(
+            fn=sync_sliders_to_input_size,
+            inputs=[input_image, output_size_mode],
+            outputs=[width, height],
+        )
         generate_btn.click(
             fn=generate_image,
             inputs=[
                 input_image,
                 prompt_clip,
                 prompt_t5,
+                prompt_subject,
+                positive_box,
                 negative_box,
                 negative_prompt_2_box,
                 width,
@@ -967,6 +1167,7 @@ def main():
                 max_sequence_length,
                 max_area,
                 kontext_auto_resize,
+                output_size_mode,
                 image_format,
             ],
             outputs=[output_grid, output_gallery, output_files, output_message],
