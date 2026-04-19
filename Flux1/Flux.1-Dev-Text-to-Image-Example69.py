@@ -13,13 +13,13 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-SUBJECT = "A photorealistic image of a beautiful young skinny Korean woman with a soft idol aesthetic standing on a bright white sand beach, wearing a black and white small checkered pattern bikini."
+SUBJECT = "A photography of a beautiful young skinny Korean woman with a soft idol aesthetic standing on a bright white sand beach with bare feet wearing a tiny bikini."
 
-FOOT = ""
+FOOT = "Both feet together, side by side, flat on the wet sand, bare feet, touching the wet sand."
 
 LEG = "Both legs straight, standing firmly on the sand."
 
-FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous wavy jet-black hair with beautiful soft waves and curls, dramatically flowing and billowing in the wind, strands sweeping through the air with natural movement and body, full of life and dynamism."
+FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, voluminous straight jet-black hair, dramatically flowing and billowing in the wind, strands sweeping through the air with natural movement and body, full of life and dynamism."
 
 BODY = "Body turned to a subtle three-quarter angle, not fully frontal, hips shifted slightly to one side, slim and toned figure with defined waist, bare midriff fully visible, slender shoulders and collarbone clearly visible."
 
@@ -33,13 +33,13 @@ LEGWEAR = ""
 
 BOTTOM = "Black and white small checkered pattern bikini bottom, high-cut sides, thin black side-tie string straps on both hips, minimal coverage."
 
-TOP = "Black and white small checkered pattern triangle bikini top, thin halter neck tie straps, black trim piping along all edges, minimal coverage, bare shoulders."
+TOP = "Black and white small checkered pattern tiny triangle bikini top, thin halter neck tie straps, black trim piping along all edges, minimal coverage, bare shoulders."
 
 HEADWEAR = ""
 
 ARMWEAR = ""
 
-HEAD = "Head turned very slightly to the side, chin slightly lowered, gaze directed gently off to the side away from the camera, natural and confident."
+HEAD = "Head facing mostly toward the camera with a slight natural tilt, chin relaxed, gaze directed straight into the lens with the same innocent curious look, soft and natural."
 
 SETTING = "Bright white sand beach, expansive open beach with no crowd, clear blue ocean barely visible at the horizon, vivid blue sky with large fluffy white clouds, warm sunny summer day."
 
@@ -47,7 +47,7 @@ LIGHTING = "Bright natural daylight, strong outdoor sunlight, face and body even
 
 CAMERA = "Full body shot, entire body from head to bare feet fully in frame, feet and toes completely visible and not cropped at all, generous empty space below the feet, low camera angle slightly below waist level, soft bokeh background."
 
-POSITIVE = "8k, photorealistic, tack sharp, in focus, high resolution, ultra detailed, perfect anatomy, ten fingers, ten toes, well formed fingers and toes, sharp focus."
+POSITIVE = "8k, photorealistic, tack sharp, in focus, high resolution, perfect anatomy, five fingers for each hand, five toes for each foot, well formed fingers, well formed toes, ten toes, sharp focus."
 
 NEGATIVE = "Blurry, blur, soft focus, out of focus, defocus, unfocused, low quality, low resolution, deformed, bad anatomy, extra limbs, watermark, text, extra fingers, mirror selfie, indoor, fully clothed, shoes, houndstooth, motion blur, lens blur, gaussian blur, dreamy, hazy, foggy, grainy, noisy, painterly."
 
@@ -157,7 +157,10 @@ def combine_prompt_sections_dual(
 
 
 def get_device_and_dtype():
-    """Detect the best available device and appropriate data type."""
+    """
+    가속기 우선: NVIDIA CUDA → Apple MPS → CPU.
+    GPU(CUDA/MPS)가 없을 때만 CPU를 고릅니다.
+    """
     if torch.cuda.is_available():
         device = "cuda"
         dtype = torch.bfloat16
@@ -170,22 +173,21 @@ def get_device_and_dtype():
     return device, dtype
 
 
-# Global variables
+def format_auto_device_summary() -> str:
+    """현재 하드웨어 기준 자동 선택 결과를 한 줄로 설명."""
+    d, t = get_device_and_dtype()
+    if d == "cuda":
+        name = torch.cuda.get_device_name(0)
+        return f"자동: CUDA GPU — {name} | dtype={t}"
+    if d == "mps":
+        return f"자동: Apple MPS GPU | dtype={t}"
+    return f"자동: CPU (사용 가능한 CUDA/MPS 없음) | dtype={t}"
+
+
+# Global variables (시작 시 1회 자동 감지; 이후 load_model에서 재감지)
 DEVICE, DTYPE = get_device_and_dtype()
 pipe = None
 interface = None
-
-
-def get_available_devices():
-    devices = []
-    if torch.cuda.is_available():
-        devices.append("cuda")
-        devices.append("cpu")
-    elif torch.backends.mps.is_available():
-        devices.append("mps")
-    else:
-        devices.append("cpu")
-    return devices
 
 
 def print_hardware_info():
@@ -259,13 +261,11 @@ def signal_handler(_sig, _frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 
-def load_model(device_name=None):
-    """Load and initialize the Flux model with optimizations."""
+def load_model():
+    """Load Flux; 실행 장치·dtype은 매번 하드웨어를 자동 감지해 설정합니다."""
     global pipe, DEVICE, DTYPE
 
-    if device_name is not None:
-        DEVICE = device_name
-        DTYPE = torch.bfloat16 if device_name in ("cuda", "mps") else torch.float32
+    DEVICE, DTYPE = get_device_and_dtype()
 
     if pipe is not None:
         print("기존 모델 해제 중...")
@@ -304,7 +304,8 @@ def load_model(device_name=None):
         print("메모리 최적화 적용: attention slicing, VAE slicing, VAE tiling (MPS)")
 
     print(f"모델 로딩 완료! (Device: {DEVICE})")
-    return f"모델 로딩 완료! (Device: {DEVICE}, dtype: {DTYPE})"
+    status = f"모델 로딩 완료! (Device: {DEVICE}, dtype: {DTYPE})"
+    return status, format_auto_device_summary()
 
 
 def generate_image(
@@ -570,10 +571,10 @@ def main():
     global interface
 
     print_hardware_info()
-    load_model()
+    initial_status, initial_banner = load_model()
 
-    with gr.Blocks(title="Flux.1-dev Text-to-Image Generator") as interface:
-        gr.Markdown("# Flux.1-dev Text-to-Image Generator")
+    with gr.Blocks(title="Flux.1-dev Text-to-Image Example 69") as interface:
+        gr.Markdown("# Flux.1-dev Text-to-Image — Example 69")
         gr.Markdown(
             f"AI를 사용하여 텍스트에서 이미지를 생성합니다."
             f" (Device: **{DEVICE.upper()}**)"
@@ -582,20 +583,19 @@ def main():
         with gr.Row():
             with gr.Column(scale=1):
                 gr.Markdown("### 모델 설정")
-                device_selector = gr.Radio(
-                    label="디바이스 선택",
-                    choices=get_available_devices(),
-                    value=DEVICE,
-                    info="모델을 실행할 디바이스를 선택하세요.",
+                gr.Markdown(
+                    "실행 장치는 **자동 감지**됩니다: CUDA GPU → Apple MPS → CPU 순입니다."
+                )
+                auto_device_banner = gr.Textbox(
+                    label="실행 장치 (자동 감지)",
+                    value=initial_banner,
+                    interactive=False,
+                    lines=2,
                 )
                 load_model_btn = gr.Button("모델 로드", variant="secondary")
                 device_status = gr.Textbox(
                     label="모델 상태",
-                    value=(
-                        f"모델 로딩 완료! (Device: {DEVICE}, dtype: {DTYPE})"
-                        if pipe is not None
-                        else "모델이 로드되지 않았습니다. 디바이스를 선택하고 '모델 로드' 버튼을 눌러주세요."
-                    ),
+                    value=initial_status,
                     interactive=False,
                 )
 
@@ -856,13 +856,8 @@ def main():
 
         load_model_btn.click(
             fn=load_model,
-            inputs=[device_selector],
-            outputs=[device_status],
-        )
-        device_selector.change(
-            fn=load_model,
-            inputs=[device_selector],
-            outputs=[device_status],
+            inputs=[],
+            outputs=[device_status, auto_device_banner],
         )
         generate_btn.click(
             fn=generate_image,
