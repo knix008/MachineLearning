@@ -74,9 +74,13 @@ def normalize_spacing(text: str) -> str:
     return text.strip()
 
 
-def format_clip_preview(subject: str) -> str:
-    """CLIP 미리보기: Subject only."""
-    return normalize_spacing(subject) if subject and subject.strip() else ""
+def format_clip_preview(subject: str, positive: str) -> str:
+    """CLIP 미리보기: Subject 뒤에 Positive."""
+    s = normalize_spacing(subject) if subject and subject.strip() else ""
+    p = normalize_spacing(positive) if positive and positive.strip() else ""
+    if s and p:
+        return s + " " + p
+    return s or p
 
 
 def combine_t5_prompt_sections(
@@ -145,7 +149,7 @@ def combine_prompt_sections_dual(
     positive,
 ):
     """Build CLIP and T5 prompt strings for FLUX.1 dual encoders."""
-    clip_prompt = format_clip_preview(subject)
+    clip_prompt = format_clip_preview(subject, positive)
     t5_prompt = combine_t5_prompt_sections(
         subject, foot, leg, face, body, arm, hand,
         footwear, legwear, bottom, top, headwear, armwear,
@@ -737,13 +741,13 @@ def main():
                         placeholder="예: blurry, deformed hands, bad anatomy",
                         info="True CFG Scale > 1.0일 때 CLIP/T5 모두에 공통으로 사용됩니다.",
                     )
-                with gr.Accordion("CLIP 프롬프트 (Subject only)", open=False):
+                with gr.Accordion("CLIP 프롬프트 (Subject → Positive)", open=False):
                     prompt_clip = gr.Textbox(
                         label="CLIP 프롬프트",
-                        value=format_clip_preview(SUBJECT),
+                        value=format_clip_preview(SUBJECT, POSITIVE),
                         lines=3,
                         interactive=True,
-                        info="Subject만 자동 결합됩니다.",
+                        info="Subject + Positive 순으로 자동 결합됩니다.",
                     )
                 with gr.Accordion("T5 프롬프트 (전체 섹션 결합)", open=False):
                     prompt_t5 = gr.Textbox(
