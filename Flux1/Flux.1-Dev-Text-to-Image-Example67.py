@@ -13,43 +13,43 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-SUBJECT = "The image is a high-quality, photorealistic cosplay portrait of a young Korean woman with a soft, idol aesthetic."
+SUBJECT = "A photorealistic image of a beautiful young skinny Korean woman standing on a bright white sand beach, wearing a black and white small checkered pattern bikini."
 
 FOOT = ""
 
-LEG = ""
+LEG = "Both legs straight, standing firmly on the sand."
 
-FACE = "She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face."
+FACE = "She has a fair, clear complexion with naturally glowing skin. She is wearing a striking blue contact lens contrasting her dark black hair. Her expression is relaxed and confident, lips naturally slightly parted. She has long dark brown-black hair dramatically swept to one side by the strong sea breeze, flowing and billowing in the wind."
 
-BODY = "Her body is slightly angled toward the camera, creating a soft and inviting posture."
+BODY = "Body turned to a subtle three-quarter angle, not fully frontal, hips shifted slightly to one side, slim and toned figure with defined waist, bare midriff fully visible, slender shoulders and collarbone clearly visible."
 
-ARM = ""
+ARM = "One arm bent at the elbow pointing outward, the other arm slightly bent at the side."
 
-HAND = ""
+HAND = "One hand resting on the hip, the other hand resting gently on the lower abdomen and waist."
 
 FOOTWEAR = ""
 
-LEGWEAR = "She wears white fishnet stockings held up by blue and white ruffled lace garters adorned with small white bows."
+LEGWEAR = ""
 
-BOTTOM = ""
+BOTTOM = "Black and white small checkered pattern bikini bottom, high-cut sides, thin black side-tie string straps on both hips, minimal coverage."
 
-TOP = "She wears a unique blue denim-textured bodysuit. It features a front zipper, silver buttons, and thin silver chains draped across the chest. The sides are constructed from semi-sheer white lace. Around her neck is a blue bow tie attached to a white collar. She wears long, white floral lace fingerless sleeves that extend past her elbows, finished with blue cuffs and small black decorative ribbons."
+TOP = "Black and white small checkered pattern triangle bikini top, thin halter neck tie straps, black trim piping along all edges, minimal coverage, bare shoulders."
 
-HEADWEAR = "She wears tall, upright blue fabric bunny ears with white lace inner lining and a delicate white lace headband base, accented with a small white bow."
+HEADWEAR = ""
 
-ARMWEAR = "Long, white floral lace fingerless sleeves that extend past her elbows, finished with blue cuffs and small black decorative ribbons."
+ARMWEAR = ""
 
-HEAD = "Looking directly at the camera with an innocent and curious expression."
+HEAD = "Head turned very slightly to the side, chin slightly lowered, gaze directed gently off to the side away from the camera, natural and confident."
 
-SETTING = "She is standing gracefully in front of the edge of a light-colored, vintage-style bed or cushioned bench. A bright, high-key studio set designed to look like a clean, airy bedroom. The background is dominated by large windows with white vertical blinds or curtains, allowing soft, diffused natural-looking light to flood the scene. The background is softly blurred (bokeh)."
+SETTING = "Bright white sand beach, expansive open beach with no crowd, clear blue ocean barely visible at the horizon, vivid blue sky with large fluffy white clouds, warm sunny summer day."
 
-LIGHTING = "The lighting is bright, soft, and even, minimizing harsh shadows and giving the skin a glowing, porcelain appearance. Bright, soft, and even lighting with high-key aesthetic."
+LIGHTING = "Bright natural daylight, strong outdoor sunlight, face and body evenly and brightly illuminated, vivid and saturated colors, skin glowing naturally, no harsh shadows."
 
-CAMERA = "Cosplay portrait style, 8k resolution, high-key lighting, cinematic soft focus, detailed textures of denim and lace, gravure photography style."
+CAMERA = "Upper body shot from head to upper thigh, camera at subject level, 85mm f/1.8 portrait lens, ISO 100, fast shutter speed, tack-sharp focus locked on the subject, crisp edge detail on skin and fabric, every detail razor sharp."
 
-POSITIVE = "8k resolution, high-quality, photorealistic, detailed textures, blue bunny girl, denim cosplay, white lace, blue contact lenses, black hair with bangs, fishnet stockings, airy atmosphere, innocent and alluring, studio photography."
+POSITIVE = "8k, photorealistic, tack sharp, in focus, high resolution, ultra detailed, perfect anatomy, ten fingers, beach setting, wind in hair, checkered bikini, vibrant colors, sharp focus, crisp."
 
-NEGATIVE = "blurry, low quality, distorted, deformed, ugly, bad anatomy, bad hands, bad fingers, extra fingers, missing fingers, extra limbs, missing limbs, fused fingers, too many fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, extra arms, extra legs, malformed limbs, watermark, text, signature, logo, jpeg artifacts, cropped, worst quality, normal quality"
+NEGATIVE = "Blurry, blur, soft focus, out of focus, defocus, unfocused, low quality, low resolution, deformed, bad anatomy, extra limbs, watermark, text, extra fingers, mirror selfie, indoor, fully clothed, shoes, houndstooth, motion blur, lens blur, gaussian blur, dreamy, hazy, foggy, grainy, noisy, painterly."
 
 
 def make_image_grid(images: list) -> Image.Image:
@@ -146,14 +146,14 @@ def combine_prompt_sections_dual(
     camera,
     positive,
 ):
-    """Combine prompt sections into both CLIP and T5 strings."""
-    clip_str = format_clip_preview(subject, positive)
-    t5_str = combine_t5_prompt_sections(
+    """Build CLIP and T5 prompt strings for FLUX.1 dual encoders."""
+    clip_prompt = format_clip_preview(subject, positive)
+    t5_prompt = combine_t5_prompt_sections(
         subject, foot, leg, face, body, arm, hand,
         footwear, legwear, bottom, top, headwear, armwear,
         head, setting, lighting, camera,
     )
-    return clip_str, t5_str
+    return clip_prompt, t5_prompt
 
 
 def get_device_and_dtype():
@@ -177,11 +177,6 @@ interface = None
 
 
 def get_available_devices():
-    """Return list of available device choices.
-    - CUDA + CPU: both selectable
-    - MPS only (no CUDA): MPS only
-    - No GPU: CPU only
-    """
     devices = []
     if torch.cuda.is_available():
         devices.append("cuda")
@@ -193,13 +188,15 @@ def get_available_devices():
     return devices
 
 
-
-
 def print_hardware_info():
-    """Print detailed hardware specifications."""
+    """Print compact hardware summary (CLI)."""
     print("=" * 60)
-    print("하드웨어 사양")
+    print("하드웨어 사양(요약)")
     print("=" * 60)
+    print(
+        f"OS: {platform.system()} {platform.release()} ({platform.machine()}) | "
+        f"Python: {platform.python_version()} | PyTorch: {torch.__version__}"
+    )
     cpu_physical = psutil.cpu_count(logical=False)
     cpu_logical = psutil.cpu_count(logical=True)
     print(f"CPU: {cpu_physical} physical / {cpu_logical} logical cores")
@@ -222,7 +219,6 @@ def print_hardware_info():
 
 
 def cleanup():
-
     """Release all resources and clear memory."""
     global pipe, interface
     print("\n리소스 정리 중...")
@@ -811,7 +807,7 @@ def main():
                     )
                     num_inference_steps = gr.Slider(
                         label="추론 스텝",
-                        minimum=10, maximum=50, step=1, value=28,
+                        minimum=10, maximum=50, step=1, value=37,
                         info="생성 단계 수. 높으면 품질 향상, 시간 증가. 권장: 25-40",
                     )
                 with gr.Row():
@@ -883,7 +879,6 @@ def main():
         inbrowser=True,
         js="document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();}})",
     )
-
 
 
 if __name__ == "__main__":

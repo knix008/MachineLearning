@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(test -f \"d:/Home/Projects/MachineLearning/Flux1/Flux.1-Dev-Text-to-Image-Example29.py\")"
+      "Bash(test -f \"d:/Home/Projects/MachineLearning/Flux1/Flux.1-Dev-Text-to-Image-Example29.py\")",
+      "Bash(conda info:*)",
+      "Bash(C:\\\\Python312\\\\python.exe -c \"import diffusers; print\\('diffusers:', diffusers.__version__\\)\")",
+      "Bash(C:\\\\Python312\\\\python.exe -c \"import transformers; print\\('transformers:', transformers.__version__\\)\")",
+      "Bash(\"/c/Python312/python.exe\" -c \"import diffusers; print\\('diffusers:', diffusers.__version__\\)\")",
+      "Bash(\"/c/Python312/python.exe\" -c \"import transformers; print\\('transformers:', transformers.__version__\\)\")"
     ]
   }
 }
