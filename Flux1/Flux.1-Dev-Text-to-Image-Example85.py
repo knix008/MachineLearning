@@ -20,43 +20,43 @@ import gradio as gr
 # CLIP ~77토큰(Subject만). Positive는 T5에만 포함. T5는 FLUX.1-dev 기준 최대 512토큰(diffusers 한도, 초과 시 잘림).
 T5_MODEL_MAX_LENGTH = 512
 
-SUBJECT = "A photography of beautiful skinny Korean woman with soft idol aesthetic and innocent cute expression, wearing white fishnet stockings with white blue ruffled lace garters, crisp white collar with blue ribbon bow tie at the neck, bright bedroom studio."
+SUBJECT = "A photorealistic, high-quality cosplay portrait of a beautiful Korean woman dressed in a blue and white bunny girl outfit."
 
 FOOT = ""
 
-LEG = "Legs straight with soft knees, natural standing posture supporting a graceful pose."
+LEG = ""
 
-FACE = "Fair clear complexion, bright blue contact lenses, innocent curious expression toward the camera, long straight jet-black hair with hime-cut bangs framing the face."
+FACE = "She has long straight black hair with hime-cut bangs and vibrant blue eyes. She is looking at the camera with a soft, innocent expression. She has a fair, clear complexion. She is wearing striking bright blue contact lenses that contrast with her dark hair. Her expression is innocent and curious, looking directly at the camera. She has long, straight jet-black hair with thick, straight-cut bangs (fringe) that frame her face. Attire (Blue & White Bunny Theme)."
 
-BODY = "Standing gracefully at the edge of a light-colored vintage-style bed or cushioned bench, upright torso toward camera, body slightly angled, soft inviting posture, relaxed bare shoulders."
+BODY = "Her body is slightly angled toward the camera, creating a soft and inviting posture."
 
-ARM = "Both arms hanging naturally and symmetrically at the sides of the body."
+ARM = "One arm hanging naturally at the side and resting loosely near the thigh. Other arm slightly bent, hand resting lightly on the hip."
 
-HAND = "Both hands placed beside the legs near the outer thighs, fingers relaxed and naturally extended."
+HAND = ""
 
 FOOTWEAR = ""
 
-LEGWEAR = "White fishnet stockings held up by blue and white ruffled lace garters with small white bows."
+LEGWEAR = "Wearing white fishnet stockings held up by blue and white ruffled lace garters adorned with small white bows."
 
 BOTTOM = ""
 
-TOP = "Blue denim-textured bodysuit with front zipper, silver buttons, thin silver chains across the chest, semi-sheer white lace side panels, a crisp white shirt collar worn visibly at the neck with a blue ribbon bow tie tied neatly on the collar."
+TOP = "Wearing a unique blue denim-textured bodysuit. It features a front zipper, silver buttons, and thin silver chains draped across the chest. The sides are constructed from semi-sheer white lace. Around her neck is a blue bow tie attached to a white collar. She wears long, white floral lace fingerless sleeves that extend past her elbows, finished with blue cuffs and small black decorative ribbons."
 
-HEADWEAR = "Tall upright blue fabric bunny ears with white inner and white lace lining, white lace headband base, small white bow."
+HEADWEAR = "She wears tall, upright blue bunny ears with white lace trim and white lace inner lining and a delicate white lace headband base, accented with a small white bow."
 
-ARMWEAR = "Long white floral lace fingerless sleeves past the elbows, blue cuffs, small blue decorative ribbons."
+ARMWEAR = ""
 
 HEAD = ""
 
-SETTING = "Studio bedroom: large windows with white blinds or sheer curtains, white bed, sun-drenched airy space, softly blurred background."
+SETTING = "She is standing gracefully in front of the edge of a light-colored, vintage-style cushioned bench in a bright, sun-drenched room with soft-focus white curtains. A bright, high-key studio set designed to look like a clean, airy bedroom. "
 
-LIGHTING = "Bright soft even key light, minimal harsh shadows, glowing porcelain skin tone."
+LIGHTING = "The background is dominated by large windows with white vertical blinds or curtains, allowing soft, diffused natural-looking light to flood the scene. The background is softly blurred (bokeh)."
 
-CAMERA = "Eye-level full-length framing, sharp on subject, soft background bokeh, cinematic soft focus, gravure style."
+CAMERA = "High-key lighting, cinematic soft focus, detailed textures of denim and lace, gravure photography style"
 
-POSITIVE = "8k, photorealistic, highly detailed, sharp focus, perfect anatomy, well-formed hands, correct finger count."
+POSITIVE = "8k, perfect anatomy, ten fingers, no missing fingers, no extra finger."
 
-NEGATIVE = "Five fingers in each hand, blurry, low quality, distorted, deformed, ugly, bad anatomy, bad hands, bad fingers, extra fingers, missing fingers, extra limbs, missing limbs, fused fingers, too many fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, extra arms, extra legs, malformed limbs, watermark, text, signature, logo, jpeg artifacts, cropped, worst quality, normal quality"
+NEGATIVE = "blurry, low quality, distorted, deformed, ugly, bad anatomy, bad hands, bad fingers, extra fingers, missing fingers, fused fingers, too many fingers, extra limbs, missing limbs, malformed limbs, poorly drawn hands, poorly drawn face, mutation, watermark, text, signature, logo, jpeg artifacts, cropped, worst quality, normal quality"
 
 
 def make_image_grid(images: list) -> Image.Image:
