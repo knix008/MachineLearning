@@ -47,7 +47,7 @@ LIGHTING = "The lighting is bright, soft, and even, minimizing harsh shadows and
 
 CAMERA = ""
 
-POSITIVE = "8k resolution, high-quality, photorealistic, perfect anatomy, ten fingers, well formed fingers, beautiful fingers."
+POSITIVE = "8k resolution, high-quality, photorealistic, perfect anatomy, ten fingers, well formed fingers, beautiful fingers, no extra fingers."
 
 NEGATIVE = "blurry, low quality, distorted, deformed, ugly, bad anatomy, bad hands, bad fingers, extra fingers, missing fingers, extra limbs, missing limbs, fused fingers, too many fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, extra arms, extra legs, malformed limbs, watermark, text, signature, logo, jpeg artifacts, cropped, worst quality, normal quality"
 
