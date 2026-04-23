@@ -22,7 +22,7 @@ T5_MODEL_MAX_LENGTH = 512
 
 SUBJECT = "Photorealistic high-quality cosplay portrait of a beautiful skinny Korean woman, blue and white bunny girl outfit, soft idol aesthetic, long straight black hair with hime-cut bangs, vibrant blue eyes, full body in bright bedroom studio."
 
-FOOT = "Feet on the floor in front of a light-colored bed or cushioned bench, balanced stance, feet fully in frame."
+FOOT = ""
 
 LEG = "Legs straight with soft knees, natural standing posture supporting a graceful pose."
 
@@ -40,11 +40,11 @@ LEGWEAR = "She wears white fishnet stockings held up by blue and white ruffled l
 
 BOTTOM = ""
 
-TOP = "She wears a unique blue denim-textured bodysuit with front zipper, silver buttons, and thin silver chains across the chest, semi-sheer white lace sides, blue bow tie on a white collar, and long white floral lace fingerless sleeves past the elbows with blue cuffs and small black ribbon accents."
+TOP = "She wears a unique blue denim-textured bodysuit with front zipper, silver buttons, and thin silver chains across the chest, semi-sheer white lace sides, blue bow tie on a white collar."
 
 HEADWEAR = "She wears tall upright blue fabric bunny ears with white lace inner lining, a delicate white lace headband base, and a small white bow."
 
-ARMWEAR = ""
+ARMWEAR = "She wears long, white floral lace fingerless sleeves that extend past her elbows, finished with blue cuffs and small blue decorative ribbons"
 
 HEAD = "Head facing the camera, gaze aligned with the lens."
 
