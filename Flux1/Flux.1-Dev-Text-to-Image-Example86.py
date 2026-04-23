@@ -1,5 +1,6 @@
 import os
 
+# Hub: Windows symlink 안내 숨김, 다운로드 타임아웃 완화 (import diffusers 전에 설정)
 os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
 os.environ.setdefault("HF_HUB_DOWNLOAD_TIMEOUT", "120")
 
@@ -17,22 +18,22 @@ import time
 import gradio as gr
 
 # Default values for each prompt section
-# CLIP ~77토큰(Subject만). Positive는 T5에만 포함. T5는 FLUX.1-dev 기준 최대 512토큰(diffusers 한도, 초과 시 잘림).
+# CLIP ~77토큰(Subject+Positive), 네거티브도 동일. T5는 FLUX.1-dev 기준 최대 512토큰(모델·diffusers 한도, 초과 시 잘림).
 T5_MODEL_MAX_LENGTH = 512
 
-SUBJECT = "A high-quality photorealistic cosplay portrait of a young beautiful skinny Korean woman in a blue and white bunny outfit, full body from head to toe."
+SUBJECT = "A high-quality photorealistic full-body cosplay portrait of a beautiful young skinny Korean woman with a soft idol aesthetic, wearing a blue and white bunny outfit, shown from head to toe."
 
-FOOT = ""
+FOOT = "Full feet visible in frame from head to toe, natural standing stance, uncropped."
 
-LEG = ""
+LEG = "Most body weight is supported by one leg, with the other leg relaxed to create a subtle natural curve."
 
 FACE = "She has a fair clear complexion, long straight jet-black hair with thick straight-cut bangs, and striking bright blue contact lenses. She looks directly at the camera with a soft innocent expression."
 
-BODY = "Standing gracefully with her body slightly angled toward the camera, creating a soft inviting posture."
+BODY = "She faces the camera frontally while supporting most of her weight on one leg, creating a subtle natural body curve."
 
-ARM = "One arm hangs naturally at her side with the hand resting loosely near the thigh. The other arm is slightly bent with the hand resting lightly on the hip."
+ARM = "One arm is gently bent with the hand lightly touching and holding a small section of her hair near the side of her head. The other arm hangs naturally with the hand relaxed beside her leg."
 
-HAND = ""
+HAND = "Hands are natural and relaxed, with fingers clearly visible and gently separated, five fingers on each hand."
 
 FOOTWEAR = ""
 
@@ -54,7 +55,7 @@ LIGHTING = "Large windows with white curtains provide soft diffused natural-look
 
 CAMERA = "Photorealistic studio photography, high-key lighting, cinematic soft focus, detailed denim and lace textures, airy atmosphere."
 
-POSITIVE = "8k, detailed skin texture, natural facial detail, realistic fabric detail, anatomically correct hands, five fingers on each hand."
+POSITIVE = "8k, detailed skin texture, natural facial detail, realistic fabric detail, anatomically correct hands, five fingers on each hand, full body from head to toe."
 
 NEGATIVE = "blurry, low quality, distorted, deformed, bad anatomy, bad hands, bad fingers, extra fingers, missing fingers, fused fingers, too many fingers, extra limbs, missing limbs, malformed limbs, poorly drawn hands, poorly drawn face, mutation, watermark, text, signature, logo, jpeg artifacts, cropped, worst quality"
 
@@ -81,8 +82,17 @@ def normalize_spacing(text: str) -> str:
     return text.strip()
 
 
+def format_clip_preview(subject: str, positive: str) -> str:
+    """CLIP 미리보기: Subject 뒤에 Positive."""
+    s = normalize_spacing(subject) if subject and subject.strip() else ""
+    p = normalize_spacing(positive) if positive and positive.strip() else ""
+    if s and p:
+        return s + " " + p
+    return s or p
+
+
 def format_clip_prompt(subject: str) -> str:
-    """CLIP 인코더용 문자열: Subject만 사용 (Positive는 T5 전용)."""
+    """CLIP 인코더용 문자열: Subject만 사용."""
     return normalize_spacing(subject) if subject and subject.strip() else ""
 
 
@@ -131,7 +141,50 @@ def combine_t5_prompt_sections(
     return combined
 
 
-# 위 섹션 문자열을 합친 기본 프롬프트 (T5 전체 / CLIP Subject만)
+def combine_prompt_sections_dual(
+    subject,
+    foot,
+    leg,
+    face,
+    body,
+    arm,
+    hand,
+    footwear,
+    legwear,
+    bottom,
+    top,
+    headwear,
+    armwear,
+    head,
+    setting,
+    lighting,
+    camera,
+    positive,
+):
+    """Build CLIP and T5 prompt strings for FLUX.1 dual encoders."""
+    clip_prompt = format_clip_preview(subject, positive)
+    t5_prompt = combine_t5_prompt_sections(
+        subject,
+        foot,
+        leg,
+        face,
+        body,
+        arm,
+        hand,
+        footwear,
+        legwear,
+        bottom,
+        top,
+        headwear,
+        armwear,
+        head,
+        setting,
+        lighting,
+        camera,
+        positive,
+    )
+    return clip_prompt, t5_prompt
+
 DEFAULT_PROMPT_SECTIONS = (
     SUBJECT,
     FOOT,
