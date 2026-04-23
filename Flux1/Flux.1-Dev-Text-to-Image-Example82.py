@@ -54,7 +54,7 @@ LIGHTING = "Bright soft indoor and window light, even, flattering, minimal harsh
 
 CAMERA = "Eye-level, full-length or three-quarter in living room, sharp on subject, soft room bokeh."
 
-POSITIVE = "8k, photorealistic, sharp, perfect anatomy, ten fingers, well-formed hands."
+POSITIVE = "8k, photorealistic, sharp, perfect anatomy, ten fingers, well-formed hands, no extra fingers, five finger for each hands."
 
 NEGATIVE = "Blurry, low quality, distorted, deformed, ugly, bad anatomy, bad hands, bad fingers, extra fingers, missing fingers, extra limbs, missing limbs, fused fingers, too many fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, extra arms, extra legs, malformed limbs, watermark, text, signature, logo, jpeg artifacts, cropped, worst quality, normal quality"
 
