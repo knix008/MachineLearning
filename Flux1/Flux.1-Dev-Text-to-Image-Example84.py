@@ -20,15 +20,15 @@ import gradio as gr
 # CLIP ~77토큰(Subject만). Positive는 T5에만 포함. T5는 FLUX.1-dev 기준 최대 512토큰(diffusers 한도, 초과 시 잘림).
 T5_MODEL_MAX_LENGTH = 512
 
-SUBJECT = "Photorealistic high-quality cosplay portrait of a beautiful skinny Korean woman, blue and white bunny girl outfit, soft idol aesthetic, long straight black hair with hime-cut bangs, vibrant blue eyes, full body in bright bedroom studio."
+SUBJECT = "Cosplay portrait, beautiful skinny Korean woman, soft idol aesthetic, blue and white bunny girl theme, crisp white collar with blue ribbon bow tie at the neck, bright bedroom studio."
 
 FOOT = ""
 
 LEG = "Legs straight with soft knees, natural standing posture supporting a graceful pose."
 
-FACE = "She has a fair, clear complexion, striking bright blue contact lenses contrasting with her dark hair, innocent and curious expression looking directly at the camera, long straight jet-black hair with thick straight-cut bangs framing her face."
+FACE = "Fair clear complexion, bright blue contact lenses, innocent curious expression toward the camera, long straight jet-black hair with hime-cut bangs framing the face."
 
-BODY = "Standing gracefully in front of the edge of a light-colored vintage-style bed or cushioned bench, upright torso toward camera, body slightly angled, soft inviting posture, shoulders relaxed, full body visible head to toe."
+BODY = "Standing gracefully at the edge of a light-colored vintage-style bed or cushioned bench, upright torso toward camera, body slightly angled, soft inviting posture, relaxed bare shoulders."
 
 ARM = "One arm hanging naturally at the side, the other arm slightly bent."
 
@@ -36,27 +36,27 @@ HAND = "One hand resting loosely near the thigh, the other hand resting lightly 
 
 FOOTWEAR = ""
 
-LEGWEAR = "She wears white fishnet stockings held up by blue and white ruffled lace garters adorned with small white bows."
+LEGWEAR = "White fishnet stockings held up by blue and white ruffled lace garters with small white bows."
 
 BOTTOM = ""
 
-TOP = "She wears a unique blue denim-textured bodysuit with front zipper, silver buttons, and thin silver chains across the chest, semi-sheer white lace sides, blue bow tie on a white collar."
+TOP = "Blue denim-textured bodysuit with front zipper, silver buttons, thin silver chains across the chest, semi-sheer white lace side panels, a crisp white shirt collar worn visibly at the neck with a blue ribbon bow tie tied neatly on the collar."
 
-HEADWEAR = "She wears tall upright blue fabric bunny ears with white lace inner lining, a delicate white lace headband base, and a small white bow."
+HEADWEAR = "Tall upright blue fabric bunny ears with white inner and white lace lining, white lace headband base, small white bow."
 
-ARMWEAR = "She wears long, white floral lace fingerless sleeves that extend past her elbows, finished with blue cuffs and small blue decorative ribbons"
+ARMWEAR = "Long white floral lace fingerless sleeves past the elbows, blue cuffs, small blue decorative ribbons."
 
-HEAD = "Head facing the camera, gaze aligned with the lens."
+HEAD = ""
 
-SETTING = "A bright high-key studio bedroom with large windows, white vertical blinds or curtains, white bed, sun-drenched room, soft-focus white curtains, airy atmosphere."
+SETTING = "Studio bedroom: large windows with white blinds or sheer curtains, white bed, sun-drenched airy space, softly blurred background."
 
-LIGHTING = "Bright soft even lighting that minimizes harsh shadows and gives the skin a glowing porcelain look."
+LIGHTING = "Bright soft even key light, minimal harsh shadows, glowing porcelain skin tone."
 
-CAMERA = "Eye-level full body head to toe, sharp on subject, soft bokeh, cinematic soft focus, gravure photography style."
+CAMERA = "Eye-level full-length framing, sharp on subject, soft background bokeh, cinematic soft focus, gravure style."
 
-POSITIVE = "8k, photorealistic, sharp, perfect anatomy, well-formed hands, ten fingers, no extra fingers."
+POSITIVE = "8k, photorealistic, highly detailed, sharp focus, perfect anatomy, well-formed hands, correct finger count."
 
-NEGATIVE = "Five fingers in each hand, blurry, low quality, distorted, deformed, ugly, bad anatomy, bad hands, bad fingers, extra fingers, missing fingers, extra limbs, missing limbs, fused fingers, missing fingers, extra fingers, too many fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, extra arms, extra legs, malformed limbs, watermark, text, signature, logo, jpeg artifacts, cropped, worst quality, normal quality"
+NEGATIVE = "Five fingers in each hand, blurry, low quality, distorted, deformed, ugly, bad anatomy, bad hands, bad fingers, extra fingers, missing fingers, extra limbs, missing limbs, fused fingers, too many fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, extra arms, extra legs, malformed limbs, watermark, text, signature, logo, jpeg artifacts, cropped, worst quality, normal quality"
 
 
 def make_image_grid(images: list) -> Image.Image:
@@ -708,7 +708,7 @@ def main():
                     "- **CLIP**: **Subject만** 사용합니다. Positive(품질 키워드)는 **T5에만** 포함됩니다.\n"
                     "- **T5**: Subject → 포즈·의상·머리 → Setting → Lighting → Camera → Positive 순.\n"
                     f"- **T5 한도**: FLUX.1-dev는 최대 **{T5_MODEL_MAX_LENGTH}토큰**(초과분 잘림).\n"
-                    "- **Negative**: True CFG > 1.0일 때 CLIP/T5 공통 적용."
+                    "- **Negative**: **CLIP 아코디언 위**의 **네거티브 프롬프트** 아코디언에서만 편집합니다. True CFG > 1.0일 때 CLIP·T5에 각각 인코딩되어 적용됩니다."
                 )
                 with gr.Accordion("프롬프트 섹션 (Subject · 포즈 · 의상 · 배경 · 조명 · 카메라)", open=True):
                     prompt_subject = gr.Textbox(
@@ -837,12 +837,16 @@ def main():
                         placeholder="예: masterpiece, best quality, highly detailed",
                         info="T5 프롬프트에 포함됩니다. CLIP에는 포함되지 않습니다.",
                     )
+                with gr.Accordion("네거티브 프롬프트 (Negative)", open=False):
                     negative_box = gr.Textbox(
-                        label="19. 네거티브 프롬프트 (Negative)",
+                        label="네거티브 프롬프트 (Negative Prompt)",
                         value=NEGATIVE,
-                        lines=2,
+                        lines=3,
                         placeholder="예: blurry, deformed hands, bad anatomy",
-                        info="True CFG Scale > 1.0일 때 CLIP/T5 모두에 공통으로 사용됩니다.",
+                        info=(
+                            "True CFG Scale > 1.0이고 내용이 비어 있지 않을 때, 동일 문자열을 "
+                            "CLIP(풀드)과 T5(시퀀스)로 각각 인코딩해 네거티브 임베딩에 넣습니다."
+                        ),
                     )
                 with gr.Accordion("CLIP 프롬프트 (Subject만)", open=False):
                     prompt_clip = gr.Textbox(
