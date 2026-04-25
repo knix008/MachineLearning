@@ -27,7 +27,9 @@ FACE = "Fair clear skin, long straight black hair with blunt bangs, wearing stri
 
 HEAD = "Head tilted very slightly to one side."
 
-HEADWEAR = "Tall blue bunny ears, white lace lining, white lace headband, small white bow."
+HEADWEAR = (
+    "Tall blue bunny ears, white lace lining, white lace headband, small white bow."
+)
 
 BODY = "Straight-on frontal pose: torso and hips square to the camera, level shoulders, no waist twist."
 
@@ -53,7 +55,9 @@ SETTING = "In front of a white bed in a bright sun-drenched room with soft white
 
 CAMERA = "Studio portrait, waist-level angle, full-body framing including both feet and shoes, sharp focus on the subject, shallow depth of field, soft bokeh."
 
-LIGHTING = "Large curtained windows, soft diffused daylight, even bright fill, gentle shadows."
+LIGHTING = (
+    "Large curtained windows, soft diffused daylight, even bright fill, gentle shadows."
+)
 
 POSITIVE = "8k, photorealistic, perfect anatomy, ten fingers, glossy patent-leather texture, both shoes in frame."
 
@@ -185,6 +189,7 @@ def combine_prompt_sections_dual(
     )
     return clip_prompt, t5_prompt
 
+
 DEFAULT_PROMPT_SECTIONS = (
     SUBJECT,
     FACE,
@@ -306,10 +311,24 @@ def combine_prompt_sections_dual(
     """Build CLIP and T5 prompt strings for FLUX.1 dual encoders (CLIP = Subject only)."""
     clip_prompt = format_clip_prompt(subject)
     t5_prompt = combine_t5_prompt_sections(
-        subject, face, head, headwear,
-        body, top, arm, armwear, hand,
-        bottom, leg, legwear, foot, footwear,
-        setting, camera, lighting, positive,
+        subject,
+        face,
+        head,
+        headwear,
+        body,
+        top,
+        arm,
+        armwear,
+        hand,
+        bottom,
+        leg,
+        legwear,
+        foot,
+        footwear,
+        setting,
+        camera,
+        lighting,
+        positive,
     )
     return clip_prompt, t5_prompt
 
@@ -447,12 +466,16 @@ def load_model(device_name=None):
         pipe.enable_model_cpu_offload()
         pipe.enable_attention_slicing()
         pipe.enable_sequential_cpu_offload()
-        print("메모리 최적화 적용: sequential CPU offload, model CPU offload, attention slicing (CUDA)")
+        print(
+            "메모리 최적화 적용: sequential CPU offload, model CPU offload, attention slicing (CUDA)"
+        )
     elif DEVICE == "cpu":
         pipe.enable_model_cpu_offload()
         pipe.enable_attention_slicing()
         pipe.enable_sequential_cpu_offload()
-        print("메모리 최적화 적용: sequential CPU offload, model CPU offload, attention slicing (CPU)")
+        print(
+            "메모리 최적화 적용: sequential CPU offload, model CPU offload, attention slicing (CPU)"
+        )
     elif DEVICE == "mps":
         pipe.enable_attention_slicing()
         if hasattr(pipe, "transformer"):
@@ -484,7 +507,9 @@ def generate_image(
 
     if pipe is None:
         return (
-            None, [], [],
+            None,
+            [],
+            [],
             "오류: 모델이 로드되지 않았습니다. '모델 로드' 버튼을 먼저 눌러주세요.",
         )
 
@@ -537,12 +562,16 @@ def generate_image(
         raw_clip_token_count = len(raw_clip_ids)
         clipped_clip = max(0, raw_clip_token_count - clip_max_len)
         if clipped_clip > 0:
-            print(f"✗ CLIP 토큰 수: {raw_clip_token_count} / {clip_max_len} → {clipped_clip}개 잘림!")
+            print(
+                f"✗ CLIP 토큰 수: {raw_clip_token_count} / {clip_max_len} → {clipped_clip}개 잘림!"
+            )
             try:
                 tail_ids = raw_clip_ids[clip_max_len:]
                 if hasattr(tail_ids, "tolist"):
                     tail_ids = tail_ids.tolist()
-                truncated_clip_text = pipe.tokenizer.decode(tail_ids, skip_special_tokens=True)
+                truncated_clip_text = pipe.tokenizer.decode(
+                    tail_ids, skip_special_tokens=True
+                )
                 print("-" * 60)
                 print("✗ [잘린 CLIP 텍스트]")
                 print(truncated_clip_text)
@@ -550,7 +579,9 @@ def generate_image(
             except Exception as e:
                 print(f"✗ [잘린 CLIP 텍스트 디코드 실패: {e}]")
         else:
-            print(f"✓ CLIP 토큰 수: {raw_clip_token_count} / {clip_max_len} (잘림 없음)")
+            print(
+                f"✓ CLIP 토큰 수: {raw_clip_token_count} / {clip_max_len} (잘림 없음)"
+            )
 
         with torch.inference_mode():
             clip_out = pipe.text_encoder(
@@ -576,7 +607,9 @@ def generate_image(
         clipped = max(0, raw_token_count - max_len)
         if clipped > 0:
             print(f"✗ T5 토큰 수: {raw_token_count} / {max_len} → {clipped}개 잘림!")
-            truncated_text = pipe.tokenizer_2.decode(raw_ids[max_len:], skip_special_tokens=True)
+            truncated_text = pipe.tokenizer_2.decode(
+                raw_ids[max_len:], skip_special_tokens=True
+            )
             print("-" * 60)
             print("✗ [잘린 T5 텍스트]")
             print(truncated_text)
@@ -611,7 +644,9 @@ def generate_image(
                     neg_clip_inputs["input_ids"].to(DEVICE),
                     output_hidden_states=False,
                 )
-            negative_clip_pooled_prompt_embeds = neg_clip_out.pooler_output.to(dtype=DTYPE)
+            negative_clip_pooled_prompt_embeds = neg_clip_out.pooler_output.to(
+                dtype=DTYPE
+            )
 
             neg_inputs = pipe.tokenizer_2(
                 neg_t5_text,
@@ -634,7 +669,9 @@ def generate_image(
             elapsed = time.time() - start_time
             ratio = current / steps
             progress_val = 0.05 + ratio * 0.90
-            progress(progress_val, desc=f"추론 스텝 {current}/{steps} ({elapsed:.1f}초 경과)")
+            progress(
+                progress_val, desc=f"추론 스텝 {current}/{steps} ({elapsed:.1f}초 경과)"
+            )
             bar_len = 30
             filled = int(bar_len * ratio)
             bar = "\u2588" * filled + "\u2591" * (bar_len - filled)
@@ -662,7 +699,9 @@ def generate_image(
         }
         if negative_t5_embeds is not None:
             pipe_kwargs["negative_prompt_embeds"] = negative_t5_embeds
-            pipe_kwargs["negative_pooled_prompt_embeds"] = negative_clip_pooled_prompt_embeds
+            pipe_kwargs["negative_pooled_prompt_embeds"] = (
+                negative_clip_pooled_prompt_embeds
+            )
             pipe_kwargs["true_cfg_scale"] = true_cfg_scale
 
         with torch.inference_mode():
@@ -676,7 +715,9 @@ def generate_image(
         ext = "jpg" if image_format == "JPEG" else "png"
         if DEVICE == "cuda" and torch.cuda.is_available():
             gpu_name = torch.cuda.get_device_name(0)
-            gpu_mem = round(torch.cuda.get_device_properties(0).total_memory / (1024**3))
+            gpu_mem = round(
+                torch.cuda.get_device_properties(0).total_memory / (1024**3)
+            )
             gpu_label = (
                 gpu_name.replace(" ", "").replace("NVIDIA", "").replace("GeForce", "")
                 + f"-{gpu_mem}GB"
@@ -764,7 +805,10 @@ def main():
                     f"- **T5 한도**: FLUX.1-dev는 최대 **{T5_MODEL_MAX_LENGTH}토큰**(초과분 잘림).\n"
                     "- **Negative**: **CLIP 아코디언 위**의 **네거티브 프롬프트** 아코디언에서만 편집합니다. True CFG > 1.0일 때 CLIP·T5에 각각 인코딩되어 적용됩니다."
                 )
-                with gr.Accordion("프롬프트 섹션 (Subject · 외모 · 의상 · 포즈 · 배경 · 카메라 · 조명 · Positive)", open=False):
+                with gr.Accordion(
+                    "프롬프트 섹션 (Subject · 외모 · 의상 · 포즈 · 배경 · 카메라 · 조명 · Positive)",
+                    open=False,
+                ):
                     prompt_subject = gr.Textbox(
                         label="1. 주제/대상 (Subject)",
                         value=SUBJECT,
@@ -964,39 +1008,59 @@ def main():
                 with gr.Row():
                     width = gr.Slider(
                         label="이미지 너비",
-                        minimum=256, maximum=2048, step=32, value=768,
+                        minimum=256,
+                        maximum=2048,
+                        step=32,
+                        value=768,
                         info="이미지 너비 (픽셀). 32의 배수.",
                     )
                     height = gr.Slider(
                         label="이미지 높이",
-                        minimum=256, maximum=2048, step=32, value=1536,
+                        minimum=256,
+                        maximum=2048,
+                        step=32,
+                        value=1536,
                         info="이미지 높이 (픽셀). 32의 배수.",
                     )
                 with gr.Row():
                     guidance_scale = gr.Slider(
                         label="Guidance Scale (프롬프트 강도)",
-                        minimum=1.0, maximum=10.0, step=0.5, value=7.5,
+                        minimum=1.0,
+                        maximum=10.0,
+                        step=0.5,
+                        value=7.5,
                         info="프롬프트 준수도. 낮으면 창의적, 높으면 정확. Flux.1 Dev 권장: 3.5~8",
                     )
                     num_inference_steps = gr.Slider(
                         label="추론 스텝",
-                        minimum=10, maximum=50, step=1, value=28,
+                        minimum=10,
+                        maximum=50,
+                        step=1,
+                        value=28,
                         info="생성 단계 수. 높으면 품질 향상, 시간 증가. 권장: 25-40",
                     )
                 with gr.Row():
                     true_cfg_scale = gr.Slider(
                         label="True CFG Scale (네거티브 프롬프트 강도)",
-                        minimum=1.0, maximum=5.0, step=0.5, value=1.5,
+                        minimum=1.0,
+                        maximum=5.0,
+                        step=0.5,
+                        value=1.5,
                         info="1.0이면 네거티브 프롬프트 비활성화. 1.5~2.0 권장.",
                     )
                     num_images_per_prompt = gr.Slider(
                         label="생성 이미지 수",
-                        minimum=1, maximum=4, step=1, value=1,
+                        minimum=1,
+                        maximum=4,
+                        step=1,
+                        value=1,
                         info="한 번에 생성할 이미지 수. 많을수록 VRAM 사용 증가.",
                     )
                 with gr.Row():
                     seed = gr.Number(
-                        label="시드", value=42, precision=0,
+                        label="시드",
+                        value=42,
+                        precision=0,
                         info="난수 시드. 같은 값이면 같은 결과.",
                     )
                     max_sequence_length = gr.Slider(
@@ -1046,10 +1110,18 @@ def main():
         generate_btn.click(
             fn=generate_image,
             inputs=[
-                prompt_clip, prompt_t5, negative_box,
-                width, height, guidance_scale, true_cfg_scale,
-                num_inference_steps, num_images_per_prompt,
-                seed, max_sequence_length, image_format,
+                prompt_clip,
+                prompt_t5,
+                negative_box,
+                width,
+                height,
+                guidance_scale,
+                true_cfg_scale,
+                num_inference_steps,
+                num_images_per_prompt,
+                seed,
+                max_sequence_length,
+                image_format,
             ],
             outputs=[output_grid, output_gallery, output_files, output_message],
         )
