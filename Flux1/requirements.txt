@@ -1,0 +1,31 @@
+# ----------------------------------------------------------------
+# Flux.1-dev Text-to-Image Generator
+# CUDA 12.6 기준 (PyTorch 공식 인덱스 사용)
+# 설치 방법:
+#   pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu126
+# ----------------------------------------------------------------
+
+# PyTorch (CUDA 12.6)
+torch>=2.11.0
+torchvision>=0.20.0
+
+# Diffusers & 모델 관련
+diffusers>=0.31.0
+transformers>=4.45.0
+accelerate>=1.0.0
+sentencepiece>=0.2.0
+protobuf>=5.0.0
+tokenizers>=0.20.0
+huggingface-hub>=0.26.0
+
+# 이미지 처리
+Pillow>=11.0.0
+
+# UI
+gradio>=5.0.0
+
+# 시스템 모니터링
+psutil>=6.0.0
+
+# 수치 연산 (PyTorch 내부 의존성)
+numpy>=1.26.0

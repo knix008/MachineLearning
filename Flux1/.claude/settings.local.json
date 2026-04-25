@@ -3,7 +3,9 @@
     "allow": [
       "Read(//c/Users/shkwon/Desktop/**)",
       "Bash(pip show:*)",
-      "Bash(python -c \"import gradio as gr; import inspect; print\\(inspect.signature\\(gr.Image.__init__\\)\\)\")"
+      "Bash(python -c \"import gradio as gr; import inspect; print\\(inspect.signature\\(gr.Image.__init__\\)\\)\")",
+      "Bash(python -c ':*)",
+      "Bash(pip list:*)"
     ]
   }
 }
