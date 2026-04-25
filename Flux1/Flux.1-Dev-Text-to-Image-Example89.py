@@ -21,7 +21,7 @@ import gradio as gr
 # CLIP ~77토큰(Subject+Positive), 네거티브도 동일. T5는 FLUX.1-dev 기준 최대 512토큰(모델·diffusers 한도, 초과 시 잘림).
 T5_MODEL_MAX_LENGTH = 512
 
-SUBJECT = "A cosplay portrait of a beautiful skinny young Korean woman with a soft idol aesthetic, wearing a blue and white bunny outfit, white fishnet stockings, and sky-blue stiletto high heels, standing in front of a white bed in a bright, sun-drenched room with soft-focus white curtains."
+SUBJECT = "A cosplay portrait of a beautiful skinny young Korean woman with a soft idol aesthetic, wearing a blue and white bunny outfit, white fishnet stockings, and sky-blue stiletto high heels."
 
 FACE = "Fair clear skin, long straight black hair with blunt bangs, wearing striking bright blue contact lenses that contrast with her dark hair, soft innocent and innocent expression, gazing directly at the camera."
 
@@ -33,11 +33,11 @@ BODY = "Straight-on frontal pose: torso and hips square to the camera, level sho
 
 TOP = "Blue denim-look zip bodysuit, silver buttons and chest chains, sheer white lace sides, blue bow tie on white collar."
 
-ARM = "One arm raised beside her head; the other forearm rests across the torso just under the bust."
+ARM = "Both arms relaxed and naturally lowered, hanging straight down along the sides of her thighs."
 
 ARMWEAR = "White floral lace fingerless sleeves past the elbows, blue cuffs, small black ribbons."
 
-HAND = "One hand touches her hair; the other relaxed, five fingers per hand."
+HAND = "Both hands relaxed beside the thighs, natural finger spacing, five fingers per hand."
 
 BOTTOM = ""
 
@@ -45,19 +45,19 @@ LEG = "Even weight on both legs; thighs and knees forward, feet under hips."
 
 LEGWEAR = "Full-length white fishnets thigh to ankle, no gaps; fixed blue-and-white lace garter belt, waist straps with metal clips on stocking tops, small white bows."
 
-FOOT = "Feet even in heels, toes forward."
+FOOT = "Both feet fully visible in frame, planted evenly in high heels, toes pointing forward, ankles clearly shown."
 
-FOOTWEAR = "Glossy sky-blue closed-toe stiletto heels."
+FOOTWEAR = "Glossy sky-blue closed-toe stiletto high heels, thin high stiletto heel, pointed toe, patent-leather shine, clearly visible on both feet."
 
 SETTING = "In front of a white bed in a bright sun-drenched room with soft white curtains; high-key studio bedroom set."
 
-CAMERA = "Photoreal studio portrait, eye-level centered, shallow depth of field, soft bokeh."
+CAMERA = "Studio portrait, waist-level angle, full-body framing including both feet and shoes, sharp focus on the subject, shallow depth of field, soft bokeh."
 
 LIGHTING = "Large curtained windows, soft diffused daylight, even bright fill, gentle shadows."
 
-POSITIVE = "8k, detailed skin, natural face, realistic fabric, correct hands."
+POSITIVE = "8k, photorealistic, perfect anatomy, ten fingers, glossy patent-leather texture, both shoes in frame."
 
-NEGATIVE = "blurry, low quality, distorted, deformed, bad anatomy, bad hands, bad fingers, extra fingers, missing fingers, fused fingers, too many fingers, extra limbs, missing limbs, malformed limbs, wrong number of arms, disconnected limbs, floating hand, poorly drawn hands, poorly drawn face, mutation, watermark, text, signature, logo, jpeg artifacts, cropped, worst quality, barefoot, flats, sneakers, boots, sandals, knee-high stockings only, stockings ending at mid-thigh, bare thighs above stockings, fishnets only on calves, sagging garters, missing garter belt, detached stocking clips, wrong hosiery, profile view, side view, three-quarter body angle, back to camera, body turned away, twisted torso, contrapposto"
+NEGATIVE = "blurry, low quality, distorted, deformed, bad anatomy, bad hands, bad fingers, extra fingers, missing fingers, fused fingers, too many fingers, extra limbs, missing limbs, malformed limbs, wrong number of arms, disconnected limbs, floating hand, poorly drawn hands, poorly drawn face, mutation, watermark, text, signature, logo, jpeg artifacts, cropped, worst quality, barefoot, bare feet, flats, sneakers, boots, sandals, platform shoes, open-toe heels, wrong shoe color, black heels, white heels, red heels, missing shoes, only one shoe visible, shoes out of frame, feet cropped, knee-high stockings only, stockings ending at mid-thigh, bare thighs above stockings, fishnets only on calves, sagging garters, missing garter belt, detached stocking clips, wrong hosiery, profile view, side view, three-quarter body angle, back to camera, body turned away, twisted torso, contrapposto"
 
 
 def make_image_grid(images: list) -> Image.Image:
