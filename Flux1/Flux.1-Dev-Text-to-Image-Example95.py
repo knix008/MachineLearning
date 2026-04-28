@@ -21,7 +21,7 @@ import gradio as gr
 # CLIP ~77토큰(Subject+Positive), 네거티브도 동일. T5는 FLUX.1-dev 기준 최대 512토큰(모델·diffusers 한도, 초과 시 잘림).
 T5_MODEL_MAX_LENGTH = 512
 
-SUBJECT = "A photography of a beautiful skinny young Korean woman with a soft idol aesthetic, wearing a white tight-fitting short one-piece dress and white stockings."
+SUBJECT = "A photography of a beautiful skinny young Korean woman with a soft idol aesthetic, sitting on a classic vintage chair without crossing the legs, wearing a white tight-fitting short one-piece dress and white stockings."
 
 FACE = "She has a fair clear complexion, long straight jet-black hair with thick straight-cut bangs, and striking bright blue contact lenses. She looks directly at the camera with a soft innocent expression."
 
@@ -31,7 +31,7 @@ TOP = "She wears a white tight-fitting short one-piece dress with a blue ribbon 
 
 ARMWEAR = ""
 
-BOTTOM = ""
+BOTTOM = "She wears white panties underneath the short dress."
 
 LEGWEAR = "She wears white opaque thigh-high stockings that are clearly visible on her legs, creating a clean elegant look against her skin."
 
@@ -39,17 +39,17 @@ FOOTWEAR = "She wears elegant black heels."
 
 HEAD = "Her head is very slightly tilted to one side with a gentle natural angle."
 
-BODY = "Shoulders slightly relaxed, hips gently shifted to one side."
+BODY = "She sits gracefully on a classic vintage chair with an upright elegant posture, shoulders relaxed and back straight."
 
-ARM = "Both arms hang naturally at her sides, relaxed and straight with a slight natural bend at the elbows."
+ARM = "Both arms rest naturally, one hand placed gently on her lap and the other resting softly on the armrest of the chair."
 
-HAND = "Both hands are relaxed at her sides, fingers naturally separated and gently curved. Five fingers on each hand."
+HAND = "Both hands are relaxed with fingers naturally separated and gently curved, one resting on her lap and the other on the chair's armrest. Five fingers on each hand."
 
-LEG = "Most body weight is supported by one leg, with the other leg relaxed to create a subtle natural curve."
+LEG = "She sits with both legs slightly apart, knees separated, legs not crossed, in a relaxed seated position that subtly reveals a glimpse of her white panties."
 
-FOOT = "She stands in black heels with feet slightly apart in a poised elegant stance."
+FOOT = "Her feet in black heels rest naturally on the floor in a refined seated position."
 
-SETTING = "She stands in front of a light-colored vintage-style cushioned bench in a bright high-key studio set designed as a clean airy bedroom."
+SETTING = "She sits on an elegant vintage classic chair with ornate carved wooden details and plush upholstery in a bright high-key studio set designed as a clean airy bedroom."
 
 CAMERA = "Photorealistic studio photography, cinematic soft focus with shallow depth of field, gentle background bokeh."
 
@@ -57,7 +57,7 @@ LIGHTING = "Large windows with white curtains provide soft diffused natural ligh
 
 POSITIVE = "8k, detailed skin texture, natural facial detail, realistic fabric detail, anatomically correct hands."
 
-NEGATIVE = "blurry, low quality, distorted, deformed, bad anatomy, bad hands, bad fingers, extra fingers, missing fingers, fused fingers, too many fingers, extra limbs, missing limbs, malformed limbs, wrong number of arms, disconnected limbs, floating hand, poorly drawn hands, poorly drawn face, mutation, watermark, text, signature, logo, jpeg artifacts, cropped, worst quality"
+NEGATIVE = "blurry, low quality, distorted, deformed, bad anatomy, bad hands, bad fingers, extra fingers, missing fingers, fused fingers, too many fingers, extra limbs, missing limbs, malformed limbs, wrong number of arms, disconnected limbs, floating hand, poorly drawn hands, poorly drawn face, mutation, watermark, text, signature, logo, jpeg artifacts, cropped, worst quality, crossed legs"
 
 
 def make_image_grid(images: list) -> Image.Image:
