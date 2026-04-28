@@ -21,43 +21,43 @@ import gradio as gr
 # CLIP ~77토큰(Subject+Positive), 네거티브도 동일. T5는 FLUX.1-dev 기준 최대 512토큰(모델·diffusers 한도, 초과 시 잘림).
 T5_MODEL_MAX_LENGTH = 512
 
-SUBJECT = "A photograph of a beautiful skinny young Korean woman with a soft idol aesthetic, sitting neatly on a vintage chair, wearing a white short dress."
+SUBJECT = "A photograph of a beautiful skinny young Korean woman with a soft idol aesthetic, straddling a sleek black racing motorcycle, wearing a tiny red bikini and black high heels."
 
-FACE = "She has a fair clear complexion, long straight jet-black hair with thick straight-cut bangs, and striking bright blue contact lenses. She looks directly at the camera with a soft innocent expression."
+FACE = "She has a fair clear complexion, long straight jet-black hair with thick straight-cut bangs, and striking bright blue contact lenses. She looks directly at the camera with a innocent and curious expression."
+
+HEAD = "Her head is slightly tilted with a natural confident angle."
 
 HEADWEAR = ""
 
-TOP = "She wears a white tight-fitting short one-piece dress with a blue ribbon tie around her neck and a delicate necklace."
+BODY = "She sits confidently astride the motorcycle, torso upright and slightly arched, shoulders back, bare midriff fully visible."
 
-ARMWEAR = "She wears stylish bracelets on her wrists."
+TOP = "She wears a very small red triangle bikini top with thin string ties, minimal coverage, fully exposing her bare shoulders, collarbone, and midriff."
 
-BOTTOM = "The short dress hem rests neatly on her thighs."
+ARM = "Both arms relaxed at her sides, elbows slightly bent, hands resting lightly on the motorcycle's fuel tank."
 
-LEGWEAR = "She wears white opaque thigh-high stockings."
+ARMWEAR = ""
 
-FOOTWEAR = "She wears elegant black heels."
+HAND = "Both hands resting lightly on the fuel tank, fingers naturally relaxed and slightly spread. Five fingers on each hand."
 
-HEAD = "Her head is very slightly tilted to one side with a gentle natural angle."
+BOTTOM = "She wears a very small red string bikini bottom with thin side-tie strings on both hips, minimal coverage."
 
-BODY = "She sits with an upright elegant posture, shoulders relaxed, back straight, facing the camera."
+LEG = "Both legs straddling the motorcycle, thighs resting against the seat, knees bent naturally outward with feet reaching toward the foot pegs."
 
-ARM = "Both arms rest naturally, one forearm across her lap and the other resting along the armrest of the chair."
+LEGWEAR = ""
 
-HAND = "Both hands relaxed, fingers naturally separated and gently curved. Five fingers on each hand."
+FOOT = "Both feet in black high heels resting naturally on the motorcycle's foot pegs."
 
-LEG = "Both legs parallel and close together, knees and thighs touching, legs not crossed, in a composed and elegant seated position."
+FOOTWEAR = "She wears sleek black stiletto high heels."
 
-FOOT = "Both feet placed neatly side by side and parallel on the floor, ankles together, toes pointing forward."
+SETTING = "A dramatic studio set with a powerful matte black high-performance racing motorcycle as the centerpiece, dark polished floor, moody atmospheric background with subtle depth."
 
-SETTING = "She sits on an elegant vintage classic chair with ornate carved wooden details and plush upholstery in a bright high-key studio set designed as a clean airy bedroom."
+CAMERA = "Photorealistic studio photography, full body in frame, low three-quarter angle emphasizing the motorcycle and rider together, cinematic depth of field."
 
-CAMERA = "Photorealistic studio photography, cinematic soft focus with shallow depth of field, gentle background bokeh."
+LIGHTING = "Dynamic studio lighting with strong directional key light, subtle rim lighting highlighting her figure and the motorcycle's glossy black bodywork."
 
-LIGHTING = "Large windows with white curtains provide soft diffused natural light, casting even bright illumination with soft shadows."
+POSITIVE = "8k, detailed skin texture, natural facial detail, realistic fabric detail, anatomically correct hands, full figure from head to feet visible, uncropped, photorealistic motorcycle detail."
 
-POSITIVE = "8k, detailed skin texture, natural facial detail, realistic fabric detail, anatomically correct hands, full figure from head to feet visible, uncropped."
-
-NEGATIVE = "blurry, low quality, distorted, deformed, bad anatomy, bad hands, bad fingers, extra fingers, missing fingers, fused fingers, too many fingers, extra limbs, missing limbs, malformed limbs, wrong number of arms, disconnected limbs, floating hand, poorly drawn hands, poorly drawn face, mutation, watermark, text, signature, logo, jpeg artifacts, cropped, worst quality, crossed legs, legs apart, knees apart, spread legs"
+NEGATIVE = "blurry, low quality, distorted, deformed, bad anatomy, bad hands, bad fingers, extra fingers, missing fingers, fused fingers, too many fingers, extra limbs, missing limbs, malformed limbs, wrong number of arms, disconnected limbs, floating hand, poorly drawn hands, poorly drawn face, mutation, watermark, text, signature, logo, jpeg artifacts, cropped, worst quality, clothed, dressed, fully covered"
 
 
 def make_image_grid(images: list) -> Image.Image:
