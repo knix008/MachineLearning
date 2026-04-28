@@ -21,7 +21,7 @@ import gradio as gr
 # CLIP ~77토큰(Subject+Positive), 네거티브도 동일. T5는 FLUX.1-dev 기준 최대 512토큰(모델·diffusers 한도, 초과 시 잘림).
 T5_MODEL_MAX_LENGTH = 512
 
-SUBJECT = "A photograph of a beautiful skinny young Korean woman with a soft idol aesthetic, straddling a sleek black racing motorcycle, wearing a tiny red bikini and black high heels."
+SUBJECT = "A photograph of a beautiful young skinny Korean woman with a soft idol aesthetic, standing gracefully indoors, wearing an elegant white dress."
 
 FACE = "She has a fair clear complexion, long straight jet-black hair with thick straight-cut bangs, and striking bright blue contact lenses. She looks directly at the camera with a innocent and curious expression."
 
@@ -29,35 +29,35 @@ HEAD = "Her head is slightly tilted with a natural confident angle."
 
 HEADWEAR = ""
 
-BODY = "She sits confidently astride the motorcycle, torso upright and slightly arched, shoulders back, bare midriff fully visible."
+BODY = "She stands upright with elegant posture, shoulders relaxed, torso naturally aligned with a graceful stance."
 
-TOP = "She wears a very small red triangle bikini top with thin string ties, minimal coverage, fully exposing her bare shoulders, collarbone, and midriff."
+TOP = "She wears a beautiful flowing white dress with a elegant neckline, covering her shoulders and torso gracefully."
 
-ARM = "Both arms relaxed at her sides, elbows slightly bent, hands resting lightly on the motorcycle's fuel tank."
+ARM = "Both arms relaxed naturally at her sides, elbows slightly bent in a natural resting position."
 
 ARMWEAR = ""
 
-HAND = "Both hands resting lightly on the fuel tank, fingers naturally relaxed and slightly spread. Five fingers on each hand."
+HAND = "Both hands hanging naturally at her sides, fingers relaxed and naturally positioned. Five fingers on each hand."
 
-BOTTOM = "She wears a very small red string bikini bottom with thin side-tie strings on both hips, minimal coverage."
+BOTTOM = "The white dress flows down to knee-length, creating an elegant silhouette."
 
-LEG = "Both legs straddling the motorcycle, thighs resting against the seat, knees bent naturally outward with feet reaching toward the foot pegs."
+LEG = "Both legs standing naturally with slight bend at the knees, creating a relaxed and elegant stance."
 
 LEGWEAR = ""
 
-FOOT = "Both feet in black high heels resting naturally on the motorcycle's foot pegs."
+FOOT = "Both feet standing naturally on the floor with balanced weight distribution."
 
-FOOTWEAR = "She wears sleek black stiletto high heels."
+FOOTWEAR = "She wears simple white elegant heels that complement the dress."
 
-SETTING = "A dramatic studio set with a powerful matte black high-performance racing motorcycle as the centerpiece, dark polished floor, moody atmospheric background with subtle depth."
+SETTING = "A bright and clean modern indoor space with soft natural light, minimalist interior design, light wooden floor, white walls with subtle texture creating a serene atmosphere."
 
-CAMERA = "Photorealistic studio photography, full body in frame, low three-quarter angle emphasizing the motorcycle and rider together, cinematic depth of field."
+CAMERA = "Photorealistic indoor photography, full body in frame, eye-level to slightly low angle capturing her elegant pose, natural depth of field."
 
-LIGHTING = "Dynamic studio lighting with strong directional key light, subtle rim lighting highlighting her figure and the motorcycle's glossy black bodywork."
+LIGHTING = "Soft natural window lighting with gentle fill light, creating a bright and airy atmosphere with subtle shadows that enhance dimension."
 
-POSITIVE = "8k, detailed skin texture, natural facial detail, realistic fabric detail, anatomically correct hands, full figure from head to feet visible, uncropped, photorealistic motorcycle detail."
+POSITIVE = "8k, detailed skin texture, natural facial detail, realistic white dress fabric detail with natural folds, anatomically correct hands, full figure from head to feet visible, uncropped, clean composition."
 
-NEGATIVE = "blurry, low quality, distorted, deformed, bad anatomy, bad hands, bad fingers, extra fingers, missing fingers, fused fingers, too many fingers, extra limbs, missing limbs, malformed limbs, wrong number of arms, disconnected limbs, floating hand, poorly drawn hands, poorly drawn face, mutation, watermark, text, signature, logo, jpeg artifacts, cropped, worst quality, clothed, dressed, fully covered"
+NEGATIVE = "blurry, low quality, distorted, deformed, bad anatomy, bad hands, bad fingers, extra fingers, missing fingers, fused fingers, too many fingers, extra limbs, missing limbs, malformed limbs, wrong number of arms, disconnected limbs, floating hand, poorly drawn hands, poorly drawn face, mutation, watermark, text, signature, logo, jpeg artifacts, cropped, worst quality, dark, gloomy"
 
 
 def make_image_grid(images: list) -> Image.Image:
@@ -911,13 +911,13 @@ def main():
                 with gr.Row():
                     width = gr.Slider(
                         label="이미지 너비",
-                        minimum=256, maximum=2048, step=32, value=768,
-                        info="이미지 너비 (픽셀). 32의 배수.",
+                        minimum=256, maximum=2048, step=8, value=768,
+                        info="이미지 너비 (픽셀). 8의 배수.",
                     )
                     height = gr.Slider(
                         label="이미지 높이",
-                        minimum=256, maximum=2048, step=32, value=1536,
-                        info="이미지 높이 (픽셀). 32의 배수.",
+                        minimum=256, maximum=2048, step=8, value=1536,
+                        info="이미지 높이 (픽셀). 8의 배수.",
                     )
                 with gr.Row():
                     guidance_scale = gr.Slider(
