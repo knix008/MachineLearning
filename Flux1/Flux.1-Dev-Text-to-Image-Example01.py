@@ -21,43 +21,43 @@ import gradio as gr
 # CLIP ~77토큰(Subject+Positive), 네거티브도 동일. T5는 FLUX.1-dev 기준 최대 512토큰(모델·diffusers 한도, 초과 시 잘림).
 T5_MODEL_MAX_LENGTH = 512
 
-SUBJECT = "A photograph of a beautiful young skinny Korean woman with a soft idol aesthetic, standing gracefully indoors, wearing an elegant white dress."
+SUBJECT = "A portrait of a beautiful skinny young Korean woman with a soft idol aesthetic, standing gracefully indoors, wearing an elegant white dress."
 
 FACE = "She has a fair clear complexion, long straight jet-black hair with thick straight-cut bangs, and striking bright blue contact lenses. She looks directly at the camera with a innocent and curious expression."
 
 HEAD = "Her head is slightly tilted with a natural confident angle."
 
-HEADWEAR = ""
+HEADWEAR = "She wears elegant silver drop earrings that catch the light beautifully."
 
 BODY = "She stands upright with elegant posture, shoulders relaxed, torso naturally aligned with a graceful stance."
 
-TOP = "She wears a beautiful flowing white dress with a elegant neckline, covering her shoulders and torso gracefully."
+TOP = "She wears a beautiful flowing white dress with a elegant neckline, covering her shoulders and torso gracefully. A delicate silver necklace adorns her neck, resting gently above the neckline."
 
-ARM = "Both arms relaxed naturally at her sides, elbows slightly bent in a natural resting position."
+ARM = "Both arms hanging straight down naturally along her body, relaxed and close to her sides."
 
 ARMWEAR = ""
 
-HAND = "Both hands hanging naturally at her sides, fingers relaxed and naturally positioned. Five fingers on each hand."
+HAND = "Both hands resting naturally beside her thighs, fingers gently relaxed and slightly curved in a natural position. Five fingers on each hand."
 
 BOTTOM = "The white dress flows down to knee-length, creating an elegant silhouette."
 
 LEG = "Both legs standing naturally with slight bend at the knees, creating a relaxed and elegant stance."
 
-LEGWEAR = ""
+LEGWEAR = "She wears a delicate silver anklet on her right ankle, adding a subtle elegant touch."
 
-FOOT = "Both feet standing naturally on the floor with balanced weight distribution."
+FOOT = ""
 
-FOOTWEAR = "She wears simple white elegant heels that complement the dress."
+FOOTWEAR = ""
 
-SETTING = "A bright and clean modern indoor space with soft natural light, minimalist interior design, light wooden floor, white walls with subtle texture creating a serene atmosphere."
+SETTING = "A bright and clean modern indoor living room with light sky blue painted walls, a comfortable modern sofa against the wall, light wooden floor, minimalist interior design creating a serene and peaceful atmosphere."
 
-CAMERA = "Photorealistic indoor photography, full body in frame, eye-level to slightly low angle capturing her elegant pose, natural depth of field."
+CAMERA = "Photorealistic indoor photography shot with professional high-quality lens, full body in frame, waist-level angle, perfect sharp focus on subject with crystal clear details, tack sharp, pin-sharp clarity, professional depth of field with subject in perfect focus."
 
 LIGHTING = "Soft natural window lighting with gentle fill light, creating a bright and airy atmosphere with subtle shadows that enhance dimension."
 
-POSITIVE = "8k, detailed skin texture, natural facial detail, realistic white dress fabric detail with natural folds, anatomically correct hands, full figure from head to feet visible, uncropped, clean composition."
+POSITIVE = "8k, ultra sharp focus, crisp details, crystal clear image, tack sharp, perfect focus, detailed skin texture, sharp facial features, natural facial detail, realistic white dress fabric detail with natural folds, anatomically correct hands, clean composition, professional photography quality, high clarity, pin-sharp."
 
-NEGATIVE = "blurry, low quality, distorted, deformed, bad anatomy, bad hands, bad fingers, extra fingers, missing fingers, fused fingers, too many fingers, extra limbs, missing limbs, malformed limbs, wrong number of arms, disconnected limbs, floating hand, poorly drawn hands, poorly drawn face, mutation, watermark, text, signature, logo, jpeg artifacts, cropped, worst quality, dark, gloomy"
+NEGATIVE = "blurry, out of focus, soft focus, bokeh on subject, unfocused, hazy, fuzzy, unclear, low quality, distorted, deformed, bad anatomy, bad hands, bad fingers, extra fingers, missing fingers, fused fingers, too many fingers, extra limbs, missing limbs, malformed limbs, wrong number of arms, disconnected limbs, floating hand, poorly drawn hands, poorly drawn face, mutation, watermark, text, signature, logo, jpeg artifacts, cropped, worst quality, dark, gloomy, motion blur, defocused"
 
 
 def make_image_grid(images: list) -> Image.Image:
