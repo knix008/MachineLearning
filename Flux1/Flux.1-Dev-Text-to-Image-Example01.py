@@ -21,17 +21,17 @@ import gradio as gr
 # CLIP ~77토큰(Subject+Positive), 네거티브도 동일. T5는 FLUX.1-dev 기준 최대 512토큰(모델·diffusers 한도, 초과 시 잘림).
 T5_MODEL_MAX_LENGTH = 512
 
-SUBJECT = "A portrait of a beautiful skinny young Korean woman with a soft idol aesthetic, standing gracefully indoors, wearing an elegant white dress."
+SUBJECT = "A full-body fashion photo of a beautiful skinny young Korean woman with a soft idol aesthetic, standing gracefully indoors."
 
 FACE = "She has a fair clear complexion, long straight jet-black hair with thick straight-cut bangs, and striking bright blue contact lenses. She looks directly at the camera with a innocent and curious expression."
 
-HEAD = "Her head is slightly tilted with a natural confident angle."
+HEAD = "Her head is naturally aligned toward the camera with a subtle, confident tilt."
 
-HEADWEAR = "She wears elegant silver drop earrings that catch the light beautifully."
+HEADWEAR = "She wears a neat headband and elegant silver drop earrings that complement her hairstyle."
 
-BODY = "She stands upright with elegant posture, shoulders relaxed, torso naturally aligned with a graceful stance."
+BODY = "She stands upright with elegant posture, shoulders relaxed, and her torso facing directly toward the camera."
 
-TOP = "She wears a beautiful flowing white dress with a elegant neckline, covering her shoulders and torso gracefully. A delicate silver necklace adorns her neck, resting gently above the neckline."
+TOP = "She wears a beautiful short white one-piece dress with an elegant neckline, covering her shoulders and torso gracefully. A delicate silver necklace adorns her neck, resting gently above the neckline."
 
 ARM = "Both arms hanging straight down naturally along her body, relaxed and close to her sides."
 
@@ -39,23 +39,23 @@ ARMWEAR = ""
 
 HAND = "Both hands resting naturally beside her thighs, fingers gently relaxed and slightly curved in a natural position. Five fingers on each hand."
 
-BOTTOM = "The white dress flows down to knee-length, creating an elegant silhouette."
+BOTTOM = "The short white one-piece dress falls above the knees, creating a clean and elegant silhouette."
 
-LEG = "Both legs standing naturally with slight bend at the knees, creating a relaxed and elegant stance."
+LEG = "Both legs are fully visible and naturally extended to create a longer-leg look while maintaining realistic proportions."
 
-LEGWEAR = "She wears a delicate silver anklet on her right ankle, adding a subtle elegant touch."
+LEGWEAR = "She wears clean white stockings on both legs, smooth and well-fitted, with a delicate silver anklet on her right ankle."
 
 FOOT = ""
 
 FOOTWEAR = ""
 
-SETTING = "A bright and clean modern indoor living room with light sky blue painted walls, a comfortable modern sofa against the wall, light wooden floor, minimalist interior design creating a serene and peaceful atmosphere."
+SETTING = "A bright and clean modern indoor space with a solid blue painted wall background, light wooden floor, and minimalist interior design creating a serene and peaceful atmosphere."
 
-CAMERA = "Photorealistic indoor photography shot with professional high-quality lens, full body in frame, waist-level angle, perfect sharp focus on subject with crystal clear details, tack sharp, pin-sharp clarity, professional depth of field with subject in perfect focus."
+CAMERA = "Photorealistic indoor photography shot with a professional high-quality lens, full body in frame, camera at waist-level angle, and perspective emphasizing longer-looking legs."
 
-LIGHTING = "Soft natural window lighting with gentle fill light, creating a bright and airy atmosphere with subtle shadows that enhance dimension."
+LIGHTING = "Bright, even studio-style lighting with gentle fill light so the whole body is clearly lit and vivid, with subtle shadows that preserve natural dimension."
 
-POSITIVE = "8k, ultra sharp focus, crisp details, crystal clear image, tack sharp, perfect focus, detailed skin texture, sharp facial features, natural facial detail, realistic white dress fabric detail with natural folds, anatomically correct hands, clean composition, professional photography quality, high clarity, pin-sharp."
+POSITIVE = "photorealistic, high detail, perfect anatomy,sharp focus, clear skin texture, natural facial features, clean composition, professional photography quality"
 
 NEGATIVE = "blurry, out of focus, soft focus, bokeh on subject, unfocused, hazy, fuzzy, unclear, low quality, distorted, deformed, bad anatomy, bad hands, bad fingers, extra fingers, missing fingers, fused fingers, too many fingers, extra limbs, missing limbs, malformed limbs, wrong number of arms, disconnected limbs, floating hand, poorly drawn hands, poorly drawn face, mutation, watermark, text, signature, logo, jpeg artifacts, cropped, worst quality, dark, gloomy, motion blur, defocused"
 
