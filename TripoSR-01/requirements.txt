@@ -1,0 +1,31 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+# Web UI
+# gr.Model3D is used by app.py.
+gradio==3.50.2
+fastapi==0.99.1
+starlette==0.27.0
+jinja2==3.1.4
+markupsafe==2.1.5
+
+# Core runtime
+numpy<2.0
+Pillow==10.1.0
+torch
+torchvision
+
+# TripoSR dependencies
+omegaconf==2.3.0
+einops==0.7.0
+transformers==4.35.0
+huggingface-hub==0.17.3
+trimesh==4.0.5
+rembg
+onnxruntime
+imageio[ffmpeg]
+xatlas==0.0.9
+moderngl==5.10.0
+
+# Required by TripoSR mesh extraction.
+# If this fails on Windows, run install_torchmcubes_conda.bat from an activated conda environment.
+git+https://github.com/tatsy/torchmcubes.git

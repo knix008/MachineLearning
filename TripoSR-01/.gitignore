@@ -1,0 +1,35 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Build / packaging
+build/
+dist/
+*.egg-info/
+
+# IDE / editor
+.idea/
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Project runtime outputs
+outputs/
+tmp/
+*.log
+
+# Downloaded third-party source and large model caches
+third_party/
+.cache/
+hf_cache/
+
+# Gradio temporary files
+gradio/
