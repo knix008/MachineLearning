@@ -183,5 +183,6 @@ if __name__ == '__main__':
         auth=(args.username, args.password) if (args.username and args.password) else None,
         share=args.share,
         server_name="0.0.0.0" if args.listen else None, 
-        server_port=args.port
+        server_port=args.port, 
+        inbrwwser=True,
     )
