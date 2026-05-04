@@ -184,5 +184,5 @@ if __name__ == '__main__':
         share=args.share,
         server_name="0.0.0.0" if args.listen else None, 
         server_port=args.port, 
-        inbrwwser=True,
+        inbrowser=True,
     )
