@@ -481,10 +481,25 @@ def generate_image(
 
         def step_callback(_pipe, step_index, _timestep, callback_kwargs):
             current = step_index + 1
+            elapsed = time.time() - start_time
+            ratio = current / max(steps, 1)
+            progress_val = 0.05 + ratio * 0.90
             progress(
-                min(0.95, current / max(steps, 1) * 0.90 + 0.05),
-                desc=f"편집 중... {current}/{steps}",
+                min(0.95, progress_val),
+                desc=f"추론 스텝 {current}/{steps} ({elapsed:.1f}초 경과)",
             )
+            bar_len = 30
+            filled = int(bar_len * ratio)
+            bar = "\u2588" * filled + "\u2591" * (bar_len - filled)
+            speed = elapsed / current
+            eta = speed * (steps - current)
+            line = (
+                f"  [{bar}] {current}/{steps} ({ratio*100:.0f}%) | "
+                f"{elapsed:.1f}s elapsed | ETA {eta:.1f}s | {speed:.2f}s/step"
+            )
+            print(f"\r{line}\033[K", end="", flush=True)
+            if current == steps:
+                print()
             return callback_kwargs
 
         progress(0.05, desc="추론 시작...")
