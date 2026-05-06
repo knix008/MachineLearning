@@ -163,5 +163,25 @@ cython_debug/
 .idea/
 .vscode/
 
-stabilityai/
+# Project outputs
 output/
+load/
+*.glb
+
+# Downloaded model weights
+stabilityai/
+*.safetensors
+*.ckpt
+*.pth
+*.bin
+
+# rembg ONNX model cache
+u2net*.onnx
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini

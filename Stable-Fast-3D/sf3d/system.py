@@ -30,7 +30,7 @@ from sf3d.models.utils import (
     normalize,
     scale_tensor,
 )
-from sf3d.utils import create_intrinsic_from_fov_deg, default_cond_c2w, get_device
+from sf3d.utils import create_intrinsic_from_fov_deg, default_cond_c2w
 
 
 def _patch_texture_baker_from_repo(installed_cls: Type[Any]) -> None:
@@ -373,10 +373,10 @@ class SF3D(BaseModule):
         if self.global_estimator is not None and estimate_illumination:
             global_dict.update(self.global_estimator(non_postprocessed_codes))
 
-        device = get_device()
+        device = str(self.device)
         with torch.no_grad():
             with torch.autocast(
-                device_type=device, enabled=False
+                device_type=device.split(":")[0], enabled=False
             ) if "cuda" in device else nullcontext():
                 meshes = self.triplane_to_meshes(scene_codes)
 

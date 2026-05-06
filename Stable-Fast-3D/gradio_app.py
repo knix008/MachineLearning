@@ -68,6 +68,7 @@ if os.path.exists(os.environ["GRADIO_TEMP_DIR"]):
     shutil.rmtree(os.environ["GRADIO_TEMP_DIR"])
 
 device = sf3d_utils.get_device()
+print(f"Using device: {device}")
 
 model = SF3D.from_pretrained(
     "stabilityai/stable-fast-3d",
