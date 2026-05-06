@@ -1,0 +1,18 @@
+# PyTorch: install for your CUDA/CPU first (https://pytorch.org/get-started/locally/), then this file.
+# If texture_baker/uv_unwrapper still fail to build: pip install -r requirements.txt --no-build-isolation
+einops==0.7.0
+jaxtyping==0.2.31
+omegaconf==2.3.0
+transformers==4.42.3
+open_clip_torch==2.24.0
+trimesh==4.4.1
+numpy==1.26.4
+huggingface-hub==0.23.4
+rembg[gpu]==2.0.57; sys_platform != 'darwin'
+rembg==2.0.57; sys_platform == 'darwin'
+pynanoinstantmeshes==0.0.3
+# 0.2.0 has no cp312 Windows wheels (forces CMake from source). Use 0.3+ for prebuilt wheels.
+gpytoolbox>=0.3.0,<0.4
+# Editable so local baker.py fixes (e.g. CUDA mesh + CPU-only extension) apply without reinstalling wheels.
+-e ./texture_baker/
+-e ./uv_unwrapper/

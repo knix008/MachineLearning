@@ -1,0 +1,4 @@
+# PEP 517: pip's default build isolation does not include torch, but setup.py imports it.
+[build-system]
+requires = ["setuptools>=61", "wheel", "torch"]
+build-backend = "setuptools.build_meta"

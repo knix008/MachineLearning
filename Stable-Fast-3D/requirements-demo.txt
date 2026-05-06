@@ -1,0 +1,7 @@
+# Gradio 4.x uses huggingface_hub.HfFolder; that symbol is gone in huggingface_hub>=1.0.
+# Keep the same pin as requirements.txt so `pip install -r requirements-demo.txt` does not upgrade the hub client.
+huggingface-hub==0.23.4
+# Gradio 4.x calls TemplateResponse(name, context). Starlette 1.0 removed that path; dict is then used as template name -> Jinja "unhashable type: 'dict'".
+starlette>=0.37.2,<1.0
+gradio==4.44.1
+gradio-litmodel3d==0.0.1
