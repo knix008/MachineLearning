@@ -22,39 +22,39 @@ from PIL import Image
 DEFAULT_IMAGE_PATH = "input02.jpg"
 T5_MODEL_MAX_LENGTH = 512
 
-SUBJECT = "A beautiful young korean woman."
+SUBJECT = "A woman wearing a pink thong bikini and looking directly at the viewer."
 
-FACE = ""
+FACE = "Preserve the same face, natural skin texture, confident expression, direct eye contact with the viewer."
 
-HEAD = "Move her face to make her see the viewer."
+HEAD = "Head facing forward toward the camera, eyes looking directly at the viewer."
 
 HEADWEAR = ""
 
-BODY = ""
+BODY = "Preserve the original body pose, natural athletic physique, confident posture."
 
-TOP = "She is wearing a dark blue bikini top."
+TOP = "Wearing a bright pink triangle bikini top with thin straps."
 
-ARM = ""
+ARM = "Preserve the original arm position, natural arm placement."
 
 ARMWEAR = ""
 
-HAND = ""
+HAND = "Preserve natural hand position with well-defined fingers."
 
-BOTTOM = "She is wearing a matching dark blue bikini bottom."
+BOTTOM = "Wearing a matching bright pink thong bikini bottom with side ties."
 
-LEG = ""
+LEG = "Preserve the original leg position, natural leg pose."
 
 LEGWEAR = ""
 
-FOOT = ""
+FOOT = "Preserve the original foot position."
 
 FOOTWEAR = ""
 
-SETTING = ""
+SETTING = "Preserve the original background setting and environment."
 
-CAMERA = ""
+CAMERA = "Preserve the same camera angle, framing, and composition."
 
-LIGHTING = ""
+LIGHTING = "Preserve the original lighting conditions, natural shadows, and highlights."
 
 POSITIVE = "8k resolution quality, high detail, high quality, best quality, realistic, masterpiece, cinematic lighting, photorealistic, sharp focus."
 
@@ -807,17 +807,17 @@ def main():
                         label="Strength (변경 강도)",
                         minimum=0.0,
                         maximum=1.0,
-                        value=0.85,
+                        value=0.78,
                         step=0.05,
-                        info="낮을수록 원본 유지, 높을수록 변화가 커집니다.",
+                        info="프롬프트 반영 기본값: 0.70~0.85. 낮을수록 원본 유지, 높을수록 변화가 커집니다.",
                     )
                     guidance_scale = gr.Slider(
                         label="Guidance Scale (프롬프트 강도)",
                         minimum=1.0,
                         maximum=20.0,
-                        value=3.5,
+                        value=7.0,
                         step=0.5,
-                        info="프롬프트 준수도. Flux.1 Dev 권장: 3.5",
+                        info="프롬프트 준수도. 변화가 약하면 6.0~8.0 범위에서 올려보세요.",
                     )
 
                 with gr.Row():
@@ -825,23 +825,23 @@ def main():
                         label="True CFG Scale (네거티브 프롬프트 강도)",
                         minimum=1.0,
                         maximum=5.0,
-                        value=1.5,
+                        value=2.5,
                         step=0.5,
-                        info="1.0이면 네거티브 프롬프트 비활성화. 1.5~2.0 권장.",
+                        info="1.0이면 네거티브 프롬프트 비활성화. 프롬프트 반영은 2.0부터 시도하세요.",
                     )
                     num_inference_steps = gr.Slider(
                         label="추론 스텝",
                         minimum=1,
                         maximum=50,
-                        value=28,
+                        value=38,
                         step=1,
-                        info="생성 단계 수. 높으면 품질 향상, 시간 증가.",
+                        info="생성 단계 수. 프롬프트 반영과 디테일 균형은 32~40 권장.",
                     )
 
                 with gr.Row():
                     seed = gr.Number(
                         label="시드",
-                        value=100,
+                        value=42,
                         precision=0,
                         info="난수 시드. 같은 값이면 같은 결과.",
                     )
@@ -857,7 +857,7 @@ def main():
                 image_format = gr.Radio(
                     label="이미지 포맷",
                     choices=["JPEG", "PNG"],
-                    value="PNG",
+                    value="JPEG",
                     info="JPEG: quality 100 (4:4:4), PNG: 무손실 압축.",
                 )
 
