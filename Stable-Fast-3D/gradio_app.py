@@ -1,9 +1,16 @@
 import os
 import tempfile
 import time
+import warnings
 from contextlib import nullcontext
 from functools import lru_cache
 from typing import Any
+
+# Suppress deprecation noise from pinned third-party dependencies.
+# timm.models.layers → timm.layers (fixed in timm>=0.9; triggered by open_clip_torch)
+warnings.filterwarnings("ignore", category=FutureWarning, module="timm")
+# gradio_client.file() → handle_file() (triggered by gradio-litmodel3d==0.0.1)
+warnings.filterwarnings("ignore", message="file\\(\\) is deprecated", category=UserWarning, module="gradio_client")
 
 import gradio as gr
 import numpy as np
@@ -265,9 +272,9 @@ with gr.Blocks() as demo:
 
     **Tips**
     1. If the image already has an alpha channel, you can skip the background removal step.
-    2. You can adjust the foreground ratio to control the size of the foreground object. This can influence the shape
+    2. You can adjust the foreground ratio to control the size of the foreground object. This can influence the shape.
     3. You can select the remeshing option to control the mesh topology. This can introduce artifacts in the mesh on thin surfaces and should be turned off in such cases.
-    4. You can upload your own HDR environment map to light the 3D model.
+    4. After generation, select an **HDR environment map** below the 3D viewer to apply realistic image-based lighting (IBL). Different maps create very different looks — try a few to find the best match for your model.
     """)
     with gr.Row(variant="panel"):
         with gr.Column():
@@ -335,7 +342,23 @@ with gr.Blocks() as demo:
             with gr.Column(visible=False, scale=1.0) as hdr_row:
                 gr.Markdown("""## HDR Environment Map
 
-                Select an HDR environment map to light the 3D model. You can also upload your own HDR environment maps.
+                **HDR(High Dynamic Range) 환경 맵**은 실제 조명 환경을 구 형태로 캡처한 이미지입니다.
+                3D 모델 주변을 둘러싸는 가상의 하늘처럼 작동하여 물체에 사실적인 반사·음영·빛을 부여합니다.
+
+                ### 사용 방법
+                - 아래 예시 중 하나를 클릭하거나, `.hdr` 파일을 직접 업로드하세요.
+                - 맵을 바꾸면 3D 뷰어에 즉시 반영됩니다.
+
+                ### HDR 맵 선택 팁
+                | 환경 | 분위기 | 추천 용도 |
+                |------|--------|-----------|
+                | 실내 스튜디오 | 균일한 흰 조명 | 제품 사진, 정확한 색상 확인 |
+                | 야외 맑은 날 | 강한 태양광 + 하늘 | 자연물, 건축물 |
+                | 야외 흐린 날 | 부드러운 산란광 | 인물, 유기적 형태 |
+                | 실내 따뜻한 조명 | 황금빛 앰비언트 | 가구, 인테리어 소품 |
+
+                > 💡 **직접 만들기**: 스마트폰 파노라마 앱이나 전문 소프트웨어(Blender, HDRI Haven 등)에서
+                > 무료 `.hdr` 파일을 구할 수 있습니다.
                 """)
 
                 with gr.Row():
