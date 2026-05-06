@@ -22,7 +22,7 @@ from PIL import Image
 DEFAULT_IMAGE_PATH = "input02.jpg"
 T5_MODEL_MAX_LENGTH = 512
 
-SUBJECT = ""
+SUBJECT = "A beautiful young korean woman."
 
 FACE = ""
 
@@ -394,6 +394,23 @@ def load_default_image():
     return None
 
 
+def resize_image_to_multiple(image: Image.Image, multiple: int = 16):
+    """Resize image so width and height are divisible by the requested multiple."""
+    width, height = image.size
+    target_width = max(multiple, (width // multiple) * multiple)
+    target_height = max(multiple, (height // multiple) * multiple)
+    if (target_width, target_height) == (width, height):
+        return image, False, (width, height), (target_width, target_height)
+
+    resample = (
+        Image.Resampling.LANCZOS
+        if hasattr(Image, "Resampling")
+        else Image.LANCZOS
+    )
+    resized = image.resize((target_width, target_height), resample=resample)
+    return resized, True, (width, height), (target_width, target_height)
+
+
 def generate_image(
     input_image,
     prompt_clip,
@@ -428,6 +445,10 @@ def generate_image(
         negative = (negative or "").strip()
 
         input_image = input_image.convert("RGB")
+        input_image, resized_input, original_size, adjusted_size = resize_image_to_multiple(
+            input_image,
+            multiple=16,
+        )
         width, height = input_image.size
         steps = int(num_inference_steps)
         max_len = min(int(max_sequence_length), T5_MODEL_MAX_LENGTH)
@@ -445,7 +466,14 @@ def generate_image(
             print("-" * 60)
             print("[네거티브 프롬프트]")
             print(negative)
-        print(f"입력 이미지 크기: {width}x{height}")
+        if resized_input:
+            print(
+                "입력 이미지 크기 보정: "
+                f"{original_size[0]}x{original_size[1]} -> {adjusted_size[0]}x{adjusted_size[1]} "
+                "(16px 배수)"
+            )
+        else:
+            print(f"입력 이미지 크기: {width}x{height} (16px 배수)")
         print("=" * 60)
 
         generator_device = "cpu" if DEVICE == "mps" else DEVICE
@@ -507,9 +535,14 @@ def generate_image(
         else:
             output_image.save(filename)
 
+        resize_info = (
+            f" | 크기 보정: {original_size[0]}x{original_size[1]} -> {width}x{height}"
+            if resized_input
+            else ""
+        )
         print(f"이미지 편집 완료! 소요 시간: {elapsed:.1f}초 | 저장됨: {filename}")
         progress(1.0, desc="완료!")
-        return output_image, filename, f"✓ 완료! ({elapsed:.1f}초) | 저장됨: {filename}"
+        return output_image, filename, f"✓ 완료! ({elapsed:.1f}초){resize_info} | 저장됨: {filename}"
     except Exception as e:
         return None, None, f"✗ 오류 발생: {str(e)}"
 
