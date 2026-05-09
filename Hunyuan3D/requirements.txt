@@ -1,0 +1,22 @@
+# Hunyuan3D 3D Generation
+hy3dgen
+
+# UI Framework
+gradio>=4.0.0
+
+# Background Removal
+rembg
+
+# Image Processing
+Pillow
+
+# 3D Mesh Processing
+trimesh
+
+# Deep Learning (if not already installed)
+# torch>=2.0.0
+# torchvision
+# torchaudio
+
+# Additional Dependencies
+numpy
