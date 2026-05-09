@@ -14,15 +14,17 @@ print("Model loaded successfully!")
 def generate_3d_model(input_image):
     """
     입력 이미지로부터 배경을 제거하고 3D 메시를 생성
+    Generator 함수로 중간 결과를 즉시 표시
     
     Args:
         input_image: 입력 이미지 (PIL Image 또는 파일 경로)
     
-    Returns:
+    Yields:
         tuple: (배경제거이미지, obj_파일경로, glb_파일경로, 상태메시지)
     """
     if input_image is None:
-        return None, None, None, "⚠️ 이미지를 업로드해주세요."
+        yield None, None, None, "⚠️ 이미지를 업로드해주세요."
+        return
     
     try:
         # 임시 디렉토리 생성
@@ -37,6 +39,14 @@ def generate_3d_model(input_image):
         output_pil = remove(input_pil)
         output_pil.save(nobg_path)
         print(f"✓ Background removed and saved to {nobg_path}")
+        
+        # 배경 제거 완료 후 즉시 표시
+        status_msg_step1 = "⏳ 처리 중...\n\n"
+        status_msg_step1 += "📋 처리 단계:\n"
+        status_msg_step1 += "1. ✓ 배경 제거 완료\n"
+        status_msg_step1 += "2. ⏳ 3D 메시 생성 중..."
+        
+        yield nobg_path, None, None, status_msg_step1
         
         # 2단계: 3D 메시 생성 (배경 제거된 이미지 사용)
         print(f"[2/2] Generating 3D mesh from image...")
@@ -61,17 +71,17 @@ def generate_3d_model(input_image):
         
         print(status_msg)
         
-        return nobg_path, obj_path, glb_path, status_msg
+        yield nobg_path, obj_path, glb_path, status_msg
     
     except Exception as e:
         error_msg = f"❌ 오류 발생: {str(e)}"
         print(error_msg)
         import traceback
         traceback.print_exc()
-        return None, None, None, error_msg
+        yield None, None, None, error_msg
 
 # Gradio 인터페이스 구성
-with gr.Blocks(title="Hunyuan3D 2 - 3D Model Generator", theme=gr.themes.Soft()) as demo:
+with gr.Blocks(title="Hunyuan3D 2 - 3D Model Generator") as demo:
     gr.Markdown("""
     # 🎨 Hunyuan3D 2 - 이미지에서 3D 모델 생성
     
@@ -89,14 +99,6 @@ with gr.Blocks(title="Hunyuan3D 2 - 3D Model Generator", theme=gr.themes.Soft())
                 height=300
             )
             
-            # 예제 이미지 (demo.png가 있다면 사용)
-            if os.path.exists("demo.png"):
-                gr.Examples(
-                    examples=[["demo.png"]],
-                    inputs=input_image,
-                    label="예제"
-                )
-            
             generate_btn = gr.Button("🚀 3D 모델 생성", variant="primary", size="lg")
             
             gr.Markdown("### 🎭 배경 제거 결과")
@@ -106,6 +108,14 @@ with gr.Blocks(title="Hunyuan3D 2 - 3D Model Generator", theme=gr.themes.Soft())
                 height=300,
                 interactive=False
             )
+            
+            # 예제 이미지 (demo.png가 있다면 사용)
+            if os.path.exists("demo.png"):
+                gr.Examples(
+                    examples=[["demo.png"]],
+                    inputs=input_image,
+                    label="예제"
+                )
         
         # 오른쪽 컬럼: 3D 모델 출력
         with gr.Column(scale=1):
@@ -158,4 +168,4 @@ with gr.Blocks(title="Hunyuan3D 2 - 3D Model Generator", theme=gr.themes.Soft())
 
 # 서버 실행
 if __name__ == "__main__":
-    demo.launch(inbrowser=True)
+    demo.launch(inbrowser=True, theme=gr.themes.Soft())
