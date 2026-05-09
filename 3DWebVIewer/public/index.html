@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D 파일 뷰어</title>
+  <link rel="icon" type="image/x-icon" href="daemon_hammer.ico?v=2">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1><img src="daemon_hammer.ico" alt="" class="header-icon">3D 파일 뷰어</h1>
+      <p>OBJ, GLB, GLTF, FBX, STL 파일을 지원합니다</p>
+    </header>
+
+    <div class="main-content">
+      <aside class="control-panel">
+        <div class="upload-section">
+          <label id="dropZone" class="drop-zone" for="fileInput">
+            <div class="drop-zone-content">
+              <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <p>파일 업로드</p>
+              <span class="file-types">.obj, .glb, .gltf, .fbx, .stl</span>
+            </div>
+            <input type="file" id="fileInput" accept=".obj,.mtl,.glb,.gltf,.fbx,.stl">
+          </label>
+        </div>
+
+        <div class="info-section">
+          <h2>파일 정보</h2>
+          <div id="fileInfo" class="file-info">
+            <p class="no-file">파일을 업로드해주세요</p>
+          </div>
+        </div>
+        <div class="controls-section">
+          <h2>뷰어 제어</h2>
+          <div class="control-buttons">
+            <button id="resetCamera" title="카메라 리셋">🔄 리셋</button>
+            <button id="toggleWireframe" title="와이어프레임 토글">🔲 와이어프레임</button>
+            <button id="toggleGrid" title="그리드 토글">📐 그리드</button>
+          </div>
+        </div>
+
+        <h2>뷰어 설정</h2>
+        <div class="settings">
+          <div class="setting-item">
+            <label for="scaleSlider">배율: <span id="scaleValue">1.0</span>x</label>
+            <input type="range" id="scaleSlider" min="0.1" max="5" step="0.1" value="1">
+          </div>
+          
+          <div class="setting-item">
+            <label for="rotationSpeed">회전 속도: <span id="rotationSpeedValue">1.0</span>x</label>
+            <input type="range" id="rotationSpeed" min="0.1" max="3" step="0.1" value="1">
+          </div>
+
+          <div class="setting-item">
+            <label>
+              <input type="checkbox" id="autoRotate">
+              자동 회전
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <label for="bgColor">배경 색상:</label>
+            <input type="color" id="bgColor" value="#1a1a1a">
+          </div>
+        </div>
+
+        <div class="model-stats" id="modelStats" style="display: none;">
+          <h3>모델 통계</h3>
+          <div class="stats-content">
+            <p><strong>버텍스:</strong> <span id="vertexCount">-</span></p>
+            <p><strong>삼각형:</strong> <span id="triangleCount">-</span></p>
+            <p><strong>모델 크기:</strong></p>
+            <div class="bbox-info">
+              <div class="bbox-row">
+                <span class="bbox-axis x-axis">X</span>
+                <span class="bbox-val" id="bboxX">-</span>
+              </div>
+              <div class="bbox-row">
+                <span class="bbox-axis y-axis">Y</span>
+                <span class="bbox-val" id="bboxY">-</span>
+              </div>
+              <div class="bbox-row">
+                <span class="bbox-axis z-axis">Z</span>
+                <span class="bbox-val" id="bboxZ">-</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <div class="viewer-container">
+        <div id="viewer" class="viewer"></div>
+        <div id="loadingSpinner" class="loading-spinner" style="display: none;">
+          <div class="spinner"></div>
+          <p>로딩 중...</p>
+        </div>
+
+        <!-- 좌측 상단: 줌 배율 표시 -->
+        <div class="scale-display">줌: <span id="currentScale">1.00</span>x</div>
+
+        <!-- 우측 상단: 조명 설정 패널 -->
+        <div class="lighting-overlay">
+          <div class="overlay-header">조명 설정</div>
+          <div class="overlay-item">
+            <label>환경광 <span id="ambientLightValue">0.6</span></label>
+            <input type="range" id="ambientLight" min="0" max="2" step="0.1" value="0.6">
+          </div>
+          <div class="overlay-item">
+            <label>주 조명 <span id="directionalLight1Value">0.8</span></label>
+            <input type="range" id="directionalLight1" min="0" max="3" step="0.1" value="0.8">
+          </div>
+          <div class="overlay-item">
+            <label>보조 조명 <span id="directionalLight2Value">2.0</span></label>
+            <input type="range" id="directionalLight2" min="0" max="3" step="0.1" value="2.0">
+          </div>
+          <div class="overlay-item">
+            <label>색상</label>
+            <input type="color" id="lightColor" value="#ffffff">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Three.js and loaders (ES modules via importmap) -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script type="module" src="viewer.js"></script>
+</body>
+</html>
