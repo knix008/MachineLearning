@@ -9,10 +9,25 @@ from PIL import Image
 from rembg import remove
 from hy3dgen.shapegen import Hunyuan3DDiTFlowMatchingPipeline
 
+# 텍스처 파이프라인은 선택적으로 로드
+texture_pipeline = None
+TEXTURE_ENABLED = False
+
 # 전역으로 파이프라인 로드 (한 번만 로드)
-print("Loading Hunyuan3D model...")
-pipeline = Hunyuan3DDiTFlowMatchingPipeline.from_pretrained("tencent/Hunyuan3D-2")
-print("Model loaded successfully!")
+print("Loading Hunyuan3D models...")
+print("  [1/2] Loading shape generation model...")
+shape_pipeline = Hunyuan3DDiTFlowMatchingPipeline.from_pretrained("tencent/Hunyuan3D-2")
+
+try:
+    print("  [2/2] Loading texture generation model...")
+    from hy3dgen.texgen import Hunyuan3DPaintPipeline
+    texture_pipeline = Hunyuan3DPaintPipeline.from_pretrained("tencent/Hunyuan3D-2")
+    TEXTURE_ENABLED = True
+    print("✓ Models loaded successfully (with texture support)!")
+except Exception as e:
+    print(f"⚠️  Texture generation not available: {e}")
+    print("✓ Shape generation model loaded (texture generation disabled)")
+    print("💡 To enable texture: install custom_rasterizer and differentiable_renderer modules")
 
 # CTRL+C 종료 시 자원 해제 함수
 def cleanup_and_exit(signum=None, frame=None):
@@ -23,11 +38,15 @@ def cleanup_and_exit(signum=None, frame=None):
     
     try:
         # 파이프라인 해제
-        global pipeline
-        if pipeline is not None:
-            print("📦 파이프라인 모델 해제 중...")
-            del pipeline
-            pipeline = None
+        global shape_pipeline, texture_pipeline
+        if shape_pipeline is not None:
+            print("📦 Shape 파이프라인 모델 해제 중...")
+            del shape_pipeline
+            shape_pipeline = None
+        if texture_pipeline is not None:
+            print("📦 Texture 파이프라인 모델 해제 중...")
+            del texture_pipeline
+            texture_pipeline = None
         
         # GPU 캐시 정리 (PyTorch 사용 시)
         try:
@@ -89,46 +108,85 @@ def generate_3d_model(input_image):
         step1_time = time.time() - step1_start
         print(f"✓ Background removed in {step1_time:.1f}s")
         
-        # 배경 제거 완료 후 즉시 표시 (40% 완료, 3D 생성 예상 시간)
-        # 3D 생성은 일반적으로 배경 제거보다 3-5배 더 오래 걸림
-        estimated_3d_time = step1_time * 4
-        total_estimated = step1_time + estimated_3d_time
+        # 배경 제거 완료 후 즉시 표시 (25% 완료)
+        estimated_shape_time = step1_time * 3
+        estimated_texture_time = step1_time * 3
+        total_estimated = step1_time + estimated_shape_time + estimated_texture_time
         
         status_msg_step1 = "⏳ 처리 중...\n\n"
-        status_msg_step1 += f"📊 진행률: 40% 완료\n"
+        status_msg_step1 += f"📊 진행률: 25% 완료\n"
         status_msg_step1 += f"⏱️ 경과 시간: {step1_time:.1f}초\n"
-        status_msg_step1 += f"⏱️ 예상 남은 시간: 약 {estimated_3d_time:.0f}초\n"
+        status_msg_step1 += f"⏱️ 예상 남은 시간: 약 {estimated_shape_time + estimated_texture_time:.0f}초\n"
         status_msg_step1 += f"⏱️ 총 예상 시간: 약 {total_estimated:.0f}초\n\n"
         status_msg_step1 += "📋 처리 단계:\n"
         status_msg_step1 += "1. ✓ 배경 제거 완료\n"
-        status_msg_step1 += "2. ⏳ 3D 메시 생성 중..."
+        status_msg_step1 += "2. ⏳ 3D 메시 생성 중...\n"
+        status_msg_step1 += "3. ⏸️ 텍스처 생성 대기 중..."
         
         # 3D 뷰어에 "생성 중" 상태 표시
         yield nobg_path, gr.update(value=None, label="OBJ 포맷 - ⏳ 생성 중..."), gr.update(value=None, label="GLB 포맷 - ⏳ 생성 중..."), status_msg_step1
         
-        # 2단계: 3D 메시 생성 (40% → 100%)
-        print(f"[2/2] Generating 3D mesh from image...")
+        # 2단계: 3D 메시 생성 (25% → 60%)
+        print(f"[2/3] Generating 3D mesh from image...")
         step2_start = time.time()
         
-        mesh = pipeline(image=nobg_path)[0]
+        mesh = shape_pipeline(image=nobg_path)[0]
         
-        # OBJ 및 GLB 형식으로 저장
+        step2_time = time.time() - step2_start
+        print(f"✓ 3D mesh generated in {step2_time:.1f}s")
+        
+        # 텍스처 생성 가능 여부 확인
+        if TEXTURE_ENABLED and texture_pipeline is not None:
+            # 메시 생성 완료 후 중간 상태 표시 (60% 완료)
+            elapsed_time = time.time() - start_time
+            estimated_remaining = step2_time * 1.5  # 텍스처는 메시 생성 시간의 약 1.5배
+            
+            status_msg_step2 = "⏳ 처리 중...\n\n"
+            status_msg_step2 += f"📊 진행률: 60% 완료\n"
+            status_msg_step2 += f"⏱️ 경과 시간: {elapsed_time:.1f}초\n"
+            status_msg_step2 += f"⏱️ 예상 남은 시간: 약 {estimated_remaining:.0f}초\n\n"
+            status_msg_step2 += "📋 처리 단계:\n"
+            status_msg_step2 += "1. ✓ 배경 제거 완료\n"
+            status_msg_step2 += "2. ✓ 3D 메시 생성 완료\n"
+            status_msg_step2 += "3. ⏳ 텍스처 생성 중..."
+            
+            yield nobg_path, gr.update(value=None, label="OBJ 포맷 - ⏳ 텍스처 생성 중..."), gr.update(value=None, label="GLB 포맷 - ⏳ 텍스처 생성 중..."), status_msg_step2
+            
+            # 3단계: 텍스처 생성 (60% → 100%)
+            print(f"[3/3] Generating texture for the mesh...")
+            step3_start = time.time()
+            
+            mesh = texture_pipeline(mesh, image=nobg_path)
+            
+            step3_time = time.time() - step3_start
+            print(f"✓ Texture generated in {step3_time:.1f}s")
+        else:
+            step3_time = 0
+            print("⚠️  Texture generation skipped (not available)")
+        
+        # OBJ 및 GLB 형식으로 저장 (텍스처 포함 또는 미포함)
         mesh.export(obj_path)
         mesh.export(glb_path)
         
-        step2_time = time.time() - step2_start
         total_time = time.time() - start_time
-        print(f"✓ 3D mesh generated in {step2_time:.1f}s")
         
         # 메시 정보
         status_msg = f"✅ 생성 완료!\n\n"
         status_msg += f"📊 진행률: 100% 완료\n"
         status_msg += f"⏱️ 총 처리 시간: {total_time:.1f}초\n"
         status_msg += f"  - 배경 제거: {step1_time:.1f}초\n"
-        status_msg += f"  - 3D 생성: {step2_time:.1f}초\n\n"
+        status_msg += f"  - 3D 생성: {step2_time:.1f}초\n"
+        if TEXTURE_ENABLED and step3_time > 0:
+            status_msg += f"  - 텍스처 생성: {step3_time:.1f}초\n\n"
+        else:
+            status_msg += f"  - 텍스처: 비활성화됨\n\n"
         status_msg += f"📋 처리 단계:\n"
         status_msg += f"1. ✓ 배경 제거 완료\n"
-        status_msg += f"2. ✓ 3D 메시 생성 완료\n\n"
+        status_msg += f"2. ✓ 3D 메시 생성 완료\n"
+        if TEXTURE_ENABLED and step3_time > 0:
+            status_msg += f"3. ✓ 텍스처 생성 완료\n\n"
+        else:
+            status_msg += f"3. ⚠️  텍스처 생성 건너뜀 (모듈 미설치)\n\n"
         status_msg += f"📊 메시 정보:\n"
         status_msg += f"- 정점(Vertices): {len(mesh.vertices):,}\n"
         status_msg += f"- 면(Faces): {len(mesh.faces):,}\n\n"
@@ -151,10 +209,14 @@ def generate_3d_model(input_image):
 
 # Gradio 인터페이스 구성
 with gr.Blocks(title="Hunyuan3D 2 - 3D Model Generator") as demo:
-    gr.Markdown("""
+    texture_status = "✓ 텍스처 생성 활성화" if TEXTURE_ENABLED else "⚠️ 텍스처 생성 비활성화 (bare mesh만 생성)"
+    
+    gr.Markdown(f"""
     # 🎨 Hunyuan3D 2 - 이미지에서 3D 모델 생성
     
     단일 이미지를 업로드하면 자동으로 3D 메시를 생성합니다.
+    
+    **상태**: {texture_status}
     """)
     
     with gr.Row():
